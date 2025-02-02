@@ -10,6 +10,7 @@ export enum RoleSettingTypes {
 
 export enum RolesAfterDeath {
     Jester = 1,
+    Amnesiac = 2,
 }
 
 export enum Distances {
