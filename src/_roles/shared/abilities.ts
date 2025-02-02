@@ -10,6 +10,6 @@ export enum CommonRoleAbilitiesNames {
 export const CommonRoleAbilities: Record<CommonRoleAbilitiesNames, RoleAbility> = {
     [CommonRoleAbilitiesNames.None]: {
         "name": "brak",
-        "icon": "abilities/none.png"
+        "icon": "/images/abilities/none.png"
     }
 }
