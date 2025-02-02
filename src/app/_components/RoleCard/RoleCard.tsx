@@ -20,7 +20,7 @@ export const RoleCard = ({ role }: { role: Role }) => (
                 <h5 className="font-brook text-5xl mb-5">Umiejętności</h5>
                 <ul className="text-xl">
                     {role.abilities.map(ability => (
-                        <li key={ability.name} className="font-brook text-3xl bg-zinc-800/75 p-2 rounded flex items-center justify-start gap-2">
+                        <li key={ability.name} className="my-2.5 font-brook text-3xl bg-zinc-800/75 p-2 rounded flex items-center justify-start gap-2">
                             <img src={ability.icon} alt={ability.name} className="w-8"/>
                             {ability.name}
                         </li>
