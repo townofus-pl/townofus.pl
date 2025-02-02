@@ -13,14 +13,14 @@ export const RoleCard = ({ role }: { role: Role }) => (
         </header>
         <div className="grid grid-cols-2/1 gap-x-5">
             <div className="bg-zinc-900/50 rounded-xl p-4">
-                <p className="mb-5 text-xl">{role.description}</p>
+                <div className="mb-10 text-xl">{role.description}</div>
                 <SettingsList settings={role.settings} />
             </div>
             <div className="bg-zinc-900/50 rounded-xl p-4">
                 <h5 className="font-brook text-5xl mb-5">Umiejętności</h5>
                 <ul className="text-xl">
                     {role.abilities.map(ability => (
-                        <li key={ability.name} className="font-brook text-3xl bg-zinc-800/75 p-2 rounded flex items-center justify-start gap-2">
+                        <li key={ability.name} className="my-2.5 font-brook text-3xl bg-zinc-800/75 p-2 rounded flex items-center justify-start gap-2">
                             <img src={ability.icon} alt={ability.name} className="w-8"/>
                             {ability.name}
                         </li>

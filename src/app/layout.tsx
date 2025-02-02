@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import localFont from "next/font/local";
+import { Barlow } from "next/font/google";
 import "./globals.css";
 
 const brook = localFont({
@@ -8,10 +9,10 @@ const brook = localFont({
     variable: '--font-brook',
 });
 
-const din = localFont({
-    src: '/_fonts/DIN.woff',
+const barlow = Barlow({
+    weight: ["400", "700"],
+    variable: '--font-barlow',
     display: 'swap',
-    variable: '--font-din',
 });
 
 export const metadata: Metadata = {
@@ -27,7 +28,7 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${brook.variable} ${din.variable}`}
+        className={`${brook.variable} ${barlow.variable} ${barlow.className}`}
       >
         <div className="max-w-screen-xl m-auto">
             {children}

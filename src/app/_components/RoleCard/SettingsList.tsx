@@ -26,7 +26,7 @@ const getValue = (setting: RoleSetting) => {
 export const SettingsList: FC<SettingsListProps> = ({ settings }) => {
     return (
         <div>
-            <h5 className="font-brook text-5xl mb-5">Ustawienia</h5>
+            <h5 className="font-brook text-5xl mb-2.5">Ustawienia</h5>
             <ul className="text-xl">
                 {Object.entries(settings).map(([name, setting]) => (
                     <li key={name}>{name}: {getValue(setting)}</li>

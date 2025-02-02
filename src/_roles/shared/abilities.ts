@@ -3,13 +3,21 @@ export type RoleAbility = {
     icon: string
 };
 
-export enum CommonRoleAbilitiesNames {
-    None = "None"
-}
-
-export const CommonRoleAbilities: Record<CommonRoleAbilitiesNames, RoleAbility> = {
-    [CommonRoleAbilitiesNames.None]: {
+export const CommonRoleAbilities: Record<string, RoleAbility> = {
+    None: {
         "name": "brak",
-        "icon": "abilities/none.png"
-    }
+        "icon": "/images/abilities/none.png"
+    },
+    Kill: {
+        "name": "Kill (Zabij)",
+        "icon": "/images/abilities/kill.png"
+    },
+    Vent: {
+        "name": "Vent (Wejdź do wentylacji)",
+        "icon": "/images/abilities/vent.png"
+    },
+    Sabotage: {
+        "name": "Sabotage (Sabotuj)",
+        "icon": "/images/abilities/sabotage.png"
+    },
 }
