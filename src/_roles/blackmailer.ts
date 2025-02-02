@@ -26,7 +26,7 @@ export const Blackmailer: Role = {
             type: RoleSettingTypes.Time,
         },
         "Only Target Sees Blackmail": {
-            value: 0,
+            value: false,
             type: RoleSettingTypes.Boolean,
         },
         "Maximum People Alive Where Blackmailed Can Vote": {

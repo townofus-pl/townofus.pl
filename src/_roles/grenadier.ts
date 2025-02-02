@@ -34,11 +34,11 @@ export const Grenadier: Role = {
             type: RoleSettingTypes.Radius,
         },
         "Indicate Flashed Crewmates": {
-            value: 1,
+            value: true,
             type: RoleSettingTypes.Boolean,
         },
         "Grenadier Can Vent": {
-            value: 1,
+            value: true,
             type: RoleSettingTypes.Boolean,
         },
     },

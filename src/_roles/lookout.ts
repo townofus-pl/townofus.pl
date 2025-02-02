@@ -20,7 +20,7 @@ export const Lookout: Role = {
             type: RoleSettingTypes.Time,
         },
         "Lookout Watches Reset After Each Round": {
-            value: 1,
+            value: true,
             type: RoleSettingTypes.Boolean,
         },
         "Maximum Number Of Players That Can Be Watched": {

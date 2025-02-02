@@ -38,11 +38,11 @@ export const Bomber: Role = {
             type: RoleSettingTypes.Radius,
         },
         "Bomber Can Vent": {
-            value: 1,
+            value: true,
             type: RoleSettingTypes.Boolean,
         },
         "All Impostors See Bomb": {
-            value: 1,
+            value: true,
             type: RoleSettingTypes.Boolean,
         },
     },

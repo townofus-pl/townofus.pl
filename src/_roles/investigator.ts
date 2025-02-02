@@ -21,11 +21,11 @@ export const Investigator: Role = {
             type: RoleSettingTypes.Time,
         },
         "Anonymous Footprint": {
-            value: 0,
+            value: false,
             type: RoleSettingTypes.Boolean,
         },
         "Footprint Vent Visible": {
-            value: 1,
+            value: true,
             type: RoleSettingTypes.Boolean,
         }
     },

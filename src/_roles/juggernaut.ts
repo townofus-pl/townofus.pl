@@ -42,7 +42,7 @@ export const Juggernaut: Role = {
             type: RoleSettingTypes.Time,
         },
         "Juggernaut Can Vent": {
-            value: 1,
+            value: true,
             type: RoleSettingTypes.Boolean,
         }
     },

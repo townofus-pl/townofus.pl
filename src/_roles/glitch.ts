@@ -47,10 +47,10 @@ export const Glitch: Role = {
         },
         "Glitch Hack Distance": {
             value: Distances.Short,
-            type: RoleSettingTypes.Distance,
+            type: RoleSettingTypes.Text,
         },
         "Glitch Can Vent": {
-            value: 1,
+            value: true,
             type: RoleSettingTypes.Boolean,
         },
     },

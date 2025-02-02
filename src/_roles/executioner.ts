@@ -17,14 +17,14 @@ export const Executioner: Role = {
         ...probabilityOfAppearing(-1),
         "Executioner Becomes On Target Dead": {
             value: RolesAfterDeath.Jester,
-            type: RoleSettingTypes.RoleAfterDeath,
+            type: RoleSettingTypes.Text,
         },
         "Executioner Can Button": {
-            value: 1,
+            value: true,
             type: RoleSettingTypes.Boolean,
         },
         "Executioner Torments Player On Victory": {
-            value: 1,
+            value: true,
             type: RoleSettingTypes.Boolean,
         },
     },

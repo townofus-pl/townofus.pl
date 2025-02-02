@@ -16,19 +16,19 @@ export const Jester: Role = {
     "settings": {
         ...probabilityOfAppearing(-1),
         "Jester Can Button": {
-            value: 1,
+            value: true,
             type: RoleSettingTypes.Boolean,
         },
         "Jester Can Hide In Vents": {
-            value: 1,
+            value: true,
             type: RoleSettingTypes.Boolean,
         },
         "Jester Has Impostor Vision": {
-            value: 1,
+            value: true,
             type: RoleSettingTypes.Boolean,
         },
         "Jester Haunts Player On Victory": {
-            value: 1,
+            value: true,
             type: RoleSettingTypes.Boolean,
         }
     },

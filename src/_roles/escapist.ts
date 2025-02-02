@@ -30,7 +30,7 @@ export const Escapist: Role = {
             type: RoleSettingTypes.Time,
         },
         "Escapist Can Vent": {
-            value: 0,
+            value: true,
             type: RoleSettingTypes.Boolean,
         },
     },

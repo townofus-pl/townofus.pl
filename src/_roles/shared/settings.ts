@@ -4,24 +4,29 @@ export enum RoleSettingTypes {
     Boolean = 'boolean',
     Number = 'number',
     Radius = 'radius',
-    RoleAfterDeath = 'roleAfterDeath',
-    Distance = 'distance',
+    Text = 'text',
 }
 
 export enum RolesAfterDeath {
-    Jester = 1,
-    Amnesiac = 2,
+    Jester = 'Jester',
+    Amnesiac = 'Amnesiac',
 }
 
 export enum Distances {
-    Short = 1,
-    Medium = 2,
-    Long = 3,
+    Short = 'Short',
+    Medium = 'Medium',
+    Long = 'Long',
 }
 
 export type RoleSetting = {
     value: number,
-    type: RoleSettingTypes
+    type: RoleSettingTypes.Percentage | RoleSettingTypes.Time | RoleSettingTypes.Number | RoleSettingTypes.Radius
+} | {
+    value: boolean,
+    type: RoleSettingTypes.Boolean
+} | {
+    value: string,
+    type: RoleSettingTypes.Text
 };
 
 export enum CommonRoleSettingsNames {

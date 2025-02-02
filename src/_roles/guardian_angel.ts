@@ -38,19 +38,19 @@ export const GuardianAngel: Role = {
             type: RoleSettingTypes.Number,
         },
         "Show Protected Player": {
-            value: 1,
+            value: true,
             type: RoleSettingTypes.Boolean,
         },
         "Becomes On Target Dead": {
             value: RolesAfterDeath.Amnesiac,
-            type: RoleSettingTypes.RoleAfterDeath,
+            type: RoleSettingTypes.Text,
         },
         "Target Knows GA Exists": {
-            value: 0,
+            value: false,
             type: RoleSettingTypes.Boolean,
         },
         "GA Knows Targets Role": {
-            value: 1,
+            value: true,
             type: RoleSettingTypes.Boolean,
         },
         "Odds Of Target Being Evil": {
