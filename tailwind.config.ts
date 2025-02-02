@@ -21,7 +21,7 @@ export default {
       },
       fontFamily: {
         brook: "var(--font-brook)",
-        din: "var(--font-din)",
+        barlow: "var(--font-barlow)",
       },
       gridTemplateColumns: {
         '2/1': '2fr 1fr',

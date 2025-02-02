@@ -13,7 +13,7 @@ export const RoleCard = ({ role }: { role: Role }) => (
         </header>
         <div className="grid grid-cols-2/1 gap-x-5">
             <div className="bg-zinc-900/50 rounded-xl p-4">
-                <p className="mb-5 text-xl">{role.description}</p>
+                <p className="mb-10 text-xl">{role.description}</p>
                 <SettingsList settings={role.settings} />
             </div>
             <div className="bg-zinc-900/50 rounded-xl p-4">
