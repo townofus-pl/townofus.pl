@@ -5,7 +5,7 @@ import Image from "next/image";
 
 export const RoleCard = ({ role }: { role: Role }) => (
     <div className="grid grid-cols-1 gap-y-5 p-5 bg-zinc-900/50 rounded-xl border-l-5" style={{ borderColor: role.color }}>
-        <header className="font-brook bg-zinc-900/50 p-4 rounded-lg flex gap-2.5 items-center justify-start">
+        <header className="font-brook bg-zinc-900/50 p-4 rounded-lg flex gap-5 items-center justify-start">
             <Image src={role.icon} alt={role.name} width={400} height={400} className="scale-150 w-28 h-28" />
             <div>
                 <h4 className="mb-2.5 text-6xl font-bold" style={{ color: role.color }}>{role.name}</h4>
