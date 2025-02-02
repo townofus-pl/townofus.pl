@@ -14,6 +14,7 @@ import {Glitch} from "@/_roles/glitch";
 import {Grenadier} from "@/_roles/grenadier";
 import {GuardianAngel} from "@/_roles/guardian_angel";
 import {Haunter} from "@/_roles/haunter";
+import {Hunter} from "@/_roles/hunter";
 
 export const Roles = [
     Altruist,
@@ -32,4 +33,5 @@ export const Roles = [
     Grenadier,
     GuardianAngel,
     Haunter,
+    Hunter,
 ].sort();
