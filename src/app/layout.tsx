@@ -10,6 +10,7 @@ const brook = localFont({
 });
 
 const barlow = Barlow({
+    subsets: ["latin-ext"],
     weight: ["400", "700"],
     variable: '--font-barlow',
     display: 'swap',

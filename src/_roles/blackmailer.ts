@@ -1,10 +1,10 @@
 import {
-    CommonRoleAbilities,
     probabilityOfAppearing,
     RoleSettingTypes,
-    Teams
+    Teams,
+    type Role,
+    CommonRoleAbilities,
 } from "./shared";
-import type {Role} from "./shared";
 
 export const BlackmailerAbilities = {
     Blackmail: {
