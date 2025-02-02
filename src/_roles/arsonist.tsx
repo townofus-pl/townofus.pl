@@ -40,11 +40,11 @@ export const Arsonist: Role = {
             type: RoleSettingTypes.Number,
         },
         'Arsonist Has Impostor Vision': {
-            value: 1,
+            value: true,
             type: RoleSettingTypes.Boolean,
         },
         'Ignite Cooldown Removed When Arsonist Is Last Killer': {
-            value: 1,
+            value: true,
             type: RoleSettingTypes.Boolean,
         },
     },

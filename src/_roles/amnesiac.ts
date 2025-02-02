@@ -21,7 +21,7 @@ export const Amnesiac: Role = {
     "settings": {
         ...probabilityOfAppearing(-1),
         'Amnesiac Gets Arrows Pointing To Dead Bodies': {
-            value: 1,
+            value: true,
             type: RoleSettingTypes.Boolean,
         },
         'Time After Death Arrow Appears': {

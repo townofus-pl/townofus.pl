@@ -25,7 +25,7 @@ export const Altruist: Role = {
             type: RoleSettingTypes.Time,
         },
         "Target's Body Disappears On Beginning Of Revive": {
-            value: 0,
+            value: false,
             type: RoleSettingTypes.Boolean,
         },
     },
