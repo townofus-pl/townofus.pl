@@ -1,4 +1,5 @@
 import type { Config } from "tailwindcss";
+import { TeamColors } from "./src/_roles/shared";
 
 export default {
   content: [
@@ -11,7 +12,23 @@ export default {
       colors: {
         background: "var(--background)",
         foreground: "var(--foreground)",
+        'role-crewmate': TeamColors.Crewmate,
+        'role-impostor': TeamColors.Impostor,
+        'role-neutral': TeamColors.Neutral,
       },
+      borderColor: {
+        search: "rgb(51 51 51)",
+      },
+      fontFamily: {
+        brook: "var(--font-brook)",
+        din: "var(--font-din)",
+      },
+      gridTemplateColumns: {
+        '2/1': '2fr 1fr',
+      },
+      borderWidth: {
+        5: '5px',
+      }
     },
   },
   plugins: [],
