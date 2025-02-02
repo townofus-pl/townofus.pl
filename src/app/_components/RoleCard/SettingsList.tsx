@@ -1,4 +1,4 @@
-import {RolesAfterDeath, RoleSetting, RoleSettingTypes} from "@/_roles/shared";
+import {Distances, RolesAfterDeath, RoleSetting, RoleSettingTypes} from "@/_roles/shared";
 import {FC} from "react";
 
 export type SettingsListProps = {
@@ -7,6 +7,12 @@ export type SettingsListProps = {
 
 const RolesAfterDeathNames = {
     [RolesAfterDeath.Jester]: 'Jester',
+}
+
+const DistancesNames = {
+    [Distances.Short]: 'Short',
+    [Distances.Medium]: 'Medium',
+    [Distances.Long]: 'Long',
 }
 
 const getValue = (setting: RoleSetting) => {
@@ -24,6 +30,8 @@ const getValue = (setting: RoleSetting) => {
             return `${setting.value}x`;
         case RoleSettingTypes.RoleAfterDeath:
             return RolesAfterDeathNames[setting.value as RolesAfterDeath];
+        case RoleSettingTypes.Distance:
+            return DistancesNames[setting.value as Distances];
         default:
             return setting.value.toString();
     }

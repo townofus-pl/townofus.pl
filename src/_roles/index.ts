@@ -10,6 +10,7 @@ import {Doomsayer} from "@/_roles/doomsayer";
 import {Engineer} from "@/_roles/engineer";
 import {Escapist} from "@/_roles/escapist";
 import {Executioner} from "@/_roles/executioner";
+import {Glitch} from "@/_roles/glitch";
 
 export const Roles = [
     Altruist,
@@ -24,4 +25,5 @@ export const Roles = [
     Engineer,
     Escapist,
     Executioner,
+    Glitch,
 ].sort();

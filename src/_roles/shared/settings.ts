@@ -5,10 +5,17 @@ export enum RoleSettingTypes {
     Number = 'number',
     Radius = 'radius',
     RoleAfterDeath = 'roleAfterDeath',
+    Distance = 'distance',
 }
 
 export enum RolesAfterDeath {
-    Jester = 0,
+    Jester = 1,
+}
+
+export enum Distances {
+    Short = 1,
+    Medium = 2,
+    Long = 3,
 }
 
 export type RoleSetting = {
