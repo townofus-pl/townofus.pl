@@ -1,9 +1,9 @@
 import {
     probabilityOfAppearing,
     RoleSettingTypes,
-    Teams
+    Teams,
+    type Role,
 } from "./shared";
-import type {Role} from "@/_roles/shared/roles";
 
 export const AmnesiacAbilities = {
     Remember: {

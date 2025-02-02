@@ -1,7 +1,7 @@
 import {
     probabilityOfAppearing,
     Teams,
-    type Role
+    type Role,
 } from "./shared";
 
 export const DeputyAbilities = {

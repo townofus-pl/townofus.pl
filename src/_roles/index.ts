@@ -7,6 +7,7 @@ import {Bomber} from "@/_roles/bomber";
 import {Deputy} from "@/_roles/deputy";
 import {Detective} from "@/_roles/detective";
 import {Doomsayer} from "@/_roles/doomsayer";
+import {Engineer} from "@/_roles/engineer";
 
 export const Roles = [
     Altruist,
@@ -18,4 +19,5 @@ export const Roles = [
     Deputy,
     Detective,
     Doomsayer,
+    Engineer,
 ].sort();

@@ -1,10 +1,10 @@
 import {
-    CommonRoleAbilities,
     probabilityOfAppearing,
     RoleSettingTypes,
-    Teams
+    Teams,
+    type Role,
+    CommonRoleAbilities,
 } from "./shared";
-import type {Role} from "@/_roles/shared/roles";
 
 export const Aurial: Role = {
     "name": "Aurial",
