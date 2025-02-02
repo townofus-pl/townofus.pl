@@ -1,23 +1,3 @@
-// {
-//     "name": "Amnesiac",
-//     "color": "#80B2FF",
-//     "team": "neutral",
-//     "icon": "icons/amnesiac.png",
-//     "description": "Neutralna rola bez warunku zwycięstwa. Nie ma żadnych zadań i jest praktycznie bez roli. Jednak może sobie przypomnieć rolę, odnajdując martwego gracza. Gdy to zrobi, przejmuje nowy warunek zwycięstwa i dąży do wygranej. Dostaje strzałki wskazujące martwe ciała.",
-//     "settings": [
-//         "Probability Of Appearing: x%",
-//         "Amnesiac Gets Arrows Pointing To Dead Bodies: ✓",
-//         "Time After Death Arrow Appears: 1,0s"
-//     ],
-//     "abilities": [
-//         {
-//             "name": "Remember (Przypomnij sobie)",
-//             "icon": "abilities/Remember.png"
-//         }
-//     ],
-//     "tip": ""
-// }
-
 import {
     probabilityOfAppearing,
     RoleSettingTypes,
