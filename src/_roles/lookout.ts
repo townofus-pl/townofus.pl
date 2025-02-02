@@ -3,7 +3,7 @@ import {probabilityOfAppearing, Role, RoleSettingTypes, Teams} from "./shared";
 export const LookoutAbilities = {
     Watch: {
         "name": "Watch (Obserwuj)",
-        "icon": "/images/abilities/Watch.png"
+        "icon": "/images/abilities/watch.png"
     }
 };
 

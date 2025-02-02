@@ -3,7 +3,7 @@ import {probabilityOfAppearing, Role, RoleSettingTypes, Teams} from "./shared";
 export const MedicAbilities = {
     Shield: {
         "name": "Shield (Osłoń)",
-        "icon": "/images/abilities/Medic.png"
+        "icon": "/images/abilities/medic.png"
     }
 }
 
