@@ -4,6 +4,11 @@ export enum RoleSettingTypes {
     Boolean = 'boolean',
     Number = 'number',
     Radius = 'radius',
+    RoleAfterDeath = 'roleAfterDeath',
+}
+
+export enum RolesAfterDeath {
+    Jester = 0,
 }
 
 export type RoleSetting = {

@@ -1,8 +1,12 @@
-import {RoleSetting, RoleSettingTypes} from "@/_roles/shared";
+import {RolesAfterDeath, RoleSetting, RoleSettingTypes} from "@/_roles/shared";
 import {FC} from "react";
 
 export type SettingsListProps = {
     settings: Record<string, RoleSetting>;
+}
+
+const RolesAfterDeathNames = {
+    [RolesAfterDeath.Jester]: 'Jester',
 }
 
 const getValue = (setting: RoleSetting) => {
@@ -18,6 +22,8 @@ const getValue = (setting: RoleSetting) => {
             return setting.value.toString();
         case RoleSettingTypes.Radius:
             return `${setting.value}x`;
+        case RoleSettingTypes.RoleAfterDeath:
+            return RolesAfterDeathNames[setting.value as RolesAfterDeath];
         default:
             return setting.value.toString();
     }
