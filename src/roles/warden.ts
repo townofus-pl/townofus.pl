@@ -1,4 +1,4 @@
-import {probabilityOfAppearing, SettingTypes, Teams, type Role, CommonAbilities,} from "@/constants";
+import {probabilityOfAppearing, Teams, type Role} from "@/constants";
 
 export const WardenAbilities = {
     Fortify: {

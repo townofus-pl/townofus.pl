@@ -1,4 +1,4 @@
-import {CommonAbilities, probabilityOfAppearing, Role, Teams} from "@/constants";
+import {probabilityOfAppearing, Role, Teams} from "@/constants";
 
 export const VigilanteAbilities = {
     Guess: {

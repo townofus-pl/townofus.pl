@@ -1,4 +1,4 @@
-import {probabilityOfAppearing, SettingTypes, Teams, type Role, CommonAbilities} from "@/constants";
+import {probabilityOfAppearing, SettingTypes, Teams, type Role} from "@/constants";
 
 export const VeteranAbilities = {
     Alert: {
