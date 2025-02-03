@@ -13,7 +13,7 @@ export const RoleCard = ({role}: { role: Role }) => (
                 <Team team={role.team}/>
             </div>
         </header>
-        <div className="grid grid-cols-2/1 gap-x-5">
+        <div className="grid grid-cols-1 md:grid-cols-2/1 gap-5">
             <div className="bg-zinc-900/50 rounded-xl p-4">
                 <div className="mb-10 text-xl">{role.description}</div>
                 <SettingsList settings={role.settings}/>
