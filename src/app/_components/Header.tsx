@@ -3,7 +3,7 @@ export const Header = () => (
         <h1 className="text-7xl font-bold font-brook">Town Of Us - Role</h1>
         <h2 className="text-3xl font-brook">
             Lista ról i modyfikatorów dostępnych w Town Of Us v5.2.0
-            <span className="ml-2.5 font-barlow text-base text-gray-500">by Malkiz, Quarties & OrzechMC</span>
+            <span className="md:ml-2.5 font-barlow text-base text-gray-500 block md:inline">by Malkiz, Quarties & OrzechMC</span>
         </h2>
     </header>
 );

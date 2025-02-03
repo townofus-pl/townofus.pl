@@ -27,7 +27,7 @@ export default function RootLayout({
     children: React.ReactNode;
 }>) {
     return (
-        <html lang="en">
+        <html lang="en" className="text-sm md:text-base">
         <body className={`${brook.variable} ${barlow.variable} ${barlow.className}`}>
         <div className="max-w-screen-xl m-auto">
             {children}
