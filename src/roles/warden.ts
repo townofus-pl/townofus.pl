@@ -1,10 +1,10 @@
 import {
     probabilityOfAppearing,
-    RoleSettingTypes,
+    SettingTypes,
     Teams,
     type Role,
-    CommonRoleAbilities,
-} from "./shared";
+    CommonAbilities,
+} from "@/constants";
 
 export const WardenAbilities = {
     Fortify: {

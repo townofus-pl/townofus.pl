@@ -1,10 +1,4 @@
-import {
-    probabilityOfAppearing,
-    RoleSettingTypes,
-    Teams,
-    type Role,
-    CommonRoleAbilities,
-} from "./shared";
+import {CommonAbilities, probabilityOfAppearing, Role, Teams} from "@/constants";
 
 export const VenererAbilities = {
     Camouflage: {
@@ -31,9 +25,9 @@ export const Venerer: Role = {
         ...probabilityOfAppearing(-1),
     },
     "abilities": [
-        CommonRoleAbilities.Kill,
-        CommonRoleAbilities.Vent,
-        CommonRoleAbilities.Sabotage,
+        CommonAbilities.Kill,
+        CommonAbilities.Vent,
+        CommonAbilities.Sabotage,
         VenererAbilities.Camouflage,
         VenererAbilities.CamoSprint,
         VenererAbilities.CamoSprintFreeze,

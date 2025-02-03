@@ -1,10 +1,10 @@
 import {
     probabilityOfAppearing,
-    RoleSettingTypes,
+    SettingTypes,
     Teams,
     type Role,
-    CommonRoleAbilities,
-} from "./shared";
+    CommonAbilities,
+} from "@/constants";
 
 export const VeteranAbilities = {
     Alert: {
@@ -22,20 +22,20 @@ export const Veteran: Role = {
     "settings": {
         ...probabilityOfAppearing(-1),
         "Can Be Killed On Alert": {
-            value: 0,
-            type: RoleSettingTypes.Boolean,
+            value: false,
+            type: SettingTypes.Boolean,
         },
         "Alert Cooldown": {
             value: 25.0,
-            type: RoleSettingTypes.Time,
+            type: SettingTypes.Time,
         },
         "Alert Duration": {
             value: 10.0,
-            type: RoleSettingTypes.Time,
+            type: SettingTypes.Time,
         },
         "Maximum Number Of Alerts": {
             value: 5,
-            type: RoleSettingTypes.Number,
+            type: SettingTypes.Number,
         },
     },
     "abilities": [VeteranAbilities.Alert],

@@ -1,10 +1,10 @@
 import {
     probabilityOfAppearing,
-    RoleSettingTypes,
+    SettingTypes,
     Teams,
     type Role,
-    CommonRoleAbilities,
-} from "./shared";
+    CommonAbilities,
+} from "@/constants";
 
 export const Warlock: Role = {
     "name": "Warlock",
@@ -16,13 +16,13 @@ export const Warlock: Role = {
         ...probabilityOfAppearing(-1),
         "Time It Takes To Fully Charge": {
             value: 25.0,
-            type: RoleSettingTypes.Time,
+            type: SettingTypes.Time,
         },
         "Time It Takes To Use Full Charge": {
             value: 1.0,
-            type: RoleSettingTypes.Time,
+            type: SettingTypes.Time,
         },
 
     },
-    "abilities": [CommonRoleAbilities.Kill, CommonRoleAbilities.Vent, CommonRoleAbilities.Sabotage],
+    "abilities": [CommonAbilities.Kill, CommonAbilities.Vent, CommonAbilities.Sabotage],
 };

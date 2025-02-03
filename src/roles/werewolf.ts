@@ -1,10 +1,10 @@
 import {
-    CommonRoleAbilities,
+    CommonAbilities,
     probabilityOfAppearing,
-    RoleSettingTypes,
+    SettingTypes,
     Teams,
     type Role,
-} from "./shared";
+} from "@/constants";
 
 export const WerewolfAbilities = {
     Rampage: {
@@ -23,20 +23,20 @@ export const Werewolf: Role = {
         ...probabilityOfAppearing(-1),
         'Rampage Cooldown': {
             value: 30,
-            type: RoleSettingTypes.Time,
+            type: SettingTypes.Time,
         },
         'Rampage Duration': {
             value: 22.5,
-            type: RoleSettingTypes.Time,
+            type: SettingTypes.Time,
         },
         'Rampage Kill Cooldown': {
             value: 7,
-            type: RoleSettingTypes.Time,
+            type: SettingTypes.Time,
         },
         "Werewolf Can Vent When Rampaged": {
             value: 0,
-            type: RoleSettingTypes.Boolean,
+            type: SettingTypes.Boolean,
         },
     },
-    "abilities": [CommonRoleAbilities.Kill, WerewolfAbilities.Rampage],
+    "abilities": [CommonAbilities.Kill, WerewolfAbilities.Rampage],
 };
