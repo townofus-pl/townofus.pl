@@ -1,6 +1,6 @@
-import type { Metadata } from "next";
+import type {Metadata} from "next";
 import localFont from "next/font/local";
-import { Barlow } from "next/font/google";
+import {Barlow} from "next/font/google";
 import "./globals.css";
 
 const brook = localFont({
@@ -17,24 +17,22 @@ const barlow = Barlow({
 });
 
 export const metadata: Metadata = {
-  title: "townofus.pl - Among Us Town of Us Polska",
-  description: "Serwis dla fanó∑ gry Among Us z modyfikacją Town of Us",
+    title: "townofus.pl - Among Us Town of Us Polska",
+    description: "Serwis dla fanó∑ gry Among Us z modyfikacją Town of Us",
 };
 
 export default function RootLayout({
-  children,
-}: Readonly<{
-  children: React.ReactNode;
+                                       children,
+                                   }: Readonly<{
+    children: React.ReactNode;
 }>) {
-  return (
-    <html lang="en">
-      <body
-        className={`${brook.variable} ${barlow.variable} ${barlow.className}`}
-      >
+    return (
+        <html lang="en">
+        <body className={`${brook.variable} ${barlow.variable} ${barlow.className}`}>
         <div className="max-w-screen-xl m-auto">
             {children}
         </div>
-      </body>
-    </html>
-  );
+        </body>
+        </html>
+    );
 }
