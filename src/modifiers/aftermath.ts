@@ -19,7 +19,7 @@ export const Aftermath: Role = {
     "color": "#FFFFFF",
     "team": Teams.Crewmate,
     "icon": "/images/roles/aftermath.png",
-    "description": "Zmusza zabójcę do użycia jego zdolności po śmierci.",
+    "description": "Zmusza zabójcę do użycia jego zdolności po śmierci (np. Blackmailer po zabiciu Aftermath zostaje sam zblackmailowany na kolejne głosowanie).",
     "settings": {
         ...probabilityOfAppearing(-1),
     },
