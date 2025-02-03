@@ -1,7 +1,7 @@
 'use client';
 
 import debounce from "lodash.debounce";
-import {createContext, useMemo, useState, ChangeEvent} from "react";
+import {ChangeEvent, createContext, useMemo, useState} from "react";
 import {Roles} from "@/roles";
 import {Modifiers} from "@/modifiers";
 import {Search} from "@/app/_components";
@@ -16,26 +16,25 @@ type RolesListContextType = {
 
 export const RolesListContext = createContext<RolesListContextType>({
     searchValue: '',
-    search: () => {}
+    search: () => {
+    }
 });
 
 export const RolesList = () => {
     const [searchValue, setSearchValue] = useState<string>('');
 
-    const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const search = useMemo(() => debounce((e: ChangeEvent<HTMLInputElement>) => {
         setSearchValue(e.target.value);
-    };
-
-    const search = useMemo(() => debounce(handleChange, 300), []);
+    }, 300), []);
 
     const results = useMemo(
-        () => RolesAndModifiers.filter(({ name }) => name.toLowerCase().startsWith(searchValue.toLowerCase())),
+        () => RolesAndModifiers.filter(({name}) => name.toLowerCase().startsWith(searchValue.toLowerCase())),
         [searchValue]
     );
 
     return (
-        <RolesListContext.Provider value={{ searchValue, search }}>
-            <Search />
+        <RolesListContext.Provider value={{searchValue, search}}>
+            <Search/>
             <main>
                 <div className="grid grid-cols-1 gap-y-5">
                     {results.map(role => (

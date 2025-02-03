@@ -2,7 +2,7 @@ import {useContext} from "react";
 import {RolesListContext} from "@/app/_components/RolesList/RolesList";
 
 export const Search = () => {
-    const { search } = useContext(RolesListContext);
+    const {search} = useContext(RolesListContext);
 
     return (
         <input type="search" placeholder="Wyszukaj rolę..."
