@@ -52,4 +52,4 @@ export const Roles = [
     Juggernaut,
     Lookout,
     Medic,
-];
+].sort((a, b) => a.name.localeCompare(b.name));
