@@ -1,4 +1,4 @@
-import {CommonRoleAbilities, probabilityOfAppearing, type Role, RoleSettingTypes, Teams,} from "./shared";
+import {CommonRoleAbilities, probabilityOfAppearing, type Role, SettingTypes, Teams,} from "./shared";
 
 export const BomberAbilities = {
     Plant: {
@@ -21,23 +21,23 @@ export const Bomber: Role = {
         ...probabilityOfAppearing(-1),
         "Detonate Delay": {
             value: 5,
-            type: RoleSettingTypes.Time,
+            type: SettingTypes.Time,
         },
         "Max Kills In Detonation": {
             value: 10,
-            type: RoleSettingTypes.Number,
+            type: SettingTypes.Number,
         },
         "Detonate Radius": {
             value: 0.25,
-            type: RoleSettingTypes.Radius,
+            type: SettingTypes.Radius,
         },
         "Bomber Can Vent": {
             value: true,
-            type: RoleSettingTypes.Boolean,
+            type: SettingTypes.Boolean,
         },
         "All Impostors See Bomb": {
             value: true,
-            type: RoleSettingTypes.Boolean,
+            type: SettingTypes.Boolean,
         },
     },
     "abilities": [CommonRoleAbilities.Vent, CommonRoleAbilities.Sabotage, BomberAbilities.Plant, BomberAbilities.Detonate],

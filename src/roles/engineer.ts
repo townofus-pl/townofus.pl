@@ -1,4 +1,4 @@
-import {CommonRoleAbilities, probabilityOfAppearing, type Role, RoleSettingTypes, Teams,} from "./shared";
+import {CommonRoleAbilities, probabilityOfAppearing, type Role, SettingTypes, Teams,} from "./shared";
 
 export const EngineerAbilities = {
     FixSabotage: {
@@ -17,7 +17,7 @@ export const Engineer: Role = {
         ...probabilityOfAppearing(-1),
         "Maximum Number Of Fixes": {
             value: 3,
-            type: RoleSettingTypes.Number,
+            type: SettingTypes.Number,
         },
     },
     "abilities": [CommonRoleAbilities.Vent, EngineerAbilities.FixSabotage],

@@ -1,4 +1,4 @@
-import {probabilityOfAppearing, type Role, RoleSettingTypes, Teams,} from "./shared";
+import {probabilityOfAppearing, type Role, SettingTypes, Teams,} from "./shared";
 
 export const ArsonistAbilities = {
     Douse: {
@@ -29,19 +29,19 @@ export const Arsonist: Role = {
         ...probabilityOfAppearing(-1),
         'Douse Cooldown': {
             value: 35.0,
-            type: RoleSettingTypes.Time,
+            type: SettingTypes.Time,
         },
         'Maximum Alive Players Doused': {
             value: 15,
-            type: RoleSettingTypes.Number,
+            type: SettingTypes.Number,
         },
         'Arsonist Has Impostor Vision': {
             value: true,
-            type: RoleSettingTypes.Boolean,
+            type: SettingTypes.Boolean,
         },
         'Ignite Cooldown Removed When Arsonist Is Last Killer': {
             value: true,
-            type: RoleSettingTypes.Boolean,
+            type: SettingTypes.Boolean,
         },
     },
     abilities: [ArsonistAbilities.Douse, ArsonistAbilities.Ignite],

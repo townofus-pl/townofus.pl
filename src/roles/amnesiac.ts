@@ -1,4 +1,4 @@
-import {probabilityOfAppearing, type Role, RoleSettingTypes, Teams,} from "./shared";
+import {probabilityOfAppearing, type Role, SettingTypes, Teams,} from "./shared";
 
 export const AmnesiacAbilities = {
     Remember: {
@@ -17,11 +17,11 @@ export const Amnesiac: Role = {
         ...probabilityOfAppearing(-1),
         'Amnesiac Gets Arrows Pointing To Dead Bodies': {
             value: true,
-            type: RoleSettingTypes.Boolean,
+            type: SettingTypes.Boolean,
         },
         'Time After Death Arrow Appears': {
             value: 1.0,
-            type: RoleSettingTypes.Time,
+            type: SettingTypes.Time,
         },
     },
     "abilities": [AmnesiacAbilities.Remember],

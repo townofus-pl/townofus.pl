@@ -1,6 +1,6 @@
 import type {Teams} from "./teams";
-import type {RoleSetting} from "./settings";
-import type {RoleAbility} from "./abilities";
+import type {Setting} from "./settings";
+import type {Ability} from "./abilities";
 import type {ReactNode} from "react";
 
 export type Role = {
@@ -9,7 +9,7 @@ export type Role = {
     team: Teams;
     icon: string;
     description: ReactNode;
-    settings: Record<string, RoleSetting>;
-    abilities: RoleAbility[];
+    settings: Record<string, Setting>;
+    abilities: Ability[];
     tip?: string;
 }

@@ -1,4 +1,4 @@
-import {probabilityOfAppearing, Role, RoleSettingTypes, Teams} from "./shared";
+import {probabilityOfAppearing, Role, SettingTypes, Teams} from "./shared";
 
 export const LookoutAbilities = {
     Watch: {
@@ -17,15 +17,15 @@ export const Lookout: Role = {
         ...probabilityOfAppearing(-1),
         "Watch Cooldown": {
             value: 25,
-            type: RoleSettingTypes.Time,
+            type: SettingTypes.Time,
         },
         "Lookout Watches Reset After Each Round": {
             value: true,
-            type: RoleSettingTypes.Boolean,
+            type: SettingTypes.Boolean,
         },
         "Maximum Number Of Players That Can Be Watched": {
             value: 5,
-            type: RoleSettingTypes.Number,
+            type: SettingTypes.Number,
         }
     },
     "abilities": [LookoutAbilities.Watch]

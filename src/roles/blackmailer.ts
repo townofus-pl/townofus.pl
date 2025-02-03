@@ -1,4 +1,4 @@
-import {CommonRoleAbilities, probabilityOfAppearing, type Role, RoleSettingTypes, Teams,} from "./shared";
+import {CommonRoleAbilities, probabilityOfAppearing, type Role, SettingTypes, Teams,} from "./shared";
 
 export const BlackmailerAbilities = {
     Blackmail: {
@@ -17,15 +17,15 @@ export const Blackmailer: Role = {
         ...probabilityOfAppearing(-1),
         "Initial Blackmail Cooldown": {
             value: 10.0,
-            type: RoleSettingTypes.Time,
+            type: SettingTypes.Time,
         },
         "Only Target Sees Blackmail": {
             value: false,
-            type: RoleSettingTypes.Boolean,
+            type: SettingTypes.Boolean,
         },
         "Maximum People Alive Where Blackmailed Can Vote": {
             value: 5,
-            type: RoleSettingTypes.Number,
+            type: SettingTypes.Number,
         },
     },
     "abilities": [CommonRoleAbilities.Kill, CommonRoleAbilities.Vent, CommonRoleAbilities.Sabotage, BlackmailerAbilities.Blackmail],

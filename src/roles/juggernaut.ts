@@ -23,7 +23,7 @@
 //     "tip": ""
 // }
 
-import {CommonRoleAbilities, probabilityOfAppearing, Role, RoleSettingTypes, Teams} from "./shared";
+import {CommonRoleAbilities, probabilityOfAppearing, Role, SettingTypes, Teams} from "./shared";
 
 export const Juggernaut: Role = {
     "name": "Juggernaut",
@@ -35,15 +35,15 @@ export const Juggernaut: Role = {
         ...probabilityOfAppearing(-1),
         "Juggernaut Initial Kill Cooldown": {
             value: 35,
-            type: RoleSettingTypes.Time,
+            type: SettingTypes.Time,
         },
         "Reduced Kill Cooldown Per Kill": {
             value: 5,
-            type: RoleSettingTypes.Time,
+            type: SettingTypes.Time,
         },
         "Juggernaut Can Vent": {
             value: true,
-            type: RoleSettingTypes.Boolean,
+            type: SettingTypes.Boolean,
         }
     },
     "abilities": [

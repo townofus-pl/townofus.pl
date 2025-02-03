@@ -1,26 +1,26 @@
-import {RoleSetting, RoleSettingTypes} from "@/roles/shared";
+import {Setting, SettingTypes} from "@/roles/shared";
 
-const getValue = (setting: RoleSetting) => {
+const getValue = (setting: Setting) => {
     switch (setting.type) {
-        case RoleSettingTypes.Percentage:
+        case SettingTypes.Percentage:
             if ((setting.value as number) < 0) return 'x%';
             return `${setting.value}%`;
-        case RoleSettingTypes.Time:
+        case SettingTypes.Time:
             return `${setting.value}s`;
-        case RoleSettingTypes.Boolean:
+        case SettingTypes.Boolean:
             return setting.value ? '✓' : '✗';
-        case RoleSettingTypes.Number:
+        case SettingTypes.Number:
             return setting.value.toString();
-        case RoleSettingTypes.Radius:
+        case SettingTypes.Radius:
             return `${setting.value}x`;
-        case RoleSettingTypes.Text:
+        case SettingTypes.Text:
         default:
             return setting.value.toString();
     }
 }
 
 export const SettingsList = ({settings}: {
-    settings: Record<string, RoleSetting>;
+    settings: Record<string, Setting>;
 }) => {
     return (
         <div>

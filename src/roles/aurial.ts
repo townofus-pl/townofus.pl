@@ -1,4 +1,4 @@
-import {CommonRoleAbilities, probabilityOfAppearing, type Role, RoleSettingTypes, Teams,} from "./shared";
+import {CommonRoleAbilities, probabilityOfAppearing, type Role, SettingTypes, Teams,} from "./shared";
 
 export const Aurial: Role = {
     "name": "Aurial",
@@ -10,15 +10,15 @@ export const Aurial: Role = {
         ...probabilityOfAppearing(-1),
         "Radiate Colour Range": {
             value: 0.5,
-            type: RoleSettingTypes.Radius,
+            type: SettingTypes.Radius,
         },
         "Radiate Max Range": {
             value: 1.5,
-            type: RoleSettingTypes.Radius,
+            type: SettingTypes.Radius,
         },
         "Sense Duration": {
             value: 10.0,
-            type: RoleSettingTypes.Time,
+            type: SettingTypes.Time,
         },
     },
     "abilities": [CommonRoleAbilities.None],

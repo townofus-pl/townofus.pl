@@ -1,4 +1,4 @@
-import {CommonRoleAbilities, probabilityOfAppearing, type Role, RoleSettingTypes, Teams,} from "./shared";
+import {CommonRoleAbilities, probabilityOfAppearing, type Role, SettingTypes, Teams,} from "./shared";
 
 export const GrenadierAbilities = {
     Flash: {
@@ -17,23 +17,23 @@ export const Grenadier: Role = {
         ...probabilityOfAppearing(-1),
         "Flash Grenade Cooldown": {
             value: 25,
-            type: RoleSettingTypes.Time,
+            type: SettingTypes.Time,
         },
         "Flash Grenade Duration": {
             value: 7,
-            type: RoleSettingTypes.Time,
+            type: SettingTypes.Time,
         },
         "Flash Radius": {
             value: 1,
-            type: RoleSettingTypes.Radius,
+            type: SettingTypes.Radius,
         },
         "Indicate Flashed Crewmates": {
             value: true,
-            type: RoleSettingTypes.Boolean,
+            type: SettingTypes.Boolean,
         },
         "Grenadier Can Vent": {
             value: true,
-            type: RoleSettingTypes.Boolean,
+            type: SettingTypes.Boolean,
         },
     },
     "abilities": [CommonRoleAbilities.Kill, CommonRoleAbilities.Vent, CommonRoleAbilities.Sabotage, GrenadierAbilities.Flash],

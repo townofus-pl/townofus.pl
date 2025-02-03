@@ -1,4 +1,4 @@
-import {probabilityOfAppearing, Role, RoleSettingTypes, Teams} from "./shared";
+import {probabilityOfAppearing, Role, SettingTypes, Teams} from "./shared";
 
 export const JesterAbilities = {
     Vent: {
@@ -17,19 +17,19 @@ export const Jester: Role = {
         ...probabilityOfAppearing(-1),
         "Jester Can Button": {
             value: true,
-            type: RoleSettingTypes.Boolean,
+            type: SettingTypes.Boolean,
         },
         "Jester Can Hide In Vents": {
             value: true,
-            type: RoleSettingTypes.Boolean,
+            type: SettingTypes.Boolean,
         },
         "Jester Has Impostor Vision": {
             value: true,
-            type: RoleSettingTypes.Boolean,
+            type: SettingTypes.Boolean,
         },
         "Jester Haunts Player On Victory": {
             value: true,
-            type: RoleSettingTypes.Boolean,
+            type: SettingTypes.Boolean,
         }
     },
     "abilities": [JesterAbilities.Vent],

@@ -1,4 +1,4 @@
-import {CommonRoleAbilities, Distances, probabilityOfAppearing, type Role, RoleSettingTypes, Teams,} from "./shared";
+import {CommonRoleAbilities, Distances, probabilityOfAppearing, type Role, SettingTypes, Teams,} from "./shared";
 
 export const GlitchAbilities = {
     Hacker: {
@@ -21,31 +21,31 @@ export const Glitch: Role = {
         ...probabilityOfAppearing(-1),
         "Mimic Cooldown": {
             value: 25.0,
-            type: RoleSettingTypes.Time,
+            type: SettingTypes.Time,
         },
         "Mimic Duration": {
             value: 10.0,
-            type: RoleSettingTypes.Time,
+            type: SettingTypes.Time,
         },
         "Hack Cooldown": {
             value: 25.0,
-            type: RoleSettingTypes.Time,
+            type: SettingTypes.Time,
         },
         "Hack Duration": {
             value: 15.0,
-            type: RoleSettingTypes.Time,
+            type: SettingTypes.Time,
         },
         "Glitch Kill Cooldown": {
             value: 27.5,
-            type: RoleSettingTypes.Time,
+            type: SettingTypes.Time,
         },
         "Glitch Hack Distance": {
             value: Distances.Short,
-            type: RoleSettingTypes.Text,
+            type: SettingTypes.Text,
         },
         "Glitch Can Vent": {
             value: true,
-            type: RoleSettingTypes.Boolean,
+            type: SettingTypes.Boolean,
         },
     },
     "abilities": [CommonRoleAbilities.Kill, CommonRoleAbilities.Vent, GlitchAbilities.Hacker, GlitchAbilities.Mimic],

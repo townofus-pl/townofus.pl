@@ -1,4 +1,4 @@
-import {probabilityOfAppearing, type Role, RoleSettingTypes, Teams,} from "./shared";
+import {probabilityOfAppearing, type Role, SettingTypes, Teams,} from "./shared";
 
 export const AltruistAbilities = {
     Revive: {
@@ -17,11 +17,11 @@ export const Altruist: Role = {
         ...probabilityOfAppearing(-1),
         'Altruist Revive Duration': {
             value: 1,
-            type: RoleSettingTypes.Time,
+            type: SettingTypes.Time,
         },
         "Target's Body Disappears On Beginning Of Revive": {
             value: false,
-            type: RoleSettingTypes.Boolean,
+            type: SettingTypes.Boolean,
         },
     },
     "abilities": [AltruistAbilities.Revive],

@@ -1,4 +1,4 @@
-import {probabilityOfAppearing, type Role, RoleSettingTypes, Teams} from "./shared";
+import {probabilityOfAppearing, type Role, SettingTypes, Teams} from "./shared";
 
 export const JailorAbilities = {
     Jail: {
@@ -21,11 +21,11 @@ export const Jailor: Role = {
         ...probabilityOfAppearing(-1),
         "Jail Cooldown": {
             value: 25,
-            type: RoleSettingTypes.Time,
+            type: SettingTypes.Time,
         },
         "Maximum Number Of Executes": {
             value: 3,
-            type: RoleSettingTypes.Number,
+            type: SettingTypes.Number,
         }
     },
     "abilities": [

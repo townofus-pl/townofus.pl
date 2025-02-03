@@ -1,4 +1,4 @@
-import {CommonRoleAbilities, probabilityOfAppearing, type Role, RoleSettingTypes, Teams} from "./shared";
+import {CommonRoleAbilities, probabilityOfAppearing, type Role, SettingTypes, Teams} from "./shared";
 
 export const HypnotistAbilities = {
     Hypnotize: {
@@ -22,7 +22,7 @@ export const Hypnotist: Role = {
         ...probabilityOfAppearing(-1),
         "Hypnotize Cooldown": {
             value: 25,
-            type: RoleSettingTypes.Time,
+            type: SettingTypes.Time,
         }
     },
     "abilities": [CommonRoleAbilities.Kill, CommonRoleAbilities.Vent, CommonRoleAbilities.Sabotage, HypnotistAbilities.Hypnotize, HypnotistAbilities.Hysteria],

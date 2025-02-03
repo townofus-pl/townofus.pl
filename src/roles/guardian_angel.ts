@@ -1,4 +1,4 @@
-import {probabilityOfAppearing, type Role, RolesAfterDeath, RoleSettingTypes, Teams,} from "./shared";
+import {probabilityOfAppearing, type Role, RolesAfterDeath, SettingTypes, Teams,} from "./shared";
 
 export const GuardianAngelAbilities = {
     Protect: {
@@ -17,39 +17,39 @@ export const GuardianAngel: Role = {
         ...probabilityOfAppearing(-1),
         "Protect Cooldown": {
             value: 25,
-            type: RoleSettingTypes.Time,
+            type: SettingTypes.Time,
         },
         "Protect Duration": {
             value: 10,
-            type: RoleSettingTypes.Time,
+            type: SettingTypes.Time,
         },
         "Kill Cooldown Reset When Protected": {
             value: 2.5,
-            type: RoleSettingTypes.Time,
+            type: SettingTypes.Time,
         },
         "Maximum Number Of Protects": {
             value: 5,
-            type: RoleSettingTypes.Number,
+            type: SettingTypes.Number,
         },
         "Show Protected Player": {
             value: true,
-            type: RoleSettingTypes.Boolean,
+            type: SettingTypes.Boolean,
         },
         "Becomes On Target Dead": {
             value: RolesAfterDeath.Amnesiac,
-            type: RoleSettingTypes.Text,
+            type: SettingTypes.Text,
         },
         "Target Knows GA Exists": {
             value: false,
-            type: RoleSettingTypes.Boolean,
+            type: SettingTypes.Boolean,
         },
         "GA Knows Targets Role": {
             value: true,
-            type: RoleSettingTypes.Boolean,
+            type: SettingTypes.Boolean,
         },
         "Odds Of Target Being Evil": {
             value: 50,
-            type: RoleSettingTypes.Percentage,
+            type: SettingTypes.Percentage,
         },
     },
     "abilities": [GuardianAngelAbilities.Protect],

@@ -1,4 +1,4 @@
-export enum RoleSettingTypes {
+export enum SettingTypes {
     Percentage = 'percentage',
     Time = 'time',
     Boolean = 'boolean',
@@ -18,24 +18,24 @@ export enum Distances {
     Long = 'Long',
 }
 
-export type RoleSetting = {
+export type Setting = {
     value: number,
-    type: RoleSettingTypes.Percentage | RoleSettingTypes.Time | RoleSettingTypes.Number | RoleSettingTypes.Radius
+    type: SettingTypes.Percentage | SettingTypes.Time | SettingTypes.Number | SettingTypes.Radius
 } | {
     value: boolean,
-    type: RoleSettingTypes.Boolean
+    type: SettingTypes.Boolean
 } | {
     value: string,
-    type: RoleSettingTypes.Text
+    type: SettingTypes.Text
 };
 
-export enum CommonRoleSettingsNames {
+export enum CommonRoleSettingNames {
     ProbabilityOfAppearing = "Probability Of Appearing",
 }
 
-export const probabilityOfAppearing: (value: number) => Record<CommonRoleSettingsNames.ProbabilityOfAppearing, RoleSetting> = value => ({
-    [CommonRoleSettingsNames.ProbabilityOfAppearing]: {
+export const probabilityOfAppearing: (value: number) => Record<CommonRoleSettingNames.ProbabilityOfAppearing, Setting> = value => ({
+    [CommonRoleSettingNames.ProbabilityOfAppearing]: {
         value,
-        type: RoleSettingTypes.Percentage
+        type: SettingTypes.Percentage
     }
 });

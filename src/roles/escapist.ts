@@ -1,4 +1,4 @@
-import {CommonRoleAbilities, probabilityOfAppearing, type Role, RoleSettingTypes, Teams,} from "./shared";
+import {CommonRoleAbilities, probabilityOfAppearing, type Role, SettingTypes, Teams,} from "./shared";
 
 export const EscapistAbilities = {
     Mark: {
@@ -21,11 +21,11 @@ export const Escapist: Role = {
         ...probabilityOfAppearing(-1),
         "Recall Cooldown": {
             value: 25.0,
-            type: RoleSettingTypes.Time,
+            type: SettingTypes.Time,
         },
         "Escapist Can Vent": {
             value: true,
-            type: RoleSettingTypes.Boolean,
+            type: SettingTypes.Boolean,
         },
     },
     "abilities": [CommonRoleAbilities.Kill, CommonRoleAbilities.Sabotage, EscapistAbilities.Mark, EscapistAbilities.Recall],

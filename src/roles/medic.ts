@@ -1,4 +1,4 @@
-import {probabilityOfAppearing, Role, RoleSettingTypes, Teams} from "./shared";
+import {probabilityOfAppearing, Role, SettingTypes, Teams} from "./shared";
 
 export const MedicAbilities = {
     Shield: {
@@ -17,27 +17,27 @@ export const Medic: Role = {
         ...probabilityOfAppearing(-1),
         "Show Shielded Player": {
             value: "Self+Medic",
-            type: RoleSettingTypes.Text
+            type: SettingTypes.Text
         },
         "Who Gets Murder Attempt Indicator": {
             value: 'Medic',
-            type: RoleSettingTypes.Text
+            type: SettingTypes.Text
         },
         "Shield Breaks On Murder Attempt": {
             value: false,
-            type: RoleSettingTypes.Boolean,
+            type: SettingTypes.Boolean,
         },
         "Show Medic Reports": {
             value: true,
-            type: RoleSettingTypes.Boolean,
+            type: SettingTypes.Boolean,
         },
         "Time Where Medic Will Have Name": {
             value: 0,
-            type: RoleSettingTypes.Time,
+            type: SettingTypes.Time,
         },
         "Time Where Medic Will Have Color Type": {
             value: 15,
-            type: RoleSettingTypes.Time,
+            type: SettingTypes.Time,
         },
     },
     "abilities": [MedicAbilities.Shield],

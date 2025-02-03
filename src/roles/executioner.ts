@@ -3,7 +3,7 @@ import {
     probabilityOfAppearing,
     type Role,
     RolesAfterDeath,
-    RoleSettingTypes,
+    SettingTypes,
     Teams,
 } from "./shared";
 
@@ -17,15 +17,15 @@ export const Executioner: Role = {
         ...probabilityOfAppearing(-1),
         "Executioner Becomes On Target Dead": {
             value: RolesAfterDeath.Jester,
-            type: RoleSettingTypes.Text,
+            type: SettingTypes.Text,
         },
         "Executioner Can Button": {
             value: true,
-            type: RoleSettingTypes.Boolean,
+            type: SettingTypes.Boolean,
         },
         "Executioner Torments Player On Victory": {
             value: true,
-            type: RoleSettingTypes.Boolean,
+            type: SettingTypes.Boolean,
         },
     },
     abilities: [CommonRoleAbilities.None],

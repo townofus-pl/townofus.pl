@@ -1,4 +1,4 @@
-import {CommonRoleAbilities, probabilityOfAppearing, type Role, RoleSettingTypes, Teams} from "./shared";
+import {CommonRoleAbilities, probabilityOfAppearing, type Role, SettingTypes, Teams} from "./shared";
 
 export const Investigator: Role = {
     "name": "Investigator",
@@ -10,23 +10,23 @@ export const Investigator: Role = {
         ...probabilityOfAppearing(-1),
         "Footprint Size": {
             value: 4,
-            type: RoleSettingTypes.Number,
+            type: SettingTypes.Number,
         },
         "Footprint Interval": {
             value: 0.1,
-            type: RoleSettingTypes.Time,
+            type: SettingTypes.Time,
         },
         "Footprint Duration": {
             value: 7,
-            type: RoleSettingTypes.Time,
+            type: SettingTypes.Time,
         },
         "Anonymous Footprint": {
             value: false,
-            type: RoleSettingTypes.Boolean,
+            type: SettingTypes.Boolean,
         },
         "Footprint Vent Visible": {
             value: true,
-            type: RoleSettingTypes.Boolean,
+            type: SettingTypes.Boolean,
         }
     },
     "abilities": [CommonRoleAbilities.None],
