@@ -1,4 +1,4 @@
-import {RoleSetting, RoleSettingTypes} from "@/_roles/shared";
+import {RoleSetting, RoleSettingTypes} from "@/roles/shared";
 
 const getValue = (setting: RoleSetting) => {
     switch (setting.type) {

@@ -1,5 +1,5 @@
 import { Header, Search, RoleCard } from "./_components";
-import {Roles} from "@/_roles";
+import {Roles} from "@/roles";
 
 export default function Home() {
     return (
