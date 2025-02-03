@@ -1,17 +1,10 @@
 import {
     probabilityOfAppearing,
     type Role,
-    SettingTypes,
     Teams,
     CommonAbilities
 } from "@/constants";
 
-export const TorchAbilities = {
-    Torch: {
-        "name": "Torch",
-        "icon": "/images/abilities/torch.png",
-    },
-};
 
 export const Torch: Role = {
     "name": "Torch",

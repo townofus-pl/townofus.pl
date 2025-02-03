@@ -1,17 +1,10 @@
 import {
     probabilityOfAppearing,
     type Role,
-    SettingTypes,
     Teams,
     CommonAbilities
 } from "@/constants";
 
-export const TiebreakerAbilities = {
-    Tiebreaker: {
-        "name": "Tiebreaker",
-        "icon": "/images/abilities/tiebreaker.png",
-    },
-};
 
 export const Tiebreaker: Role = {
     "name": "Tiebreaker",
