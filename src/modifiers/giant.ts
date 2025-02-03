@@ -1,17 +1,10 @@
 import {CommonAbilities, probabilityOfAppearing, type Role, SettingTypes, Teams} from "@/constants";
 
-export const GiantAbilities = {
-    Giant: {
-        "name": "Giant",
-        "icon": "/images/abilities/giant.png",
-    },
-};
-
 export const Giant: Role = {
     "name": "Giant",
     "color": "#FFFFFF",
     "team": Teams.All,
-    "icon": "/images/roles/giant.png",
+    "icon": "/images/modifiers/giant.png",
     "description": "Jest gigantyczny i porusza się wolniej.",
     "settings": {
         ...probabilityOfAppearing(-1),

@@ -1,17 +1,10 @@
 import {CommonAbilities, probabilityOfAppearing, type Role, SettingTypes, Teams,} from "@/constants";
 
-export const DiseasedAbilities = {
-    Diseased: {
-        "name": "Diseased",
-        "icon": "/images/abilities/diseased.png",
-    },
-};
-
 export const Diseased: Role = {
     "name": "Diseased",
     "color": "#FFFFFF",
     "team": Teams.Crewmate,
-    "icon": "/images/roles/diseased.png",
+    "icon": "/images/modifiers/placeholder.png",
     "description": "Wydłuża czas odnowienia zabójstwa zabójcy po śmierci.",
     "settings": {
         ...probabilityOfAppearing(-1),

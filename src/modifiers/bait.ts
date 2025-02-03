@@ -1,17 +1,10 @@
 import {CommonAbilities, probabilityOfAppearing, type Role, SettingTypes, Teams} from "@/constants";
 
-export const BaitAbilities = {
-    Bait: {
-        "name": "Bait",
-        "icon": "/images/abilities/bait.png",
-    },
-};
-
 export const Bait: Role = {
     "name": "Bait",
     "color": "#FFFFFF",
     "team": Teams.Crewmate,
-    "icon": "/images/roles/bait.png",
+    "icon": "/images/modifiers/placeholder.png",
     "description": "Zmusza zabójcę do automatycznego zgłoszenia ciała.",
     "settings": {
         ...probabilityOfAppearing(-1),
