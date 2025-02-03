@@ -1,17 +1,10 @@
 import {CommonAbilities, probabilityOfAppearing, type Role, SettingTypes, Teams} from "@/constants";
 
-export const LoversAbilities = {
-    Lovers: {
-        "name": "Lovers",
-        "icon": "/images/abilities/lovers.png",
-    },
-};
-
 export const Lovers: Role = {
     "name": "Lovers",
     "color": "#FF69B4",
     "team": Teams.All,
-    "icon": "/images/roles/lovers.png",
+    "icon": "/images/modifiers/lovers.png",
     "description": "Para graczy połączona ze sobą, wygrywająca razem.",
     "settings": {
         ...probabilityOfAppearing(-1),
