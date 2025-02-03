@@ -3,7 +3,7 @@ import {probabilityOfAppearing, Role, SettingTypes, Teams} from "@/constants";
 export const JesterAbilities = {
     Vent: {
         "name": "Vent (Wejdź do wentylacji)",
-        "icon": "/images/abilities/Vent.png"
+        "icon": "/images/abilities/vent.png"
     }
 }
 

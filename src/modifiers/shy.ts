@@ -1,17 +1,10 @@
 import {CommonAbilities, probabilityOfAppearing, type Role, SettingTypes, Teams} from "@/constants";
 
-export const ShyAbilities = {
-    Shy: {
-        "name": "Shy",
-        "icon": "/images/abilities/shy.png",
-    },
-};
-
 export const Shy: Role = {
     "name": "Shy",
     "color": "#FFFFFF",
     "team": Teams.All,
-    "icon": "/images/roles/shy.png",
+    "icon": "/images/modifiers/placeholder.png",
     "description": "Staje się przeźroczysty gdy się nie rusza.",
     "settings": {
         ...probabilityOfAppearing(-1),

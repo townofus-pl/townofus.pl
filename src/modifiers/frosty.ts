@@ -1,17 +1,10 @@
 import {CommonAbilities, probabilityOfAppearing, type Role, SettingTypes, Teams} from "@/constants";
 
-export const FrostyAbilities = {
-    Frosty: {
-        "name": "Frosty",
-        "icon": "/images/abilities/frosty.png",
-    },
-};
-
 export const Frosty: Role = {
     "name": "Frosty",
     "color": "#FFFFFF",
     "team": Teams.Crewmate,
-    "icon": "/images/roles/frosty.png",
+    "icon": "/images/modifiers/frosty.png",
     "description": "Spowalnia zabójcę po śmierci.",
     "settings": {
         ...probabilityOfAppearing(-1),

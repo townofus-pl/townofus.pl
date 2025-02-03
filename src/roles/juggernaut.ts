@@ -1,28 +1,3 @@
-// {
-//     "name": "Juggernaut",
-//     "color": "#8C004D",
-//     "team": "neutral",
-//     "icon": "icons/juggernaut.png",
-//     "description": "Neutralna rola z własnym warunkiem zwycięstwa. Specjalną zdolnością Juggernauta jest to, że czas odnowienia zabójstwa skraca się z każdym zabójstwem. Oznacza to, że Juggernaut teoretycznie może mieć czas odnowienia zabójstwa równy 0 sekund! Juggernaut musi być ostatnim zabójcą, aby wygrać grę.",
-//     "settings": [
-//         "Probability Of Appearing: x%",
-//         "Juggernaut Initial Kill Cooldown: 35,0s",
-//         "Reduced Kill Cooldown Per Kill: 5,0s",
-//         "Juggernaut Can Vent: ✓"
-//     ],
-//     "abilities": [
-//         {
-//             "name": "Kill (Zabij)",
-//             "icon": "abilities/Kill.png"
-//         },
-//         {
-//             "name": "Vent (Wejdź do wentylacji)",
-//             "icon": "abilities/Vent.png"
-//         }
-//     ],
-//     "tip": ""
-// }
-
 import {CommonAbilities, probabilityOfAppearing, Role, SettingTypes, Teams} from "@/constants";
 
 export const Juggernaut: Role = {

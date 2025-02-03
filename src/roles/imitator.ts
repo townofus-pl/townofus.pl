@@ -3,7 +3,7 @@ import {probabilityOfAppearing, type Role, Teams} from "@/constants";
 export const ImitatorAbilities = {
     Imitate: {
         "name": "Imitate (Naśladuj)",
-        "icon": "/images/abilities/ImitateSelect.png"
+        "icon": "/images/abilities/imitateselect.png"
     }
 };
 

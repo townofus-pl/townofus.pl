@@ -1,17 +1,10 @@
 import {CommonAbilities, probabilityOfAppearing, type Role, SettingTypes, Teams} from "@/constants";
 
-export const FlashAbilities = {
-    Flash: {
-        "name": "Flash",
-        "icon": "/images/abilities/flash.png",
-    },
-};
-
 export const Flash: Role = {
     "name": "Flash",
     "color": "#FFFFFF",
     "team": Teams.All,
-    "icon": "/images/roles/flash.png",
+    "icon": "/images/modifiers/placeholder.png",
     "description": "Porusza się z większą prędkością.",
     "settings": {
         ...probabilityOfAppearing(-1),
