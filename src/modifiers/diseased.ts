@@ -3,6 +3,7 @@ import {
     type Role,
     SettingTypes,
     Teams,
+    CommonAbilities,
 } from "@/constants";
 
 export const DiseasedAbilities = {
@@ -24,5 +25,5 @@ export const Diseased: Role = {
             value: 3, type: SettingTypes.Multiplier,
         },
     },
-    "abilities": [DiseasedAbilities.Diseased],
+    "abilities": [CommonAbilities.None],
 };

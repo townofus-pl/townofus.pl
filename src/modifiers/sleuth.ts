@@ -3,6 +3,7 @@ import {
     type Role,
     SettingTypes,
     Teams,
+    CommonAbilities
 } from "@/constants";
 
 export const SleuthAbilities = {
@@ -21,5 +22,5 @@ export const Sleuth: Role = {
     "settings": {
         ...probabilityOfAppearing(-1),
     },
-    "abilities": [SleuthAbilities.Sleuth],
+    "abilities": [CommonAbilities.None],
 };

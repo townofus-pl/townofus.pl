@@ -3,6 +3,7 @@ import {
     type Role,
     SettingTypes,
     Teams,
+    CommonAbilities
 } from "@/constants";
 
 export const RadarAbilities = {
@@ -21,5 +22,5 @@ export const Radar: Role = {
     "settings": {
         ...probabilityOfAppearing(-1),
     },
-    "abilities": [RadarAbilities.Radar],
+    "abilities": [CommonAbilities.None],
 };

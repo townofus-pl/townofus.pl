@@ -3,6 +3,7 @@ import {
     type Role,
     SettingTypes,
     Teams,
+    CommonAbilities
 } from "@/constants";
 
 export const LoversAbilities = {
@@ -33,5 +34,5 @@ export const Lovers: Role = {
             value: false, type: SettingTypes.Boolean,
         },
     },
-    "abilities": [LoversAbilities.Lovers],
+    "abilities": [CommonAbilities.None],
 };

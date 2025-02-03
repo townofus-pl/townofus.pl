@@ -3,6 +3,7 @@ import {
     type Role,
     SettingTypes,
     Teams,
+    CommonAbilities
 } from "@/constants";
 
 export const FrostyAbilities = {
@@ -27,5 +28,5 @@ export const Frosty: Role = {
             value: 0.75, type: SettingTypes.Multiplier,
         },
     },
-    "abilities": [FrostyAbilities.Frosty],
+    "abilities": [CommonAbilities.None],
 };

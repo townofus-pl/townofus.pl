@@ -3,6 +3,7 @@ import {
     type Role,
     SettingTypes,
     Teams,
+    CommonAbilities
 } from "@/constants";
 
 // Crewmate Modifiers
@@ -22,5 +23,5 @@ export const Aftermath: Role = {
     "settings": {
         ...probabilityOfAppearing(-1),
     },
-    "abilities": [AftermathAbilities.Aftermath],
+    "abilities": [CommonAbilities.None],
 };

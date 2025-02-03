@@ -3,6 +3,7 @@ import {
     type Role,
     SettingTypes,
     Teams,
+    CommonAbilities
 } from "@/constants";
 
 export const MiniAbilities = {
@@ -21,5 +22,5 @@ export const Mini: Role = {
     "settings": {
         ...probabilityOfAppearing(-1),
     },
-    "abilities": [MiniAbilities.Mini],
+    "abilities": [CommonAbilities.None],
 };

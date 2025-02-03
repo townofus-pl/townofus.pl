@@ -3,6 +3,7 @@ import {
     type Role,
     SettingTypes,
     Teams,
+    CommonAbilities
 } from "@/constants";
 
 export const SaboteurAbilities = {
@@ -24,5 +25,5 @@ export const Saboteur: Role = {
             value: 10, type: SettingTypes.Time,
         },
     },
-    "abilities": [SaboteurAbilities.Saboteur],
+    "abilities": [CommonAbilities.None],
 };

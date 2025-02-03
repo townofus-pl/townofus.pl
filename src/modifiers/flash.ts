@@ -3,6 +3,7 @@ import {
     type Role,
     SettingTypes,
     Teams,
+    CommonAbilities
 } from "@/constants";
 
 export const FlashAbilities = {
@@ -24,5 +25,5 @@ export const Flash: Role = {
             value: 1.25, type: SettingTypes.Multiplier,
         },
     },
-    "abilities": [FlashAbilities.Flash],
+    "abilities": [CommonAbilities.None],
 };

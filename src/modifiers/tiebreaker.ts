@@ -3,6 +3,7 @@ import {
     type Role,
     SettingTypes,
     Teams,
+    CommonAbilities
 } from "@/constants";
 
 export const TiebreakerAbilities = {
@@ -21,5 +22,5 @@ export const Tiebreaker: Role = {
     "settings": {
         ...probabilityOfAppearing(-1),
     },
-    "abilities": [TiebreakerAbilities.Tiebreaker],
+    "abilities": [CommonAbilities.None],
 };

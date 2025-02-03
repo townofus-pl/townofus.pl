@@ -3,6 +3,7 @@ import {
     type Role,
     SettingTypes,
     Teams,
+    CommonAbilities
 } from "@/constants";
 
 export const GiantAbilities = {
@@ -24,5 +25,5 @@ export const Giant: Role = {
             value: 0.75, type: SettingTypes.Multiplier,
         },
     },
-    "abilities": [GiantAbilities.Giant],
+    "abilities": [CommonAbilities.None],
 };

@@ -3,6 +3,7 @@ import {
     type Role,
     SettingTypes,
     Teams,
+    CommonAbilities
 } from "@/constants";
 
 export const MultitaskerAbilities = {
@@ -21,5 +22,5 @@ export const Multitasker: Role = {
     "settings": {
         ...probabilityOfAppearing(-1),
     },
-    "abilities": [MultitaskerAbilities.Multitasker],
+    "abilities": [CommonAbilities.None],
 };

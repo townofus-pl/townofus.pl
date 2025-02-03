@@ -3,6 +3,7 @@ import {
     type Role,
     SettingTypes,
     Teams,
+    CommonAbilities
 } from "@/constants";
 
 export const UnderdogAbilities = {
@@ -27,5 +28,5 @@ export const Underdog: Role = {
             value: true, type: SettingTypes.Boolean,
         },
     },
-    "abilities": [UnderdogAbilities.Underdog],
+    "abilities": [CommonAbilities.None],
 };

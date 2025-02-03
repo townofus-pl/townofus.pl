@@ -3,6 +3,7 @@ import {
     type Role,
     SettingTypes,
     Teams,
+    CommonAbilities
 } from "@/constants";
 
 export const SixthSenseAbilities = {
@@ -21,5 +22,5 @@ export const SixthSense: Role = {
     "settings": {
         ...probabilityOfAppearing(-1),
     },
-    "abilities": [SixthSenseAbilities.SixthSense],
+    "abilities": [CommonAbilities.None],
 };

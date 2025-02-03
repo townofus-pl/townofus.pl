@@ -3,6 +3,7 @@ import {
     type Role,
     SettingTypes,
     Teams,
+    CommonAbilities
 } from "@/constants";
 
 export const TorchAbilities = {
@@ -21,5 +22,5 @@ export const Torch: Role = {
     "settings": {
         ...probabilityOfAppearing(-1),
     },
-    "abilities": [TorchAbilities.Torch],
+    "abilities": [CommonAbilities.None],
 };

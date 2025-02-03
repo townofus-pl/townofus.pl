@@ -3,6 +3,7 @@ import {
     type Role,
     SettingTypes,
     Teams,
+    CommonAbilities
 } from "@/constants";
 
 export const ShyAbilities = {
@@ -30,5 +31,5 @@ export const Shy: Role = {
             value: 10, type: SettingTypes.Percentage,
         },
     },
-    "abilities": [ShyAbilities.Shy],
+    "abilities": [CommonAbilities.None],
 };

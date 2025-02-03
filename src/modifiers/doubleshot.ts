@@ -3,6 +3,7 @@ import {
     type Role,
     SettingTypes,
     Teams,
+    CommonAbilities
 } from "@/constants";
 
 export const DoubleShotAbilities = {
@@ -21,5 +22,5 @@ export const DoubleShot: Role = {
     "settings": {
         ...probabilityOfAppearing(-1),
     },
-    "abilities": [DoubleShotAbilities.DoubleShot],
+    "abilities": [CommonAbilities.None],
 };
