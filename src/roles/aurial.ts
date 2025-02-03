@@ -22,4 +22,5 @@ export const Aurial: Role = {
         },
     },
     "abilities": [CommonAbilities.None],
+    "tip": "Staraj się trzymać w większych grupach, jest duże prawdopodobieństwo, że ktoś użyje tam swojej zdolności."
 };
