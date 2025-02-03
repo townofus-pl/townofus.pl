@@ -1,7 +1,6 @@
 import {
     probabilityOfAppearing,
     type Role,
-    SettingTypes,
     Teams,
 } from "@/constants";
 
