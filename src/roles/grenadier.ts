@@ -25,7 +25,7 @@ export const Grenadier: Role = {
         },
         "Flash Radius": {
             value: 1,
-            type: SettingTypes.Radius,
+            type: SettingTypes.Multiplier,
         },
         "Indicate Flashed Crewmates": {
             value: true,

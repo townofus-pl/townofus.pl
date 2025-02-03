@@ -52,4 +52,4 @@ export const Roles = [
     Juggernaut,
     Lookout,
     Medic,
-].sort();
+];

@@ -11,7 +11,7 @@ const getValue = (setting: Setting) => {
             return setting.value ? '✓' : '✗';
         case SettingTypes.Number:
             return setting.value.toString();
-        case SettingTypes.Radius:
+        case SettingTypes.Multiplier:
             return `${setting.value}x`;
         case SettingTypes.Text:
         default:

@@ -29,7 +29,7 @@ export const Bomber: Role = {
         },
         "Detonate Radius": {
             value: 0.25,
-            type: SettingTypes.Radius,
+            type: SettingTypes.Multiplier,
         },
         "Bomber Can Vent": {
             value: true,
