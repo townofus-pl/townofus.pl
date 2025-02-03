@@ -1,6 +1,6 @@
-import {Teams} from "@/_roles/shared";
+import {Teams} from "@/constants";
 
-export const Team = ({ team }: { team: Teams}) => {
+export const Team = ({team}: { team: Teams }) => {
     let teamClasses;
 
     switch (team) {
