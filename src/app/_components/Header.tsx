@@ -3,7 +3,7 @@ export const Header = () => (
         <h1 className="text-7xl font-bold font-brook">Town Of Us - Role</h1>
         <h2 className="text-3xl font-brook">
             Lista wszystkich ról dostępnych w modyfikacji
-            <span className="ml-2.5 font-barlow text-base text-gray-500">by Malkiz & Quarties</span>
+            <span className="ml-2.5 font-barlow text-base text-gray-500">by Malkiz, Quarties & OrzechMC</span>
         </h2>
     </header>
 );
