@@ -1,4 +1,5 @@
 export enum Teams {
+    All = 'All',
     Crewmate = "Crewmate",
     Impostor = "Impostor",
     Neutral = "Neutral",
