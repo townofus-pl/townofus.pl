@@ -2,6 +2,8 @@ import {Header, RoleCard, Search} from "./_components";
 import {Roles} from "@/roles";
 import {Modifiers} from "@/modifiers";
 
+const RolesAndModifiers = [...Roles, ...Modifiers];
+
 export default function Home() {
     return (
         <div className="grid grid-cols-1 gap-y-5">
@@ -9,12 +11,7 @@ export default function Home() {
             <Search/>
             <main>
                 <div className="grid grid-cols-1 gap-y-5">
-                    {Roles.map(role => (
-                        <RoleCard key={role.name} role={role}/>
-                    ))}
-                </div>
-                <div className="grid grid-cols-1 gap-y-5">
-                    {Modifiers.map(role => (
+                    {RolesAndModifiers.map(role => (
                         <RoleCard key={role.name} role={role}/>
                     ))}
                 </div>

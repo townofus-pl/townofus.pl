@@ -40,4 +40,4 @@ export const Modifiers = [
     Tiebreaker,
     Torch,
     Underdog,
-].sort();
+];
