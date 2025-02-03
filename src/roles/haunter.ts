@@ -1,4 +1,4 @@
-import {CommonRoleAbilities, probabilityOfAppearing, type Role, Teams,} from "./shared";
+import {CommonAbilities, probabilityOfAppearing, type Role, Teams,} from "@/constants";
 
 export const Haunter: Role = {
     "name": "Haunter",
@@ -9,5 +9,5 @@ export const Haunter: Role = {
     "settings": {
         ...probabilityOfAppearing(-1),
     },
-    "abilities": [CommonRoleAbilities.None],
+    "abilities": [CommonAbilities.None],
 };

@@ -1,11 +1,11 @@
 import {
-    CommonRoleAbilities,
+    CommonAbilities,
     probabilityOfAppearing,
     type Role,
     RolesAfterDeath,
     SettingTypes,
     Teams,
-} from "./shared";
+} from "@/constants";
 
 export const Executioner: Role = {
     "name": "Executioner",
@@ -28,6 +28,6 @@ export const Executioner: Role = {
             type: SettingTypes.Boolean,
         },
     },
-    abilities: [CommonRoleAbilities.None],
+    abilities: [CommonAbilities.None],
 };
 

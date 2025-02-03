@@ -29,12 +29,12 @@ export type Setting = {
     type: SettingTypes.Text
 };
 
-export enum CommonRoleSettingNames {
+export enum CommonSettingNames {
     ProbabilityOfAppearing = "Probability Of Appearing",
 }
 
-export const probabilityOfAppearing: (value: number) => Record<CommonRoleSettingNames.ProbabilityOfAppearing, Setting> = value => ({
-    [CommonRoleSettingNames.ProbabilityOfAppearing]: {
+export const probabilityOfAppearing: (value: number) => Record<CommonSettingNames.ProbabilityOfAppearing, Setting> = value => ({
+    [CommonSettingNames.ProbabilityOfAppearing]: {
         value,
         type: SettingTypes.Percentage
     }

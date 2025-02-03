@@ -1,4 +1,4 @@
-import {CommonRoleAbilities, probabilityOfAppearing, type Role, SettingTypes, Teams,} from "./shared";
+import {CommonAbilities, probabilityOfAppearing, type Role, SettingTypes, Teams,} from "@/constants";
 
 export const BomberAbilities = {
     Plant: {
@@ -40,5 +40,5 @@ export const Bomber: Role = {
             type: SettingTypes.Boolean,
         },
     },
-    "abilities": [CommonRoleAbilities.Vent, CommonRoleAbilities.Sabotage, BomberAbilities.Plant, BomberAbilities.Detonate],
+    "abilities": [CommonAbilities.Vent, CommonAbilities.Sabotage, BomberAbilities.Plant, BomberAbilities.Detonate],
 };

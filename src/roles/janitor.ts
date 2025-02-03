@@ -1,4 +1,4 @@
-import {CommonRoleAbilities, probabilityOfAppearing, Role, Teams} from "./shared";
+import {CommonAbilities, probabilityOfAppearing, Role, Teams} from "@/constants";
 
 const JanitorAbilities = {
     Clean: {
@@ -17,9 +17,9 @@ export const Janitor: Role = {
         ...probabilityOfAppearing(-1),
     },
     "abilities": [
-        CommonRoleAbilities.Kill,
-        CommonRoleAbilities.Vent,
-        CommonRoleAbilities.Sabotage,
+        CommonAbilities.Kill,
+        CommonAbilities.Vent,
+        CommonAbilities.Sabotage,
         JanitorAbilities.Clean
     ],
     "tip": ""

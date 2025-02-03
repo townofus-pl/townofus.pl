@@ -1,4 +1,4 @@
-import {probabilityOfAppearing, type Role, RolesAfterDeath, SettingTypes, Teams,} from "./shared";
+import {probabilityOfAppearing, type Role, RolesAfterDeath, SettingTypes, Teams,} from "@/constants";
 
 export const GuardianAngelAbilities = {
     Protect: {

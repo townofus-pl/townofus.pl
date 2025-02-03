@@ -1,4 +1,4 @@
-import {CommonRoleAbilities, probabilityOfAppearing, type Role, SettingTypes, Teams,} from "./shared";
+import {CommonAbilities, probabilityOfAppearing, type Role, SettingTypes, Teams,} from "@/constants";
 
 export const BlackmailerAbilities = {
     Blackmail: {
@@ -28,5 +28,5 @@ export const Blackmailer: Role = {
             type: SettingTypes.Number,
         },
     },
-    "abilities": [CommonRoleAbilities.Kill, CommonRoleAbilities.Vent, CommonRoleAbilities.Sabotage, BlackmailerAbilities.Blackmail],
+    "abilities": [CommonAbilities.Kill, CommonAbilities.Vent, CommonAbilities.Sabotage, BlackmailerAbilities.Blackmail],
 };

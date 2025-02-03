@@ -1,4 +1,4 @@
-import type {Role} from "@/roles/shared";
+import type {Role} from "@/constants";
 import {SettingsList} from "./SettingsList";
 import {Team} from "./Team";
 import Image from "next/image";

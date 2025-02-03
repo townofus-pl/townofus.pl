@@ -1,4 +1,4 @@
-import {CommonRoleAbilities, probabilityOfAppearing, type Role, SettingTypes, Teams,} from "./shared";
+import {CommonAbilities, probabilityOfAppearing, type Role, SettingTypes, Teams,} from "@/constants";
 
 export const EngineerAbilities = {
     FixSabotage: {
@@ -20,6 +20,6 @@ export const Engineer: Role = {
             type: SettingTypes.Number,
         },
     },
-    "abilities": [CommonRoleAbilities.Vent, EngineerAbilities.FixSabotage],
+    "abilities": [CommonAbilities.Vent, EngineerAbilities.FixSabotage],
     "tip": "Obserwuj graczy siedząc w wentylacji.",
 };

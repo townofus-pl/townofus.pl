@@ -23,7 +23,7 @@
 //     "tip": ""
 // }
 
-import {CommonRoleAbilities, probabilityOfAppearing, Role, SettingTypes, Teams} from "./shared";
+import {CommonAbilities, probabilityOfAppearing, Role, SettingTypes, Teams} from "@/constants";
 
 export const Juggernaut: Role = {
     "name": "Juggernaut",
@@ -47,7 +47,7 @@ export const Juggernaut: Role = {
         }
     },
     "abilities": [
-        CommonRoleAbilities.Kill,
-        CommonRoleAbilities.Vent
+        CommonAbilities.Kill,
+        CommonAbilities.Vent
     ]
 }

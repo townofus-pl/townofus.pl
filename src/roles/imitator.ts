@@ -1,4 +1,4 @@
-import {probabilityOfAppearing, type Role, Teams} from "./shared";
+import {probabilityOfAppearing, type Role, Teams} from "@/constants";
 
 export const ImitatorAbilities = {
     Imitate: {

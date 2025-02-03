@@ -1,4 +1,4 @@
-import {probabilityOfAppearing, type Role, SettingTypes, Teams,} from "./shared";
+import {probabilityOfAppearing, type Role, SettingTypes, Teams,} from "@/constants";
 
 export const ArsonistAbilities = {
     Douse: {

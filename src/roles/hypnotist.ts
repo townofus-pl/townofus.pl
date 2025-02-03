@@ -1,4 +1,4 @@
-import {CommonRoleAbilities, probabilityOfAppearing, type Role, SettingTypes, Teams} from "./shared";
+import {CommonAbilities, probabilityOfAppearing, type Role, SettingTypes, Teams} from "@/constants";
 
 export const HypnotistAbilities = {
     Hypnotize: {
@@ -25,5 +25,5 @@ export const Hypnotist: Role = {
             type: SettingTypes.Time,
         }
     },
-    "abilities": [CommonRoleAbilities.Kill, CommonRoleAbilities.Vent, CommonRoleAbilities.Sabotage, HypnotistAbilities.Hypnotize, HypnotistAbilities.Hysteria],
+    "abilities": [CommonAbilities.Kill, CommonAbilities.Vent, CommonAbilities.Sabotage, HypnotistAbilities.Hypnotize, HypnotistAbilities.Hysteria],
 };

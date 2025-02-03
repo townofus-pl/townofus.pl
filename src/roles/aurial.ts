@@ -1,4 +1,4 @@
-import {CommonRoleAbilities, probabilityOfAppearing, type Role, SettingTypes, Teams,} from "./shared";
+import {CommonAbilities, probabilityOfAppearing, type Role, SettingTypes, Teams,} from "@/constants";
 
 export const Aurial: Role = {
     "name": "Aurial",
@@ -21,5 +21,5 @@ export const Aurial: Role = {
             type: SettingTypes.Time,
         },
     },
-    "abilities": [CommonRoleAbilities.None],
+    "abilities": [CommonAbilities.None],
 };

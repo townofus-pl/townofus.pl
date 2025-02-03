@@ -1,4 +1,4 @@
-import {CommonRoleAbilities, probabilityOfAppearing, type Role, SettingTypes, Teams} from "./shared";
+import {CommonAbilities, probabilityOfAppearing, type Role, SettingTypes, Teams} from "@/constants";
 
 export const Investigator: Role = {
     "name": "Investigator",
@@ -29,6 +29,6 @@ export const Investigator: Role = {
             type: SettingTypes.Boolean,
         }
     },
-    "abilities": [CommonRoleAbilities.None],
+    "abilities": [CommonAbilities.None],
     "tip": "Sprawdzaj wentylacje. Jeżeli widać ślady zmierzające w ich kierunku, wniosek jest prosty..."
 };

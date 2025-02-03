@@ -1,4 +1,4 @@
-import {probabilityOfAppearing, Role, SettingTypes, Teams} from "./shared";
+import {probabilityOfAppearing, Role, SettingTypes, Teams} from "@/constants";
 
 export const JesterAbilities = {
     Vent: {

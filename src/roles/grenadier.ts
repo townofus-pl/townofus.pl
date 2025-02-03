@@ -1,4 +1,4 @@
-import {CommonRoleAbilities, probabilityOfAppearing, type Role, SettingTypes, Teams,} from "./shared";
+import {CommonAbilities, probabilityOfAppearing, type Role, SettingTypes, Teams,} from "@/constants";
 
 export const GrenadierAbilities = {
     Flash: {
@@ -36,5 +36,5 @@ export const Grenadier: Role = {
             type: SettingTypes.Boolean,
         },
     },
-    "abilities": [CommonRoleAbilities.Kill, CommonRoleAbilities.Vent, CommonRoleAbilities.Sabotage, GrenadierAbilities.Flash],
+    "abilities": [CommonAbilities.Kill, CommonAbilities.Vent, CommonAbilities.Sabotage, GrenadierAbilities.Flash],
 };

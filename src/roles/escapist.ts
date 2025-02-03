@@ -1,4 +1,4 @@
-import {CommonRoleAbilities, probabilityOfAppearing, type Role, SettingTypes, Teams,} from "./shared";
+import {CommonAbilities, probabilityOfAppearing, type Role, SettingTypes, Teams,} from "@/constants";
 
 export const EscapistAbilities = {
     Mark: {
@@ -28,5 +28,5 @@ export const Escapist: Role = {
             type: SettingTypes.Boolean,
         },
     },
-    "abilities": [CommonRoleAbilities.Kill, CommonRoleAbilities.Sabotage, EscapistAbilities.Mark, EscapistAbilities.Recall],
+    "abilities": [CommonAbilities.Kill, CommonAbilities.Sabotage, EscapistAbilities.Mark, EscapistAbilities.Recall],
 };

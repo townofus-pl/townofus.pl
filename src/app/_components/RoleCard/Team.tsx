@@ -1,4 +1,4 @@
-import {Teams} from "@/roles/shared";
+import {Teams} from "@/constants";
 
 export const Team = ({team}: { team: Teams }) => {
     let teamClasses;

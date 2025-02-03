@@ -1,4 +1,4 @@
-import {CommonRoleAbilities, Distances, probabilityOfAppearing, type Role, SettingTypes, Teams,} from "./shared";
+import {CommonAbilities, Distances, probabilityOfAppearing, type Role, SettingTypes, Teams,} from "@/constants";
 
 export const GlitchAbilities = {
     Hacker: {
@@ -48,5 +48,5 @@ export const Glitch: Role = {
             type: SettingTypes.Boolean,
         },
     },
-    "abilities": [CommonRoleAbilities.Kill, CommonRoleAbilities.Vent, GlitchAbilities.Hacker, GlitchAbilities.Mimic],
+    "abilities": [CommonAbilities.Kill, CommonAbilities.Vent, GlitchAbilities.Hacker, GlitchAbilities.Mimic],
 };
