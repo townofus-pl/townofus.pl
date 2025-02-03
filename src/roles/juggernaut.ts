@@ -23,7 +23,7 @@
 //     "tip": ""
 // }
 
-import {probabilityOfAppearing, Role, RoleSettingTypes, Teams, CommonRoleAbilities} from "./shared";
+import {CommonRoleAbilities, probabilityOfAppearing, Role, RoleSettingTypes, Teams} from "./shared";
 
 export const Juggernaut: Role = {
     "name": "Juggernaut",

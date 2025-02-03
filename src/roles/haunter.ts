@@ -1,9 +1,4 @@
-import {
-    probabilityOfAppearing,
-    Teams,
-    type Role,
-    CommonRoleAbilities,
-} from "./shared";
+import {CommonRoleAbilities, probabilityOfAppearing, type Role, Teams,} from "./shared";
 
 export const Haunter: Role = {
     "name": "Haunter",

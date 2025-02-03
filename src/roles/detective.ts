@@ -1,8 +1,4 @@
-import {
-    probabilityOfAppearing,
-    Teams,
-    type Role
-} from "./shared";
+import {probabilityOfAppearing, type Role, Teams} from "./shared";
 
 export const DetectiveAbilities = {
     Examine: {

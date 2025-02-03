@@ -1,4 +1,4 @@
-import {probabilityOfAppearing, type Role, RoleSettingTypes, Teams, CommonRoleAbilities} from "./shared";
+import {CommonRoleAbilities, probabilityOfAppearing, type Role, RoleSettingTypes, Teams} from "./shared";
 
 export const HypnotistAbilities = {
     Hypnotize: {

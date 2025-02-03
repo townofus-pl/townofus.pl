@@ -1,10 +1,4 @@
-import {
-    probabilityOfAppearing,
-    RoleSettingTypes,
-    Teams,
-    type Role,
-    RolesAfterDeath,
-} from "./shared";
+import {probabilityOfAppearing, type Role, RolesAfterDeath, RoleSettingTypes, Teams,} from "./shared";
 
 export const GuardianAngelAbilities = {
     Protect: {

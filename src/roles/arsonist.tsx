@@ -1,9 +1,4 @@
-import {
-    probabilityOfAppearing,
-    RoleSettingTypes,
-    Teams,
-    type Role,
-} from "./shared";
+import {probabilityOfAppearing, type Role, RoleSettingTypes, Teams,} from "./shared";
 
 export const ArsonistAbilities = {
     Douse: {
@@ -27,7 +22,8 @@ export const Arsonist: Role = {
             <li>Polewanie innych graczy benzyną</li>
             <li>Zapalanie wszystkich polanych graczy.</li>
         </ul>
-        <p>Arsonist może mieć maksymalnie 5 oblanych osób jednocześnie. Arsonist musi być ostatnim zabójcą, aby wygrać grę.</p>
+        <p>Arsonist może mieć maksymalnie 5 oblanych osób jednocześnie. Arsonist musi być ostatnim zabójcą, aby wygrać
+            grę.</p>
     </>),
     "settings": {
         ...probabilityOfAppearing(-1),

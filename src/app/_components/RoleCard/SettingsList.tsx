@@ -19,7 +19,7 @@ const getValue = (setting: RoleSetting) => {
     }
 }
 
-export const SettingsList = ({ settings }: {
+export const SettingsList = ({settings}: {
     settings: Record<string, RoleSetting>;
 }) => {
     return (

@@ -1,4 +1,4 @@
-import {probabilityOfAppearing, Role, Teams, CommonRoleAbilities} from "./shared";
+import {CommonRoleAbilities, probabilityOfAppearing, Role, Teams} from "./shared";
 
 const JanitorAbilities = {
     Clean: {

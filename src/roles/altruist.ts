@@ -1,9 +1,4 @@
-import {
-    probabilityOfAppearing,
-    RoleSettingTypes,
-    Teams,
-    type Role,
-} from "./shared";
+import {probabilityOfAppearing, type Role, RoleSettingTypes, Teams,} from "./shared";
 
 export const AltruistAbilities = {
     Revive: {

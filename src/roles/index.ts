@@ -1,5 +1,5 @@
-import { Altruist } from './altruist'
-import { Amnesiac } from './amnesiac'
+import {Altruist} from './altruist'
+import {Amnesiac} from './amnesiac'
 import {Arsonist} from "./arsonist";
 import {Aurial} from "./aurial";
 import {Blackmailer} from "./blackmailer";

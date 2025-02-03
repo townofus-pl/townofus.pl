@@ -1,10 +1,4 @@
-import {
-    probabilityOfAppearing,
-    RoleSettingTypes,
-    Teams,
-    type Role,
-    CommonRoleAbilities, Distances,
-} from "./shared";
+import {CommonRoleAbilities, Distances, probabilityOfAppearing, type Role, RoleSettingTypes, Teams,} from "./shared";
 
 export const GlitchAbilities = {
     Hacker: {

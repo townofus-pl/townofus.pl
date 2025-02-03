@@ -33,7 +33,7 @@ export enum CommonRoleSettingsNames {
     ProbabilityOfAppearing = "Probability Of Appearing",
 }
 
-export const probabilityOfAppearing: (value: number) => Record<CommonRoleSettingsNames, RoleSetting> = value => ({
+export const probabilityOfAppearing: (value: number) => Record<CommonRoleSettingsNames.ProbabilityOfAppearing, RoleSetting> = value => ({
     [CommonRoleSettingsNames.ProbabilityOfAppearing]: {
         value,
         type: RoleSettingTypes.Percentage
