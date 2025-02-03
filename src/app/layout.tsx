@@ -2,6 +2,7 @@ import type {Metadata} from "next";
 import localFont from "next/font/local";
 import {Barlow} from "next/font/google";
 import "./globals.css";
+import {Header} from "./_components";
 
 const brook = localFont({
     src: '/_fonts/BrookPL.woff',
@@ -30,6 +31,7 @@ export default function RootLayout({
         <html lang="en">
         <body className={`${brook.variable} ${barlow.variable} ${barlow.className}`}>
         <div className="max-w-screen-xl m-auto">
+             <Header/>
             {children}
         </div>
         </body>
