@@ -27,7 +27,7 @@ export const Lovers: Role = {
         'Loving Impostor Probability': {
             value: 20, type: SettingTypes.Percentage,
         },
-        'Neutral Rolec Can Be Lovers': {
+        'Neutral Roles Can Be Lovers': {
             value: true, type: SettingTypes.Boolean,
         },
         'Impostor Lover Can Kill Teammate': {
