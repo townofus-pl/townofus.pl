@@ -3,8 +3,8 @@ export enum SettingTypes {
     Time = 'time',
     Boolean = 'boolean',
     Number = 'number',
-    Radius = 'radius',
     Text = 'text',
+    Multiplier = 'multiplier',
 }
 
 export enum RolesAfterDeath {
@@ -20,7 +20,7 @@ export enum Distances {
 
 export type Setting = {
     value: number,
-    type: SettingTypes.Percentage | SettingTypes.Time | SettingTypes.Number | SettingTypes.Radius
+    type: SettingTypes.Percentage | SettingTypes.Time | SettingTypes.Number | SettingTypes.Multiplier
 } | {
     value: boolean,
     type: SettingTypes.Boolean

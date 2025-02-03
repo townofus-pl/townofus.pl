@@ -10,11 +10,11 @@ export const Aurial: Role = {
         ...probabilityOfAppearing(-1),
         "Radiate Colour Range": {
             value: 0.5,
-            type: SettingTypes.Radius,
+            type: SettingTypes.Multiplier,
         },
         "Radiate Max Range": {
             value: 1.5,
-            type: SettingTypes.Radius,
+            type: SettingTypes.Multiplier,
         },
         "Sense Duration": {
             value: 10.0,
