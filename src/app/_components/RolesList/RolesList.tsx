@@ -1,11 +1,11 @@
 'use client';
 
-import {RoleCard} from "./RoleCard/RoleCard";
+import debounce from "lodash.debounce";
+import {createContext, useMemo, useState, ChangeEvent} from "react";
 import {Roles} from "@/roles";
 import {Modifiers} from "@/modifiers";
 import {Search} from "@/app/_components";
-import {createContext, useMemo, useState, ChangeEvent} from "react";
-import debounce from "lodash.debounce";
+import {RoleCard} from "./RoleCard/RoleCard";
 
 const RolesAndModifiers = [...Roles, ...Modifiers];
 
