@@ -1,11 +1,4 @@
-import {
-    CommonAbilities,
-    probabilityOfAppearing,
-    type Role,
-    RolesAfterDeath,
-    SettingTypes,
-    Teams,
-} from "@/constants";
+import {CommonAbilities, probabilityOfAppearing, type Role, RolesAfterDeath, SettingTypes, Teams,} from "@/constants";
 
 export const Executioner: Role = {
     "name": "Executioner",

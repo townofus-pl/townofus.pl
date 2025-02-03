@@ -18,7 +18,7 @@ const barlow = Barlow({
 
 export const metadata: Metadata = {
     title: "townofus.pl - Among Us Town of Us Polska",
-    description: "Serwis dla fanó∑ gry Among Us z modyfikacją Town of Us",
+    description: "Serwis dla fanów gry Among Us z modyfikacją Town of Us",
 };
 
 export default function RootLayout({
