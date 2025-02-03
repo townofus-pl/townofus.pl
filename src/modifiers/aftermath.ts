@@ -1,9 +1,4 @@
-import {
-    probabilityOfAppearing,
-    type Role,
-    Teams,
-    CommonAbilities
-} from "@/constants";
+import {CommonAbilities, probabilityOfAppearing, type Role, Teams} from "@/constants";
 
 export const Aftermath: Role = {
     "name": "Aftermath",

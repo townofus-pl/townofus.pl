@@ -1,9 +1,4 @@
-import {
-    probabilityOfAppearing,
-    type Role,
-    SettingTypes,
-    Teams,
-} from "@/constants";
+import {probabilityOfAppearing, type Role, SettingTypes, Teams,} from "@/constants";
 
 export const DisperserAbilities = {
     Disperser: {

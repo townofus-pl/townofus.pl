@@ -1,8 +1,4 @@
-import {
-    probabilityOfAppearing,
-    type Role,
-    Teams,
-} from "@/constants";
+import {probabilityOfAppearing, type Role, Teams,} from "@/constants";
 
 export const ButtonBarryAbilities = {
     ButtonBarry: {
