@@ -7,7 +7,7 @@ export const VampireAbilities = {
     },
 };
 
-export const vampire: Role = {
+export const Vampire: Role = {
     "name": "Vampire",
     "color": "#747474",
     "team": Teams.Neutral,
