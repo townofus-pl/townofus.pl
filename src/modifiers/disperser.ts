@@ -3,7 +3,7 @@ import {probabilityOfAppearing, type Role, SettingTypes, Teams,} from "@/constan
 export const DisperserAbilities = {
     Disperser: {
         "name": "Disperser",
-        "icon": "/images/abilities/placeholder.png",
+        "icon": "/images/abilities/disprese.png",
     },
 };
 

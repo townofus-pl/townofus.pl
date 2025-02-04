@@ -3,7 +3,7 @@ import {probabilityOfAppearing, type Role, Teams,} from "@/constants";
 export const ButtonBarryAbilities = {
     ButtonBarry: {
         "name": "Button (Naciśnij przycisk)",
-        "icon": "/images/abilities/placeholder.png",
+        "icon": "/images/abilities/button.png",
     },
 };
 

@@ -3,12 +3,12 @@ import {CommonAbilities, probabilityOfAppearing, Role, SettingTypes, Teams} from
 export const UndertakerAbilities = {
     Drag: {
         "name": "Drag (Przeciągnij)",
-        "icon": "abilities/Drag.png"
+        "icon": "/images/abilities/drag.png"
     },
 
     Drop: {
         "name": "Drop (Upuść)",
-        "icon": "abilities/Drop.png"
+        "icon": "/images/abilities/drop.png"
     }
 };
 
