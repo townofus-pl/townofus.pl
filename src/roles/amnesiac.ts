@@ -1,4 +1,6 @@
-import {probabilityOfAppearing, type Role, SettingTypes, Teams,} from "@/constants";
+import {Role, RoleOrModifierTypes} from "@/constants/rolesAndModifiers";
+import {Teams} from "@/constants/teams";
+import {probabilityOfAppearing, SettingTypes} from "@/constants/settings";
 
 export const AmnesiacAbilities = {
     Remember: {
@@ -8,6 +10,7 @@ export const AmnesiacAbilities = {
 }
 
 export const Amnesiac: Role = {
+    "type": RoleOrModifierTypes.Role,
     "name": "Amnesiac",
     "color": "#80B2FF",
     "team": Teams.Neutral,

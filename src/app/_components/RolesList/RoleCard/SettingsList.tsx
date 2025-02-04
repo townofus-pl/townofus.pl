@@ -1,4 +1,4 @@
-import {Setting, SettingTypes} from "@/constants";
+import {Setting, SettingTypes} from "@/constants/settings";
 
 const getValue = (setting: Setting) => {
     switch (setting.type) {

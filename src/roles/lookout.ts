@@ -1,4 +1,6 @@
-import {probabilityOfAppearing, Role, SettingTypes, Teams} from "@/constants";
+import {Role, RoleOrModifierTypes} from "@/constants/rolesAndModifiers";
+import {Teams} from "@/constants/teams";
+import {probabilityOfAppearing, SettingTypes} from "@/constants/settings";
 
 export const LookoutAbilities = {
     Watch: {
@@ -8,6 +10,7 @@ export const LookoutAbilities = {
 };
 
 export const Lookout: Role = {
+    "type": RoleOrModifierTypes.Role,
     "name": "Lookout",
     "color": "#33FF66",
     "team": Teams.Crewmate,

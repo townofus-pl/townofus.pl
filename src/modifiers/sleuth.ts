@@ -1,11 +1,15 @@
-import {CommonAbilities, probabilityOfAppearing, type Role, Teams} from "@/constants";
+import {Modifier, RoleOrModifierTypes} from "@/constants/rolesAndModifiers";
+import {Teams} from "@/constants/teams";
+import {probabilityOfAppearing} from "@/constants/settings";
+import {CommonAbilities} from "@/constants/abilities";
 
-export const Sleuth: Role = {
+export const Sleuth: Modifier = {
+    "type": RoleOrModifierTypes.Modifier,
     "name": "Sleuth",
     "color": "#FFFFFF",
     "team": Teams.All,
     "icon": "/images/modifiers/placeholder.png",
-    "description": "Widzi role zgłoszonych ciał podczas spotkań.",
+    "description": "Widzi Modifier zgłoszonych ciał podczas spotkań.",
     "settings": {
         ...probabilityOfAppearing(-1),
     },

@@ -1,4 +1,7 @@
-import {CommonAbilities, probabilityOfAppearing, Role, Teams} from "@/constants";
+import {Role, RoleOrModifierTypes} from "@/constants/rolesAndModifiers";
+import {Teams} from "@/constants/teams";
+import {probabilityOfAppearing} from "@/constants/settings";
+import {CommonAbilities} from "@/constants/abilities";
 
 const JanitorAbilities = {
     Clean: {
@@ -8,6 +11,7 @@ const JanitorAbilities = {
 }
 
 export const Janitor: Role = {
+    "type": RoleOrModifierTypes.Role,
     "name": "Janitor",
     "color": "#FF0000",
     "team": Teams.Impostor,

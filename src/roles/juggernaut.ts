@@ -1,6 +1,10 @@
-import {CommonAbilities, probabilityOfAppearing, Role, SettingTypes, Teams} from "@/constants";
+import {Role, RoleOrModifierTypes} from "@/constants/rolesAndModifiers";
+import {Teams} from "@/constants/teams";
+import {probabilityOfAppearing, SettingTypes} from "@/constants/settings";
+import {CommonAbilities} from "@/constants/abilities";
 
 export const Juggernaut: Role = {
+    "type": RoleOrModifierTypes.Role,
     "name": "Juggernaut",
     "color": "#8C004D",
     "team": Teams.Neutral,

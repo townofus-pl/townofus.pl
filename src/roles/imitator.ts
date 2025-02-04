@@ -1,4 +1,6 @@
-import {probabilityOfAppearing, type Role, Teams} from "@/constants";
+import {Role, RoleOrModifierTypes} from "@/constants/rolesAndModifiers";
+import {Teams} from "@/constants/teams";
+import {probabilityOfAppearing} from "@/constants/settings";
 
 export const ImitatorAbilities = {
     Imitate: {
@@ -8,6 +10,7 @@ export const ImitatorAbilities = {
 };
 
 export const Imitator: Role = {
+    "type": RoleOrModifierTypes.Role,
     "name": "Imitator",
     "color": "#B3D94D",
     "team": Teams.Crewmate,

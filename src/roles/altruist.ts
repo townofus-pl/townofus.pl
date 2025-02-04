@@ -1,4 +1,6 @@
-import {probabilityOfAppearing, type Role, SettingTypes, Teams,} from "@/constants";
+import {Role, RoleOrModifierTypes} from "@/constants/rolesAndModifiers";
+import {Teams} from "@/constants/teams";
+import {probabilityOfAppearing, SettingTypes} from "@/constants/settings";
 
 export const AltruistAbilities = {
     Revive: {
@@ -8,6 +10,7 @@ export const AltruistAbilities = {
 }
 
 export const Altruist: Role = {
+    "type": RoleOrModifierTypes.Role,
     "name": "Altruist",
     "color": "#660000",
     "team": Teams.Crewmate,

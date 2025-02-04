@@ -1,4 +1,6 @@
-import {probabilityOfAppearing, type Role, Teams,} from "@/constants";
+import {Modifier, RoleOrModifierTypes} from "@/constants/rolesAndModifiers";
+import {Teams} from "@/constants/teams";
+import {probabilityOfAppearing} from "@/constants/settings";
 
 export const ButtonBarryAbilities = {
     ButtonBarry: {
@@ -7,7 +9,8 @@ export const ButtonBarryAbilities = {
     },
 };
 
-export const ButtonBarry: Role = {
+export const ButtonBarry: Modifier = {
+    "type": RoleOrModifierTypes.Modifier,
     "name": "Button Barry",
     "color": "#FFFFFF",
     "team": Teams.All,

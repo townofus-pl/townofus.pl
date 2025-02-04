@@ -1,5 +1,5 @@
 import type { Config } from "tailwindcss";
-import { TeamColors } from "./src/constants";
+import { TeamColors } from "./src/constants/teams";
 
 export default {
     content: [

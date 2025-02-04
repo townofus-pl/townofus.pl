@@ -1,4 +1,4 @@
-import {Teams} from "@/constants";
+import {Teams} from "@/constants/teams";
 
 export const Team = ({team}: { team: Teams }) => {
     let teamClasses;

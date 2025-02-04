@@ -1,4 +1,6 @@
-import {probabilityOfAppearing, type Role, SettingTypes, Teams,} from "@/constants";
+import {Modifier, RoleOrModifierTypes} from "@/constants/rolesAndModifiers";
+import {Teams} from "@/constants/teams";
+import {probabilityOfAppearing, SettingTypes} from "@/constants/settings";
 
 export const DisperserAbilities = {
     Disperser: {
@@ -7,7 +9,8 @@ export const DisperserAbilities = {
     },
 };
 
-export const Disperser: Role = {
+export const Disperser: Modifier = {
+    "type": RoleOrModifierTypes.Modifier,
     "name": "Disperser",
     "color": "#FF0000",
     "team": Teams.Impostor,

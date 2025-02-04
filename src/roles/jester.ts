@@ -1,4 +1,6 @@
-import {probabilityOfAppearing, Role, SettingTypes, Teams} from "@/constants";
+import {Role, RoleOrModifierTypes} from "@/constants/rolesAndModifiers";
+import {Teams} from "@/constants/teams";
+import {probabilityOfAppearing, SettingTypes} from "@/constants/settings";
 
 export const JesterAbilities = {
     Vent: {
@@ -8,6 +10,7 @@ export const JesterAbilities = {
 }
 
 export const Jester: Role = {
+    "type": RoleOrModifierTypes.Role,
     "name": "Jester",
     "color": "#FFBFCF",
     "team": Teams.Neutral,

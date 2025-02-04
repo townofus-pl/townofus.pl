@@ -1,4 +1,6 @@
-import {probabilityOfAppearing, type Role, SettingTypes, Teams,} from "@/constants";
+import {Role, RoleOrModifierTypes} from "@/constants/rolesAndModifiers";
+import {Teams} from "@/constants/teams";
+import {probabilityOfAppearing, SettingTypes} from "@/constants/settings";
 
 export const ArsonistAbilities = {
     Douse: {
@@ -12,6 +14,7 @@ export const ArsonistAbilities = {
 }
 
 export const Arsonist: Role = {
+    "type": RoleOrModifierTypes.Role,
     "name": "Arsonist",
     "color": "#FF4D00",
     "team": Teams.Neutral,
