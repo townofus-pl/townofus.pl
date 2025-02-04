@@ -2,6 +2,7 @@ import type {Metadata} from "next";
 import localFont from "next/font/local";
 import {Barlow} from "next/font/google";
 import "./globals.css";
+import {Header} from "./_components";
 
 const brook = localFont({
     src: '/_fonts/BrookPL.woff',
@@ -27,9 +28,10 @@ export default function RootLayout({
     children: React.ReactNode;
 }>) {
     return (
-        <html lang="en">
+        <html lang="en" className="text-sm md:text-base">
         <body className={`${brook.variable} ${barlow.variable} ${barlow.className}`}>
         <div className="max-w-screen-xl m-auto">
+             <Header/>
             {children}
         </div>
         </body>
