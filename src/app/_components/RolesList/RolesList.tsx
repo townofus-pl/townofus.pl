@@ -8,6 +8,7 @@ import {Search} from "@/app/_components";
 import {RoleCard} from "./RoleCard/RoleCard";
 import {RoleOrModifierTypes} from "@/constants/rolesAndModifiers";
 import {Teams} from "@/constants/teams";
+import {Filters} from "@/app/_components/RolesList/Filters";
 
 const RolesAndModifiers = [...Roles, ...Modifiers];
 
@@ -46,11 +47,16 @@ export const RolesList = () => {
     const filter = useCallback((filterValue: RoleFilters|TeamFilters) => {
         if (filterValue in RoleFilters) {
             setTypeFilterValue(filterValue as RoleFilters);
+            return;
         }
 
         if (filterValue in TeamFilters) {
             setTeamFilterValue(filterValue as TeamFilters);
+            return;
         }
+
+        setTypeFilterValue(null);
+        setTeamFilterValue(null);
     }, []);
 
     const results = useMemo(
@@ -83,7 +89,7 @@ export const RolesList = () => {
                     rolesAndModifiers = rolesAndModifiers.filter(({team}) => team === Teams.Neutral || team === Teams.All);
                     break;
                 case TeamFilters.Impostor:
-                    rolesAndModifiers = rolesAndModifiers.filter(({team}) => team === Teams.Neutral || team === Teams.All);
+                    rolesAndModifiers = rolesAndModifiers.filter(({team}) => team === Teams.Impostor || team === Teams.All);
                     break;
                 default:
                     break;
@@ -96,7 +102,10 @@ export const RolesList = () => {
 
     return (
         <RolesListContext.Provider value={{searchValue, search, filter}}>
-            <Search/>
+            <div className="grid grid-cols-1 gap-y-5 md:grid-cols-5 lg:grid-cols-9 gap-x-0 md:gap-x-5">
+                <Search/>
+                <Filters/>
+            </div>
             <main>
                 <div className="grid grid-cols-1 gap-y-5">
                     {results.map(role => (
