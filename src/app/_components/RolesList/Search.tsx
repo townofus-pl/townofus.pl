@@ -1,5 +1,5 @@
 import {useContext} from "react";
-import {RolesListContext} from "@/app/_components/RolesList/RolesList";
+import {RolesListContext} from "./hooks";
 
 export const Search = () => {
     const {search} = useContext(RolesListContext);

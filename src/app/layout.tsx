@@ -1,9 +1,10 @@
 import type {Metadata} from "next";
 import localFont from "next/font/local";
 import {Barlow} from "next/font/google";
+import {GoogleAnalytics} from "@next/third-parties/google";
 import {DiscordLink} from "./_components";
-import "./globals.css";
 import {Header} from "./_components";
+import "./globals.css";
 
 const brook = localFont({
     src: '/_fonts/BrookPL.woff',
@@ -37,6 +38,7 @@ export default function RootLayout({
                     {children}
                 </div>
             </body>
+            <GoogleAnalytics gaId="G-W12ZGZ57HF"/>
         </html>
     );
 }

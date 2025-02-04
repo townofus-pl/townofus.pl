@@ -1,63 +1,20 @@
 'use client';
 
-import debounce from "lodash.debounce";
-import {createContext, useCallback, useMemo, useState} from "react";
+import {useMemo} from "react";
 import {Roles} from "@/roles";
 import {Modifiers} from "@/modifiers";
-import {Search} from "@/app/_components";
-import {RoleCard} from "./RoleCard/RoleCard";
 import {RoleOrModifierTypes} from "@/constants/rolesAndModifiers";
 import {Teams} from "@/constants/teams";
-import {Filters} from "@/app/_components/RolesList/Filters";
+import {useFilters, useSearch, TeamFilters, RoleFilters, RolesListContext} from "./hooks";
+import {Search} from "./Search";
+import {Filters} from "./Filters";
+import {RoleCard} from "./RoleCard/RoleCard";
 
 const RolesAndModifiers = [...Roles, ...Modifiers];
 
-export enum RoleFilters {
-    Role = 'Role',
-    Modifier = 'Modifier',
-}
-
-export enum TeamFilters {
-    Crewmate = 'Crewmate',
-    Neutral = 'Neutral',
-    Impostor = 'Impostor',
-}
-
-type RolesListContextType = {
-    searchValue: string;
-    search: (x: string) => void;
-    filter: (x: RoleFilters|TeamFilters) => void;
-};
-
-export const RolesListContext = createContext<RolesListContextType>({
-    searchValue: '',
-    search: () => {
-    },
-    filter: () => {
-    },
-});
-
 export const RolesList = () => {
-    const [searchValue, setSearchValue] = useState<string>('');
-    const [typeFilterValue, setTypeFilterValue] = useState<RoleFilters|null>(null);
-    const [teamFilterValue, setTeamFilterValue] = useState<TeamFilters|null>(null);
-
-    const search = useMemo(() => debounce(setSearchValue, 300), []);
-
-    const filter = useCallback((filterValue: RoleFilters|TeamFilters) => {
-        if (filterValue in RoleFilters) {
-            setTypeFilterValue(filterValue as RoleFilters);
-            return;
-        }
-
-        if (filterValue in TeamFilters) {
-            setTeamFilterValue(filterValue as TeamFilters);
-            return;
-        }
-
-        setTypeFilterValue(null);
-        setTeamFilterValue(null);
-    }, []);
+    const { searchValue, search } = useSearch();
+    const { typeFilterValue, teamFilterValue, filter } = useFilters();
 
     const results = useMemo(
         () => {
