@@ -1,4 +1,6 @@
-import {probabilityOfAppearing, type Role, RolesAfterDeath, SettingTypes, Teams,} from "@/constants";
+import {Role, RoleOrModifierTypes} from "@/constants/rolesAndModifiers";
+import {Teams} from "@/constants/teams";
+import {probabilityOfAppearing, RolesAfterDeath, SettingTypes} from "@/constants/settings";
 
 export const GuardianAngelAbilities = {
     Protect: {
@@ -8,6 +10,7 @@ export const GuardianAngelAbilities = {
 };
 
 export const GuardianAngel: Role = {
+    "type": RoleOrModifierTypes.Role,
     "name": "Guardian Angel",
     "color": "#B3FFFF",
     "team": Teams.Neutral,

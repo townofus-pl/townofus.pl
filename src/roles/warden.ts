@@ -1,4 +1,6 @@
-import {probabilityOfAppearing, Teams, type Role} from "@/constants";
+import {Role, RoleOrModifierTypes} from "@/constants/rolesAndModifiers";
+import {Teams} from "@/constants/teams";
+import {probabilityOfAppearing} from "@/constants/settings";
 
 export const WardenAbilities = {
     Fortify: {
@@ -8,6 +10,7 @@ export const WardenAbilities = {
 };
 
 export const Warden: Role = {
+    "type": RoleOrModifierTypes.Role,
     "name": "Warden",
     "color": "#9900FF",
     "team": Teams.Crewmate,

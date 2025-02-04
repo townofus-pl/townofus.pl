@@ -1,4 +1,6 @@
-import {probabilityOfAppearing, SettingTypes, Teams, type Role} from "@/constants";
+import {Role, RoleOrModifierTypes} from "@/constants/rolesAndModifiers";
+import {Teams} from "@/constants/teams";
+import {probabilityOfAppearing, SettingTypes} from "@/constants/settings";
 
 export const TrapperAbilities = {
     Trap: {
@@ -8,6 +10,7 @@ export const TrapperAbilities = {
 };
 
 export const Trapper: Role = {
+    "type": RoleOrModifierTypes.Role,
     "name": "Trapper",
     "color": "#A5D1B2",
     "team": Teams.Crewmate,

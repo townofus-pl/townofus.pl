@@ -1,4 +1,6 @@
-import {probabilityOfAppearing, SettingTypes, Teams, type Role} from "@/constants";
+import {Role, RoleOrModifierTypes} from "@/constants/rolesAndModifiers";
+import {Teams} from "@/constants/teams";
+import {probabilityOfAppearing, SettingTypes} from "@/constants/settings";
 
 export const TransporterAbilities = {
     Transport: {
@@ -8,6 +10,7 @@ export const TransporterAbilities = {
 };
 
 export const Transporter: Role = {
+    "type": RoleOrModifierTypes.Role,
     "name": "Transporter",
     "color": "#00ECFF",
     "team": Teams.Crewmate,

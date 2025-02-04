@@ -24,19 +24,19 @@ export const metadata: Metadata = {
 };
 
 export default function RootLayout({
-                                       children,
-                                   }: Readonly<{
+   children,
+}: Readonly<{
     children: React.ReactNode;
 }>) {
     return (
         <html lang="en" className="text-sm md:text-base">
-        <body className={`${brook.variable} ${barlow.variable} ${barlow.className}`}>
-        <DiscordLink/>
-        <div className="max-w-screen-xl m-auto">
-             <Header/>
-            {children}
-        </div>
-        </body>
+            <body className={`${brook.variable} ${barlow.variable} ${barlow.className}`}>
+                <DiscordLink/>
+                <div className="max-w-screen-xl m-auto">
+                     <Header/>
+                    {children}
+                </div>
+            </body>
         </html>
     );
 }

@@ -1,4 +1,6 @@
-import {probabilityOfAppearing, Role, SettingTypes, Teams} from "@/constants";
+import {Role, RoleOrModifierTypes} from "@/constants/rolesAndModifiers";
+import {Teams} from "@/constants/teams";
+import {probabilityOfAppearing, SettingTypes} from "@/constants/settings";
 
 export const MedicAbilities = {
     Shield: {
@@ -8,6 +10,7 @@ export const MedicAbilities = {
 }
 
 export const Medic: Role = {
+    "type": RoleOrModifierTypes.Role,
     "name": "Medic",
     "color": "#006400",
     "team": Teams.Crewmate,

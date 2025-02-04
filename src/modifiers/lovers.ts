@@ -1,6 +1,10 @@
-import {CommonAbilities, probabilityOfAppearing, type Role, SettingTypes, Teams} from "@/constants";
+import {Modifier, RoleOrModifierTypes} from "@/constants/rolesAndModifiers";
+import {Teams} from "@/constants/teams";
+import {probabilityOfAppearing, SettingTypes} from "@/constants/settings";
+import {CommonAbilities} from "@/constants/abilities";
 
-export const Lovers: Role = {
+export const Lovers: Modifier = {
+    "type": RoleOrModifierTypes.Modifier,
     "name": "Lovers",
     "color": "#FF69B4",
     "team": Teams.All,
@@ -14,7 +18,7 @@ export const Lovers: Role = {
         'Loving Impostor Probability': {
             value: 20, type: SettingTypes.Percentage,
         },
-        'Neutral Roles Can Be Lovers': {
+        'Neutral Modifiers Can Be Lovers': {
             value: true, type: SettingTypes.Boolean,
         },
         'Impostor Lover Can Kill Teammate': {

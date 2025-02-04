@@ -1,4 +1,6 @@
-import {probabilityOfAppearing, SettingTypes, Teams, type Role} from "@/constants";
+import {Role, RoleOrModifierTypes} from "@/constants/rolesAndModifiers";
+import {Teams} from "@/constants/teams";
+import {probabilityOfAppearing, SettingTypes} from "@/constants/settings";
 
 export const SurvivorAbilities = {
     Safeguard: {
@@ -8,6 +10,7 @@ export const SurvivorAbilities = {
 };
 
 export const Survivor: Role = {
+    "type": RoleOrModifierTypes.Role,
     "name": "survivor",
     "color": "#FFEB4D",
     "team": Teams.Neutral,

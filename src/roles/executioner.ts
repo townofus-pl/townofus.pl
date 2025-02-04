@@ -1,6 +1,10 @@
-import {CommonAbilities, probabilityOfAppearing, type Role, RolesAfterDeath, SettingTypes, Teams,} from "@/constants";
+import {Role, RoleOrModifierTypes} from "@/constants/rolesAndModifiers";
+import {Teams} from "@/constants/teams";
+import {probabilityOfAppearing, RolesAfterDeath, SettingTypes} from "@/constants/settings";
+import {CommonAbilities} from "@/constants/abilities";
 
 export const Executioner: Role = {
+    "type": RoleOrModifierTypes.Role,
     "name": "Executioner",
     "color": "#8C4005",
     "team": Teams.Neutral,

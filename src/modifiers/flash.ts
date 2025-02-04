@@ -1,6 +1,10 @@
-import {CommonAbilities, probabilityOfAppearing, type Role, SettingTypes, Teams} from "@/constants";
+import {Modifier, RoleOrModifierTypes} from "@/constants/rolesAndModifiers";
+import {Teams} from "@/constants/teams";
+import {probabilityOfAppearing, SettingTypes} from "@/constants/settings";
+import {CommonAbilities} from "@/constants/abilities";
 
-export const Flash: Role = {
+export const Flash: Modifier = {
+    "type": RoleOrModifierTypes.Modifier,
     "name": "Flash",
     "color": "#FFFFFF",
     "team": Teams.All,

@@ -1,4 +1,7 @@
-import {CommonAbilities, probabilityOfAppearing, type Role, SettingTypes, Teams,} from "@/constants";
+import {Role, RoleOrModifierTypes} from "@/constants/rolesAndModifiers";
+import {Teams} from "@/constants/teams";
+import {probabilityOfAppearing, SettingTypes} from "@/constants/settings";
+import {CommonAbilities} from "@/constants/abilities";
 
 export const BomberAbilities = {
     Plant: {
@@ -12,6 +15,7 @@ export const BomberAbilities = {
 };
 
 export const Bomber: Role = {
+    "type": RoleOrModifierTypes.Role,
     "name": "Bomber",
     "color": "#FF0000",
     "team": Teams.Impostor,

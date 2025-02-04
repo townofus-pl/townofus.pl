@@ -1,4 +1,7 @@
-import {CommonAbilities, Distances, probabilityOfAppearing, type Role, SettingTypes, Teams,} from "@/constants";
+import {Role, RoleOrModifierTypes} from "@/constants/rolesAndModifiers";
+import {Teams} from "@/constants/teams";
+import {Distances, probabilityOfAppearing, SettingTypes} from "@/constants/settings";
+import {CommonAbilities} from "@/constants/abilities";
 
 export const GlitchAbilities = {
     Hacker: {
@@ -12,6 +15,7 @@ export const GlitchAbilities = {
 };
 
 export const Glitch: Role = {
+    "type": RoleOrModifierTypes.Role,
     "name": "Glitch",
     "color": "#00FF00",
     "team": Teams.Neutral,

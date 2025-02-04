@@ -1,9 +1,9 @@
-import type {Role} from "@/constants";
+import {type RoleOrModifier} from "@/constants/rolesAndModifiers";
 import {SettingsList} from "./SettingsList";
 import {Team} from "./Team";
 import Image from "next/image";
 
-export const RoleCard = ({role}: { role: Role }) => (
+export const RoleCard = ({role}: { role: RoleOrModifier }) => (
     <div className="grid grid-cols-1 gap-y-5 p-5 bg-zinc-900/50 rounded-xl border-l-5"
          style={{borderColor: role.color}}>
         <header className="font-brook bg-zinc-900/50 p-4 rounded-lg flex gap-5 items-center justify-start">

@@ -1,4 +1,6 @@
-import {probabilityOfAppearing, SettingTypes, Teams, type Role} from "@/constants";
+import {Role, RoleOrModifierTypes} from "@/constants/rolesAndModifiers";
+import {Teams} from "@/constants/teams";
+import {probabilityOfAppearing, SettingTypes} from "@/constants/settings";
 
 export const SeerAbilities = {
     Reveal: {
@@ -8,6 +10,7 @@ export const SeerAbilities = {
 };
 
 export const Seer: Role = {
+    "type": RoleOrModifierTypes.Role,
     "name": "Seer",
     "color": "#FFCC80",
     "team": Teams.Crewmate,

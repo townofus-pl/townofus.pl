@@ -1,10 +1,7 @@
-import {
-    CommonAbilities,
-    probabilityOfAppearing,
-    SettingTypes,
-    Teams,
-    type Role,
-} from "@/constants";
+import {Role, RoleOrModifierTypes} from "@/constants/rolesAndModifiers";
+import {Teams} from "@/constants/teams";
+import {probabilityOfAppearing, SettingTypes} from "@/constants/settings";
+import {CommonAbilities} from "@/constants/abilities";
 
 export const WerewolfAbilities = {
     Rampage: {
@@ -14,6 +11,7 @@ export const WerewolfAbilities = {
 }
 
 export const Werewolf: Role = {
+    "type": RoleOrModifierTypes.Role,
     "name": "Werewolf",
     "color": "#8F4C18",
     "team": Teams.Neutral,

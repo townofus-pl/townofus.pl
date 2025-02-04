@@ -1,6 +1,10 @@
-import {CommonAbilities, probabilityOfAppearing, type Role, SettingTypes, Teams} from "@/constants";
+import {Role, RoleOrModifierTypes} from "@/constants/rolesAndModifiers";
+import {Teams} from "@/constants/teams";
+import {probabilityOfAppearing, SettingTypes} from "@/constants/settings";
+import {CommonAbilities} from "@/constants/abilities";
 
 export const Investigator: Role = {
+    "type": RoleOrModifierTypes.Role,
     "name": "Investigator",
     "color": "#00B2B2",
     "team": Teams.Crewmate,

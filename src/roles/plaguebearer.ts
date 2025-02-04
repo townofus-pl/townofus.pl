@@ -1,4 +1,6 @@
-import {probabilityOfAppearing, SettingTypes, Teams, type Role} from "@/constants";
+import {Role, RoleOrModifierTypes} from "@/constants/rolesAndModifiers";
+import {Teams} from "@/constants/teams";
+import {probabilityOfAppearing, SettingTypes} from "@/constants/settings";
 
 export const PlagueBearerAbilities = {
     Infect: {
@@ -12,6 +14,7 @@ export const PlagueBearerAbilities = {
 };
 
 export const Plaguebearer: Role = {
+    "type": RoleOrModifierTypes.Role,
     "name": "Plaguebearer",
     "color": "#E6FFB3",
     "team": Teams.Neutral,

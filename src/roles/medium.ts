@@ -1,4 +1,6 @@
-import {probabilityOfAppearing, SettingTypes, Teams, type Role} from "@/constants";
+import {type Role, RoleOrModifierTypes} from "@/constants/rolesAndModifiers";
+import {Teams} from "@/constants/teams";
+import {probabilityOfAppearing, SettingTypes} from "@/constants/settings";
 
 export const MediumAbilities = {
     Mediate: {
@@ -8,6 +10,7 @@ export const MediumAbilities = {
 };
 
 export const Medium: Role = {
+    "type": RoleOrModifierTypes.Role,
     "name": "Medium",
     "color": "#A680FF",
     "team": Teams.Crewmate,

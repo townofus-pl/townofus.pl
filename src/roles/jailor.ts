@@ -1,4 +1,6 @@
-import {probabilityOfAppearing, type Role, SettingTypes, Teams} from "@/constants";
+import {Role, RoleOrModifierTypes} from "@/constants/rolesAndModifiers";
+import {Teams} from "@/constants/teams";
+import {probabilityOfAppearing, SettingTypes} from "@/constants/settings";
 
 export const JailorAbilities = {
     Jail: {
@@ -12,6 +14,7 @@ export const JailorAbilities = {
 }
 
 export const Jailor: Role = {
+    "type": RoleOrModifierTypes.Role,
     "name": "Jailor",
     "color": "#A5A5A5",
     "team": Teams.Crewmate,
