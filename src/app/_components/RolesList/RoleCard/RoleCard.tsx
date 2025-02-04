@@ -31,5 +31,10 @@ export const RoleCard = ({role}: { role: Role }) => (
                 </ul>
             </div>
         </div>
+        {role.tip && (
+            <div className="bg-zinc-900/50 p-4 rounded-lg flex gap-5 items-center justify-start">
+                <h5 className="font-brook text-3xl">Porada: {role.tip}</h5>
+            </div>
+        )}
     </div>
 );

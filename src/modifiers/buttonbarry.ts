@@ -3,7 +3,7 @@ import {probabilityOfAppearing, type Role, Teams,} from "@/constants";
 export const ButtonBarryAbilities = {
     ButtonBarry: {
         "name": "Button (Naciśnij przycisk)",
-        "icon": "/images/abilities/placeholder.png",
+        "icon": "/images/abilities/button.png",
     },
 };
 
@@ -11,7 +11,7 @@ export const ButtonBarry: Role = {
     "name": "Button Barry",
     "color": "#FFFFFF",
     "team": Teams.All,
-    "icon": "/images/modifiers/placeholder.png",
+    "icon": "/images/modifiers/buttonbarry.png",
     "description": "Może zwołać spotkanie z dowolnego miejsca na mapie.",
     "settings": {
         ...probabilityOfAppearing(-1),
