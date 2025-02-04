@@ -5,7 +5,7 @@ import {probabilityOfAppearing, SettingTypes} from "@/constants/settings";
 export const DisperserAbilities = {
     Disperser: {
         "name": "Disperser",
-        "icon": "/images/abilities/placeholder.png",
+        "icon": "/images/abilities/disperse.png",
     },
 };
 
@@ -14,7 +14,7 @@ export const Disperser: Modifier = {
     "name": "Disperser",
     "color": "#FF0000",
     "team": Teams.Impostor,
-    "icon": "/images/modifiers/placeholder.png",
+    "icon": "/images/modifiers/disperse.png",
     "description": "Może jednorazowo wysłać wszystkich do losowych ventów.",
     "settings": {
         ...probabilityOfAppearing(-1),

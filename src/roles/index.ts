@@ -24,6 +24,36 @@ import {Jester} from "./jester";
 import {Juggernaut} from "./juggernaut";
 import {Lookout} from "./lookout";
 import {Medic} from "./medic";
+import {Medium} from "./medium";
+import {Miner} from "./miner";
+import {Morphling} from "./morphling";
+import {Mystic} from "./mystic";
+import {Oracle} from "./oracle";
+import {Phantom} from "./phantom";
+import {Plaguebearer} from "./plaguebearer";
+import {Politician} from "./politician";
+import {Prosecutor} from "./prosecutor";
+import {Scavenger} from "./scavenger";
+import {Seer} from "./seer";
+import {Sheriff} from "./sheriff";
+import {Snitch} from "./snitch";
+import {Soul_Collector} from "./soul_collector";
+import {Spy} from "./spy";
+import {Survivor} from "./survivor";
+import {Swapper} from "./swapper";
+import {Swooper} from "./swooper";
+import {Tracker} from "./tracker";
+import {Traitor} from "./traitor";
+import {Transporter} from "./transporter";
+import {Trapper} from "./trapper";
+import {Undertaker} from "./undertaker";
+import {Vampire} from "./vampire";
+import {Venerer} from "./venerer";
+import {Veteran} from "./veteran";
+import {Vigilante} from "./vigilante";
+import {Warden} from "./warden";
+import {Warlock} from "./warlock";
+import {Werewolf} from "./werewolf";
 
 export const Roles = [
     Altruist,
@@ -52,4 +82,34 @@ export const Roles = [
     Juggernaut,
     Lookout,
     Medic,
+    Medium,
+    Miner,
+    Morphling,
+    Mystic,
+    Oracle,
+    Phantom,
+    Plaguebearer,
+    Politician,
+    Prosecutor,
+    Scavenger,
+    Seer,
+    Sheriff,
+    Snitch,
+    Soul_Collector,
+    Spy,
+    Survivor,
+    Swapper,
+    Swooper,
+    Tracker,
+    Traitor,
+    Transporter,
+    Trapper,
+    Undertaker,
+    Vampire,
+    Venerer,
+    Veteran,
+    Vigilante,
+    Warden,
+    Warlock,
+    Werewolf,
 ].sort((a, b) => a.name.localeCompare(b.name));

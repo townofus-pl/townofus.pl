@@ -8,7 +8,7 @@ export const Flash: Modifier = {
     "name": "Flash",
     "color": "#FFFFFF",
     "team": Teams.All,
-    "icon": "/images/modifiers/placeholder.png",
+    "icon": "/images/modifiers/flash.png",
     "description": "Porusza się z większą prędkością.",
     "settings": {
         ...probabilityOfAppearing(-1),

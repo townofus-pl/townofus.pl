@@ -1,7 +1,9 @@
 import type {Metadata} from "next";
 import localFont from "next/font/local";
 import {Barlow} from "next/font/google";
+import {DiscordLink} from "./_components";
 import "./globals.css";
+import {Header} from "./_components";
 
 const brook = localFont({
     src: '/_fonts/BrookPL.woff',
@@ -18,7 +20,7 @@ const barlow = Barlow({
 
 export const metadata: Metadata = {
     title: "townofus.pl - Among Us Town of Us Polska",
-    description: "Serwis dla fanów gry Among Us z modyfikacją Town of Us",
+    description: "Szybka wyszukiwarka ról z modyfikacji Town of Us",
 };
 
 export default function RootLayout({
@@ -28,8 +30,10 @@ export default function RootLayout({
 }>) {
     return (
         <html lang="en" className="text-sm md:text-base">
-        <body className={`${brook.variable} ${barlow.variable} ${barlow.className} bg-cover`}>
+        <body className={`${brook.variable} ${barlow.variable} ${barlow.className}`}>
+        <DiscordLink/>
         <div className="max-w-screen-xl m-auto">
+             <Header/>
             {children}
         </div>
         </body>
