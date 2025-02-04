@@ -30,7 +30,7 @@ export const useFilters = () => {
                 setTeamFilterValue(value as TeamFilters);
                 break;
             default:
-                return; // skip for unknown filter type
+                throw new Error(`Unknown filter type: ${type}`);
         }
 
         sendGAEvent('event', 'filter', {type, value});
