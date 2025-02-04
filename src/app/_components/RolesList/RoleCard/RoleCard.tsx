@@ -14,8 +14,8 @@ export const RoleCard = ({role}: { role: RoleOrModifier }) => (
             </div>
         </header>
         <div className="grid grid-cols-1 md:grid-cols-2/1 gap-5">
-            <div className="bg-zinc-900/50 rounded-xl p-4">
-                <div className="mb-10 text-xl">{role.description}</div>
+            <div className="bg-zinc-900/50 rounded-xl p-4 flex flex-col gap-10 justify-between">
+                <div className="text-xl">{role.description}</div>
                 <SettingsList settings={role.settings}/>
             </div>
             <div className="bg-zinc-900/50 rounded-xl p-4">

@@ -5,7 +5,7 @@ import {Roles} from "@/roles";
 import {Modifiers} from "@/modifiers";
 import {RoleOrModifierTypes} from "@/constants/rolesAndModifiers";
 import {Teams} from "@/constants/teams";
-import {useFilters, useSearch, TeamFilters, RoleFilters, RolesListContext} from "./hooks";
+import {RolesListContext, TeamFilters, TypeFilters, useFilters, useSearch} from "./hooks";
 import {Search} from "./Search";
 import {Filters} from "./Filters";
 import {RoleCard} from "./RoleCard/RoleCard";
@@ -28,10 +28,10 @@ export const RolesList = () => {
             }
 
             switch (typeFilterValue) {
-                case RoleFilters.Role:
+                case TypeFilters.Role:
                     rolesAndModifiers = rolesAndModifiers.filter(({type}) => type === RoleOrModifierTypes.Role);
                     break;
-                case RoleFilters.Modifier:
+                case TypeFilters.Modifier:
                     rolesAndModifiers = rolesAndModifiers.filter(({type}) => type === RoleOrModifierTypes.Modifier);
                     break;
                 default:

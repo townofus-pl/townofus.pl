@@ -1,8 +1,7 @@
-import {useContext} from "react";
-import {RolesListContext} from "./hooks";
+import {useRolesListContext} from "./hooks";
 
 export const Search = () => {
-    const {search} = useContext(RolesListContext);
+    const {search} = useRolesListContext();
 
     return (
         <div className="col-span-2 md:col-span-3 lg:col-span-6 text-lg">
