@@ -1,5 +1,5 @@
 import {useContext} from 'react';
-import {TeamFilters,RoleFilters,RolesListContext} from './RolesList';
+import {TeamFilters,RoleFilters,RolesListContext} from './hooks';
 
 export const Filters = () => {
     const {filter} = useContext(RolesListContext);
