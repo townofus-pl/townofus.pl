@@ -11,7 +11,7 @@ export const ButtonBarry: Role = {
     "name": "Button Barry",
     "color": "#FFFFFF",
     "team": Teams.All,
-    "icon": "/images/modifiers/placeholder.png",
+    "icon": "/images/modifiers/buttonbarry.png",
     "description": "Może zwołać spotkanie z dowolnego miejsca na mapie.",
     "settings": {
         ...probabilityOfAppearing(-1),

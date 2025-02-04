@@ -4,7 +4,7 @@ export const Bait: Role = {
     "name": "Bait",
     "color": "#FFFFFF",
     "team": Teams.Crewmate,
-    "icon": "/images/modifiers/placeholder.png",
+    "icon": "/images/modifiers/bait.png",
     "description": "Zmusza zabójcę do automatycznego zgłoszenia ciała.",
     "settings": {
         ...probabilityOfAppearing(-1),

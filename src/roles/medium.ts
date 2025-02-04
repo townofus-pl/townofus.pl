@@ -3,7 +3,7 @@ import {probabilityOfAppearing, SettingTypes, Teams, type Role} from "@/constant
 export const MediumAbilities = {
     Mediate: {
         "name": "Mediate (Dokonaj mediacji) ",
-        "icon": "abilities/mediate.png"
+        "icon": "images/abilities/mediate.png"
     },
 };
 
