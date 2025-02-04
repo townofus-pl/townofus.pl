@@ -3,6 +3,7 @@ import localFont from "next/font/local";
 import {Barlow} from "next/font/google";
 import {DiscordLink} from "./_components";
 import "./globals.css";
+import {Header} from "./_components";
 
 const brook = localFont({
     src: '/_fonts/BrookPL.woff',
@@ -32,6 +33,7 @@ export default function RootLayout({
         <body className={`${brook.variable} ${barlow.variable} ${barlow.className}`}>
         <DiscordLink/>
         <div className="max-w-screen-xl m-auto">
+             <Header/>
             {children}
         </div>
         </body>
