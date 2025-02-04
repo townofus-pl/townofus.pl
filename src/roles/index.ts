@@ -37,7 +37,7 @@ import {Scavenger} from "./scavenger";
 import {Seer} from "./seer";
 import {Sheriff} from "./sheriff";
 import {Snitch} from "./snitch";
-import {Soul_Collector} from "./soul_collector";
+import {SoulCollector} from "./soul_collector";
 import {Spy} from "./spy";
 import {Survivor} from "./survivor";
 import {Swapper} from "./swapper";
@@ -95,7 +95,7 @@ export const Roles = [
     Seer,
     Sheriff,
     Snitch,
-    Soul_Collector,
+    SoulCollector,
     Spy,
     Survivor,
     Swapper,

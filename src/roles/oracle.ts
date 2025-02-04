@@ -1,4 +1,6 @@
-import {probabilityOfAppearing, SettingTypes, Teams, type Role} from "@/constants";
+import {Role, RoleOrModifierTypes} from "@/constants/rolesAndModifiers";
+import {Teams} from "@/constants/teams";
+import {probabilityOfAppearing, SettingTypes} from "@/constants/settings";
 
 export const OracleAbilities = {
     Confess: {
@@ -8,6 +10,7 @@ export const OracleAbilities = {
 };
 
 export const Oracle: Role = {
+    "type": RoleOrModifierTypes.Role,
     "name": "Oracle",
     "color": "#BF00BF",
     "team": Teams.Crewmate,

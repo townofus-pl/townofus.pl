@@ -1,4 +1,7 @@
-import {CommonAbilities, probabilityOfAppearing, SettingTypes, Teams, type Role} from "@/constants";
+import {Role, RoleOrModifierTypes} from "@/constants/rolesAndModifiers";
+import {Teams} from "@/constants/teams";
+import {probabilityOfAppearing, SettingTypes} from "@/constants/settings";
+import {CommonAbilities} from "@/constants/abilities";
 
 export const MorphlingAbilities = {
     Sample: {
@@ -12,6 +15,7 @@ export const MorphlingAbilities = {
 };
 
 export const Morphling: Role = {
+    "type": RoleOrModifierTypes.Role,
     "name": "Morphling",
     "color": "#FF0000",
     "team": Teams.Impostor,

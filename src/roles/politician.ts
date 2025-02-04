@@ -1,4 +1,6 @@
-import {probabilityOfAppearing, SettingTypes, Teams, type Role} from "@/constants";
+import {Role, RoleOrModifierTypes} from "@/constants/rolesAndModifiers";
+import {Teams} from "@/constants/teams";
+import {probabilityOfAppearing, SettingTypes} from "@/constants/settings";
 
 export const PoliticianAbilities = {
     Campaign: {
@@ -12,6 +14,7 @@ export const PoliticianAbilities = {
 };
 
 export const Politician: Role = {
+    "type": RoleOrModifierTypes.Role,
     "name": "Politician",
     "color": "#660099",
     "team": Teams.Crewmate,

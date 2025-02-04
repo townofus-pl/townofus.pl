@@ -1,4 +1,6 @@
-import {probabilityOfAppearing, Role, Teams} from "@/constants";
+import {Role, RoleOrModifierTypes} from "@/constants/rolesAndModifiers";
+import {Teams} from "@/constants/teams";
+import {probabilityOfAppearing} from "@/constants/settings";
 
 export const VampireAbilities = {
     Bite: {
@@ -8,6 +10,7 @@ export const VampireAbilities = {
 };
 
 export const Vampire: Role = {
+    "type": RoleOrModifierTypes.Role,
     "name": "Vampire",
     "color": "#747474",
     "team": Teams.Neutral,

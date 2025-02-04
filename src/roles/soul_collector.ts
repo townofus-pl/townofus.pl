@@ -1,4 +1,6 @@
-import {probabilityOfAppearing, Teams, type Role} from "@/constants";
+import {Role, RoleOrModifierTypes} from "@/constants/rolesAndModifiers";
+import {Teams} from "@/constants/teams";
+import {probabilityOfAppearing} from "@/constants/settings";
 
 export const SoulCollectorAbilities = {
     Collect: {
@@ -7,7 +9,8 @@ export const SoulCollectorAbilities = {
     },
 };
 
-export const Soul_Collector: Role = {
+export const SoulCollector: Role = {
+    "type": RoleOrModifierTypes.Role,
     "name": "Soul collector",
     "color": "#12e2bb",
     "team": Teams.Neutral,

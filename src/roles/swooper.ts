@@ -1,4 +1,7 @@
-import {CommonAbilities, probabilityOfAppearing, SettingTypes, Teams, type Role} from "@/constants";
+import {Role, RoleOrModifierTypes} from "@/constants/rolesAndModifiers";
+import {Teams} from "@/constants/teams";
+import {probabilityOfAppearing, SettingTypes} from "@/constants/settings";
+import {CommonAbilities} from "@/constants/abilities";
 
 export const SwooperAbilities = {
     Swoop: {
@@ -8,6 +11,7 @@ export const SwooperAbilities = {
 };
 
 export const Swooper: Role = {
+    "type": RoleOrModifierTypes.Role,
     "name": "Swooper",
     "color": "#FF0000",
     "team": Teams.Impostor,

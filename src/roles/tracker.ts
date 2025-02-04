@@ -1,4 +1,6 @@
-import {probabilityOfAppearing, SettingTypes, Teams, type Role} from "@/constants";
+import {Role, RoleOrModifierTypes} from "@/constants/rolesAndModifiers";
+import {Teams} from "@/constants/teams";
+import {probabilityOfAppearing, SettingTypes} from "@/constants/settings";
 
 export const TrackerAbilities = {
     Track: {
@@ -8,6 +10,7 @@ export const TrackerAbilities = {
 };
 
 export const Tracker: Role = {
+    "type": RoleOrModifierTypes.Role,
     "name": "Tracker",
     "color": "#009900",
     "team": Teams.Crewmate,

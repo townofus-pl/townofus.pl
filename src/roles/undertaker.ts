@@ -1,4 +1,7 @@
-import {CommonAbilities, probabilityOfAppearing, Role, SettingTypes, Teams} from "@/constants";
+import {Role, RoleOrModifierTypes} from "@/constants/rolesAndModifiers";
+import {Teams} from "@/constants/teams";
+import {probabilityOfAppearing, SettingTypes} from "@/constants/settings";
+import {CommonAbilities} from "@/constants/abilities";
 
 export const UndertakerAbilities = {
     Drag: {
@@ -13,6 +16,7 @@ export const UndertakerAbilities = {
 };
 
 export const Undertaker: Role = {
+    "type": RoleOrModifierTypes.Role,
     "name": "Undertaker",
     "color": "#FF0000",
     "team": Teams.Impostor,
