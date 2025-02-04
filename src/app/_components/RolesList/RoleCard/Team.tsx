@@ -18,7 +18,7 @@ export const Team = ({team}: { team: Teams }) => {
 
     return (
         <div className={`inline-block py-1 px-2.5 rounded text-2xl ${teamClasses}`}>
-            {team}
+           Team: {team}
         </div>
     );
 }

@@ -1,5 +1,5 @@
-import type { Config } from "tailwindcss";
-import { TeamColors } from "./src/constants/teams";
+import type {Config} from "tailwindcss";
+import {TeamColors} from "./src/constants/teams";
 
 export default {
     content: [
@@ -15,6 +15,9 @@ export default {
                 'role-crewmate': TeamColors.Crewmate,
                 'role-impostor': TeamColors.Impostor,
                 'role-neutral': TeamColors.Neutral,
+            },
+            backgroundColor: {
+                'discord-blurple': '#5865F2',
             },
             borderColor: {
                 search: "rgb(51 51 51)",

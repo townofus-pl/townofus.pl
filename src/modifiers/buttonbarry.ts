@@ -5,7 +5,7 @@ import {probabilityOfAppearing} from "@/constants/settings";
 export const ButtonBarryAbilities = {
     ButtonBarry: {
         "name": "Button (Naciśnij przycisk)",
-        "icon": "/images/abilities/placeholder.png",
+        "icon": "/images/abilities/button.png",
     },
 };
 
@@ -14,7 +14,7 @@ export const ButtonBarry: Modifier = {
     "name": "Button Barry",
     "color": "#FFFFFF",
     "team": Teams.All,
-    "icon": "/images/modifiers/placeholder.png",
+    "icon": "/images/modifiers/buttonbarry.png",
     "description": "Może zwołać spotkanie z dowolnego miejsca na mapie.",
     "settings": {
         ...probabilityOfAppearing(-1),
