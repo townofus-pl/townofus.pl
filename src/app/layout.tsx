@@ -34,8 +34,7 @@ export default function RootLayout({
                     {children}
                 </div>
             </body>
-            {/* TODO: replace with prod gaId */}
-            <GoogleAnalytics gaId="G-V4K5NK2F4E"/>
+            <GoogleAnalytics gaId="G-W12ZGZ57HF"/>
         </html>
     );
 }
