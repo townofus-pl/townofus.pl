@@ -1,6 +1,7 @@
 import type {Metadata} from "next";
 import localFont from "next/font/local";
 import {Barlow} from "next/font/google";
+import {GoogleAnalytics} from "@next/third-parties/google";
 import "./globals.css";
 
 const brook = localFont({
@@ -28,11 +29,12 @@ export default function RootLayout({
 }>) {
     return (
         <html lang="en" className="text-sm md:text-base">
-        <body className={`${brook.variable} ${barlow.variable} ${barlow.className} bg-cover`}>
-        <div className="max-w-screen-xl m-auto">
-            {children}
-        </div>
-        </body>
+            <body className={`${brook.variable} ${barlow.variable} ${barlow.className} bg-cover`}>
+                <div className="max-w-screen-xl m-auto">
+                    {children}
+                </div>
+            </body>
+            <GoogleAnalytics gaId="G-V4K5NK2F4E"/>
         </html>
     );
 }
