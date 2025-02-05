@@ -24,7 +24,19 @@ export const Venerer: Role = {
     "color": "#FF0000",
     "team": Teams.Impostor,
     "icon": "/images/roles/venerer.png",
-    "description": "Venerer to Impostor, który zdobywa zdolności poprzez zabijanie. \nPo swoim pierwszym zabójstwie, Venerer może się zakamuflować. \nPo drugim zabójstwie, Venerer może szybciej biegać. <br>Po trzecim zabójstwie, po aktywowaniu zdolności, wszyscy inni gracze są spowolnieni. Wszystkie zdolności są aktywowane jednym przyciskiem i mają tę samą długość trwania.",
+    "description": (<>
+            <p>
+            Venerer to Impostor, który zdobywa zdolności poprzez zabijanie.
+            </p>
+            <ul>
+            <li>Po swoim pierwszym zabójstwie, Venerer może się zakamuflować.</li>
+            <li>Po drugim zabójstwie, Venerer może szybciej biegać.</li>
+            <li>Po trzecim zabójstwie, po aktywowaniu zdolności, wszyscy inni gracze są spowolnieni.</li>
+            </ul>
+            <p>
+            Wszystkie zdolności są aktywowane jednym przyciskiem i mają tę samą długość trwania.
+            </p>
+        </>),
     "settings": {
         ...probabilityOfAppearing(-1),
     },
