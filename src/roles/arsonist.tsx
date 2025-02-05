@@ -35,7 +35,7 @@ export const Arsonist: Role = {
             type: SettingTypes.Time,
         },
         'Maximum Alive Players Doused': {
-            value: 15,
+            value: 5,
             type: SettingTypes.Number,
         },
         'Arsonist Has Impostor Vision': {
