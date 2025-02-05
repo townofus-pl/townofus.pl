@@ -9,7 +9,7 @@ export const Underdog: Modifier = {
     "color": "#FF0000",
     "team": Teams.Impostor,
     "icon": "/images/modifiers/placeholder.png",
-    "description": "Ma przedłużony czas odnowienia zabicia, który skraca się gdy jest sam.",
+    "description": "Ma wydłużony Kill Cooldown. Gdy jest ostatnim żywym impostorem, jego Cooldown wraca do normy.",
     "settings": {
         ...probabilityOfAppearing(-1),
         'Kill Cooldown Bonus': {

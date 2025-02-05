@@ -9,7 +9,7 @@ export const DoubleShot: Modifier = {
     "color": "#FF0000",
     "team": Teams.Impostor,
     "icon": "/images/modifiers/placeholder.png",
-    "description": "Otrzymuje dodatkowe życie podczas zestrzelenia.",
+    "description": "Gdy pierwsza próba zgadnięcia roli nie powiedzie się, osoba z Double shotem dostaje następną szansę.",
     "settings": {
         ...probabilityOfAppearing(-1),
     },
