@@ -1,11 +1,11 @@
 import {createContext, useContext} from "react";
-import {RoleFilters, TeamFilters} from "./useFilters";
+import type {AvailableFilters, TeamFilters, TypeFilters} from "./useFilters";
 
 
 type RolesListContextType = {
     searchValue: string;
-    search: (x: string) => void;
-    filter: (x: RoleFilters|TeamFilters) => void;
+    search: (value: string) => void;
+    filter: (type: AvailableFilters, value: TypeFilters | TeamFilters) => void;
 };
 
 export const RolesListContext = createContext<RolesListContextType>({
