@@ -9,7 +9,7 @@ export const Torch: Modifier = {
     "color": "#FFFFFF",
     "team": Teams.Crewmate,
     "icon": "/images/modifiers/torch.png",
-    "description": "Widoczność nie zmniejsza się podczas sabotażu świateł.",
+    "description": "Podczas sabotażu świateł nie zmniejsza mu się pole widzenia.",
     "settings": {
         ...probabilityOfAppearing(-1),
     },

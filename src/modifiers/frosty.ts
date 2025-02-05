@@ -9,7 +9,7 @@ export const Frosty: Modifier = {
     "color": "#FFFFFF",
     "team": Teams.Crewmate,
     "icon": "/images/modifiers/frosty.png",
-    "description": "Spowalnia zabójcę po śmierci.",
+    "description": "Gdy umrze, jego zabójca zostanie spowolniony.",
     "settings": {
         ...probabilityOfAppearing(-1),
         'Chill Duration': {

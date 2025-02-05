@@ -9,7 +9,7 @@ export const Diseased: Modifier = {
     "color": "#FFFFFF",
     "team": Teams.Crewmate,
     "icon": "/images/modifiers/placeholder.png",
-    "description": "Wydłuża czas odnowienia zabójstwa zabójcy po śmierci.",
+    "description": "Gdy umrze, czas odnowienia zabójstwa zabójcy wydłuża się.",
     "settings": {
         ...probabilityOfAppearing(-1),
         'Deceased Kill Multiplier': {

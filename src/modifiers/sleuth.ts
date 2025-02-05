@@ -9,7 +9,7 @@ export const Sleuth: Modifier = {
     "color": "#FFFFFF",
     "team": Teams.All,
     "icon": "/images/modifiers/placeholder.png",
-    "description": "Widzi Modifier zgłoszonych ciał podczas spotkań.",
+    "description": "Zna rolę zgłoszonego przez siebie ciała.",
     "settings": {
         ...probabilityOfAppearing(-1),
     },

@@ -15,7 +15,7 @@ export const Disperser: Modifier = {
     "color": "#FF0000",
     "team": Teams.Impostor,
     "icon": "/images/modifiers/disperse.png",
-    "description": "Może jednorazowo wysłać wszystkich do losowych ventów.",
+    "description": "Może jednorazowo wysłać wszystkich graczy do losowych ventów.",
     "settings": {
         ...probabilityOfAppearing(-1),
         'Uses': {

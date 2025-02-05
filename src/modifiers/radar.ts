@@ -9,7 +9,7 @@ export const Radar: Modifier = {
     "color": "#FFFFFF",
     "team": Teams.All,
     "icon": "/images/modifiers/placeholder.png",
-    "description": "Widzi strzałkę wskazującą najbliższego gracza.",
+    "description": "Posiada strzałkę wskazującą najbliższego gracza.",
     "settings": {
         ...probabilityOfAppearing(-1),
     },

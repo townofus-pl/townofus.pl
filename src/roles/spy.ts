@@ -9,7 +9,7 @@ export const Spy: Role = {
     "color": "#CCA3CC",
     "team": Teams.Crewmate,
     "icon": "/images/roles/spy.png",
-    "description": "Crewmate, który zdobywa dodatkowe informacje podczas korzystania z Panelu Admina. <br>Przy Panelu Admina Spy może zobaczyć kolory wszystkich graczy na mapie.",
+    "description": "Crewmate, który zdobywa dodatkowe informacje podczas korzystania z Panelu Admina. Przy Panelu Admina Spy może zobaczyć kolory wszystkich graczy na mapie.",
     "settings": {
         ...probabilityOfAppearing(-1),
     },

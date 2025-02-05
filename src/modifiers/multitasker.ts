@@ -9,7 +9,7 @@ export const Multitasker: Modifier = {
     "color": "#FFFFFF",
     "team": Teams.Crewmate,
     "icon": "/images/modifiers/placeholder.png",
-    "description": "Posiada przejrzyste zadania.",
+    "description": "Posiada półprzezroczyste zadania, dzięki czemu widzi co się wokół niego dzieje.",
     "settings": {
         ...probabilityOfAppearing(-1),
     },

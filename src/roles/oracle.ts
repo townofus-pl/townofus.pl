@@ -15,7 +15,7 @@ export const Oracle: Role = {
     "color": "#BF00BF",
     "team": Teams.Crewmate,
     "icon": "/images/roles/oracle.png",
-    "description": "Crewmate, który może zmusić innego gracza do wyjawienia informacji. <br>Oracle ma 3 zdolności: <br>Pierwsza - gdy Oracle zginie, osoba wyznająca mu informacje ujawni wszystkim swoją przynależność (80% szans na prawidłową). <br>Druga - podczas każdego spotkania Oracle otrzymuje wyznanie od spowiadanej osoby o tym, kto może być mordercą. Spowiadany zawsze wyjawia dwóch podejrzanych. Jeśli spowiadany jest Crewmatem, wydaje co najmniej jednego mordercę. W przeciwnym wypadku podejrzenia są fałszywe.<br>Trzecia - Oracle daje błogosławieństwo osobie spowiadanej, co zapewnia jej odporność na głosy.",
+    "description": "Crewmate, który może zmusić innego gracza do wyjawienia informacji. Oracle ma 3 zdolności: Pierwsza - gdy Oracle zginie, osoba wyznająca mu informacje ujawni wszystkim swoją przynależność (80% szans na prawidłową). Druga - podczas każdego spotkania Oracle otrzymuje wyznanie od spowiadanej osoby o tym, kto może być mordercą. Spowiadany zawsze wyjawia dwóch podejrzanych. Jeśli spowiadany jest Crewmatem, wydaje co najmniej jednego mordercę. W przeciwnym wypadku podejrzenia są fałszywe.Trzecia - Oracle daje błogosławieństwo osobie spowiadanej, co zapewnia jej odporność na głosy.",
     "settings": {
         ...probabilityOfAppearing(-1),
         "Confess Cooldown": {

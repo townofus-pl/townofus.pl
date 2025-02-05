@@ -15,7 +15,17 @@ export const Seer: Role = {
     "color": "#FFCC80",
     "team": Teams.Crewmate,
     "icon": "/images/roles/seer.png",
-    "description": "Crewmate, który może sprawdzić przynależność drużynową innego gracza. Po użyciu zdolności, nick sprawdzanego gracza zmienia kolor:<br>Na <span style='color: #00ff00;'>Zielony</span> – jeśli gracz należy do drużyny Crewmate'ów.<br>Na <span style='color: #ff0000;'>Czerwony</span> – jeśli gracz ma inną rolę (Impostor lub neutralną).",
+    "description": (
+        <>
+            <p>Crewmate, który może sprawdzić przynależność drużynową innego gracza. Po użyciu zdolności, nick sprawdzanego gracza zmienia kolor:</p>
+            <ul>
+            <li>Na <span style={{ color: "#00ff00" }}>Zielony</span> – jeśli gracz należy do drużyny Crewmateów.</li>
+            <li>Na <span style={{ color: "#ff0000" }}>Czerwony</span> – jeśli gracz ma inną rolę (Impostor lub neutralną).</li>
+            </ul>
+        </>
+    ),
+
+
     "settings": {
         ...probabilityOfAppearing(-1),
         "Seer Cooldown": {

@@ -20,7 +20,7 @@ export const Escapist: Role = {
     "color": "#FF0000",
     "team": Teams.Impostor,
     "icon": "/images/roles/escapist.png",
-    "description": "Impostor, który może teleportować się do wybranej wcześniej lokalizacji. Raz na rundę Escapist może oznaczyć miejsce, do którego później będzie mógł się teleportować .",
+    "description": "Impostor, który może teleportować się do wybranej wcześniej lokalizacji. Raz na rundę Escapist może oznaczyć miejsce, do którego później będzie mógł się teleportować.",
     "settings": {
         ...probabilityOfAppearing(-1),
         "Recall Cooldown": {
