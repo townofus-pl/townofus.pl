@@ -5,7 +5,7 @@ import {probabilityOfAppearing} from "@/constants/settings";
 export const WardenAbilities = {
     Fortify: {
         "name": "Fortify (Fortyfikuj)",
-        "icon": "/images/abilities/Fortify.png"
+        "icon": "/images/abilities/fortify.png"
     },
 };
 
