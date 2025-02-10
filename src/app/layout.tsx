@@ -12,6 +12,12 @@ const brook = localFont({
     variable: '--font-brook',
 });
 
+export const vcr = localFont({
+    src: "/_fonts/Better-VCR.woff",
+    display: "swap",
+    variable: "--font-vcr",
+});
+
 const barlow = Barlow({
     subsets: ["latin-ext"],
     weight: ["400", "700"],
