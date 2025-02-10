@@ -15,7 +15,7 @@ export const PlagueBearerAbilities = {
 
 export const Plaguebearer: Role = {
     "type": RoleOrModifierTypes.Role,
-    "name": "Plaguebearer",
+    "name": "Plaguebearer / Pestilence",
     "color": "#E6FFB3",
     "team": Teams.Neutral,
     "icon": "/images/roles/plaguebearer.png",
