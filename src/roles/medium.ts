@@ -36,4 +36,5 @@ export const Medium: Role = {
         },
     },
     "abilities": [MediumAbilities.Mediate],
+    "tip": "Regularnie sprawdzaj Vitalsy, aby wiedzieć czy ktoś umarł."
 };
