@@ -6,6 +6,10 @@ export const DetectiveAbilities = {
     Examine: {
         "name": "Examine (Zbadaj)",
         "icon": "/images/abilities/examine.png"
+    },
+    Inspect: {
+        "name": "Inspect (Sprawdź)",
+        "icon": "/images/abilities/inspect.png"
     }
 };
 
@@ -19,5 +23,5 @@ export const Detective: Role = {
     "settings": {
         ...probabilityOfAppearing(-1),
     },
-    "abilities": [DetectiveAbilities.Examine],
+    "abilities": [DetectiveAbilities.Examine, DetectiveAbilities.Inspect],
 };

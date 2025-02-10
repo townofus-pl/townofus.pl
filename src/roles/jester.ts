@@ -15,7 +15,7 @@ export const Jester: Role = {
     "color": "#FFBFCF",
     "team": Teams.Neutral,
     "icon": "/images/roles/jester.png",
-    "description": "Neutralna rola z własnym warunkiem zwycięstwa. Jester wygrywa tylko wtedy, gdy zostanie wygnany podczas głosowania. Przegrywa, jeśli zwyciężą Crewmates, Impostorzy lub inna neutralna rola. Może chować się w wentylacji, ale nie może się nią poruszać.",
+    "description": "Neutralna rola z własnym warunkiem zwycięstwa. Jester wygrywa tylko wtedy, gdy zostanie wygnany podczas głosowania. Przegrywa, jeśli zwyciężą Crewmate'owie, Impostorzy lub inna neutralna rola. Może chować się w wentylacji, ale nie może się nią poruszać.",
     "settings": {
         ...probabilityOfAppearing(-1),
         "Jester Can Button": {

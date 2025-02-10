@@ -16,7 +16,7 @@ export const Grenadier: Role = {
     "color": "#FF0000",
     "team": Teams.Impostor,
     "icon": "/images/roles/grenadier.png",
-    "description": "Impostor, który może rzucać granatami dymnymi. Podczas gry Grenadier ma możliwość rzucenia granatu dymnego, który oślepia Crewmate’ów, uniemożliwiając im widzenie. Granat dymny nie może być aktywowany w czasie sabotażu.",
+    "description": "Impostor, który może rzucać granatami dymnymi. Podczas gry Grenadier może rzucić granat dymny, który oślepia Crewmate’ów, sprawiając, że ich ekran staje się jasnoszary. Granat dymny nie może być aktywowany w czasie sabotażu.",
     "settings": {
         ...probabilityOfAppearing(-1),
         "Flash Grenade Cooldown": {
