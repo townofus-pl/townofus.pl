@@ -9,7 +9,7 @@ export const Investigator: Role = {
     "color": "#00B2B2",
     "team": Teams.Crewmate,
     "icon": "/images/roles/investigator.png",
-    "description": "Crewmate, który może widzieć ślady stóp graczy. Każdy ślad znika po określonym czasie.",
+    "description": "Crewmate, który widzi ślady stóp w kolorach graczy. Każdy ślad znika po określonym czasie.",
     "settings": {
         ...probabilityOfAppearing(-1),
         "Footprint Size": {
