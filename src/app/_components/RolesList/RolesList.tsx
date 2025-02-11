@@ -12,7 +12,7 @@ import {RoleCard} from "./RoleCard/RoleCard";
 
 const RolesAndModifiers = [...Roles, ...Modifiers];
 
-export const RolesList = () => {
+export const RolesList = ({ hideSettings = false }: { hideSettings?: boolean }) => {
     const { searchValue, search } = useSearch();
     const { typeFilterValue, teamFilterValue, filter } = useFilters();
 
@@ -66,7 +66,7 @@ export const RolesList = () => {
             <main>
                 <div className="grid grid-cols-1 gap-y-5">
                     {results.map(role => (
-                        <RoleCard key={role.name} role={role}/>
+                        <RoleCard key={role.name} role={role} hideSettings={hideSettings}/>
                     ))}
                 </div>
             </main>
