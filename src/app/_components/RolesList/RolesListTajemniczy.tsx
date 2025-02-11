@@ -66,7 +66,7 @@ export const RolesListTajemniczy = () => {
             <main>
                 <div className="grid grid-cols-1 gap-y-5">
                     {results.map(role => (
-                        <RoleCard key={role.name} role={role} hideSettings={true}/>
+                        <RoleCard key={role.name} role={role} hideElement={true}/>
                     ))}
                 </div>
             </main>

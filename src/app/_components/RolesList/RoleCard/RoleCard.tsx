@@ -3,7 +3,7 @@ import {SettingsList} from "./SettingsList";
 import {Team} from "./Team";
 import Image from "next/image";
 
-export const RoleCard = ({role, hideSettings = false}: { role: RoleOrModifier; hideSettings?: boolean  }) => (
+export const RoleCard = ({role, hideElement = false}: { role: RoleOrModifier; hideElement?: boolean  }) => (
     <div id={role.id} className="grid grid-cols-1 gap-y-5 p-5 bg-zinc-900/50 rounded-xl border-l-5"
          style={{borderColor: role.color}}>
         <header className="font-brook bg-zinc-900/50 p-4 rounded-lg flex gap-5 items-center justify-start">
@@ -16,7 +16,7 @@ export const RoleCard = ({role, hideSettings = false}: { role: RoleOrModifier; h
         <div className="grid grid-cols-1 md:grid-cols-2/1 gap-5">
             <div className="bg-zinc-900/50 rounded-xl p-4 flex flex-col gap-10 justify-between">
                 <div className="text-xl">{role.description}</div>
-                {!hideSettings && (
+                {!hideElement && (
                 <SettingsList settings={role.settings}/>
             )}
             </div>  
@@ -33,7 +33,7 @@ export const RoleCard = ({role, hideSettings = false}: { role: RoleOrModifier; h
                 </ul>
             </div>
         </div>
-        {role.tip && (
+        {!hideElement && role.tip && (
             <div className="bg-zinc-900/50 p-4 rounded-lg flex gap-5 items-center justify-start">
                 <h5 className="font-brook text-3xl">Porada: {role.tip}</h5>
             </div>
