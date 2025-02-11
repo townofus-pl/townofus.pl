@@ -1,6 +1,6 @@
 import {RolesList} from "@/app/_components";
-import {RolesTajemniczy} from "@/roles";
-import {ModifiersTajemniczy} from "@/modifiers";
+import {Roles} from "./_roles";
+import {Modifiers} from "./_modifiers";
 
 export default function Tajemniczy() {
     return (
@@ -10,7 +10,7 @@ export default function Tajemniczy() {
                     Dymowy Among by Tajemniczy Typiarz
                 </p>
             </div>
-            <RolesList roles={RolesTajemniczy} modifiers={ModifiersTajemniczy} hideTips={true} hideSettings={true}/>
+            <RolesList roles={Roles} modifiers={Modifiers} hideTips={true} hideSettings={true}/>
         </div>
     );
 }
