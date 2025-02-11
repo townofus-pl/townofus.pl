@@ -41,3 +41,11 @@ export const Modifiers = [
     Torch,
     Underdog,
 ].sort((a, b) => a.name.localeCompare(b.name));
+
+export const ModifiersTajemniczy = [
+    Bait,
+    Disperser,
+    Lovers,
+    Sleuth,
+    Tiebreaker,
+].sort((a, b) => a.name.localeCompare(b.name));
