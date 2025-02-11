@@ -1,41 +1,43 @@
 'use client';
 
-import {useMemo} from "react";
-import {Roles} from "@/roles";
-import {Modifiers} from "@/modifiers";
-import {RoleOrModifierTypes} from "@/constants/rolesAndModifiers";
+import {type FC, useMemo} from "react";
+import {type Modifier, type Role} from "@/constants/rolesAndModifiers";
 import {Teams} from "@/constants/teams";
 import {RolesListContext, TeamFilters, TypeFilters, useFilters, useSearch} from "./hooks";
 import {Search} from "./Search";
 import {Filters} from "./Filters";
 import {RoleCard} from "./RoleCard/RoleCard";
 
-const RolesAndModifiers = [...Roles, ...Modifiers];
-
-export const RolesList = ({ hideElement = false }: { hideElement?: boolean }) => {
+export const RolesList: FC<{
+    roles: Role[],
+    modifiers: Modifier[],
+    hideSettings?: boolean
+    hideTips?: boolean
+}> = ({roles, modifiers, hideSettings = false, hideTips = false}) => {
     const { searchValue, search } = useSearch();
     const { typeFilterValue, teamFilterValue, filter } = useFilters();
 
     const results = useMemo(
         () => {
-            let rolesAndModifiers = RolesAndModifiers;
+            let rolesAndModifiers;
+
+            switch (typeFilterValue) {
+                case TypeFilters.Role:
+                    rolesAndModifiers = roles;
+                    break;
+                case TypeFilters.Modifier:
+                    rolesAndModifiers = modifiers;
+                    break;
+                default:
+                    rolesAndModifiers = [...roles, ...modifiers];
+                    break;
+            }
 
             if (searchValue) {
                 rolesAndModifiers = rolesAndModifiers.filter(
                     ({name}) =>
                         name.toLowerCase().includes(searchValue.toLowerCase())
                 )
-            }
-
-            switch (typeFilterValue) {
-                case TypeFilters.Role:
-                    rolesAndModifiers = rolesAndModifiers.filter(({type}) => type === RoleOrModifierTypes.Role);
-                    break;
-                case TypeFilters.Modifier:
-                    rolesAndModifiers = rolesAndModifiers.filter(({type}) => type === RoleOrModifierTypes.Modifier);
-                    break;
-                default:
-                    break;
             }
 
             switch (teamFilterValue) {
@@ -54,7 +56,7 @@ export const RolesList = ({ hideElement = false }: { hideElement?: boolean }) =>
 
             return rolesAndModifiers;
         },
-        [searchValue, typeFilterValue, teamFilterValue]
+        [roles, modifiers, searchValue, typeFilterValue, teamFilterValue]
     );
 
     return (
@@ -66,7 +68,7 @@ export const RolesList = ({ hideElement = false }: { hideElement?: boolean }) =>
             <main>
                 <div className="grid grid-cols-1 gap-y-5">
                     {results.map(role => (
-                        <RoleCard key={role.name} role={role} hideElement={hideElement}/>
+                        <RoleCard key={role.name} role={role} hideSettings={hideSettings} hideTips={hideTips}/>
                     ))}
                 </div>
             </main>

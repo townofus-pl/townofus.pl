@@ -10,7 +10,6 @@ import {Doomsayer} from "./doomsayer";
 import {Engineer} from "./engineer";
 import {Escapist} from "./escapist";
 import {Executioner} from "./executioner";
-import {Foreteller} from "./foreteller";
 import {Glitch} from "./glitch";
 import {Grenadier} from "./grenadier";
 import {GuardianAngel} from "./guardian_angel";
@@ -33,7 +32,6 @@ import {Oracle} from "./oracle";
 import {Phantom} from "./phantom";
 import {Plaguebearer} from "./plaguebearer";
 import {Politician} from "./politician";
-import {President} from "./president";
 import {Prosecutor} from "./prosecutor";
 import {Scavenger} from "./scavenger";
 import {Seer} from "./seer";
@@ -44,7 +42,6 @@ import {Spy} from "./spy";
 import {Survivor} from "./survivor";
 import {Swapper} from "./swapper";
 import {Swooper} from "./swooper";
-import {TimeLord} from "./time_lord";
 import {Tracker} from "./tracker";
 import {Traitor} from "./traitor";
 import {Transporter} from "./transporter";
@@ -115,53 +112,4 @@ export const Roles = [
     Warden,
     Warlock,
     Werewolf,
-].sort((a, b) => a.name.localeCompare(b.name));
-
-export const RolesTajemniczy = [
-    TimeLord,
-    President,
-    Foreteller,
-    //ExecutionerPlus,
-    //JesterPlus,
-    //ElfLegacy,
-    //SantaLegacy
-    Altruist,
-    Engineer,
-    Imitator,
-    Investigator,
-    //Mayor,
-    Medic,
-    Medium,
-    Mystic,
-    Politician,
-    Prosecutor,
-    Seer,
-    Sheriff,
-    Snitch,
-    Spy,
-    Swapper,
-    Transporter,
-    Trapper,
-    Veteran,
-    Vigilante,
-    Blackmailer,
-    Bomber,
-    Escapist,
-    Janitor,
-    Miner,
-    Morphling,
-    Swooper,
-    Traitor,
-    Undertaker,
-    Warlock,
-    Amnesiac,
-    GuardianAngel,
-    Survivor,
-    Executioner,
-    Jester,
-    SoulCollector,
-    Arsonist,
-    Juggernaut,
-    Werewolf,
-    Glitch,
 ].sort((a, b) => a.name.localeCompare(b.name));
