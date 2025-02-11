@@ -35,7 +35,7 @@ import {SoulCollector} from "@/roles/soul_collector";
 import {Arsonist} from "@/roles/arsonist";
 import {Juggernaut} from "@/roles/juggernaut";
 import {Werewolf} from "@/roles/werewolf";
-import {Glitch} from "@/roles/glitch";
+import {Glitch} from "./glitch";
 import {TimeLord} from "./time_lord";
 import {President} from "./president";
 import {Foreteller} from "./foreteller";
