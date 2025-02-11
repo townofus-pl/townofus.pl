@@ -12,12 +12,6 @@ const brook = localFont({
     variable: '--font-brook',
 });
 
-export const vcr = localFont({
-    src: "/_fonts/Better-VCR.woff",
-    display: "swap",
-    variable: "--font-vcr",
-});
-
 const barlow = Barlow({
     subsets: ["latin-ext"],
     weight: ["400", "700"],
@@ -26,7 +20,7 @@ const barlow = Barlow({
 });
 
 export const metadata: Metadata = {
-    title: "townofus.pl — Among Us Town of Us Polska",
+    title: "townofus.pl - Among Us Town of Us Polska",
     description: "Szybka wyszukiwarka ról z modyfikacji Town of Us",
 };
 
