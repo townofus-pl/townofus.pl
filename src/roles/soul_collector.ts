@@ -3,6 +3,10 @@ import {Teams} from "@/constants/teams";
 import {probabilityOfAppearing} from "@/constants/settings";
 
 export const SoulCollectorAbilities = {
+    Reap: {
+        "name": "Reap (Oznacz)",
+        "icon": "/images/abilities/reap.png"
+    },
     Collect: {
         "name": "Collect (Zbierz)",
         "icon": "/images/abilities/collect.png"
@@ -20,5 +24,5 @@ export const SoulCollector: Role = {
     "settings": {
         ...probabilityOfAppearing(-1),
     },
-    "abilities": [SoulCollectorAbilities.Collect],
+    "abilities": [SoulCollectorAbilities.Reap, SoulCollectorAbilities.Collect],
 };
