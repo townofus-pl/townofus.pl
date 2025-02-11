@@ -6,7 +6,8 @@ import {CommonAbilities} from "@/constants/abilities";
 export const Shy: Modifier = {
     "type": RoleOrModifierTypes.Modifier,
     "name": "Shy",
-    "color": "#FFFFFF",
+    "id": "shy",
+	"color": "#FFFFFF",
     "team": Teams.All,
     "icon": "/images/modifiers/placeholder.png",
     "description": "Staje się przezroczysty gdy się nie rusza.",

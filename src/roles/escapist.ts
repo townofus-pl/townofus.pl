@@ -17,7 +17,8 @@ export const EscapistAbilities = {
 export const Escapist: Role = {
     "type": RoleOrModifierTypes.Role,
     "name": "Escapist",
-    "color": "#FF0000",
+    "id": "escapist",
+	"color": "#FF0000",
     "team": Teams.Impostor,
     "icon": "/images/roles/escapist.png",
     "description": "Impostor, który może teleportować się do wybranej wcześniej lokalizacji. Raz na rundę Escapist może oznaczyć miejsce, do którego później będzie mógł się teleportować.",

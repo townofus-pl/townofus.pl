@@ -6,7 +6,8 @@ import {CommonAbilities} from "@/constants/abilities";
 export const Executioner: Role = {
     "type": RoleOrModifierTypes.Role,
     "name": "Executioner",
-    "color": "#8C4005",
+    "id": "executioner",
+	"color": "#8C4005",
     "team": Teams.Neutral,
     "icon": "/images/roles/executioner.png",
     "description": (<p>

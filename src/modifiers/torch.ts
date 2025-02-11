@@ -6,7 +6,8 @@ import {CommonAbilities} from "@/constants/abilities";
 export const Torch: Modifier = {
     "type": RoleOrModifierTypes.Modifier,
     "name": "Torch",
-    "color": "#FFFFFF",
+    "id": "torch",
+	"color": "#FFFFFF",
     "team": Teams.Crewmate,
     "icon": "/images/modifiers/torch.png",
     "description": "Podczas sabotażu świateł nie zmniejsza mu się pole widzenia.",

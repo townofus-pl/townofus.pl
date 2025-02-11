@@ -12,7 +12,8 @@ export const VampireAbilities = {
 export const Vampire: Role = {
     "type": RoleOrModifierTypes.Role,
     "name": "Vampire",
-    "color": "#747474",
+    "id": "vampire",
+	"color": "#747474",
     "team": Teams.Neutral,
     "icon": "/images/roles/vampire.png",
     "description": "Neutralna rola z własnym warunkiem zwycięstwa. Vampire może konwertować lub zabijać innych graczy poprzez ugryzienie. Jeżeli w grze jest jeden żywy wampir, ugryzienie Crewmate zamieni go w drugiego vampira. Jeżeli w grze jest dwóch wampirów lub cel nie jest Crewmate'em, ugryziony umrze.",

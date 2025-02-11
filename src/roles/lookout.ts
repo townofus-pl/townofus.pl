@@ -12,7 +12,8 @@ export const LookoutAbilities = {
 export const Lookout: Role = {
     "type": RoleOrModifierTypes.Role,
     "name": "Lookout",
-    "color": "#33FF66",
+    "id": "lookout",
+	"color": "#33FF66",
     "team": Teams.Crewmate,
     "icon": "/images/roles/lookout.png",
     "description": "Crewmate, który może obserwować innych graczy podczas rundy. Podczas spotkania zobaczy wszystkie role, które wchodziły w interakcję z obserwowanym graczem.",

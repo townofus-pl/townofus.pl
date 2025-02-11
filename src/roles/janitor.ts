@@ -13,7 +13,8 @@ const JanitorAbilities = {
 export const Janitor: Role = {
     "type": RoleOrModifierTypes.Role,
     "name": "Janitor",
-    "color": "#FF0000",
+    "id": "janitor",
+	"color": "#FF0000",
     "team": Teams.Impostor,
     "icon": "/images/roles/janitor.png",
     "description": "Impostor, który może sprzątać ciała. Zarówno jego zdolność zabójstwa, jak i czyszczenia mają wspólny czas odnowienia, co oznacza, że musi wybrać, którą z nich chce użyć.",

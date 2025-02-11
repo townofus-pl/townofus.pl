@@ -6,7 +6,8 @@ import {CommonAbilities} from "@/constants/abilities";
 export const Bait: Modifier = {
     "type": RoleOrModifierTypes.Modifier,
     "name": "Bait",
-    "color": "#FFFFFF",
+    "id": "bait",
+	"color": "#FFFFFF",
     "team": Teams.Crewmate,
     "icon": "/images/modifiers/bait.png",
     "description": "Zmusza zabójcę do automatycznego zgłoszenia ciała.",

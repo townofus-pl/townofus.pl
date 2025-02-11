@@ -6,7 +6,8 @@ import {CommonAbilities} from "@/constants/abilities";
 export const Hunter: Role = {
     "type": RoleOrModifierTypes.Role,
     "name": "Hunter",
-    "color": "#29AA88",
+    "id": "hunter",
+	"color": "#29AA88",
     "team": Teams.Crewmate,
     "icon": "/images/roles/hunter.png",
     "description": "soon",

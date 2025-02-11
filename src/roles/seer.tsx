@@ -12,7 +12,8 @@ export const SeerAbilities = {
 export const Seer: Role = {
     "type": RoleOrModifierTypes.Role,
     "name": "Seer",
-    "color": "#FFCC80",
+    "id": "seer",
+	"color": "#FFCC80",
     "team": Teams.Crewmate,
     "icon": "/images/roles/seer.png",
     "description": (

@@ -6,7 +6,8 @@ import {CommonAbilities} from "@/constants/abilities";
 export const Radar: Modifier = {
     "type": RoleOrModifierTypes.Modifier,
     "name": "Radar",
-    "color": "#FFFFFF",
+    "id": "radar",
+	"color": "#FFFFFF",
     "team": Teams.All,
     "icon": "/images/modifiers/placeholder.png",
     "description": "Posiada strzałkę wskazującą najbliższego gracza.",

@@ -12,7 +12,8 @@ export const TransporterAbilities = {
 export const Transporter: Role = {
     "type": RoleOrModifierTypes.Role,
     "name": "Transporter",
-    "color": "#00ECFF",
+    "id": "transporter",
+	"color": "#00ECFF",
     "team": Teams.Crewmate,
     "icon": "/images/roles/transporter.png",
     "description": "Crewmate, który może dowolnie zamieniać miejscami dwóch wybranych przez siebie graczy. Gracze, którzy zostali przetransportowani, otrzymują powiadomienie w postaci niebieskiego błysku na ekranie.",

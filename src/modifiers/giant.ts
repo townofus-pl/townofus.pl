@@ -6,7 +6,8 @@ import {CommonAbilities} from "@/constants/abilities";
 export const Giant: Modifier = {
     "type": RoleOrModifierTypes.Modifier,
     "name": "Giant",
-    "color": "#FFFFFF",
+    "id": "giant",
+	"color": "#FFFFFF",
     "team": Teams.All,
     "icon": "/images/modifiers/giant.png",
     "description": "Jest gigantyczny i porusza się wolniej.",

@@ -11,8 +11,9 @@ export const SurvivorAbilities = {
 
 export const Survivor: Role = {
     "type": RoleOrModifierTypes.Role,
-    "name": "survivor",
-    "color": "#FFEB4D",
+    "name": "Survivor",
+    "id": "survivor",
+	"color": "#FFEB4D",
     "team": Teams.Neutral,
     "icon": "/images/roles/survivor.png",
     "description": "Survivor to neutralna rola, która wygrywa, po prostu przeżywając do końca rozgrywki. Jednak jeśli grę wygrają Lovers lub neutralna zła rola, Survivor przegrywa. Posiada umiejętność dająca czasową ochronę przed zabójstwem.",

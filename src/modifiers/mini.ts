@@ -6,7 +6,8 @@ import {CommonAbilities} from "@/constants/abilities";
 export const Mini: Modifier = {
     "type": RoleOrModifierTypes.Modifier,
     "name": "Mini",
-    "color": "#FFFFFF",
+    "id": "mini",
+	"color": "#FFFFFF",
     "team": Teams.All,
     "icon": "/images/modifiers/mini.png",
     "description": "Jest mały.",

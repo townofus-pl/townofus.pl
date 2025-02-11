@@ -13,7 +13,8 @@ export const BlackmailerAbilities = {
 export const Blackmailer: Role = {
     "type": RoleOrModifierTypes.Role,
     "name": "Blackmailer",
-    "color": "#FF0000",
+    "id": "blackmailer",
+	"color": "#FF0000",
     "team": Teams.Impostor,
     "icon": "/images/roles/blackmailer.png",
     "description": "Impostor, który może wyciszyć graczy podczas spotkań. W każdej rundzie Blackmailer może podejść do kogoś i go szantażować. Szantaż uniemożliwia zaszantażowanej osobie mówienie oraz głosowanie podczas następnego spotkania.",

@@ -6,7 +6,8 @@ import {CommonAbilities} from "@/constants/abilities";
 export const Tiebreaker: Modifier = {
     "type": RoleOrModifierTypes.Modifier,
     "name": "Tiebreaker",
-    "color": "#FFFFFF",
+    "id": "tiebreaker",
+	"color": "#FFFFFF",
     "team": Teams.All,
     "icon": "/images/modifiers/placeholder.png",
     "description": "Jego głos rozstrzyga remisy podczas głosowania.",

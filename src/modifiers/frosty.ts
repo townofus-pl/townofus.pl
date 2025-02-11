@@ -6,7 +6,8 @@ import {CommonAbilities} from "@/constants/abilities";
 export const Frosty: Modifier = {
     "type": RoleOrModifierTypes.Modifier,
     "name": "Frosty",
-    "color": "#FFFFFF",
+    "id": "frosty",
+	"color": "#FFFFFF",
     "team": Teams.Crewmate,
     "icon": "/images/modifiers/frosty.png",
     "description": "Gdy umrze, jego zabójca zostanie spowolniony.",

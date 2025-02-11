@@ -6,7 +6,8 @@ import {CommonAbilities} from "@/constants/abilities";
 export const Snitch: Role = {
     "type": RoleOrModifierTypes.Role,
     "name": "Snitch",
-    "color": "#D4B11A",
+    "id": "snitch",
+	"color": "#D4B11A",
     "team": Teams.Crewmate,
     "icon": "/images/roles/snitch.png",
     "description": "Crewmate, który po ukończeniu wszystkich zadań otrzymuje strzałki wskazujące na Impostorów. Nicki Impostorów pojawiają się również na jego ekranie na czerwono. Jednak gdy pozostanie mu ostatnie zadanie, to Impostorzy otrzymują strzałkę wskazującą na Snitcha.",

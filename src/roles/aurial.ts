@@ -6,7 +6,8 @@ import {CommonAbilities} from "@/constants/abilities";
 export const Aurial: Role = {
     "type": RoleOrModifierTypes.Role,
     "name": "Aurial",
-    "color": "#B23CB3",
+    "id": "aurial",
+	"color": "#B23CB3",
     "team": Teams.Crewmate,
     "icon": "/images/roles/aurial.png",
     "description": "Crewmate, który potrafi wyczuwać rzeczy w swojej aurze. Jeśli którykolwiek gracz w pobliżu Auriala użyje przycisku zdolności, Aurial otrzyma strzałkę wskazującą, gdzie ta zdolność została użyta. Jeżeli stanie się to wystarczająco blisko, to strzałka będzie miała kolor gracza który użył zdolności.",

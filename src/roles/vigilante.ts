@@ -12,7 +12,8 @@ export const VigilanteAbilities = {
 export const Vigilante: Role = {
     "type": RoleOrModifierTypes.Role,
     "name": "Vigilante",
-    "color": "#FFFF99",
+    "id": "vigilante",
+	"color": "#FFFF99",
     "team": Teams.Crewmate,
     "icon": "/images/roles/vigilante.png",
     "description": "Crewmate, który może zabijać podczas spotkań. Podczas spotkania, Vigilante może wybrać, kogo zabić, zgadując jego rolę. Jeśli jednak zgadnie źle, to sam ginie.",

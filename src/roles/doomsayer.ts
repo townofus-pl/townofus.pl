@@ -6,7 +6,8 @@ import {CommonAbilities} from "@/constants/abilities";
 export const Doomsayer: Role = {
     "type": RoleOrModifierTypes.Role,
     "name": "Doomsayer",
-    "color": "#00d96d",
+    "id": "doomsayer",
+	"color": "#00d96d",
     "team": Teams.Neutral,
     "icon": "/images/roles/doomsayer.png",
     "description": "soon",

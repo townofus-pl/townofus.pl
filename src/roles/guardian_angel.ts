@@ -12,7 +12,8 @@ export const GuardianAngelAbilities = {
 export const GuardianAngel: Role = {
     "type": RoleOrModifierTypes.Role,
     "name": "Guardian Angel",
-    "color": "#B3FFFF",
+    "id": "guardian_angel",
+	"color": "#B3FFFF",
     "team": Teams.Neutral,
     "icon": "/images/roles/guardian_angel.png",
     "description": "Neutralna rola, która sprzymierza się z drużyną swojego celu. Jego zadaniem jest chronić cel za wszelką cenę. Jeśli jego cel przegra, on również przegrywa.",

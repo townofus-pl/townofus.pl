@@ -17,7 +17,8 @@ export const MorphlingAbilities = {
 export const Morphling: Role = {
     "type": RoleOrModifierTypes.Role,
     "name": "Morphling",
-    "color": "#FF0000",
+    "id": "morphling",
+	"color": "#FF0000",
     "team": Teams.Impostor,
     "icon": "/images/roles/morphling.png",
     "description": "Impostor, który może przebierać się za innych graczy. Poza spotkaniem może pobrać próbkę DNA od dowolnego gracza. Gdy to zrobi, zyskuje możliwość transformacji w wybranego wcześniej gracza. Nie może używać wentylacji.",

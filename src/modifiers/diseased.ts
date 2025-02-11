@@ -6,7 +6,8 @@ import {CommonAbilities} from "@/constants/abilities";
 export const Diseased: Modifier = {
     "type": RoleOrModifierTypes.Modifier,
     "name": "Diseased",
-    "color": "#FFFFFF",
+    "id": "diseased",
+	"color": "#FFFFFF",
     "team": Teams.Crewmate,
     "icon": "/images/modifiers/placeholder.png",
     "description": "Gdy umrze, czas odnowienia zabójstwa zabójcy wydłuża się.",

@@ -12,7 +12,8 @@ export const JesterAbilities = {
 export const Jester: Role = {
     "type": RoleOrModifierTypes.Role,
     "name": "Jester",
-    "color": "#FFBFCF",
+    "id": "jester",
+	"color": "#FFBFCF",
     "team": Teams.Neutral,
     "icon": "/images/roles/jester.png",
     "description": "Neutralna rola z własnym warunkiem zwycięstwa. Jester wygrywa tylko wtedy, gdy zostanie wygnany podczas głosowania. Przegrywa, jeśli zwyciężą Crewmate'owie, Impostorzy lub inna neutralna rola. Może chować się w wentylacji, ale nie może się nią poruszać.",

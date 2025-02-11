@@ -12,7 +12,8 @@ export const DisperserAbilities = {
 export const Disperser: Modifier = {
     "type": RoleOrModifierTypes.Modifier,
     "name": "Disperser",
-    "color": "#FF0000",
+    "id": "disperser",
+	"color": "#FF0000",
     "team": Teams.Impostor,
     "icon": "/images/modifiers/disperse.png",
     "description": "Może jednorazowo wysłać wszystkich graczy do losowych ventów.",

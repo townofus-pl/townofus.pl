@@ -18,7 +18,8 @@ export const UndertakerAbilities = {
 export const Undertaker: Role = {
     "type": RoleOrModifierTypes.Role,
     "name": "Undertaker",
-    "color": "#FF0000",
+    "id": "undertaker",
+	"color": "#FF0000",
     "team": Teams.Impostor,
     "icon": "/images/roles/undertaker.png",
     "description": "Impostor, który może przeciągać i upuszczać ciała.",

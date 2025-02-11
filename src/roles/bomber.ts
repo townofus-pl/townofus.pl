@@ -17,7 +17,8 @@ export const BomberAbilities = {
 export const Bomber: Role = {
     "type": RoleOrModifierTypes.Role,
     "name": "Bomber",
-    "color": "#FF0000",
+    "id": "bomber",
+	"color": "#FF0000",
     "team": Teams.Impostor,
     "icon": "/images/roles/bomber.png",
     "description": "Impostor, który ma zdolność stawiania bomb zamiast zabijania. Po posadzeniu bomby, ta wybuchnie po określonym czasie. Gdy bomba wybuchnie, zabije wszystkich graczy znajdujących się w zasięgu, także Impostorów.",
