@@ -6,7 +6,8 @@ import {CommonAbilities} from "@/constants/abilities";
 export const Multitasker: Modifier = {
     "type": RoleOrModifierTypes.Modifier,
     "name": "Multitasker",
-    "color": "#FFFFFF",
+    "id": "multitasker",
+	"color": "#FFFFFF",
     "team": Teams.Crewmate,
     "icon": "/images/modifiers/placeholder.png",
     "description": "Posiada półprzezroczyste zadania, dzięki czemu widzi co się wokół niego dzieje.",

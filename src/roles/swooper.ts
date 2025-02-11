@@ -13,7 +13,8 @@ export const SwooperAbilities = {
 export const Swooper: Role = {
     "type": RoleOrModifierTypes.Role,
     "name": "Swooper",
-    "color": "#FF0000",
+    "id": "swooper",
+	"color": "#FF0000",
     "team": Teams.Impostor,
     "icon": "/images/roles/swooper.png",
     "description": "Impostor, który może chwilowo stać się niewidzialny.",

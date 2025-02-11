@@ -6,7 +6,8 @@ import {CommonAbilities} from "@/constants/abilities";
 export const SixthSense: Modifier = {
     "type": RoleOrModifierTypes.Modifier,
     "name": "Sixth Sense",
-    "color": "#FFFFFF",
+    "id": "sixth_sense",
+	"color": "#FFFFFF",
     "team": Teams.All,
     "icon": "/images/modifiers/placeholder.png",
     "description": "Ekran świeci mu się na żółto, gdy ktoś używa na nim swoich zdolności.",

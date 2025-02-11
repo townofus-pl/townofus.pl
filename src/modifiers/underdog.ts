@@ -6,7 +6,8 @@ import {CommonAbilities} from "@/constants/abilities";
 export const Underdog: Modifier = {
     "type": RoleOrModifierTypes.Modifier,
     "name": "Underdog",
-    "color": "#FF0000",
+    "id": "underdog",
+	"color": "#FF0000",
     "team": Teams.Impostor,
     "icon": "/images/modifiers/placeholder.png",
     "description": "Ma wydłużony Kill Cooldown. Gdy jest ostatnim żywym impostorem, jego Cooldown wraca do normy.",

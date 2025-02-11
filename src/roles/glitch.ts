@@ -17,7 +17,8 @@ export const GlitchAbilities = {
 export const Glitch: Role = {
     "type": RoleOrModifierTypes.Role,
     "name": "Glitch",
-    "color": "#00FF00",
+    "id": "glitch",
+	"color": "#00FF00",
     "team": Teams.Neutral,
     "icon": "/images/roles/glitch.png",
     "description": "Neutralna rola z własnym warunkiem zwycięstwa. Celem Glitcha jest wyeliminowanie wszystkich graczy. Glitch może hakować graczy, co uniemożliwia zhakowanemu graczowi jakąkolwiek akcję poza chodzeniem po mapie. Glitch może także \"naśladować\" inną osobę, przez co będzie wyglądać dokładnie jak ta osoba.",

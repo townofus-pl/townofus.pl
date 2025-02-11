@@ -6,7 +6,8 @@ import {CommonAbilities} from "@/constants/abilities";
 export const Saboteur: Modifier = {
     "type": RoleOrModifierTypes.Modifier,
     "name": "Saboteur",
-    "color": "#FF0000",
+    "id": "saboteur",
+	"color": "#FF0000",
     "team": Teams.Impostor,
     "icon": "/images/modifiers/placeholder.png",
     "description": "Ma zmniejszony cooldown na sabotaże.",

@@ -12,7 +12,8 @@ export const VeteranAbilities = {
 export const Veteran: Role = {
     "type": RoleOrModifierTypes.Role,
     "name": "Veteran",
-    "color": "#998033",
+    "id": "veteran",
+	"color": "#998033",
     "team": Teams.Crewmate,
     "icon": "/images/roles/veteran.png",
     "description": "Crewmate, który może przejść w tryb czujności. Gdy Veteran jest w trybie czujności, każda osoba, niezależnie od tego, czy jest Crewmate'em, Neutralem, czy Impostorem, jeśli wejdzie w interakcję z Veteranem, umrze.",

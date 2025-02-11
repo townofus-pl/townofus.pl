@@ -6,7 +6,8 @@ import {CommonAbilities} from "@/constants/abilities";
 export const Scavenger: Role = {
     "type": RoleOrModifierTypes.Role,
     "name": "Scavenger",
-    "color": "#FF0000",
+    "id": "scavenger",
+	"color": "#FF0000",
     "team": Teams.Impostor,
     "icon": "/images/roles/scavenger.png",
     "description": "Impostor, który poluje na ofiary. W trakcie gry losuje mu się cel, który powinien zabić. Z każdym zabójstwem celu, czas odnowienia zabójstwa Scavengera skraca się. W przypadku błędnego zabójstwa czas odnowienia zabójstwa Scavengera znacznie się wydłuża.",

@@ -6,7 +6,8 @@ import {CommonAbilities} from "@/constants/abilities";
 export const Investigator: Role = {
     "type": RoleOrModifierTypes.Role,
     "name": "Investigator",
-    "color": "#00B2B2",
+    "id": "investigator",
+	"color": "#00B2B2",
     "team": Teams.Crewmate,
     "icon": "/images/roles/investigator.png",
     "description": "Crewmate, który widzi ślady stóp w kolorach graczy. Każdy ślad znika po określonym czasie.",

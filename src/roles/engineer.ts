@@ -13,7 +13,8 @@ export const EngineerAbilities = {
 export const Engineer: Role = {
     "type": RoleOrModifierTypes.Role,
     "name": "Engineer",
-    "color": "#FFA604",
+    "id": "engineer",
+	"color": "#FFA604",
     "team": Teams.Crewmate,
     "icon": "/images/roles/engineer.png",
     "description": "Crewmate który może używać wentylacji. Może naprawiać sabotaże z dowolnego miejsca na mapie.",

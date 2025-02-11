@@ -12,7 +12,8 @@ export const DeputyAbilities = {
 export const Deputy: Role = {
     "type": RoleOrModifierTypes.Role,
     "name": "Deputy",
-    "color": "#FFCC00",
+    "id": "deputy",
+	"color": "#FFCC00",
     "team": Teams.Crewmate,
     "icon": "/images/roles/deputy.png",
     "description": "Crewmate, który może obozować innych graczach. Jeśli obozowany gracz zostanie zabity, Deputy otrzyma alert. Podczas następnego spotkania może spróbować zastrzelić zabójcę. Jeśli trafi, zginie a jeśli nie, nic się nie dzieje.",

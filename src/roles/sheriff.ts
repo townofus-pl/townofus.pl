@@ -6,7 +6,8 @@ import {CommonAbilities} from "@/constants/abilities";
 export const Sheriff: Role = {
     "type": RoleOrModifierTypes.Role,
     "name": "Sheriff",
-    "color": "#FFFF00",
+    "id": "sheriff",
+	"color": "#FFFF00",
     "team": Teams.Crewmate,
     "icon": "/images/roles/sheriff.png",
     "description": "Crewmate, który posiada umiejętność zabijania ról Impostorskich, Neutralnych zabijających oraz Neutralnych złych. Jeśli spróbujesz zabić niewinnego gracza, umrzesz.",

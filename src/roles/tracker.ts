@@ -12,7 +12,8 @@ export const TrackerAbilities = {
 export const Tracker: Role = {
     "type": RoleOrModifierTypes.Role,
     "name": "Tracker",
-    "color": "#009900",
+    "id": "tracker",
+	"color": "#009900",
     "team": Teams.Crewmate,
     "icon": "/images/roles/tracker.png",
     "description": "Crewmate, który za pomocą swojej umiejętności może śledzić innych graczy podczas rundy. Gdy zacznie kogoś śledzić, strzałka będzie wskazywać położenie tej osoby, aktualizując się w określonych odstępach czasu.",

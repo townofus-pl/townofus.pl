@@ -12,7 +12,8 @@ export const MedicAbilities = {
 export const Medic: Role = {
     "type": RoleOrModifierTypes.Role,
     "name": "Medic",
-    "color": "#006400",
+    "id": "medic",
+	"color": "#006400",
     "team": Teams.Crewmate,
     "icon": "/images/roles/medic.png",
     "description": "Medic to Crewmate, który może dać dowolnemu graczowi tarczę czyniącą go nieśmiertelnym. Tarcza znika tylko w momencie śmierci Medica. Osoba z tarczą nie może zostać zabita przez nikogo, ale może popełnić samobójstwo. Medic widzi zieloną poświatę na ekranie, jeśli ktoś spróbuje zabić jego podopiecznego. Jeśli Medic zgłosi martwe ciało odpowiednio szybko, może otrzymać raport zawierający wskazówki na temat tożsamości Zabójcy. Raport będzie zawierać typ koloru (Darker/Lighter).",

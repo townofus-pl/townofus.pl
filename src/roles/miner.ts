@@ -13,7 +13,8 @@ export const MinerAbilities = {
 export const Miner: Role = {
     "type": RoleOrModifierTypes.Role,
     "name": "Miner",
-    "color": "#FF0000",
+    "id": "miner",
+	"color": "#FF0000",
     "team": Teams.Impostor,
     "icon": "/images/roles/miner.png",
     "description": "Impostor, który może tworzyć nowe wentylacje. Te wentylacje łączą się tylko ze sobą, tworząc nową ścieżkę.",

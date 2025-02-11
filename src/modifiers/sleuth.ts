@@ -6,7 +6,8 @@ import {CommonAbilities} from "@/constants/abilities";
 export const Sleuth: Modifier = {
     "type": RoleOrModifierTypes.Modifier,
     "name": "Sleuth",
-    "color": "#FFFFFF",
+    "id": "sleuth",
+	"color": "#FFFFFF",
     "team": Teams.All,
     "icon": "/images/modifiers/placeholder.png",
     "description": "Zna rolę zgłoszonego przez siebie ciała.",

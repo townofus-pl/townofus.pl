@@ -12,7 +12,8 @@ export const ImitatorAbilities = {
 export const Imitator: Role = {
     "type": RoleOrModifierTypes.Role,
     "name": "Imitator",
-    "color": "#B3D94D",
+    "id": "imitator",
+	"color": "#B3D94D",
     "team": Teams.Crewmate,
     "icon": "/images/roles/imitator.png",
     "description": "Crewmate, który może naśladować martwych Crewmate’ów. Podczas spotkań Imitator może przejąć rolę jednego z martwych graczy, zyskując jego umiejętności na następną rundę. Może używać zdolności każdego martwego gracza tyle razy, ile chce. Imitator może naśladować tylko role Crewmate’ów, których umiejętności działają poza spotkaniem.",

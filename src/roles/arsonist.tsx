@@ -16,7 +16,8 @@ export const ArsonistAbilities = {
 export const Arsonist: Role = {
     "type": RoleOrModifierTypes.Role,
     "name": "Arsonist",
-    "color": "#FF4D00",
+    "id": "arsonist",
+	"color": "#FF4D00",
     "team": Teams.Neutral,
     "icon": "/images/roles/arsonist.png",
     "description": (<>

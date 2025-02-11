@@ -6,7 +6,8 @@ import {CommonAbilities} from "@/constants/abilities";
 export const Traitor: Role = {
     "type": RoleOrModifierTypes.Role,
     "name": "Traitor",
-    "color": "#FF0000",
+    "id": "traitor",
+	"color": "#FF0000",
     "team": Teams.Impostor,
     "icon": "/images/roles/traitor.png",
     "description": "Jeśli wszyscy Impostorzy zginą przed określonym momentem w grze, losowy Crewmate zostaje wybrany na Traitora. Traitor nie ma dodatkowych zdolności, a jego zadaniem jest pomścić martwych Impostorów. Po przemianie w Traitora, gracz dołącza do drużyny Impostorów.",

@@ -12,7 +12,8 @@ export const AltruistAbilities = {
 export const Altruist: Role = {
     "type": RoleOrModifierTypes.Role,
     "name": "Altruist",
-    "color": "#660000",
+    "id": "altruist",
+	"color": "#660000",
     "team": Teams.Crewmate,
     "icon": "/images/roles/altruist.png",
     "description": "Crewmate, który ma zdolność wskrzeszania martwych graczy. Po znalezieniu martwego ciała, Altruist może poświęcić siebie dla wskrzeszenia innego gracza. Jeśli wskrzeszenie zostanie aktywowane, martwe ciało znika, pozostawiając tylko ciało Altruisty na miejscu. Po określonym czasie gracz zostanie wskrzeszony, o ile proces wskrzeszenia nie zostanie w jakiś sposób przerwany.",

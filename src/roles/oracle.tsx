@@ -12,7 +12,8 @@ export const OracleAbilities = {
 export const Oracle: Role = {
     "type": RoleOrModifierTypes.Role,
     "name": "Oracle",
-    "color": "#BF00BF",
+    "id": "oracle",
+	"color": "#BF00BF",
     "team": Teams.Crewmate,
     "icon": "/images/roles/oracle.png",
     "description": (<>

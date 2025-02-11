@@ -21,7 +21,8 @@ export const VenererAbilities = {
 export const Venerer: Role = {
     "type": RoleOrModifierTypes.Role,
     "name": "Venerer",
-    "color": "#FF0000",
+    "id": "venerer",
+	"color": "#FF0000",
     "team": Teams.Impostor,
     "icon": "/images/roles/venerer.png",
     "description": (<>

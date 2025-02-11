@@ -12,7 +12,8 @@ export const MediumAbilities = {
 export const Medium: Role = {
     "type": RoleOrModifierTypes.Role,
     "name": "Medium",
-    "color": "#A680FF",
+    "id": "medium",
+	"color": "#A680FF",
     "team": Teams.Crewmate,
     "icon": "/images/roles/medium.png",
     "description": "Crewmate, który może widzieć duchy. W każdej rundzie Medium może użyć zdolności mediacji. Jeśli użyje jej, gdy wszyscy żyją, nic się nie stanie. Jednak jeśli ktoś już nie żyje, Medium i martwy gracz będą mogli się zobaczyć oraz komunikować zza grobu.",  

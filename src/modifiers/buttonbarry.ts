@@ -12,7 +12,8 @@ export const ButtonBarryAbilities = {
 export const ButtonBarry: Modifier = {
     "type": RoleOrModifierTypes.Modifier,
     "name": "Button Barry",
-    "color": "#FFFFFF",
+    "id": "button_barry",
+	"color": "#FFFFFF",
     "team": Teams.All,
     "icon": "/images/modifiers/buttonbarry.png",
     "description": "Może zwołać spotkanie z dowolnego miejsca na mapie.",

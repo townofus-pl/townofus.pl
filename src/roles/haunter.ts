@@ -6,7 +6,8 @@ import {CommonAbilities} from "@/constants/abilities";
 export const Haunter: Role = {
     "type": RoleOrModifierTypes.Role,
     "name": "Haunter",
-    "color": "#D4D4D4",
+    "id": "haunter",
+	"color": "#D4D4D4",
     "team": Teams.Crewmate,
     "icon": "/images/roles/haunter.png",
     "description": "Martwy Crewmate, który po ukończeniu wszystkich zadań ujawnia Impostorów. Jest to rola pośmiertna, losowy Crewmate dostaje ją po śmierci. Gdy wykona wszystkie zadania, Impostorzy zostają ujawnieni żywym Crewmate’om po wezwaniu spotkania. Gdy Haunterowi zostanie ostatnie zadanie, Impostorzy dostają alert. Jako Haunter gracz jest półprzezroczysty. Jednak jeśli Haunter zostanie odnaleziony i kliknięty, traci swoją zdolność ujawniania Impostorów i staje się zwykłym duchem.",

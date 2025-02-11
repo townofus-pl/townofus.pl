@@ -6,7 +6,8 @@ import {CommonAbilities} from "@/constants/abilities";
 export const Flash: Modifier = {
     "type": RoleOrModifierTypes.Modifier,
     "name": "Flash",
-    "color": "#FFFFFF",
+    "id": "flash",
+	"color": "#FFFFFF",
     "team": Teams.All,
     "icon": "/images/modifiers/flash.png",
     "description": "Porusza się z większą prędkością.",

@@ -12,7 +12,8 @@ export const SoulCollectorAbilities = {
 export const SoulCollector: Role = {
     "type": RoleOrModifierTypes.Role,
     "name": "Soul collector",
-    "color": "#12e2bb",
+    "id": "soul_collector",
+	"color": "#12e2bb",
     "team": Teams.Neutral,
     "icon": "/images/roles/soul_collector.png",
     "description": "Neutralna rola z własnym warunkiem zwycięstwa. Celem Soul Collectora jest zebranie określonej liczby dusz pobierając je od martwych ciał.",

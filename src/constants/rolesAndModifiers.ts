@@ -11,6 +11,7 @@ export enum RoleOrModifierTypes {
 export type RoleOrModifier = {
     type: RoleOrModifierTypes;
     name: string;
+    id: string;
     color: string;
     team: Teams;
     icon: string;

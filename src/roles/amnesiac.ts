@@ -12,7 +12,8 @@ export const AmnesiacAbilities = {
 export const Amnesiac: Role = {
     "type": RoleOrModifierTypes.Role,
     "name": "Amnesiac",
-    "color": "#80B2FF",
+    "id": "amnesiac",
+	"color": "#80B2FF",
     "team": Teams.Neutral,
     "icon": "/images/roles/amnesiac.png",
     "description": "Neutralna rola bez warunku zwycięstwa. Nie ma żadnych zadań i jest praktycznie bez roli. Jednak może sobie przypomnieć rolę, odnajdując martwego gracza. Gdy to zrobi, przejmuje nowy warunek zwycięstwa i dąży do wygranej. Dostaje strzałki wskazujące martwe ciała.",

@@ -6,7 +6,8 @@ import {CommonAbilities} from "@/constants/abilities";
 export const DoubleShot: Modifier = {
     "type": RoleOrModifierTypes.Modifier,
     "name": "Double Shot",
-    "color": "#FF0000",
+    "id": "double_shot",
+	"color": "#FF0000",
     "team": Teams.Impostor,
     "icon": "/images/modifiers/placeholder.png",
     "description": "Gdy pierwsza próba zgadnięcia roli nie powiedzie się, Impostor z Double shotem dostaje następną szansę.",
