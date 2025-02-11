@@ -15,7 +15,7 @@ export const PoliticianAbilities = {
 
 export const Politician: Role = {
     "type": RoleOrModifierTypes.Role,
-    "name": "Politician",
+    "name": "Politician / Mayor",
     "id": "politician",
 	"color": "#660099",
     "team": Teams.Crewmate,

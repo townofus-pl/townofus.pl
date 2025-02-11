@@ -10,6 +10,7 @@ import {Doomsayer} from "./doomsayer";
 import {Engineer} from "./engineer";
 import {Escapist} from "./escapist";
 import {Executioner} from "./executioner";
+import {Foreteller} from "./foreteller";
 import {Glitch} from "./glitch";
 import {Grenadier} from "./grenadier";
 import {GuardianAngel} from "./guardian_angel";
@@ -32,6 +33,7 @@ import {Oracle} from "./oracle";
 import {Phantom} from "./phantom";
 import {Plaguebearer} from "./plaguebearer";
 import {Politician} from "./politician";
+import {President} from "./president";
 import {Prosecutor} from "./prosecutor";
 import {Scavenger} from "./scavenger";
 import {Seer} from "./seer";
@@ -42,6 +44,7 @@ import {Spy} from "./spy";
 import {Survivor} from "./survivor";
 import {Swapper} from "./swapper";
 import {Swooper} from "./swooper";
+import {TimeLord} from "./time_lord";
 import {Tracker} from "./tracker";
 import {Traitor} from "./traitor";
 import {Transporter} from "./transporter";
@@ -115,9 +118,9 @@ export const Roles = [
 ].sort((a, b) => a.name.localeCompare(b.name));
 
 export const RolesTajemniczy = [
-    //TimeLord,
-    //President,
-    //Foreteller,
+    TimeLord,
+    President,
+    Foreteller,
     //ExecutionerPlus,
     //JesterPlus,
     //ElfLegacy,
