@@ -26,7 +26,7 @@ const barlow = Barlow({
 });
 
 export const metadata: Metadata = {
-    title: "Town of Us — Role",
+    title: "townofus.pl — Among Us Town of Us Polska",
     description: "Szybka wyszukiwarka ról z modyfikacji Town of Us",
 };
 
