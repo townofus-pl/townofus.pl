@@ -3,7 +3,7 @@
 import Image from "next/image";
 import {useCallback, useEffect, useMemo, useState} from "react";
 import {usePathname} from "next/navigation";
-import {Menu} from "@deemlol/next-icons";
+import {Menu, ExternalLink} from "@deemlol/next-icons";
 import {NavigationItem, type NavigationItemProps} from "./NavigationItem";
 import {NavigationLabel} from "./NavigationLabel";
 
@@ -16,10 +16,14 @@ const navigationItems: NavigationItemProps[] = [
         href: "/tajemniczy",
         label: "Dymowy Among"
     },
-    // {
-    //     href: "/lobby-15-plus",
-    //     label: "Lobby dla 15+ graczy"
-    // },
+    {
+        href: "https://github.com/townofus-pl/AleLuduMod/tree/main?tab=readme-ov-file",
+        label: "AleLuduMod",
+        image: (
+            <ExternalLink className="w-5 h-5"/>
+        ),
+        external: true,
+    },
     {
         href: 'https://discord.townofus.pl',
         label: 'Discord',
