@@ -51,7 +51,7 @@ export const Navigation = () => {
     const [mobileMenuOpened, setMobileMenuOpened] = useState(false);
     const toggleMenu = useCallback(() => setMobileMenuOpened(prev => !prev), []);
 
-    const listClassNames = useMemo(() => {
+    const menuListClassNames = useMemo(() => {
         const classNames = [
             'font-barlow',
             'overflow-hidden',
@@ -67,9 +67,10 @@ export const Navigation = () => {
             classNames.push('hidden');
         }
 
-        return classNames;
+        return classNames.join(' ');
     }, [mobileMenuOpened]);
 
+    // close menu on path change (page reload)
     useEffect(() => {
         setMobileMenuOpened(false);
     }, [currentPath])
@@ -84,10 +85,10 @@ export const Navigation = () => {
                 <NavigationLabel
                     label={currentPage.label}
                     image={currentPage.image}
-                    selected={currentPage.selected}
+                    selected={true}
                 />
             </div>
-            <ul className={listClassNames.join(' ')}>
+            <ul className={menuListClassNames}>
                 {navigationItems.map(({href, label, image, external}) => (
                     <NavigationItem
                         key={href}
