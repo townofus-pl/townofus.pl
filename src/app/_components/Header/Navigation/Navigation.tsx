@@ -14,12 +14,12 @@ const navigationItems: NavigationItemProps[] = [
     },
     {
         href: "/tajemniczy",
-        label: "Tajemniczy"
+        label: "Dymowy Among"
     },
-    {
-        href: "/lobby-15-plus",
-        label: "Lobby dla 15+ graczy"
-    },
+    // {
+    //     href: "/lobby-15-plus",
+    //     label: "Lobby dla 15+ graczy"
+    // },
     {
         href: 'https://discord.townofus.pl',
         label: 'Discord',
@@ -51,16 +51,24 @@ export const Navigation = () => {
     const [mobileMenuOpened, setMobileMenuOpened] = useState(false);
     const toggleMenu = useCallback(() => setMobileMenuOpened(prev => !prev), []);
 
-    const listClassNames = useMemo(() => [
-        'font-barlow',
-        'overflow-hidden',
-        'flex-col',
-        'md:flex-row',
-        'gap-2',
-        'md:gap-0',
-        mobileMenuOpened ? 'flex' : 'hidden',
-        'md:flex'
-    ], [mobileMenuOpened]);
+    const listClassNames = useMemo(() => {
+        const classNames = [
+            'font-barlow',
+            'overflow-hidden',
+            'flex-col',
+            'md:flex-row',
+            'gap-2',
+            'md:flex'
+        ];
+
+        if (mobileMenuOpened) {
+            classNames.push('flex');
+        } else {
+            classNames.push('hidden');
+        }
+
+        return classNames;
+    }, [mobileMenuOpened]);
 
     useEffect(() => {
         setMobileMenuOpened(false);
