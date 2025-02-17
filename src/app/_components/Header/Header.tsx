@@ -1,0 +1,19 @@
+import Link from "next/link";
+import {Navigation} from "./Navigation/Navigation";
+
+export const Header = () => (
+    <header className="grid grid-cols-1 gap-4 lg:gap-0 lg:grid-cols-2/1 bg-zinc-900/50 px-5 py-5 rounded-xl mb-5">
+        <div className="grid grid-cols-1 gap-6 lg:gap-6">
+            <h1 className="text-7xl font-bold font-brook">
+                <Link href="/public">Town Of Us - Role</Link>
+            </h1>
+            <h2 className="text-3xl font-brook hidden sm:block mt-0 lg:mt-2">
+                Lista ról i modyfikatorów dostępnych w Town Of Us v5.2.1
+            </h2>
+            <Navigation/>
+        </div>
+        <div className="font-barlow text-base text-gray-500 flex items-start justify-start lg:justify-end">
+            <p>Created by Malkiz, Quarties & OrzechMC</p>
+        </div>
+    </header>
+);
