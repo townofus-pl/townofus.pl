@@ -13,7 +13,7 @@ export const Header = () => (
             <Navigation/>
         </div>
         <div className="font-barlow text-base text-gray-500 flex items-start justify-start lg:justify-end">
-            <p>Created by Malkiz, Quarties & OrzechMC</p>
+            <p>Created by Malkiz, Quarties &amp; OrzechMC</p>
         </div>
     </header>
 );
