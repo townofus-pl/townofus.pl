@@ -1,4 +1,3 @@
-export * from "./Header";
+export * from "./Header/Header";
 export * from "./RolesList/RolesList";
-export * from "./DiscordLink";
 
