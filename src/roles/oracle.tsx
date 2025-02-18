@@ -21,10 +21,8 @@ export const Oracle: Role = {
         <ul className="list-disc list-inside">
             <li>Gdy Oracle zginie, osoba wyznająca mu informacje ujawni wszystkim swoją przynależność (80% szans na prawidłową).</li>
             <li>Podczas każdego spotkania Oracle otrzymuje wyznanie od spowiadanej osoby o tym, kto może być mordercą. Spowiadany zawsze wyjawia dwóch podejrzanych. Jeśli spowiadany jest Crewmatem, wydaje co najmniej jednego mordercę. W przeciwnym wypadku podejrzenia są fałszywe.</li>
-            <li>Oracle daje błogosławieństwo osobie spowiadanej, co zapewnia jej odporność na głosy</li>
+            <li>Oracle daje błogosławieństwo osobie spowiadanej, co zapewnia jej odporność na głosy.</li>
         </ul>
-        <p>Arsonist może mieć maksymalnie 5 oblanych osób jednocześnie. Arsonist musi być ostatnim zabójcą, aby wygrać
-            grę.</p>
     </>),
     "settings": {
         ...probabilityOfAppearing(-1),
