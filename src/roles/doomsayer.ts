@@ -10,7 +10,7 @@ export const Doomsayer: Role = {
 	"color": "#00d96d",
     "team": Teams.Neutral,
     "icon": "/images/roles/doomsayer.png",
-    "description": "soon",
+    "description": "Wygrywa grę, jeśli zgadnie role trzech graczy. Posiada dodatkową umiejętność obserwowania gracza, która podpowiada mu jaką rolę może mieć wybrany gracz.",
     "settings": {
         ...probabilityOfAppearing(-1),
     },
