@@ -3,6 +3,13 @@ import {Teams} from "@/constants/teams";
 import {probabilityOfAppearing} from "@/constants/settings";
 import {CommonAbilities} from "@/constants/abilities";
 
+export const DoomsayerAbilities = {
+    Observe: {
+        "name": "Observe (Obserwuj)",
+        "icon": "/images/abilities/observe.png"
+    }
+};
+
 export const Doomsayer: Role = {
     "type": RoleOrModifierTypes.Role,
     "name": "Doomsayer",
@@ -14,5 +21,5 @@ export const Doomsayer: Role = {
     "settings": {
         ...probabilityOfAppearing(-1),
     },
-    "abilities": [CommonAbilities.None],
+    "abilities": [DoomsayerAbilities.Observe],
 };
