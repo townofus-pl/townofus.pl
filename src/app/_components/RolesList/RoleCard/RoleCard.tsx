@@ -18,7 +18,7 @@ export const RoleCard: FC<{
             <div>
                 <h4 className="mb-2.5 text-6xl font-bold group" style={{color: role.color}}>
                     <Link
-                        href={`/#${role.id}`}
+                        href={`#${role.id}`}
                         onClick={e => {
                             navigator.clipboard
                                 .writeText((e.target as HTMLAnchorElement).href)
