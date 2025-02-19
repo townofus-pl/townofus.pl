@@ -17,28 +17,24 @@ const navigationItems: NavigationItemProps[] = [
         label: "Dymowy Among"
     },
     {
-        href: "https://github.com/townofus-pl/AleLuduMod/tree/main?tab=readme-ov-file",
+        href: "/lobby-15-plus",
         label: "AleLuduMod",
-        image: (
-            <ExternalLink className="w-5 h-5"/>
-        ),
-        external: true,
+
     },
     {
-        href: 'https://discord.townofus.pl',
+        href: '/discord',
         label: 'Discord',
         image: (
-            <div className="px-0.5 py-1 bg-discord-blurple rounded drop-shadow-md">
+            <div className="px-0.5 py-1 rounded drop-shadow-md">
                 <Image src="/images/discord-logo.svg" alt="Discord" width={127} height={96}/>
             </div>
         ),
-        external: true,
     },
     {
         href: 'https://github.townofus.pl',
         label: 'GitHub',
         image: (
-            <div className="px-0.5 py-0.5 bg-white rounded drop-shadow-md">
+            <div className="px-0.5 py-0.5 rounded drop-shadow-md">
                 <Image src="/images/github-logo.svg" alt="GitHub" width={98} height={96}/>
             </div>
         ),
