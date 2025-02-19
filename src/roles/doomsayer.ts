@@ -1,7 +1,13 @@
 import {Role, RoleOrModifierTypes} from "@/constants/rolesAndModifiers";
 import {Teams} from "@/constants/teams";
 import {probabilityOfAppearing} from "@/constants/settings";
-import {CommonAbilities} from "@/constants/abilities";
+
+export const DoomsayerAbilities = {
+    Observe: {
+        "name": "Observe (Obserwuj)",
+        "icon": "/images/abilities/observe.png"
+    }
+};
 
 export const Doomsayer: Role = {
     "type": RoleOrModifierTypes.Role,
@@ -10,9 +16,9 @@ export const Doomsayer: Role = {
 	"color": "#00d96d",
     "team": Teams.Neutral,
     "icon": "/images/roles/doomsayer.png",
-    "description": "soon",
+    "description": "Wygrywa grę, jeśli zgadnie role trzech graczy. Posiada dodatkową umiejętność obserwowania gracza, która podpowiada mu jaką rolę może mieć wybrany gracz.",
     "settings": {
         ...probabilityOfAppearing(-1),
     },
-    "abilities": [CommonAbilities.None],
+    "abilities": [DoomsayerAbilities.Observe],
 };
