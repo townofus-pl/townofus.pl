@@ -1,8 +1,10 @@
+import type {FC} from "react";
+import Link from "next/link";
+import {Link as LinkIcon} from "@deemlol/next-icons";
 import {type RoleOrModifier} from "@/constants/rolesAndModifiers";
 import {SettingsList} from "./SettingsList";
 import {Team} from "./Team";
 import Image from "next/image";
-import {FC} from "react";
 
 export const RoleCard: FC<{
     role: RoleOrModifier,
@@ -14,7 +16,19 @@ export const RoleCard: FC<{
         <header className="font-brook bg-zinc-900/50 p-4 rounded-lg flex gap-5 items-center justify-start">
             <Image src={role.icon} alt={role.name} width={400} height={400} className="scale-150 w-28 h-28"/>
             <div>
-                <h4 className="mb-2.5 text-6xl font-bold" style={{color: role.color}}>{role.name}</h4>
+                <h4 className="mb-2.5 text-6xl font-bold group" style={{color: role.color}}>
+                    <Link
+                        href={`/#${role.id}`}
+                        onClick={e => {
+                            navigator.clipboard
+                                .writeText((e.target as HTMLAnchorElement).href)
+                                .catch(console.error)
+                        }}
+                    >
+                        {role.name}
+                        <LinkIcon className="inline-block w-10 h-10 ml-2 invisible group-hover:visible" />
+                    </Link>
+                </h4>
                 <Team team={role.team}/>
             </div>
         </header>
