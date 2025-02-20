@@ -13,12 +13,12 @@ const navigationItems: NavigationItemProps[] = [
         label: "Start"
     },
     {
-        href: "/tajemniczy",
-        label: "Dymowy Among"
+        href: "/download",
+        label: "Jak pobrać?"
     },
     {
         href: "/lobby-15-plus",
-        label: "AleLuduMod",
+        label: "Większe Lobby",
 
     },
     {
@@ -39,6 +39,10 @@ const navigationItems: NavigationItemProps[] = [
             </div>
         ),
         external: true,
+    },
+    {
+        href: "/tajemniczy",
+        label: "Dymowy Among"
     },
 ];
 
