@@ -22,7 +22,7 @@ export default function ToUDownload() {
             <li>- Zduplikuj nowy folder Among Us,</li>
             <li>- Zmień nazwę (proponuję <code className="bg-gray-800 text-base text-white px-1 rounded font-mono">Among Us - ToU</code>),</li>
             <li>- Z pobranego archiwum ZIP przeciągnij wszystkie pliki do nowego folderu ToU,</li>
-            <li>- Gotowe. Plik <code className="bg-gray-800 text-base text-white px-1 rounded font-mono">Among Us.exe</code> jest plikiem rozruchowym. Polecam zrobić skrót do niego na pulpicie..</li>
+            <li>- Gotowe. Plik <code className="bg-gray-800 text-base text-white px-1 rounded font-mono">Among Us.exe</code> jest plikiem rozruchowym. Polecam zrobić skrót do niego na pulpicie.</li>
           </ul>
           <div className="flex justify-center space-x-4">
           <a
