@@ -13,12 +13,12 @@ const navigationItems: NavigationItemProps[] = [
         label: "Start"
     },
     {
-        href: "/download",
-        label: "Jak pobrać?"
+        href: "/instalacja-tou",
+        label: "Instalacja ToU"
     },
     {
         href: "/lobby-15-plus",
-        label: "Większe Lobby",
+        label: "Lobby na więcej graczy",
 
     },
     {
