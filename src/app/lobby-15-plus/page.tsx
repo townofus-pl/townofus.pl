@@ -23,12 +23,12 @@ export default function Lobby15Plus() {
             </ul>
             <div className="grid grid-cols-2 gap-4 mt-10 md:flex md:justify-center md:space-x-4">
               <a
-                href="https://github.com/townofus-pl/AleLuduMod/releases/download/v1.0.2/AleLuduMod.dll"
+                href="https://github.com/townofus-pl/AleLuduMod/releases/download/v1.0.3/AleLuduMod.dll"
                 rel="noopener noreferrer"
                 className="px-4 py-3 bg-[rgba(0,167,0)] hover:bg-[rgba(0, 167, 0, 0.85)] text-white text-lg font-sans font-semibold rounded-lg transition duration-300 inline-flex items-center"
               >
                 <img src="/images/download-button.svg" width="16" height="16"/> 
-                &nbsp; Download
+                &nbsp; Download v1.0.3
               </a>
               <a
                 href="https://github.com/townofus-pl/AleLuduMod/"
