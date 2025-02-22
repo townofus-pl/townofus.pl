@@ -54,8 +54,8 @@ export default function Lobby15Plus() {
           <p className="text-lg text-gray-100 mt-5 mb-2 text-center">Mod działa lokalnie, więc nie wszyscy gracze muszą go mieć zainstalowanego, aby móc grać.</p>
             </div>
             <div className="md:w-1/2 flex flex-col items-center">
-            <img className="mx-auto mr-4 mt-4" src="/images/aleludumodtownofus.png" width="500"/>
-            <img className="mx-auto mr-4 mt-4 mb-4" src="/images/aleludumodmenu.png" width="500"/>
+            <img className="mx-auto mt-4" src="/images/aleludumodtownofus.png" width="500"/>
+            <img className="mx-auto mt-4 mb-4" src="/images/aleludumodmenu.png" width="500"/>
             </div>
           </div>
 
