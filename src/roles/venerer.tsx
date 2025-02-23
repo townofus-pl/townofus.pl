@@ -1,6 +1,6 @@
 import {Role, RoleOrModifierTypes} from "@/constants/rolesAndModifiers";
 import {Teams} from "@/constants/teams";
-import {probabilityOfAppearing} from "@/constants/settings";
+import {probabilityOfAppearing, SettingTypes} from "@/constants/settings";
 import {CommonAbilities} from "@/constants/abilities";
 
 export const VenererAbilities = {
@@ -40,6 +40,22 @@ export const Venerer: Role = {
         </>),
     "settings": {
         ...probabilityOfAppearing(-1),
+        "Ability Cooldown": {
+            value: 25.0,
+            type: SettingTypes.Time,
+        },
+        "Ability Duration": {
+            value: 10.0,
+            type: SettingTypes.Time,
+        },
+        "Sprint Speed": {
+            value: 1.5,
+            type: SettingTypes.Multiplier,
+        },
+        "Freeze Speed": {
+            value: 1,
+            type: SettingTypes.Multiplier,
+        },
     },
     "abilities": [
         CommonAbilities.Kill,

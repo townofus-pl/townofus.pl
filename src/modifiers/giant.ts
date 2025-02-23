@@ -14,7 +14,8 @@ export const Giant: Modifier = {
     "settings": {
         ...probabilityOfAppearing(-1),
         'Giant Speed': {
-            value: 0.75, type: SettingTypes.Multiplier,
+            value: 1.0, 
+            type: SettingTypes.Multiplier,
         },
     },
     "abilities": [CommonAbilities.None],

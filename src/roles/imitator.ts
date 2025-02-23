@@ -1,6 +1,6 @@
 import {Role, RoleOrModifierTypes} from "@/constants/rolesAndModifiers";
 import {Teams} from "@/constants/teams";
-import {probabilityOfAppearing} from "@/constants/settings";
+import {probabilityOfAppearing, SettingTypes} from "@/constants/settings";
 
 export const ImitatorAbilities = {
     Imitate: {
@@ -19,6 +19,10 @@ export const Imitator: Role = {
     "description": "Crewmate, który może naśladować martwych Crewmate’ów. Podczas spotkań Imitator może przejąć rolę jednego z martwych graczy, zyskując jego umiejętności na następną rundę. Może używać zdolności każdego martwego gracza tyle razy, ile chce. Imitator może naśladować tylko role Crewmate’ów, których umiejętności działają poza spotkaniem.",
     "settings": {
         ...probabilityOfAppearing(-1),
+        "Imitator Can Become Mayor": {
+            value: false,
+            type: SettingTypes.Boolean,
+        },
     },
     "abilities": [ImitatorAbilities.Imitate],
 };
