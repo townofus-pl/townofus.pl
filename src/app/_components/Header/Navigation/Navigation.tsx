@@ -3,7 +3,7 @@
 import Image from "next/image";
 import {useCallback, useEffect, useMemo, useState} from "react";
 import {usePathname} from "next/navigation";
-import {Menu, ExternalLink} from "@deemlol/next-icons";
+import {Menu} from "@deemlol/next-icons";
 import {NavigationItem, type NavigationItemProps} from "./NavigationItem";
 import {NavigationLabel} from "./NavigationLabel";
 
