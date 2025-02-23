@@ -13,36 +13,36 @@ const navigationItems: NavigationItemProps[] = [
         label: "Start"
     },
     {
-        href: "/instalacja-tou",
-        label: "Instalacja ToU"
+        href: "/tajemniczy",
+        label: "Dymowy Among"
     },
     {
-        href: "/lobby-15-plus",
-        label: "Lobby na więcej graczy",
-
+        href: "https://github.com/townofus-pl/AleLuduMod/tree/main?tab=readme-ov-file",
+        label: "AleLuduMod",
+        image: (
+            <ExternalLink className="w-5 h-5"/>
+        ),
+        external: true,
     },
     {
-        href: '/discord',
+        href: 'https://discord.townofus.pl',
         label: 'Discord',
         image: (
-            <div className="px-0.5 py-1 rounded drop-shadow-md">
+            <div className="px-0.5 py-1 bg-discord-blurple rounded drop-shadow-md">
                 <Image src="/images/discord-logo.svg" alt="Discord" width={127} height={96}/>
-            </div>
-        ),
-    },
-    {
-        href: 'https://github.townofus.pl',
-        label: 'GitHub',
-        image: (
-            <div className="px-0.5 py-0.5 rounded drop-shadow-md">
-                <Image src="/images/github-logo.svg" alt="GitHub" width={98} height={96}/>
             </div>
         ),
         external: true,
     },
     {
-        href: "/tajemniczy",
-        label: "Dymowy Among"
+        href: 'https://github.townofus.pl',
+        label: 'GitHub',
+        image: (
+            <div className="px-0.5 py-0.5 bg-white rounded drop-shadow-md">
+                <Image src="/images/github-logo.svg" alt="GitHub" width={98} height={96}/>
+            </div>
+        ),
+        external: true,
     },
 ];
 
