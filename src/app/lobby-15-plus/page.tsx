@@ -14,7 +14,7 @@ export default function Lobby15Plus() {
                 <div className="space-y-4">
                   <p className="text-xl text-gray-100">Mod zawiera:</p>
                   <ul className="text-left text-lg text-gray-100 space-y-2 list-disc pl-6">
-                    <li>poprawiony widok podczas głosowania,</li>
+                    <li>poprawiony widok podczas głosowania oraz na vitalsach,</li>
                     <li>opcję tworzenia lobby do 35 graczy.</li>
                   </ul>
                 </div>
