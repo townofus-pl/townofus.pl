@@ -9,20 +9,20 @@ export default function ToUDownload() {
             <p className="text-red-500 text-8xl font-brook font-bold drop-shadow-[0_0_10px_rgba(255,0,0,0.7)]">Jak wgrać Town of Us</p>
           </div>
           <br/>
-          <ul className="text-left text-lg text-gray-100 mb-6 space-y-2 text-center">
-            <li>1. Pobierz najnowszą wersję moda,</li>
-            <li>2. Przejdź do swojej biblioteki Steam,</li>
-            <li>3. Kliknij prawym przyciskiem myszy na <code className="bg-gray-800 text-base text-white px-1 rounded font-mono">Among Us</code> &gt; wybierz <code className="bg-gray-800 text-base text-white px-1 rounded font-mono">Zarządzaj</code> &gt; kliknij <code className="bg-gray-800 text-base text-white px-1 rounded font-mono">Przeglądaj pliki lokalne</code>,</li>
-            <li>4. W Eksploratorze plików usuń cały folder Among Us,</li>
-            <li>5. Wróć do swojej biblioteki Steam,</li>
-            <li>6. Kliknij prawym przyciskiem myszy na <code className="bg-gray-800 text-base text-white px-1 rounded font-mono">Among Us</code> &gt; wybierz <code className="bg-gray-800 text-base text-white px-1 rounded font-mono">Właściwości...</code> &gt; przejdź do zakładki <code className="bg-gray-800 text-base text-white px-1 rounded font-mono">Zainstalowane Pliki</code>,</li>
-            <li>7. Kliknij na <code className="bg-gray-800 text-base text-white px-1 rounded font-mono">Sprawdź spójność plików gry</code>,</li>
-            <li>8. Poczekaj, aż Steam pobierze czystą wersję Among Us,</li>
-            <li>9. Wróć do eksploratora plików,</li>
-            <li>10. Zduplikuj nowy folder Among Us,</li>
-            <li>11. Zmień nazwę (proponuję <code className="bg-gray-800 text-base text-white px-1 rounded font-mono">Among Us - ToU</code>),</li>
-            <li>12. Z pobranego archiwum ZIP przeciągnij wszystkie pliki do nowego folderu ToU,</li>
-            <li>13. Gotowe. Plik <code className="bg-gray-800 text-base text-white px-1 rounded font-mono">Among Us.exe</code> jest plikiem rozruchowym. Polecam zrobić skrót do niego na pulpicie.</li>
+          <ul className="text-left text-lg text-gray-100 mb-6 space-y-2 list-decimal">
+            <li>Pobierz najnowszą wersję moda,</li>
+            <li>Przejdź do swojej biblioteki Steam,</li>
+            <li>Kliknij prawym przyciskiem myszy na <code className="bg-gray-800 text-base text-white px-1 rounded font-mono">Among Us</code> &gt; wybierz <code className="bg-gray-800 text-base text-white px-1 rounded font-mono">Zarządzaj</code> &gt; kliknij <code className="bg-gray-800 text-base text-white px-1 rounded font-mono">Przeglądaj pliki lokalne</code>,</li>
+            <li>W Eksploratorze plików usuń cały folder Among Us,</li>
+            <li>Wróć do swojej biblioteki Steam,</li>
+            <li>Kliknij prawym przyciskiem myszy na <code className="bg-gray-800 text-base text-white px-1 rounded font-mono">Among Us</code> &gt; wybierz <code className="bg-gray-800 text-base text-white px-1 rounded font-mono">Właściwości...</code> &gt; przejdź do zakładki <code className="bg-gray-800 text-base text-white px-1 rounded font-mono">Zainstalowane Pliki</code>,</li>
+            <li>Kliknij na <code className="bg-gray-800 text-base text-white px-1 rounded font-mono">Sprawdź spójność plików gry</code>,</li>
+            <li>Poczekaj, aż Steam pobierze czystą wersję Among Us,</li>
+            <li>Wróć do eksploratora plików,</li>
+            <li>Zduplikuj nowy folder Among Us,</li>
+            <li>Zmień nazwę (proponuję <code className="bg-gray-800 text-base text-white px-1 rounded font-mono">Among Us - ToU</code>),</li>
+            <li>Z pobranego archiwum ZIP przeciągnij wszystkie pliki do nowego folderu ToU,</li>
+            <li>Gotowe. Plik <code className="bg-gray-800 text-base text-white px-1 rounded font-mono">Among Us.exe</code> jest plikiem rozruchowym. Polecam zrobić skrót do niego na pulpicie.</li>
           </ul>
           <div className="flex justify-center space-x-4">
           <a
