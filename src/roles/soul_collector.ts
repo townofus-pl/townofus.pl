@@ -1,6 +1,6 @@
 import {Role, RoleOrModifierTypes} from "@/constants/rolesAndModifiers";
 import {Teams} from "@/constants/teams";
-import {probabilityOfAppearing} from "@/constants/settings";
+import {probabilityOfAppearing, SettingTypes} from "@/constants/settings";
 
 export const SoulCollectorAbilities = {
     Reap: {
@@ -23,6 +23,18 @@ export const SoulCollector: Role = {
     "description": "Neutralna rola z własnym warunkiem zwycięstwa. Celem Soul Collectora jest zebranie określonej liczby dusz pobierając je od martwych ciał.",
     "settings": {
         ...probabilityOfAppearing(-1),
+        "Reap Cooldown": {
+            value: 25,
+            type: SettingTypes.Time,
+        },
+        "Passively Collect Soul Each Round": {
+            value: true,
+            type: SettingTypes.Boolean,
+        },
+        "Amount Of Souls Required To Win": {
+            value: 5,
+            type: SettingTypes.Number,
+        },
     },
     "abilities": [SoulCollectorAbilities.Reap, SoulCollectorAbilities.Collect],
 };

@@ -14,7 +14,7 @@ export const Flash: Modifier = {
     "settings": {
         ...probabilityOfAppearing(-1),
         'Flash Speed': {
-            value: 1.25, type: SettingTypes.Multiplier,
+            value: 1.5, type: SettingTypes.Multiplier,
         },
     },
     "abilities": [CommonAbilities.None],
