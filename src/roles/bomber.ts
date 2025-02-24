@@ -45,5 +45,5 @@ export const Bomber: Role = {
             type: SettingTypes.Boolean,
         },
     },
-    "abilities": [CommonAbilities.Vent, CommonAbilities.Sabotage, BomberAbilities.Plant, BomberAbilities.Detonate],
+    "abilities": [CommonAbilities.Kill, CommonAbilities.Vent, CommonAbilities.Sabotage, BomberAbilities.Plant, BomberAbilities.Detonate],
 };
