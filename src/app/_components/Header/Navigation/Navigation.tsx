@@ -44,6 +44,10 @@ const navigationItems: NavigationItemProps[] = [
         href: "/tajemniczy",
         label: "Dymowy Among"
     },
+    {
+        href: "/ustawienia",
+        label: "Własne ustawienia [BETA]"
+    },
 ];
 
 export const Navigation = () => {
