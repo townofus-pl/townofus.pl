@@ -121,6 +121,10 @@ export function SettingsDramaAfera() {
     return { modifiers, filteredModifiers };
   }, [fileContent]);
 
+  console.log(roles);
+  console.log(modifiers);
+
+
   return (
     <div className="p-4">
       <RolesList roles={Object.values(filteredRoles) || []} modifiers={Object.values(filteredModifiers) || []} />

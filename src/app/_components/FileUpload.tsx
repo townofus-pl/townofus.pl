@@ -79,6 +79,10 @@ export function FileUpload() {
     return { roles, filteredRoles };
   }, [fileContent]);
 
+  console.log(selectedFile);
+  console.log(roles);
+
+
   return (
     <div className="p-4">
       <input type="file" accept=".txt" onChange={handleFileChange} className="mb-2" />
