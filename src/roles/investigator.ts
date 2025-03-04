@@ -30,7 +30,7 @@ export const Investigator: Role = {
             type: SettingTypes.Boolean,
         },
         "Footprint Vent Visible": {
-            value: true,
+            value: false,
             type: SettingTypes.Boolean,
         }
     },

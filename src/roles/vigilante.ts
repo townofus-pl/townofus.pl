@@ -1,6 +1,6 @@
-import {Role, RoleOrModifierTypes} from "@/constants/rolesAndModifiers";
-import {Teams} from "@/constants/teams";
-import {probabilityOfAppearing} from "@/constants/settings";
+import { Role, RoleOrModifierTypes } from "@/constants/rolesAndModifiers";
+import { Teams } from "@/constants/teams";
+import { probabilityOfAppearing, SettingTypes } from "@/constants/settings";
 
 export const VigilanteAbilities = {
     Guess: {
@@ -13,12 +13,40 @@ export const Vigilante: Role = {
     "type": RoleOrModifierTypes.Role,
     "name": "Vigilante",
     "id": "vigilante",
-	"color": "#FFFF99",
+    "color": "#FFFF99",
     "team": Teams.Crewmate,
     "icon": "/images/roles/vigilante.png",
     "description": "Crewmate, który może zabijać podczas spotkań. Podczas spotkania, Vigilante może wybrać, kogo zabić, zgadując jego rolę. Jeśli jednak zgadnie źle, to sam ginie.",
     "settings": {
         ...probabilityOfAppearing(-1),
+        "Number Of Vigilante Kills": {
+            value: 5,
+            type: SettingTypes.Number,
+        },
+        "Vigilante Can Kill More Than Once Per Meeting": {
+            value: false,
+            type: SettingTypes.Boolean,
+        },
+        "Vigilante Can Guess Neutral Benign Roles": {
+            value: true,
+            type: SettingTypes.Boolean,
+        },
+        "Vigilante Can Guess Neutral Evil Roles": {
+            value: true,
+            type: SettingTypes.Boolean,
+        },
+        "Vigilante Can Guess Neutral Killing Roles": {
+            value: true,
+            type: SettingTypes.Boolean,
+        },
+        "Vigilante Can Guess Impostor Modifiers": {
+            value: false,
+            type: SettingTypes.Boolean,
+        },
+        "Vigilante Can Guess Lovers": {
+            value: false,
+            type: SettingTypes.Boolean,
+        },
     },
     "abilities": [VigilanteAbilities.Guess],
 };

@@ -1,18 +1,22 @@
-import {Role, RoleOrModifierTypes} from "@/constants/rolesAndModifiers";
-import {Teams} from "@/constants/teams";
-import {probabilityOfAppearing} from "@/constants/settings";
-import {CommonAbilities} from "@/constants/abilities";
+import { Role, RoleOrModifierTypes } from "@/constants/rolesAndModifiers";
+import { Teams } from "@/constants/teams";
+import { probabilityOfAppearing, SettingTypes } from "@/constants/settings";
+import { CommonAbilities } from "@/constants/abilities";
 
 export const Spy: Role = {
     "type": RoleOrModifierTypes.Role,
     "name": "Spy",
     "id": "spy",
-	"color": "#CCA3CC",
+    "color": "#CCA3CC",
     "team": Teams.Crewmate,
     "icon": "/images/roles/spy.png",
     "description": "Crewmate, który zdobywa dodatkowe informacje podczas korzystania z Panelu Admina. Przy Panelu Admina Spy może zobaczyć kolory wszystkich graczy na mapie.",
     "settings": {
         ...probabilityOfAppearing(-1),
+        "Who Sees Dead Bodies On Admin": {
+            value: "Spy",
+            type: SettingTypes.Text,
+        },
     },
     "abilities": [CommonAbilities.None],
     "tip": "Panel Admina dla ciebie jest skarbnicą ważnych informacji. Zwróć uwagę na szybkie przemieszczanie, to prawdodobnie impostor w wentylacji."

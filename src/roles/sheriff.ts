@@ -25,7 +25,7 @@ export const Sheriff: Role = {
             value: true,
             type: SettingTypes.Boolean,
         },
-        "R": {
+        "Sheriff Kill Cooldown": {
             value: 22.5,
             type: SettingTypes.Time,
         },
