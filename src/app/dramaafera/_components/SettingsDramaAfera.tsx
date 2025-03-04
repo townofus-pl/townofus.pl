@@ -196,11 +196,9 @@ export function SettingsDramaAfera() {
     }
 
     return (
-        <div className="p-4">
             <RolesList
                 roles={Object.values(filteredRoles) || []}
                 modifiers={Object.values(filteredModifiers) || []}
             />
-        </div>
     );
 }
