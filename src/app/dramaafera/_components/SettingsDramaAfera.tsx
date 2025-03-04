@@ -18,7 +18,7 @@ export function SettingsDramaAfera() {
             .then((text) => {
                 setFileContent(text);
             })
-            .catch((error) => {
+            .catch(() => {
                 setFileContent(""); // Ustaw domyślną zawartość w przypadku błędu
             })
             .finally(() => {
@@ -26,7 +26,7 @@ export function SettingsDramaAfera() {
             });
     }, []);
 
-    const {roles, filteredRoles} = useMemo(() => {
+    const {filteredRoles} = useMemo(() => {
         if (!fileContent) {
             return {
                 roles: [],
@@ -108,7 +108,7 @@ export function SettingsDramaAfera() {
     }, [fileContent]);
 
 
-    const {modifiers, filteredModifiers} = useMemo(() => {
+    const {filteredModifiers} = useMemo(() => {
         // Jeśli fileContent jest null lub undefined, zwróć domyślne wartości
         if (!fileContent) {
             return {
