@@ -28,25 +28,30 @@ export function SettingsDramaAfera() {
 
 
   const { roles, filteredRoles } = useMemo(() => {
-    if (!fileContent) return {
-      roles: Roles,
-      filteredRoles: Roles.reduce((acc, char) => {
-        acc[char.id] = char;
-        return acc;
-      }, {} as Record<string, (typeof Roles)[number]>)
-    };
+    if (!fileContent) {
+      return {
+        roles: [],
+        filteredRoles: {}
+      };
+    }
+
+    if (!Array.isArray(Roles)) {
+      console.error("Roles is not an array:", Roles);
+      return {
+        roles: [],
+        filteredRoles: {}
+      };
+    }
 
     // Tworzymy mapę z zawartości pliku
     const fileContentMap = new Map(
       (fileContent || '')
         .split("\r\n")
         .reduce((acc, current, index, array) => {
-          // Dodaj dodatkowe sprawdzenie
           if (current && current.trim() !== '') {
             if (index % 2 === 0 && array[index + 1] !== undefined) {
               acc.push([current, array[index + 1]]);
             } else {
-              // Upewnij się, że acc nie jest pusty przed dostępem
               if (acc.length > 0) {
                 acc[acc.length - 1].push(current);
               }
@@ -115,26 +120,40 @@ export function SettingsDramaAfera() {
 
 
   const { modifiers, filteredModifiers } = useMemo(() => {
-    if (!fileContent) return {
-      modifiers: Modifiers,
-      filteredModifiers: Modifiers.reduce((acc, char) => {
-        acc[char.id] = char;
-        return acc;
-      }, {} as Record<string, (typeof Modifiers)[number]>)
-    };
+    // Jeśli fileContent jest null lub undefined, zwróć domyślne wartości
+    if (!fileContent) {
+      return {
+        modifiers: [],
+        filteredModifiers: {}
+      };
+    }
+
+    // Sprawdź, czy Modifiers jest tablicą
+    if (!Array.isArray(Modifiers)) {
+      console.error("Modifiers is not an array:", Modifiers);
+      return {
+        modifiers: [],
+        filteredModifiers: {}
+      };
+    }
 
     // Tworzymy mapę z zawartości pliku
     const fileContentMap = new Map(
       fileContent
         .split("\r\n")
         .reduce((acc, current, index, array) => {
-          if (index % 2 === 0 && array[index + 1] !== undefined) {
-            acc.push([current, array[index + 1]]); // Klucz (nazwa postaci z tagami)
-          } else {
-            acc[acc.length - 1].push(current); // Wartość (szansa na wystąpienie)
+          if (current && current.trim() !== '') {
+            if (index % 2 === 0 && array[index + 1] !== undefined) {
+              acc.push([current, array[index + 1]]); // Klucz (nazwa postaci z tagami)
+            } else {
+              if (acc.length > 0) {
+                acc[acc.length - 1].push(current); // Wartość (szansa na wystąpienie)
+              }
+            }
           }
           return acc;
-        }, [] as [string, string][]));
+        }, [] as [string, string][])
+    );
 
     // Funkcja do usuwania tagów <color=...>...</color>
     const extractName = (str: string): string => str.replace(/<color=[^>]+>(.*?)<\/color>/, "$1");
@@ -145,7 +164,7 @@ export function SettingsDramaAfera() {
       cleanedFileContentMap.set(extractName(key), Number(value));
     });
 
-    // **Filtrowanie ról**
+    // **Filtrowanie Modifiers**
     const filteredModifiers = Modifiers
       .filter(
         (char) =>
@@ -157,8 +176,7 @@ export function SettingsDramaAfera() {
         return acc;
       }, {} as Record<string, (typeof Modifiers)[number]>);
 
-
-    // **Przetwarzanie ról**
+    // **Przetwarzanie Modifiers**
     const modifiersArray = Array.isArray(Modifiers) ? Object.values(Modifiers) : [];
 
     const modifiers = modifiersArray.map(modifier => {
