@@ -30,12 +30,12 @@ export default function Lobby15Plus() {
 
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                   <a
-                    href="https://github.com/townofus-pl/AleLuduMod/releases/download/v1.0.3/AleLuduMod.dll"
+                    href="https://github.com/townofus-pl/AleLuduMod/releases/download/v1.0.4/AleLuduMod.dll"
                     rel="noopener noreferrer"
                     className="px-4 py-3 bg-[rgba(0,167,0)] hover:bg-[rgba(0,167,0,0.85)] text-white text-lg font-sans font-semibold rounded-lg transition duration-300 inline-flex items-center justify-center"
                   >
                     <img src="/images/download-button.svg" width="16" height="16" alt="download"/> 
-                    <span className="ml-2">Download v1.0.3</span>
+                    <span className="ml-2">Download v1.0.4</span>
                   </a>
                   <a
                     href="https://github.com/townofus-pl/AleLuduMod/"
