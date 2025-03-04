@@ -23,24 +23,24 @@ export const Doomsayer: Role = {
             value: 25,
             type: SettingTypes.Time,
         },
-        "Doomsayer Guess Neutral Benign": {
+        "Doomsayer Can Guess Neutral Benign Roles": {
             value: true,
             type: SettingTypes.Boolean,
         },
-        "Doomsayer Guess Neutral Evil": {
+        "Doomsayer Can Guess Neutral Evil Roles": {
             value: true,
             type: SettingTypes.Boolean,
         },
-        "Doomsayer Guess Neutral Killing": {
+        "Doomsayer Can Guess Neutral Killing Roles": {
             value: true,
             type: SettingTypes.Boolean,
         },
-        "Doomsayer Guess Impostors": {
+        "Doomsayer Can Guess Impostors Roles": {
             value: true,
             type: SettingTypes.Boolean,
         },
-        "(Experienced) Doomsayer Can't Observe": {
-            value: true,
+        "Doomsayer Can't Observe": {
+            value: false,
             type: SettingTypes.Boolean,
         },
     },

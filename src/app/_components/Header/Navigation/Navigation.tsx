@@ -43,7 +43,7 @@ const navigationItems: NavigationItemProps[] = [
     {
         href: "/tajemniczy",
         label: "Dymowy Among"
-    },
+    }
 ];
 
 export const Navigation = () => {

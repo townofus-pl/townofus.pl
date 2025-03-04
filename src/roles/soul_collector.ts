@@ -15,7 +15,7 @@ export const SoulCollectorAbilities = {
 
 export const SoulCollector: Role = {
     "type": RoleOrModifierTypes.Role,
-    "name": "Soul collector",
+    "name": "Soul Collector",
     "id": "soul_collector",
 	"color": "#12e2bb",
     "team": Teams.Neutral,
