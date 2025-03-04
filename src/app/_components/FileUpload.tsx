@@ -3,6 +3,7 @@
 import { useState, useMemo } from "react";
 import { RolesList } from "@/app/_components";
 import { Roles } from "@/roles";
+import { SettingTypes } from "@/constants/settings";
 
 export function FileUpload() {
   const [fileContent, setFileContent] = useState<string | null>(null);
@@ -32,14 +33,17 @@ export function FileUpload() {
     if (!fileContent) return { roles: [], filteredRoles: {} };
 
     // Tworzymy mapę z zawartości pliku
-    const fileContentMap = new Map(fileContent.split("\r\n").reduce((acc, current, index) => {
-      if (index % 2 === 0) {
-        acc.push([current]); // Klucz (nazwa postaci z tagami)
-      } else {
-        acc[acc.length - 1].push(current); // Wartość (szansa na wystąpienie)
-      }
-      return acc;
-    }, [] as [string, string][]));
+    const fileContentMap = new Map(
+      fileContent
+        .split("\r\n")
+        .reduce((acc, current, index, array) => {
+          if (index % 2 === 0 && array[index + 1] !== undefined) {
+            acc.push([current, array[index + 1]]); // Klucz (nazwa postaci z tagami)
+          } else {
+            acc[acc.length - 1].push(current); // Wartość (szansa na wystąpienie)
+          }
+          return acc;
+        }, [] as [string, string][]));
 
     // Funkcja do usuwania tagów <color=...>...</color>
     const extractName = (str: string): string => str.replace(/<color=[^>]+>(.*?)<\/color>/, "$1");
@@ -51,7 +55,7 @@ export function FileUpload() {
     });
 
     // **Filtrowanie ról**
-    const filteredRoles = Object.values(Roles)
+    const filteredRoles = Roles
       .filter(
         (char) =>
           cleanedFileContentMap.has(char.name) &&
@@ -60,7 +64,7 @@ export function FileUpload() {
       .reduce((acc, char) => {
         acc[char.id] = char;
         return acc;
-      }, {} as Record<string, typeof Roles[string]>);
+      }, {} as Record<string, (typeof Roles)[number]>);
 
     console.log("Filtered Roles:", filteredRoles);
 
@@ -70,7 +74,25 @@ export function FileUpload() {
     const roles = rolesArray.map(role => {
       Object.keys(role.settings).forEach(key => {
         if (fileContentMap.has(key)) {
-          role.settings[key].value = fileContentMap.get(key);
+          const value = fileContentMap.get(key);
+          if (value !== undefined) {
+            const setting = role.settings[key];
+
+            switch (setting.type) {
+              case SettingTypes.Boolean:
+                setting.value = value.toLowerCase() === 'true';
+                break;
+              case SettingTypes.Number:
+              case SettingTypes.Percentage:
+              case SettingTypes.Time:
+              case SettingTypes.Multiplier:
+                setting.value = Number(value);
+                break;
+              case SettingTypes.Text:
+                setting.value = value;
+                break;
+            }
+          }
         }
       });
       return role;
