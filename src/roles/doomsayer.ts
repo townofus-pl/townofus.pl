@@ -27,7 +27,7 @@ export const Doomsayer: Role = {
             value: true,
             type: SettingTypes.Boolean,
         },
-        "Doomsayer Can Guess Neutral Evi Rolesl": {
+        "Doomsayer Can Guess Neutral Evil Roles": {
             value: true,
             type: SettingTypes.Boolean,
         },
