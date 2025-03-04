@@ -11,27 +11,50 @@ export function SettingsDramaAfera() {
 
   useEffect(() => {
     fetch("/settings/dramaafera.txt")
-      .then(response => response.text())
-      .then(text => setFileContent(text))
-      .catch(error => console.error("Error loading file:", error));
+      .then(response => {
+        console.log('Response status:', response.status);
+        return response.text();
+      })
+      .then(text => {
+        console.log('Loaded text:', text);
+        setFileContent(text);
+      })
+      .catch(error => {
+        console.error("Error loading file:", error);
+        // Możesz ustawić domyślną zawartość
+        setFileContent('');
+      });
   }, []);
 
 
   const { roles, filteredRoles } = useMemo(() => {
-    if (!fileContent) return { roles: [], filteredRoles: {} };
+    if (!fileContent) return {
+      roles: Roles,
+      filteredRoles: Roles.reduce((acc, char) => {
+        acc[char.id] = char;
+        return acc;
+      }, {} as Record<string, (typeof Roles)[number]>)
+    };
 
     // Tworzymy mapę z zawartości pliku
     const fileContentMap = new Map(
-      fileContent
+      (fileContent || '')
         .split("\r\n")
         .reduce((acc, current, index, array) => {
-          if (index % 2 === 0 && array[index + 1] !== undefined) {
-            acc.push([current, array[index + 1]]); // Klucz (nazwa postaci z tagami)
-          } else {
-            acc[acc.length - 1].push(current); // Wartość (szansa na wystąpienie)
+          // Dodaj dodatkowe sprawdzenie
+          if (current && current.trim() !== '') {
+            if (index % 2 === 0 && array[index + 1] !== undefined) {
+              acc.push([current, array[index + 1]]);
+            } else {
+              // Upewnij się, że acc nie jest pusty przed dostępem
+              if (acc.length > 0) {
+                acc[acc.length - 1].push(current);
+              }
+            }
           }
           return acc;
-        }, [] as [string, string][]));
+        }, [] as [string, string][])
+    );
 
     // Funkcja do usuwania tagów <color=...>...</color>
     const extractName = (str: string): string => str.replace(/<color=[^>]+>(.*?)<\/color>/, "$1");
@@ -54,7 +77,6 @@ export function SettingsDramaAfera() {
         return acc;
       }, {} as Record<string, (typeof Roles)[number]>);
 
-    console.log("Filtered Roles:", filteredRoles);
 
     // **Przetwarzanie ról**
     const rolesArray = Array.isArray(Roles) ? Object.values(Roles) : [];
@@ -93,7 +115,13 @@ export function SettingsDramaAfera() {
 
 
   const { modifiers, filteredModifiers } = useMemo(() => {
-    if (!fileContent) return { modifiers: [], filteredModifiers: {} };
+    if (!fileContent) return {
+      modifiers: Modifiers,
+      filteredModifiers: Modifiers.reduce((acc, char) => {
+        acc[char.id] = char;
+        return acc;
+      }, {} as Record<string, (typeof Modifiers)[number]>)
+    };
 
     // Tworzymy mapę z zawartości pliku
     const fileContentMap = new Map(
@@ -129,7 +157,6 @@ export function SettingsDramaAfera() {
         return acc;
       }, {} as Record<string, (typeof Modifiers)[number]>);
 
-    console.log("Filtered Modifiers:", filteredModifiers);
 
     // **Przetwarzanie ról**
     const modifiersArray = Array.isArray(Modifiers) ? Object.values(Modifiers) : [];
