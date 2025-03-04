@@ -8,24 +8,25 @@ import { SettingTypes } from "@/constants/settings";
 
 export function SettingsDramaAfera() {
   const [fileContent, setFileContent] = useState<string | null>(null);
+  const [isLoading, setIsLoading] = useState(true); // Początkowo ustawione na true
 
   useEffect(() => {
     fetch("/settings/dramaafera.txt")
-      .then(response => {
-        console.log('Response status:', response.status);
+      .then((response) => {
+        console.log("Response status:", response.status);
         return response.text();
       })
-      .then(text => {
-        console.log('Loaded text:', text);
+      .then((text) => {
+        console.log("Loaded text:", text);
         setFileContent(text);
+        setIsLoading(false); // Plik został pobrany, ustaw isLoading na false
       })
-      .catch(error => {
+      .catch((error) => {
         console.error("Error loading file:", error);
-        // Możesz ustawić domyślną zawartość
-        setFileContent('');
+        setFileContent(""); // Ustaw domyślną zawartość w przypadku błędu
+        setIsLoading(false); // Zakończ ładowanie nawet w przypadku błędu
       });
   }, []);
-
 
   const { roles, filteredRoles } = useMemo(() => {
     if (!fileContent) {
@@ -212,10 +213,18 @@ export function SettingsDramaAfera() {
   console.log(roles);
   console.log(modifiers);
 
+  if (isLoading) {
+    return <div className="p-4">
+    Ładowanie ustawień...
+  </div> // Możesz zastąpić to spinnerem lub innym komunikatem
+  }
 
   return (
     <div className="p-4">
-      <RolesList roles={Object.values(filteredRoles) || []} modifiers={Object.values(filteredModifiers) || []} />
+      <RolesList
+        roles={Object.values(filteredRoles) || []}
+        modifiers={Object.values(filteredModifiers) || []}
+      />
     </div>
   );
 }
