@@ -1,10 +1,10 @@
 "use client";
 
-import {useEffect, useMemo, useState} from "react";
-import {RolesList} from "@/app/_components";
-import {Roles} from "@/roles";
-import {Modifiers} from "@/modifiers";
-import {SettingTypes} from "@/constants/settings";
+import { useEffect, useMemo, useState } from "react";
+import { RolesList } from "@/app/_components";
+import { Roles } from "@/roles";
+import { Modifiers } from "@/modifiers";
+import { SettingTypes } from "@/constants/settings";
 
 export function SettingsDramaAfera() {
     const [fileContent, setFileContent] = useState<string | null>(null);
@@ -26,7 +26,7 @@ export function SettingsDramaAfera() {
             });
     }, []);
 
-    const {filteredRoles} = useMemo(() => {
+    const { filteredRoles } = useMemo(() => {
         if (!fileContent) {
             return {
                 roles: [],
@@ -101,14 +101,23 @@ export function SettingsDramaAfera() {
                     }
                 }
             });
+
+            // **Nowa logika: Aktualizacja Probability Of Appearing**
+            if (role.settings["Probability Of Appearing"]) {
+                const probability = cleanedFileContentMap.get(role.name);
+                if (probability !== undefined) {
+                    role.settings["Probability Of Appearing"].value = probability;
+                }
+            }
+
             return role;
         });
 
-        return {roles, filteredRoles};
+        return { roles, filteredRoles };
     }, [fileContent]);
 
 
-    const {filteredModifiers} = useMemo(() => {
+    const { filteredModifiers } = useMemo(() => {
         // Jeśli fileContent jest null lub undefined, zwróć domyślne wartości
         if (!fileContent) {
             return {
@@ -183,10 +192,19 @@ export function SettingsDramaAfera() {
                     }
                 }
             });
+
+            // **Nowa logika: Aktualizacja Probability Of Appearing**
+            if (modifier.settings["Probability Of Appearing"]) {
+                const probability = cleanedFileContentMap.get(modifier.name);
+                if (probability !== undefined) {
+                    modifier.settings["Probability Of Appearing"].value = probability;
+                }
+            }
+
             return modifier;
         });
 
-        return {modifiers, filteredModifiers};
+        return { modifiers, filteredModifiers };
     }, [fileContent]);
 
     if (isLoading) {
@@ -196,9 +214,9 @@ export function SettingsDramaAfera() {
     }
 
     return (
-            <RolesList
-                roles={Object.values(filteredRoles) || []}
-                modifiers={Object.values(filteredModifiers) || []}
-            />
+        <RolesList
+            roles={Object.values(filteredRoles) || []}
+            modifiers={Object.values(filteredModifiers) || []}
+        />
     );
 }
