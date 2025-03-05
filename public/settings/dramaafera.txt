@@ -275,9 +275,9 @@ False
 Assassin Can Guess Lovers
 False
 Radiate Colour Range
-0,5
+0.5
 Radiate Max Range
-1,5
+1.5
 Sense Duration
 10
 Examine Cooldown
@@ -299,7 +299,7 @@ Who Can Click Haunter
 Footprint Size
 4
 Footprint Interval
-0,1
+0.1
 Footprint Duration
 5
 Anonymous Footprint
@@ -363,7 +363,7 @@ True
 Maximum Number Of Traps
 5
 Trap Size
-0,25
+0.25
 Minimum Number Of Roles Required To Trigger Trap
 3
 Hunter Kill Cooldown
@@ -427,7 +427,7 @@ Shield Breaks On Murder Attempt
 Show Medic Reports
 True
 Time Where Medic Will Have Name
-2,5
+2.5
 Time Where Medic Will Have Color Type
 15
 Maximum Number Of Fixes
@@ -481,7 +481,7 @@ Vest Cooldown
 Vest Duration
 10
 Kill Cooldown Reset On Attack
-2,5
+2.5
 Maximum Number Of Vests
 5
 Observe Cooldown
@@ -585,7 +585,7 @@ Flash Grenade Cooldown
 Flash Grenade Duration
 5
 Flash Radius
-1,25
+1.25
 Indicate Flashed Crewmates
 True
 Grenadier Can Vent
@@ -607,15 +607,15 @@ Ability Cooldown
 Ability Duration
 5
 Sprint Speed
-1,4999998
+1.4999998
 Freeze Speed
-0,49999994
+0.49999994
 Detonate Delay
 5
 Max Kills In Detonation
 15
 Detonate Radius
-0,5
+0.5
 Bomber Can Vent
 True
 All Impostors See Bomb
@@ -663,11 +663,11 @@ Diseased Kill Multiplier
 Chill Duration
 10
 Chill Start Speed
-0,49999994
+0.49999994
 Flash Speed
-1,5
+1.5
 Giant Speed
-0,75
+0.75
 Both Lovers Die
 True
 Loving Impostor Probability
