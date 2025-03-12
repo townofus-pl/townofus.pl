@@ -9,7 +9,7 @@ export const Saboteur: Modifier = {
     "id": "saboteur",
 	"color": "#FF0000",
     "team": Teams.Impostor,
-    "icon": "/images/modifiers/placeholder.png",
+    "icon": "/images/modifiers/saboteur.png",
     "description": "Ma zmniejszony cooldown na sabotaże.",
     "settings": {
         ...probabilityOfAppearing(-1),

@@ -9,7 +9,7 @@ export const Shy: Modifier = {
     "id": "shy",
 	"color": "#FFFFFF",
     "team": Teams.All,
-    "icon": "/images/modifiers/placeholder.png",
+    "icon": "/images/modifiers/shy.png",
     "description": "Staje się przezroczysty gdy się nie rusza.",
     "settings": {
         ...probabilityOfAppearing(-1),
