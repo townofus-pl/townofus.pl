@@ -9,7 +9,7 @@ export const DoubleShot: Modifier = {
     "id": "double_shot",
 	"color": "#FF0000",
     "team": Teams.Impostor,
-    "icon": "/images/modifiers/placeholder.png",
+    "icon": "/images/modifiers/doubleshot.png",
     "description": "Gdy pierwsza próba zgadnięcia roli nie powiedzie się, Impostor z Double shotem dostaje następną szansę.",
     "settings": {
         ...probabilityOfAppearing(-1),

@@ -9,7 +9,7 @@ export const Underdog: Modifier = {
     "id": "underdog",
 	"color": "#FF0000",
     "team": Teams.Impostor,
-    "icon": "/images/modifiers/placeholder.png",
+    "icon": "/images/modifiers/underdog.png",
     "description": "Ma wydłużony Kill Cooldown. Gdy jest ostatnim żywym impostorem, jego Cooldown wraca do normy.",
     "settings": {
         ...probabilityOfAppearing(-1),
