@@ -6,7 +6,6 @@ import { useSearchParams } from "next/navigation";
 export default function DramaAfera() {
     const searchParams = useSearchParams();
     const fileName = searchParams.get("settings") || "townofus.pl"; // Domyślnie "townofus.pl"
-    const filePath = `/settings/${fileName}.txt`;
 
     return (
         <div className="grid grid-cols-1 gap-y-5">
