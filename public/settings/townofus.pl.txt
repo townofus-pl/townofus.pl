@@ -74,7 +74,7 @@
 60
 <color=#8C004DFF>Juggernaut</color>
 40
-<color=#E6FFB3FF>Plaguebearer</color>
+<color=#E6FFB3FF>Plaguebearer / Pestilence</color>
 60
 <color=#00FF00FF>The Glitch</color>
 60
