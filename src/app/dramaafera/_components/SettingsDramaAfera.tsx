@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { RolesList } from "@/app/_components";
-import { Roles } from "@/roles";
+import { Roles } from "../_roles";
 import { Modifiers } from "@/modifiers";
 import { SettingTypes } from "@/constants/settings";
 
@@ -61,6 +61,7 @@ export function SettingsDramaAfera() {
             cleanedFileContentMap.set(extractName(key), Number(value));
         });
 
+
         // **Filtrowanie ról**
         const filteredRoles = Roles
             .filter(
@@ -112,6 +113,14 @@ export function SettingsDramaAfera() {
 
             return role;
         });
+
+        ["Mod Settings", "Impostor Settings"].forEach(roleName => {
+            const role = Roles.find(r => r.name === roleName);
+            if (role) {
+                filteredRoles[role.id] = role;
+            }
+        });
+        console.log(filteredRoles);
 
         return { roles, filteredRoles };
     }, [fileContent]);

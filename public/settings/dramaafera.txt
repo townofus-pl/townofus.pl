@@ -5,111 +5,111 @@
 <color=#D3D3D3FF>Haunter</color>
 0
 <color=#00B3B3FF>Investigator</color>
-60
+40
 <color=#33FF66FF>Lookout</color>
-50
+30
 <color=#4D99E6FF>Mystic</color>
-50
+80
 <color=#BF00BFFF>Oracle</color>
 0
 <color=#FFCC80FF>Seer</color>
-80
+40
 <color=#D4AF37FF>Snitch</color>
 60
 <color=#CCA3CCFF>Spy</color>
-50
+60
 <color=#009900FF>Tracker</color>
 0
 <color=#A7D1B3FF>Trapper</color>
 0
 <color=#FFCC00FF>Deputy</color>
-40
+10
 <color=#29AB87FF>Hunter</color>
-0
-<color=#A6A6A6FF>Jailor</color>
 20
+<color=#A6A6A6FF>Jailor</color>
+30
 <color=#FFFF00FF>Sheriff</color>
 40
 <color=#998040FF>Veteran</color>
 40
 <color=#FFFF99FF>Vigilante</color>
-20
+10
 <color=#660000FF>Altruist</color>
 0
 <color=#006600FF>Medic</color>
-50
+60
 <color=#9900FFFF>Warden</color>
 0
 <color=#FFA60AFF>Engineer</color>
-40
+50
 <color=#B3D94DFF>Imitator</color>
-20
+30
 <color=#A680FFFF>Medium</color>
 0
 <color=#660099FF>Politician</color>
 40
 <color=#B38000FF>Prosecutor</color>
-70
+60
 <color=#66E666FF>Swapper</color>
-80
+0
 <color=#00EEFFFF>Transporter</color>
-50
+30
 <color=#80B2FFFF>Amnesiac</color>
-20
+0
 <color=#B3FFFFFF>Guardian Angel</color>
 0
 <color=#FFE64DFF>Survivor</color>
-100
-<color=#00FF80FF>Doomsayer</color>
 80
-<color=#8C4005FF>Executioner</color>
-10
-<color=#FFBFCCFF>Jester</color>
+<color=#00FF80FF>Doomsayer</color>
 50
+<color=#8C4005FF>Executioner</color>
+20
+<color=#FFBFCCFF>Jester</color>
+40
 <color=#662962FF>Phantom</color>
 0
 <color=#99FFCCFF>Soul Collector</color>
-20
-<color=#FF4D00FF>Arsonist</color>
-20
-<color=#8C004DFF>Juggernaut</color>
 30
+<color=#FF4D00FF>Arsonist</color>
+30
+<color=#8C004DFF>Juggernaut</color>
+60
 <color=#E6FFB3FF>Plaguebearer</color>
 10
 <color=#00FF00FF>The Glitch</color>
-20
+50
 <color=#262626FF>Vampire</color>
 0
 <color=#A86629FF>Werewolf</color>
-10
+50
 <color=#FF0000FF>Escapist</color>
-10
+20
 <color=#FF0000FF>Grenadier</color>
-30
+10
 <color=#FF0000FF>Morphling</color>
 20
 <color=#FF0000FF>Swooper</color>
-60
+40
 <color=#FF0000FF>Venerer</color>
 0
 <color=#FF0000FF>Bomber</color>
-10
+20
 <color=#FF0000FF>Scavenger</color>
-10
+0
 <color=#FF0000FF>Traitor</color>
 0
 <color=#FF0000FF>Warlock</color>
-10
+40
 <color=#FF0000FF>Blackmailer</color>
-30
+0
 <color=#FF0000FF>Hypnotist</color>
 0
 <color=#FF0000FF>Janitor</color>
-30
+40
 <color=#FF0000FF>Miner</color>
-30
+40
 <color=#FF0000FF>Undertaker</color>
-30
+0
 <color=#A6FFA6FF>Aftermath</color>
 0
 <color=#33B3B3FF>Bait</color>
@@ -127,19 +127,19 @@
 <color=#FF8080FF>Flash</color>
 30
 <color=#FFB34DFF>Giant</color>
-10
+20
 <color=#FF66CCFF>Lovers</color>
 0
 <color=#CCFFE6FF>Mini</color>
-10
+30
 <color=#FF0080FF>Radar</color>
 0
 <color=#FFB3CCFF>Shy</color>
-50
+40
 <color=#D9FF8CFF>Sixth Sense</color>
 0
 <color=#803333FF>Sleuth</color>
-10
+0
 <color=#99E699FF>Tiebreaker</color>
 50
 <color=#FF0000FF>Disperser</color>
@@ -147,7 +147,7 @@
 <color=#FF0000FF>Double Shot</color>
 50
 <color=#FF0000FF>Saboteur</color>
-0
+10
 <color=#FF0000FF>Underdog</color>
 0
 All Roles Are Unique
@@ -257,7 +257,7 @@ True
 Traitor Gets Ability
 False
 Number Of Assassin Kills
-1
+15
 Assassin Can Kill More Than Once Per Meeting
 False
 Assassin Can Guess "Crewmate"
@@ -307,7 +307,7 @@ False
 Footprint Vent Visible
 False
 Watch Cooldown
-15
+20
 Lookout Watches Reset After Each Round
 True
 Maximum Number Of Players That Can Be Watched
@@ -325,7 +325,7 @@ True
 Neutral Killing Roles Show Evil
 True
 Seer Cooldown
-15
+20
 Crewmate Killing Roles Are Red
 True
 Neutral Benign Roles Are Red
@@ -345,7 +345,7 @@ True
 Snitch Sees Traitor
 True
 Who Sees Dead Bodies On Admin
-1
+Spy
 Arrow Update Interval
 1
 Track Cooldown
@@ -367,11 +367,11 @@ Trap Size
 Minimum Number Of Roles Required To Trigger Trap
 3
 Hunter Kill Cooldown
-25
+20
 Hunter Stalk Cooldown
 10
 Hunter Stalk Duration
-25
+20
 Maximum Stalk Uses
 5
 Hunter Kills Last Voter If Voted Out
@@ -379,7 +379,7 @@ False
 Hunter Can Report Who They've Killed
 True
 Jail Cooldown
-15
+20
 Maximum Number Of Executes
 3
 Sheriff Miskill Kills Crewmate
@@ -389,13 +389,13 @@ True
 Sheriff Kills Neutral Killing Roles
 True
 Sheriff Kill Cooldown
-15
+20
 Sheriff Can Report Who They've Killed
 True
 Can Be Killed On Alert
 False
 Alert Cooldown
-15
+20
 Alert Duration
 10
 Maximum Number Of Alerts
@@ -419,9 +419,9 @@ Altruist Revive Duration
 Target's Body Disappears On Beginning Of Revive
 True
 Show Shielded Player
-2
+Self+Medic
 Who Gets Murder Attempt Indicator
-0
+Medic
 Shield Breaks On Murder Attempt
 False
 Show Medic Reports
@@ -443,13 +443,13 @@ True
 Who Is Revealed With Mediate
 1
 Campaign Cooldown
-15
+20
 Prosecutor Dies When They Exile A Crewmate
 True
 Swapper Can Button
 True
 Transport Cooldown
-15
+20
 Maximum Number Of Transports
 5
 Transporter Can Use Vitals
@@ -497,7 +497,7 @@ True
 Doomsayer Can't Observe
 False
 Executioner Becomes On Target Dead
-2
+Survivor
 Executioner Can Button
 True
 Executioner Torments Player On Victory
@@ -537,7 +537,7 @@ True
 Infect Cooldown
 20
 Pestilence Kill Cooldown
-15
+10
 Pestilence Can Vent
 True
 Mimic Cooldown
@@ -551,7 +551,7 @@ Hack Duration
 Glitch Kill Cooldown
 20
 Glitch Hack Distance
-0
+Short
 Glitch Can Vent
 True
 Vampire Bite Cooldown
@@ -585,7 +585,7 @@ Flash Grenade Cooldown
 Flash Grenade Duration
 7
 Flash Radius
-1.25
+1
 Indicate Flashed Crewmates
 True
 Grenadier Can Vent

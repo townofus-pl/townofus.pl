@@ -27,7 +27,7 @@ export const SoulCollector: Role = {
             value: 25,
             type: SettingTypes.Time,
         },
-        "Passively Collect Soul Each Round": {
+        "Passively Collect A Soul Each Round": {
             value: true,
             type: SettingTypes.Boolean,
         },
