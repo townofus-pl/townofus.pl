@@ -1,13 +1,14 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useState, Suspense } from "react";
 import { RolesList } from "@/app/_components";
 import { Roles } from "../_roles";
 import { Modifiers } from "@/modifiers";
 import { SettingTypes } from "@/constants/settings";
 import { useSearchParams } from "next/navigation";
 
-export function CustomSettings() {
+// Komponent kliencki który używa useSearchParams
+function CustomSettingsContent() {
     const searchParams = useSearchParams();
     const fileName = searchParams.get("settings") || "townofus.pl"; // Domyślnie "townofus.pl"
     const filePath = `/settings/${fileName}.txt`;
@@ -130,7 +131,6 @@ export function CustomSettings() {
                 filteredRoles[role.id] = role;
             }
         });
-        console.log(filteredRoles);
 
         return { roles, filteredRoles };
     }, [fileContent]);
@@ -227,19 +227,73 @@ export function CustomSettings() {
     }, [fileContent]);
 
     if (isLoading) {
-        return <div className="p-4">
-            Ładowanie ustawień...
-        </div> // Możesz zastąpić to spinnerem lub innym komunikatem
+        return (<div className="grid grid-cols-1 gap-y-5">
+            <div className="relative text-center text-white">
+                <p className="text-yellow-300 text-6xl font-brook font-bold drop-shadow-[0_0_10px_rgba(255,,0,0.7)]">
+                    Trwa ładowanie ustawień...
+                </p>
+            </div>
+            <Suspense fallback={<div className="p-4">Ładowanie...</div>}>
+                <RolesList
+                    roles={Object.values(filteredRoles) || []}
+                    modifiers={Object.values(filteredModifiers) || []}
+                />
+            </Suspense>
+        </div>
+        )
     }
 
     if (fileNotFound) {
-        return <div className="p-4 text-red-500">Nie znaleziono pliku ustawień.</div>;
+        return (
+            <div className="grid grid-cols-1 gap-y-5">
+                <div className="relative text-center text-white">
+                    <p className="text-gray-300 text-6xl font-brook font-bold drop-shadow-[0_0_10px_rgba(255,,0,0.7)]">
+                        <span className="p-4 text-red-500">Nie znaleziono pliku ustawień dla<span className="p-4 text-yellow-500">{fileName}</span></span>
+                    </p>
+                </div>
+
+                <Suspense fallback={<div className="p-4">Ładowanie...</div>}>
+                    <RolesList
+                        roles={Object.values(filteredRoles) || []}
+                        modifiers={Object.values(filteredModifiers) || []}
+                    />
+                </Suspense>
+
+            </div>
+
+        )
     }
 
     return (
-        <RolesList
-            roles={Object.values(filteredRoles) || []}
-            modifiers={Object.values(filteredModifiers) || []}
-        />
+        <div className="grid grid-cols-1 gap-y-5">
+            <div className="relative text-center text-white">
+                <p className="text-gray-300 text-6xl font-brook font-bold drop-shadow-[0_0_10px_rgba(255,,0,0.7)]">
+                    Among Us ustawienia dla<span className="p-4 text-pink-500">{fileName}</span>
+                </p>
+            </div>
+            <Suspense fallback={<div className="p-4">Ładowanie...</div>}>
+                <RolesList
+                    roles={Object.values(filteredRoles) || []}
+                    modifiers={Object.values(filteredModifiers) || []}
+                />
+            </Suspense>
+        </div>
+    );
+}
+
+// Komponent główny, który używa Suspense do opakowania komponentu korzystającego z useSearchParams
+export function CustomSettings() {
+    return (
+        <Suspense fallback={
+            <div className="grid grid-cols-1 gap-y-5">
+                <div className="relative text-center text-white">
+                    <p className="text-yellow-300 text-6xl font-brook font-bold drop-shadow-[0_0_10px_rgba(255,,0,0.7)]">
+                        Trwa ładowanie...
+                    </p>
+                </div>
+            </div>
+        }>
+            <CustomSettingsContent />
+        </Suspense>
     );
 }
