@@ -48,7 +48,7 @@ function CustomSettingsContent() {
         // Tworzymy mapę z zawartości pliku
         const fileContentMap = new Map(
             (fileContent || '')
-                .split("\r\n")
+                .split("\n")
                 .reduce((acc, current, index, array) => {
                     if (current && current.trim() !== '') {
                         if (index % 2 === 0 && array[index + 1] !== undefined) {
@@ -148,7 +148,7 @@ function CustomSettingsContent() {
         // Tworzymy mapę z zawartości pliku
         const fileContentMap = new Map(
             fileContent
-                .split("\r\n")
+                .split("\n")
                 .reduce((acc, current, index, array) => {
                     if (current && current.trim() !== '') {
                         if (index % 2 === 0 && array[index + 1] !== undefined) {
