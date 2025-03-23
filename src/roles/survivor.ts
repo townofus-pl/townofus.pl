@@ -18,7 +18,7 @@ export const Survivor: Role = {
     "icon": "/images/roles/survivor.png",
     "description": "Survivor to neutralna rola, która wygrywa, po prostu przeżywając do końca rozgrywki. Jednak jeśli grę wygrają Lovers lub neutralna zła rola, Survivor przegrywa. Posiada umiejętność dająca czasową ochronę przed zabójstwem.",
     "settings": {
-        ...probabilityOfAppearing(-1),
+        ...probabilityOfAppearing(0),
         "Vest Cooldown": {
             value: 25,
             type: SettingTypes.Time,

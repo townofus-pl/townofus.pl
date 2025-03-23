@@ -18,9 +18,9 @@ export const Medic: Role = {
     "icon": "/images/roles/medic.png",
     "description": "Medic to Crewmate, który może dać dowolnemu graczowi tarczę czyniącą go nieśmiertelnym. Tarcza znika tylko w momencie śmierci Medica. Osoba z tarczą nie może zostać zabita przez nikogo, ale może popełnić samobójstwo. Medic widzi zieloną poświatę na ekranie, jeśli ktoś spróbuje zabić jego podopiecznego. Jeśli Medic zgłosi martwe ciało odpowiednio szybko, może otrzymać raport zawierający wskazówki na temat tożsamości Zabójcy. Raport będzie zawierać typ koloru (Darker/Lighter).",
     "settings": {
-        ...probabilityOfAppearing(-1),
+        ...probabilityOfAppearing(0),
         "Show Shielded Player": {
-            value: "Self+Medic",
+            value: "Self",
             type: SettingTypes.Text
         },
         "Who Gets Murder Attempt Indicator": {

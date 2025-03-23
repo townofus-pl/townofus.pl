@@ -18,9 +18,9 @@ export const Prosecutor: Role = {
     "icon": "/images/roles/prosecutor.png",
     "description": "Crewmate, który raz na grę może oskarżyć gracza, co skutkuje jego wygnaniem w danym spotkaniu. Prosecutor również widzi głosy w sposób jawny, nieanonimowy.",
     "settings": {
-        ...probabilityOfAppearing(-1),
+        ...probabilityOfAppearing(0),
         "Prosecutor Dies When They Exile A Crewmate": {
-            value: true,
+            value: false,
             type: SettingTypes.Boolean,
         },
     },

@@ -18,25 +18,25 @@ export const Doomsayer: Role = {
     "icon": "/images/roles/doomsayer.png",
     "description": "Wygrywa grę, jeśli zgadnie role trzech graczy. Posiada dodatkową umiejętność obserwowania gracza, która podpowiada mu jaką rolę może mieć wybrany gracz.",
     "settings": {
-        ...probabilityOfAppearing(-1),
+        ...probabilityOfAppearing(0),
         "Observe Cooldown": {
             value: 25,
             type: SettingTypes.Time,
         },
         "Doomsayer Can Guess Neutral Benign Roles": {
-            value: true,
+            value: false,
             type: SettingTypes.Boolean,
         },
         "Doomsayer Can Guess Neutral Evil Roles": {
-            value: true,
+            value: false,
             type: SettingTypes.Boolean,
         },
         "Doomsayer Can Guess Neutral Killing Roles": {
-            value: true,
+            value: false,
             type: SettingTypes.Boolean,
         },
         "Doomsayer Can Guess Impostors Roles": {
-            value: true,
+            value: false,
             type: SettingTypes.Boolean,
         },
         "Doomsayer Can't Observe": {

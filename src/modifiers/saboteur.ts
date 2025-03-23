@@ -12,7 +12,7 @@ export const Saboteur: Modifier = {
     "icon": "/images/modifiers/saboteur.png",
     "description": "Ma zmniejszony cooldown na sabotaże.",
     "settings": {
-        ...probabilityOfAppearing(-1),
+        ...probabilityOfAppearing(0),
         'Reduced Sabotage Bonus': {
             value: 10, type: SettingTypes.Time,
         },

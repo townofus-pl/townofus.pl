@@ -12,7 +12,7 @@ export const Traitor: Role = {
     "icon": "/images/roles/traitor.png",
     "description": "Jeśli wszyscy Impostorzy zginą przed określonym momentem w grze, losowy Crewmate zostaje wybrany na Traitora. Traitor nie ma dodatkowych zdolności, a jego zadaniem jest pomścić martwych Impostorów. Po przemianie w Traitora, gracz dołącza do drużyny Impostorów.",
     "settings": {
-        ...probabilityOfAppearing(-1),
+        ...probabilityOfAppearing(0),
         "Minimum People Alive When Traitor Can Spawn": {
             value: 5,
             type: SettingTypes.Number,

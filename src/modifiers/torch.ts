@@ -12,7 +12,7 @@ export const Torch: Modifier = {
     "icon": "/images/modifiers/torch.png",
     "description": "Podczas sabotażu świateł nie zmniejsza mu się pole widzenia.",
     "settings": {
-        ...probabilityOfAppearing(-1),
+        ...probabilityOfAppearing(0),
     },
     "abilities": [CommonAbilities.None],
 };

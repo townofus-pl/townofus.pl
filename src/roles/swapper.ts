@@ -18,7 +18,7 @@ export const Swapper: Role = {
     "icon": "/images/roles/swapper.png",
     "description": "Crewmate, który podczas spotkania może zamienić głosy między dwoma graczami. Wszystkie głosy oddane na pierwszego gracza zostaną przeniesione na drugiego i odwrotnie.",
     "settings": {
-        ...probabilityOfAppearing(-1),
+        ...probabilityOfAppearing(0),
         "Swapper Can Button": {
             value: true,
             type: SettingTypes.Boolean,

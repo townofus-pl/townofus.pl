@@ -12,7 +12,7 @@ export const Lovers: Modifier = {
     "icon": "/images/modifiers/lovers.png",
     "description": "Para graczy połączona ze sobą, wygrywająca razem. Ich głównym celem jest przetrwanie do końca gry. Mogą jednak także wygrać ze swoja drużyną. Loversi mogą pisać ze sobą w trakcie rundy. Gdy jeden z nich zostanie zabity, drugi popełni samobójstwo.",
     "settings": {
-        ...probabilityOfAppearing(-1),
+        ...probabilityOfAppearing(0),
         'Both Lovers Die': {
             value: true, type: SettingTypes.Boolean,
         },

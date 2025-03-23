@@ -12,7 +12,7 @@ export const Warlock: Role = {
     "icon": "/images/roles/warlock.png",
     "description": "Impostor, który może ładować manę. Gdy naładuje ją do 100%, może zabić wielu graczy bez cooldownu, pod warunkiem że zrobi to w jednej sekundzie. Warlock nie musi w pełni naładować many, aby móc zabijać, bez naładowanej many zabija jak zwykły impostor.",
     "settings": {
-        ...probabilityOfAppearing(-1),
+        ...probabilityOfAppearing(0),
         "Time It Takes To Fully Charge": {
             value: 25.0,
             type: SettingTypes.Time,

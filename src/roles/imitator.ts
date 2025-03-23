@@ -18,9 +18,9 @@ export const Imitator: Role = {
     "icon": "/images/roles/imitator.png",
     "description": "Crewmate, który może naśladować martwych Crewmate’ów. Podczas spotkań Imitator może przejąć rolę jednego z martwych graczy, zyskując jego umiejętności na następną rundę. Może używać zdolności każdego martwego gracza tyle razy, ile chce. Imitator może naśladować tylko role Crewmate’ów, których umiejętności działają poza spotkaniem.",
     "settings": {
-        ...probabilityOfAppearing(-1),
+        ...probabilityOfAppearing(0),
         "Imitator Can Become Mayor": {
-            value: false,
+            value: true,
             type: SettingTypes.Boolean,
         },
     },

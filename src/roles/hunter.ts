@@ -19,7 +19,7 @@ export const Hunter: Role = {
     "icon": "/images/roles/hunter.png",
     "description": "Crewmate, który posiada umiejętność zabijania. Hunter może śledzić graczy i eliminować ich, jeśli zrobią coś podejrzanego. W przeciwieństwie do Sheriffa, Hunter nie umiera po zabiciu niewinnego gracza, jednak może wykonywać egzekucje tylko na graczach, którzy dali mu uzasadnione powody do podejrzeń.",
     "settings": {
-        ...probabilityOfAppearing(-1),
+        ...probabilityOfAppearing(0),
         "Hunter Kill Cooldown": {
             value: 25,
             type: SettingTypes.Time,

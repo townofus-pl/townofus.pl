@@ -14,9 +14,9 @@ export const Executioner: Role = {
         Neutralna rola z własnym warunkiem zwycięstwa. Jego celem jest <u>wygłosowanie</u> gracza, wskazanego na początku gry. Jeśli ten gracz zostanie wygnany, Executioner wygrywa grę. Jeśli cel zginie w inny sposób, Executioner zamienia się w Jestera.
         </p>),
     "settings": {
-        ...probabilityOfAppearing(-1),
+        ...probabilityOfAppearing(0),
         "Executioner Becomes On Target Dead": {
-            value: RolesAfterDeath.Jester,
+            value: RolesAfterDeath.Crewmate,
             type: SettingTypes.Text,
         },
         "Executioner Can Button": {

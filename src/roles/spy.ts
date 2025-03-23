@@ -12,9 +12,9 @@ export const Spy: Role = {
     "icon": "/images/roles/spy.png",
     "description": "Crewmate, który zdobywa dodatkowe informacje podczas korzystania z Panelu Admina. Przy Panelu Admina Spy może zobaczyć kolory wszystkich graczy na mapie.",
     "settings": {
-        ...probabilityOfAppearing(-1),
+        ...probabilityOfAppearing(0),
         "Who Sees Dead Bodies On Admin": {
-            value: "Spy",
+            value: "Nobody",
             type: SettingTypes.Text,
         },
     },

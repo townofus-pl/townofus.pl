@@ -12,7 +12,7 @@ export const Mini: Modifier = {
     "icon": "/images/modifiers/mini.png",
     "description": "Jest mały.",
     "settings": {
-        ...probabilityOfAppearing(-1),
+        ...probabilityOfAppearing(0),
     },
     "abilities": [CommonAbilities.None],
 };

@@ -18,7 +18,7 @@ export const GuardianAngel: Role = {
     "icon": "/images/roles/guardian_angel.png",
     "description": "Neutralna rola, która sprzymierza się z drużyną swojego celu. Jego zadaniem jest chronić cel za wszelką cenę. Jeśli jego cel przegra, on również przegrywa.",
     "settings": {
-        ...probabilityOfAppearing(-1),
+        ...probabilityOfAppearing(0),
         "Protect Cooldown": {
             value: 25,
             type: SettingTypes.Time,
@@ -36,11 +36,11 @@ export const GuardianAngel: Role = {
             type: SettingTypes.Number,
         },
         "Show Protected Player": {
-            value: true,
-            type: SettingTypes.Boolean,
+            value: "Self",
+            type: SettingTypes.Text,
         },
         "Becomes On Target Dead": {
-            value: RolesAfterDeath.Amnesiac,
+            value: RolesAfterDeath.Crewmate,
             type: SettingTypes.Text,
         },
         "Target Knows GA Exists": {
@@ -48,11 +48,11 @@ export const GuardianAngel: Role = {
             type: SettingTypes.Boolean,
         },
         "GA Knows Targets Role": {
-            value: true,
+            value: false,
             type: SettingTypes.Boolean,
         },
         "Odds Of Target Being Evil": {
-            value: 50,
+            value: 20,
             type: SettingTypes.Percentage,
         },
     },

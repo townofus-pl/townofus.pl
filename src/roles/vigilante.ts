@@ -18,9 +18,9 @@ export const Vigilante: Role = {
     "icon": "/images/roles/vigilante.png",
     "description": "Crewmate, który może zabijać podczas spotkań. Podczas spotkania, Vigilante może wybrać, kogo zabić, zgadując jego rolę. Jeśli jednak zgadnie źle, to sam ginie.",
     "settings": {
-        ...probabilityOfAppearing(-1),
+        ...probabilityOfAppearing(0),
         "Number Of Vigilante Kills": {
-            value: 5,
+            value: 1,
             type: SettingTypes.Number,
         },
         "Vigilante Can Kill More Than Once Per Meeting": {
@@ -28,15 +28,15 @@ export const Vigilante: Role = {
             type: SettingTypes.Boolean,
         },
         "Vigilante Can Guess Neutral Benign Roles": {
-            value: true,
+            value: false,
             type: SettingTypes.Boolean,
         },
         "Vigilante Can Guess Neutral Evil Roles": {
-            value: true,
+            value: false,
             type: SettingTypes.Boolean,
         },
         "Vigilante Can Guess Neutral Killing Roles": {
-            value: true,
+            value: false,
             type: SettingTypes.Boolean,
         },
         "Vigilante Can Guess Impostor Modifiers": {

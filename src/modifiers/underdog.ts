@@ -12,7 +12,7 @@ export const Underdog: Modifier = {
     "icon": "/images/modifiers/underdog.png",
     "description": "Ma wydłużony Kill Cooldown. Gdy jest ostatnim żywym impostorem, jego Cooldown wraca do normy.",
     "settings": {
-        ...probabilityOfAppearing(-1),
+        ...probabilityOfAppearing(0),
         'Kill Cooldown Bonus': {
             value: 5, type: SettingTypes.Time,
         },

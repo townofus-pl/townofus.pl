@@ -25,9 +25,9 @@ export const Oracle: Role = {
         </ul>
     </>),
     "settings": {
-        ...probabilityOfAppearing(-1),
+        ...probabilityOfAppearing(0),
         "Confess Cooldown": {
-            value: 15,
+            value: 25,
             type: SettingTypes.Time,
         },
         "Reveal Accuracy": {

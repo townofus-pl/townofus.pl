@@ -22,7 +22,7 @@ export const Jailor: Role = {
     "icon": "/images/roles/jailor.png",
     "description": "Crewmate, który może uwięzić dowolnego gracza. Uwięziona osoba nie może rozmawiać z innymi graczami. Uwięziony nie może używać żadnych zdolności związanych ze spotkaniami, a żadne zdolności spotkaniowe nie mogą być użyte na niej. Jailor może prywatnie komunikować się z uwięzionym używając na czacie komendy /jail. Jeśli Jailor uzna, że uwięziony jest zły, może dokonać na nim egzekucji. Jeśli Jailor wykona egzekucję na niewłaściwej osobie, traci możliwość więzienia.",
     "settings": {
-        ...probabilityOfAppearing(-1),
+        ...probabilityOfAppearing(0),
         "Jail Cooldown": {
             value: 25,
             type: SettingTypes.Time,

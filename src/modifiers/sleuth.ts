@@ -12,7 +12,7 @@ export const Sleuth: Modifier = {
     "icon": "/images/modifiers/placeholder.png",
     "description": "Zna rolę zgłoszonego przez siebie ciała.",
     "settings": {
-        ...probabilityOfAppearing(-1),
+        ...probabilityOfAppearing(0),
     },
     "abilities": [CommonAbilities.None],
 };

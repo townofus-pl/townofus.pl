@@ -19,9 +19,9 @@ export const Engineer: Role = {
     "icon": "/images/roles/engineer.png",
     "description": "Crewmate który może używać wentylacji. Może naprawiać sabotaże z dowolnego miejsca na mapie.",
     "settings": {
-        ...probabilityOfAppearing(-1),
+        ...probabilityOfAppearing(0),
         "Maximum Number Of Fixes": {
-            value: 3,
+            value: 5,
             type: SettingTypes.Number,
         },
     },

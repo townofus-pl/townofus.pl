@@ -12,7 +12,7 @@ export const Frosty: Modifier = {
     "icon": "/images/modifiers/frosty.png",
     "description": "Gdy umrze, jego zabójca zostanie spowolniony.",
     "settings": {
-        ...probabilityOfAppearing(-1),
+        ...probabilityOfAppearing(0),
         'Chill Duration': {
             value: 10, type: SettingTypes.Time,
         },

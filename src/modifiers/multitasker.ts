@@ -12,7 +12,7 @@ export const Multitasker: Modifier = {
     "icon": "/images/modifiers/placeholder.png",
     "description": "Posiada półprzezroczyste zadania, dzięki czemu widzi co się wokół niego dzieje.",
     "settings": {
-        ...probabilityOfAppearing(-1),
+        ...probabilityOfAppearing(0),
     },
     "abilities": [CommonAbilities.None],
 };

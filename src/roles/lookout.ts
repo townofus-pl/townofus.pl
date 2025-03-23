@@ -18,7 +18,7 @@ export const Lookout: Role = {
     "icon": "/images/roles/lookout.png",
     "description": "Crewmate, który może obserwować innych graczy podczas rundy. Podczas spotkania zobaczy wszystkie role, które wchodziły w interakcję z obserwowanym graczem.",
     "settings": {
-        ...probabilityOfAppearing(-1),
+        ...probabilityOfAppearing(0),
         "Watch Cooldown": {
             value: 25,
             type: SettingTypes.Time,

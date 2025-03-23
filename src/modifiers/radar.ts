@@ -12,7 +12,7 @@ export const Radar: Modifier = {
     "icon": "/images/modifiers/placeholder.png",
     "description": "Posiada strzałkę wskazującą najbliższego gracza.",
     "settings": {
-        ...probabilityOfAppearing(-1),
+        ...probabilityOfAppearing(0),
     },
     "abilities": [CommonAbilities.None],
 };

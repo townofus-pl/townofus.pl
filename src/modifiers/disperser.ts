@@ -18,7 +18,7 @@ export const Disperser: Modifier = {
     "icon": "/images/modifiers/disperse.png",
     "description": "Może jednorazowo wysłać wszystkich graczy do losowych ventów.",
     "settings": {
-        ...probabilityOfAppearing(-1),
+        ...probabilityOfAppearing(0),
         'Uses': {
             value: 1, type: SettingTypes.Number,
         },

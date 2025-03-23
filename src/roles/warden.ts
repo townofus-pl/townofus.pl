@@ -18,7 +18,7 @@ export const Warden: Role = {
     "icon": "/images/roles/warden.png",
     "description": "Crewmate, który może fortyfikować innych graczy. Ufortyfikowani gracze są odporni na wszelkiego rodzaju interkacje poza zabójstwem. Jeśli ktoś spróbuje interagować z ufortyfikowanym graczem, zarówno Warden, jak i osoba próbująca interakcji, otrzymują alert.",
     "settings": {
-        ...probabilityOfAppearing(-1),
+        ...probabilityOfAppearing(0),
     },
     "abilities": [WardenAbilities.Fortify],
 };

@@ -28,9 +28,9 @@ export const Seer: Role = {
 
 
     "settings": {
-        ...probabilityOfAppearing(-1),
+        ...probabilityOfAppearing(0),
         "Seer Cooldown": {
-            value: 35,
+            value: 25,
             type: SettingTypes.Time,
         },
         "Crewmate Killing Roles Are Red": {
@@ -38,11 +38,11 @@ export const Seer: Role = {
             type: SettingTypes.Boolean,
         },
         "Neutral Benign Roles Are Red": {
-            value: true,
+            value: false,
             type: SettingTypes.Boolean,
         },
         "Neutral Evil Roles Are Red": {
-            value: true,
+            value: false,
             type: SettingTypes.Boolean,
         },
         "Neutral Killing Roles Are Red": {

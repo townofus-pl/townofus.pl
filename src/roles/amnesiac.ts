@@ -18,13 +18,13 @@ export const Amnesiac: Role = {
     "icon": "/images/roles/amnesiac.png",
     "description": "Neutralna rola bez warunku zwycięstwa. Nie ma żadnych zadań i jest praktycznie bez roli. Jednak może sobie przypomnieć rolę, odnajdując martwego gracza. Gdy to zrobi, przejmuje nowy warunek zwycięstwa i dąży do wygranej. Dostaje strzałki wskazujące martwe ciała.",
     "settings": {
-        ...probabilityOfAppearing(-1),
+        ...probabilityOfAppearing(0),
         'Amnesiac Gets Arrows Pointing To Dead Bodies': {
-            value: true,
+            value: false,
             type: SettingTypes.Boolean,
         },
         'Time After Death Arrow Appears': {
-            value: 1.0,
+            value: 5.0,
             type: SettingTypes.Time,
         },
     },

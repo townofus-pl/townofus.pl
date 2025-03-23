@@ -18,7 +18,7 @@ export const Transporter: Role = {
     "icon": "/images/roles/transporter.png",
     "description": "Crewmate, który może dowolnie zamieniać miejscami dwóch wybranych przez siebie graczy. Gracze, którzy zostali przetransportowani, otrzymują powiadomienie w postaci niebieskiego błysku na ekranie.",
     "settings": {
-        ...probabilityOfAppearing(-1),
+        ...probabilityOfAppearing(0),
         "Transport Cooldown": {
             value: 25,
             type: SettingTypes.Time,

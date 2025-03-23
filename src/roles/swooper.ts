@@ -19,7 +19,7 @@ export const Swooper: Role = {
     "icon": "/images/roles/swooper.png",
     "description": "Impostor, który może chwilowo stać się niewidzialny.",
     "settings": {
-        ...probabilityOfAppearing(-1),
+        ...probabilityOfAppearing(0),
         "Swoop Cooldown": {
             value: 25,
             type: SettingTypes.Time,

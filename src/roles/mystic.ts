@@ -12,9 +12,9 @@ export const Mystic: Role = {
     "icon": "/images/roles/mystic.png",
     "description": "Crewmate, który otrzymuje alert w postaci niebieskiej poświaty na ekranie, informujący o śmierci gracza. Dodatkowo przez moment wyświetla mu się strzałka wskazująca kierunek, w którym znajduje się ciało.",
     "settings": {
-        ...probabilityOfAppearing(-1),
+        ...probabilityOfAppearing(0),
         "Dead Body Arrow Duration": {
-            value: 0.2,
+            value: 0.1,
             type: SettingTypes.Time,
         },
     },

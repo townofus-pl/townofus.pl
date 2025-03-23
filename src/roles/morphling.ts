@@ -23,13 +23,13 @@ export const Morphling: Role = {
     "icon": "/images/roles/morphling.png",
     "description": "Impostor, który może przebierać się za innych graczy. Poza spotkaniem może pobrać próbkę DNA od dowolnego gracza. Gdy to zrobi, zyskuje możliwość transformacji w wybranego wcześniej gracza. Nie może używać wentylacji.",
     "settings": {
-        ...probabilityOfAppearing(-1),
+        ...probabilityOfAppearing(0),
         "Morphling Cooldown": {
             value: 25,
             type: SettingTypes.Time,
         },
         "Morphling Duration": {
-            value: 15,
+            value: 10,
             type: SettingTypes.Time,
         },
         "Morphling Can Vent": {

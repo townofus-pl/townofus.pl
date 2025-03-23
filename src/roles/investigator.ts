@@ -12,7 +12,7 @@ export const Investigator: Role = {
     "icon": "/images/roles/investigator.png",
     "description": "Crewmate, który widzi ślady stóp w kolorach graczy. Każdy ślad znika po określonym czasie.",
     "settings": {
-        ...probabilityOfAppearing(-1),
+        ...probabilityOfAppearing(0),
         "Footprint Size": {
             value: 4,
             type: SettingTypes.Number,
@@ -22,7 +22,7 @@ export const Investigator: Role = {
             type: SettingTypes.Time,
         },
         "Footprint Duration": {
-            value: 7,
+            value: 10,
             type: SettingTypes.Time,
         },
         "Anonymous Footprint": {

@@ -22,7 +22,7 @@ export const SoulCollector: Role = {
     "icon": "/images/roles/soul_collector.png",
     "description": "Neutralna rola z własnym warunkiem zwycięstwa. Celem Soul Collectora jest zebranie określonej liczby dusz pobierając je od martwych ciał.",
     "settings": {
-        ...probabilityOfAppearing(-1),
+        ...probabilityOfAppearing(0),
         "Reap Cooldown": {
             value: 25,
             type: SettingTypes.Time,

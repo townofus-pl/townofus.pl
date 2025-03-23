@@ -23,7 +23,7 @@ export const Glitch: Role = {
     "icon": "/images/roles/glitch.png",
     "description": "Neutralna rola z własnym warunkiem zwycięstwa. Celem Glitcha jest wyeliminowanie wszystkich graczy. Glitch może hakować graczy, co uniemożliwia zhakowanemu graczowi jakąkolwiek akcję poza chodzeniem po mapie. Glitch może także \"naśladować\" inną osobę, przez co będzie wyglądać dokładnie jak ta osoba.",
     "settings": {
-        ...probabilityOfAppearing(-1),
+        ...probabilityOfAppearing(0),
         "Mimic Cooldown": {
             value: 25.0,
             type: SettingTypes.Time,
@@ -37,11 +37,11 @@ export const Glitch: Role = {
             type: SettingTypes.Time,
         },
         "Hack Duration": {
-            value: 15.0,
+            value: 10.0,
             type: SettingTypes.Time,
         },
         "Glitch Kill Cooldown": {
-            value: 27.5,
+            value: 25,
             type: SettingTypes.Time,
         },
         "Glitch Hack Distance": {
@@ -49,7 +49,7 @@ export const Glitch: Role = {
             type: SettingTypes.Text,
         },
         "Glitch Can Vent": {
-            value: true,
+            value: false,
             type: SettingTypes.Boolean,
         },
     },

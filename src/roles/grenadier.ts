@@ -19,13 +19,13 @@ export const Grenadier: Role = {
     "icon": "/images/roles/grenadier.png",
     "description": "Impostor, który może rzucać granatami dymnymi. Podczas gry Grenadier może rzucić granat dymny, który oślepia Crewmate’ów, sprawiając, że ich ekran staje się jasnoszary. Granat dymny nie może być aktywowany w czasie sabotażu.",
     "settings": {
-        ...probabilityOfAppearing(-1),
+        ...probabilityOfAppearing(0),
         "Flash Grenade Cooldown": {
             value: 25,
             type: SettingTypes.Time,
         },
         "Flash Grenade Duration": {
-            value: 7,
+            value: 10,
             type: SettingTypes.Time,
         },
         "Flash Radius": {
@@ -33,13 +33,13 @@ export const Grenadier: Role = {
             type: SettingTypes.Multiplier,
         },
         "Indicate Flashed Crewmates": {
-            value: true,
+            value: false,
             type: SettingTypes.Boolean,
         },
         "Grenadier Can Vent": {
-            value: true,
+            value: false,
             type: SettingTypes.Boolean,
         },
     },
-    "abilities": [CommonAbilities.Kill, CommonAbilities.Vent, CommonAbilities.Sabotage, GrenadierAbilities.Flash],
+    "abilities": [CommonAbilities.Kill, CommonAbilities.Sabotage, GrenadierAbilities.Flash],
 };

@@ -12,7 +12,7 @@ export const Phantom: Role = {
     "icon": "/images/roles/phantom.png",
     "description": "Neutralna rola z własnym warunkiem zwycięstwa. Po śmierci staje się półniewidzialny i musi ukończyć wszystkie swoje zadania, nie dając się złapać. Phantoma można złapać poprzez kliknięcie na niego.",
     "settings": {
-        ...probabilityOfAppearing(-1),
+        ...probabilityOfAppearing(0),
         "When Phantom Can Be Clicked": {
             value: 5,
             type: SettingTypes.Number,

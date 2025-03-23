@@ -18,7 +18,7 @@ export const TimeLord: Role = {
     "icon": "/images/roles/time_lord.png",
     "description": "Crewmate, który posiada umiejętność cofania czasu. Wszyscy gracze cofają się do swoich położeń sprzed paru sekund, cofają się również wszystkie interkacje.",
     "settings": {
-        ...probabilityOfAppearing(-1),
+        ...probabilityOfAppearing(0),
     },
     "abilities": [TimeLordAbilities.Reverse],
 };
