@@ -1,6 +1,6 @@
 import {Role, RoleOrModifierTypes} from "@/constants/rolesAndModifiers";
 import {Teams} from "@/constants/teams";
-import {probabilityOfAppearing} from "@/constants/settings";
+import {probabilityOfAppearing, SettingTypes} from "@/constants/settings";
 
 export const DetectiveAbilities = {
     Examine: {
@@ -22,7 +22,23 @@ export const Detective: Role = {
     "icon": "/images/roles/detective.png",
     "description": "Crewmate, który może badać miejsca zbrodni i następnie sprawdzać graczy. Najpierw musi znaleźć miejsce zbrodni i je zbadać. W tej samej lub kolejnych rundach może następnie sprawdzić graczy, aby ustalić, czy byli zabójcami. Jeśli sprawdzany gracz jest zabójcą lub znajdował się w pobliżu miejsca zbrodni, otrzyma czerwony błysk. W przeciwnym razie błysk będzie zielony.",
     "settings": {
-        ...probabilityOfAppearing(-1),
+        ...probabilityOfAppearing(0),
+        "Examine Cooldown": {
+            value: 25.0,
+            type: SettingTypes.Time,
+        },    
+        "Show Detective Reports": {
+            value: true,
+            type: SettingTypes.Boolean,
+        },    
+        "Time Where Detective Will Have Role": {
+            value: 15.0,
+            type: SettingTypes.Time,
+        },    
+        "Time Where Detective Will Have Faction": {
+            value: 30.0,
+            type: SettingTypes.Time,
+        },    
     },
     "abilities": [DetectiveAbilities.Examine, DetectiveAbilities.Inspect],
 };

@@ -19,7 +19,7 @@ export const Janitor: Role = {
     "icon": "/images/roles/janitor.png",
     "description": "Impostor, który może sprzątać ciała. Zarówno jego zdolność zabójstwa, jak i czyszczenia mają wspólny czas odnowienia, co oznacza, że musi wybrać, którą z nich chce użyć.",
     "settings": {
-        ...probabilityOfAppearing(-1),
+        ...probabilityOfAppearing(0),
     },
     "abilities": [
         CommonAbilities.Kill,

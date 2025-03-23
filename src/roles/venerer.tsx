@@ -39,7 +39,7 @@ export const Venerer: Role = {
             </p>
         </>),
     "settings": {
-        ...probabilityOfAppearing(-1),
+        ...probabilityOfAppearing(0),
         "Ability Cooldown": {
             value: 25.0,
             type: SettingTypes.Time,
@@ -49,11 +49,11 @@ export const Venerer: Role = {
             type: SettingTypes.Time,
         },
         "Sprint Speed": {
-            value: 1.5,
+            value: 1.25,
             type: SettingTypes.Multiplier,
         },
         "Freeze Speed": {
-            value: 1,
+            value: 0.75,
             type: SettingTypes.Multiplier,
         },
     },

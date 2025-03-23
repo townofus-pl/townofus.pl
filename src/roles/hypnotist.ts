@@ -24,7 +24,7 @@ export const Hypnotist: Role = {
     "icon": "/images/roles/hypnotist.png",
     "description": "Impostor, który może hipnotyzować graczy. Gdy wystarczająca liczba osób zostanie zahipnotyzowana, Hypnotist może uwolnić Masową Histerię. Po jej aktywacji, wszyscy zahipnotyzowani gracze będą widzieć pozostałych graczy jako siebie, zamaskowanych lub niewidzialnych. Po śmierci Hypnotista, Masowa Histeria zostaje usunięta, a gracze zaczynają widzieć wszystkich normalnie.",
     "settings": {
-        ...probabilityOfAppearing(-1),
+        ...probabilityOfAppearing(0),
         "Hypnotize Cooldown": {
             value: 25,
             type: SettingTypes.Time,

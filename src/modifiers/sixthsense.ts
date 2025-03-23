@@ -12,7 +12,7 @@ export const SixthSense: Modifier = {
     "icon": "/images/modifiers/sixth_sense.png",
     "description": "Ekran świeci mu się na żółto, gdy ktoś używa na nim swoich zdolności.",
     "settings": {
-        ...probabilityOfAppearing(-1),
+        ...probabilityOfAppearing(0),
     },
     "abilities": [CommonAbilities.None],
 };

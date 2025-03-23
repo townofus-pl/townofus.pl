@@ -18,9 +18,9 @@ export const Trapper: Role = {
     "icon": "/images/roles/trapper.png",
     "description": "Crewmate, który może ustawiać pułapki na mapie. Kiedy conajmniej 3 graczy (razem lub osobno) znajdzie się wewnątrz pułapki przez minimum 1 sekundę, aktywują ją. Podczas następnego spotkania, role graczy którzy aktywowali pułapkę zostaną ujawnione Trapperowi. Jednak robi się to w losowej kolejności, bez wskazywania, kto wszedł w pułapkę i bez ujawniania, jaka rola należy do konkretnego gracza.",
     "settings": {
-        ...probabilityOfAppearing(-1),
+        ...probabilityOfAppearing(0),
         "Min Amount Of Time In Trap To Register": {
-            value: 0.5,
+            value: 1,
             type: SettingTypes.Time,
         },
         "Trap Cooldown": {

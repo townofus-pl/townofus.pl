@@ -12,7 +12,7 @@ export const DoubleShot: Modifier = {
     "icon": "/images/modifiers/doubleshot.png",
     "description": "Gdy pierwsza próba zgadnięcia roli nie powiedzie się, Impostor z Double shotem dostaje następną szansę.",
     "settings": {
-        ...probabilityOfAppearing(-1),
+        ...probabilityOfAppearing(0),
     },
     "abilities": [CommonAbilities.None],
 };

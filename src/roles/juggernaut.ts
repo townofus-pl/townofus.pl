@@ -12,9 +12,9 @@ export const Juggernaut: Role = {
     "icon": "/images/roles/juggernaut.png",
     "description": "Neutralna rola z własnym warunkiem zwycięstwa. Specjalną zdolnością Juggernauta jest to, że czas odnowienia zabójstwa skraca się z każdym zabójstwem. Oznacza to, że Juggernaut teoretycznie może mieć czas odnowienia zabójstwa równy 0 sekund! Juggernaut musi być ostatnim zabójcą, aby wygrać grę.",
     "settings": {
-        ...probabilityOfAppearing(-1),
+        ...probabilityOfAppearing(0),
         "Juggernaut Initial Kill Cooldown": {
-            value: 35,
+            value: 25,
             type: SettingTypes.Time,
         },
         "Reduced Kill Cooldown Per Kill": {
@@ -22,7 +22,7 @@ export const Juggernaut: Role = {
             type: SettingTypes.Time,
         },
         "Juggernaut Can Vent": {
-            value: true,
+            value: false,
             type: SettingTypes.Boolean,
         }
     },

@@ -18,7 +18,7 @@ export const President: Role = {
     "icon": "/images/roles/politician.png", //ten sam obrazek
     "description": "Crewmate, który może głosować kilka razy. Co każdy meeting otrzymuje jeden głos który może użyć albo zachować, jeśli wstrzyma się od głosu, będzie miał dodatkowy głos na następnym spotkaniu.",
     "settings": {
-        ...probabilityOfAppearing(-1),
+        ...probabilityOfAppearing(0),
         "Initial President Vote Bank": {
             value: 1,
             type: SettingTypes.Number,

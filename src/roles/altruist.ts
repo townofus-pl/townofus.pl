@@ -18,9 +18,9 @@ export const Altruist: Role = {
     "icon": "/images/roles/altruist.png",
     "description": "Crewmate, który ma zdolność wskrzeszania martwych graczy. Po znalezieniu martwego ciała, Altruist może poświęcić siebie dla wskrzeszenia innego gracza. Jeśli wskrzeszenie zostanie aktywowane, martwe ciało znika, pozostawiając tylko ciało Altruisty na miejscu. Po określonym czasie gracz zostanie wskrzeszony, o ile proces wskrzeszenia nie zostanie w jakiś sposób przerwany.",
     "settings": {
-        ...probabilityOfAppearing(-1),
+        ...probabilityOfAppearing(0),
         'Altruist Revive Duration': {
-            value: 1,
+            value: 10,
             type: SettingTypes.Time,
         },
         "Target's Body Disappears On Beginning Of Revive": {

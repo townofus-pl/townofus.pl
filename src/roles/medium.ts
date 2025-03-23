@@ -18,9 +18,9 @@ export const Medium: Role = {
     "icon": "/images/roles/medium.png",
     "description": "Crewmate, który może widzieć duchy. W każdej rundzie Medium może użyć zdolności mediacji. Jeśli użyje jej, gdy wszyscy żyją, nic się nie stanie. Jednak jeśli ktoś już nie żyje, Medium i martwy gracz będą mogli się zobaczyć oraz komunikować zza grobu.",  
     "settings": {
-        ...probabilityOfAppearing(-1),
+        ...probabilityOfAppearing(0),
         "Mediate Cooldown": {
-            value: 20,
+            value: 10,
             type: SettingTypes.Time,
         },
         "Reveal Appearance Of Mediate Target": {
@@ -32,7 +32,7 @@ export const Medium: Role = {
             type: SettingTypes.Boolean,
         },
         "Who Is Revealed With Mediate": {
-            value: "Newest Dead",
+            value: "Oldest Dead",
             type: SettingTypes.Text,
         },
     },

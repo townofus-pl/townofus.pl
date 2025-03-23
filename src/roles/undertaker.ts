@@ -24,17 +24,17 @@ export const Undertaker: Role = {
     "icon": "/images/roles/undertaker.png",
     "description": "Impostor, który może przeciągać i upuszczać ciała.",
     "settings": {
-        ...probabilityOfAppearing(-1),
+        ...probabilityOfAppearing(0),
         "Drag Cooldown": {
             value: 25.0,
             type: SettingTypes.Time,
         },
         "Undertaker Drag Speed": {  
-            value: 1.0,
+            value: 0.75,
             type: SettingTypes.Multiplier,
         },
         "Undertaker Can Vent": {
-            value: true,
+            value: false,
             type: SettingTypes.Boolean,
         },
         "Undertaker Can Vent While Dragging": {

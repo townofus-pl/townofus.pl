@@ -12,7 +12,7 @@ export const Diseased: Modifier = {
     "icon": "/images/modifiers/placeholder.png",
     "description": "Gdy umrze, czas odnowienia zabójstwa zabójcy wydłuża się.",
     "settings": {
-        ...probabilityOfAppearing(-1),
+        ...probabilityOfAppearing(0),
         'Deceased Kill Multiplier': {
             value: 3, type: SettingTypes.Multiplier,
         },

@@ -22,13 +22,13 @@ export const Plaguebearer: Role = {
     "icon": "/images/roles/plaguebearer.png",
     "description": "Neutralna rola ze zdolnością, która pozwala mu zainfekować innych graczy. Po zainfekowaniu, zakażony gracz może zakażać innych przez interakcję z nimi. Gdy wszyscy gracze zostaną zainfekowani, Plaguebearer zamienia się w Pestilence. Pestilence to nieśmiertelna siła, która zyskuje zdolność zabijania i można ją zabić tylko przez głosowanie. Nawet śmierć Loversa nie zabije Pestilence. Plaguebearer lub Pestilence muszą być ostatnim zabójcą, aby wygrać grę.",
     "settings": {
-        ...probabilityOfAppearing(-1),
+        ...probabilityOfAppearing(0),
         "Infect Cooldown": {
             value: 25,
             type: SettingTypes.Time,
         },
         "Pestilence Kill Cooldown": {
-            value: 27.5,
+            value: 25,
             type: SettingTypes.Time,
         },
         "Pestilence Can Vent": {

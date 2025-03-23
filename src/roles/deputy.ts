@@ -18,7 +18,7 @@ export const Deputy: Role = {
     "icon": "/images/roles/deputy.png",
     "description": "Crewmate, który może obozować innych graczy. Jeśli obozowany gracz zostanie zabity, Deputy otrzyma alert. Podczas następnego spotkania może spróbować zastrzelić zabójcę. Jeśli trafi, zginie a jeśli nie, nic się nie dzieje.",
     "settings": {
-        ...probabilityOfAppearing(-1),
+        ...probabilityOfAppearing(0),
     },
     "abilities": [DeputyAbilities.Camp],
 }

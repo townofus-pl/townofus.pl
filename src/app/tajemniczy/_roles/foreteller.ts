@@ -22,7 +22,7 @@ export const Foreteller: Role = {
     "icon": "/images/roles/doomsayer.png", //ta sama ikonka
     "description": "Wygrywa grę, jeśli zgadnie role trzech graczy. Posiada dodatkową umiejętność obserwowania gracza, która podpowiada mu jaką rolę może mieć wybrany gracz.",
     "settings": {
-        ...probabilityOfAppearing(-1),
+        ...probabilityOfAppearing(0),
     },
     "abilities": [ForetellerAbilities.Observe, ForetellerAbilities.Guess],
 };

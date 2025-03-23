@@ -12,7 +12,7 @@ export const Snitch: Role = {
     "icon": "/images/roles/snitch.png",
     "description": "Crewmate, który po ukończeniu wszystkich zadań otrzymuje strzałki wskazujące na Impostorów. Nicki Impostorów pojawiają się również na jego ekranie na czerwono. Jednak gdy pozostanie mu ostatnie zadanie, to Impostorzy otrzymują strzałkę wskazującą na Snitcha.",
     "settings": {
-        ...probabilityOfAppearing(-1),
+        ...probabilityOfAppearing(0),
         "Snitch Sees Neutral Roles": {
             value: false,
             type: SettingTypes.Boolean,
@@ -26,7 +26,7 @@ export const Snitch: Role = {
             type: SettingTypes.Boolean,
         },
         "Snitch Sees Traitor": {
-            value: false,
+            value: true,
             type: SettingTypes.Boolean,
         },
     },

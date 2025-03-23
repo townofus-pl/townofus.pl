@@ -22,7 +22,7 @@ export const Politician: Role = {
     "icon": "/images/roles/politician.png",
     "description": "Crewmate, który może prowadzić kampanię wśród innych graczy. Gdy co najmniej połowa Crewmate’ów zostanie przekonana, Politician może ujawnić się jako nowy Mayor. Jeśli jednak mniej niż połowa Crewmate’ów zostanie przekonana, ujawnienie się nie powiedzie, a Politician nie będzie mógł prowadzić kampanii przez 1 rundę. Głos Mayora liczy się potrójnie",
     "settings": {
-        ...probabilityOfAppearing(-1),
+        ...probabilityOfAppearing(0),
         "Campaign Cooldown": {
             value: 25,
             type: SettingTypes.Time,

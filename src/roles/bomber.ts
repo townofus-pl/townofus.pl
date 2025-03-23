@@ -23,7 +23,7 @@ export const Bomber: Role = {
     "icon": "/images/roles/bomber.png",
     "description": "Impostor, który ma zdolność stawiania bomb zamiast zabijania. Po posadzeniu bomby, ta wybuchnie po określonym czasie. Gdy bomba wybuchnie, zabije wszystkich graczy znajdujących się w zasięgu, także Impostorów.",
     "settings": {
-        ...probabilityOfAppearing(-1),
+        ...probabilityOfAppearing(0),
         "Detonate Delay": {
             value: 5,
             type: SettingTypes.Time,
@@ -37,11 +37,11 @@ export const Bomber: Role = {
             type: SettingTypes.Multiplier,
         },
         "Bomber Can Vent": {
-            value: true,
+            value: false,
             type: SettingTypes.Boolean,
         },
         "All Impostors See Bomb": {
-            value: true,
+            value: false,
             type: SettingTypes.Boolean,
         },
     },

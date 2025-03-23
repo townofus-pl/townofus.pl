@@ -18,7 +18,7 @@ export const ButtonBarry: Modifier = {
     "icon": "/images/modifiers/buttonbarry.png",
     "description": "Może zwołać spotkanie z dowolnego miejsca na mapie.",
     "settings": {
-        ...probabilityOfAppearing(-1),
+        ...probabilityOfAppearing(0),
     },
     "abilities": [ButtonBarryAbilities.ButtonBarry],
 };

@@ -12,7 +12,7 @@ export const Scavenger: Role = {
     "icon": "/images/roles/scavenger.png",
     "description": "Impostor, który poluje na ofiary. W trakcie gry losuje mu się cel, który powinien zabić. Z każdym zabójstwem celu, czas odnowienia zabójstwa Scavengera skraca się. W przypadku błędnego zabójstwa czas odnowienia zabójstwa Scavengera znacznie się wydłuża.",
     "settings": {
-        ...probabilityOfAppearing(-1),
+        ...probabilityOfAppearing(0),
         "Scavenge Duration": {
             value: 25,
             type: SettingTypes.Time,

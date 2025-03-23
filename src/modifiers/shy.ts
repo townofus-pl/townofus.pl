@@ -12,15 +12,15 @@ export const Shy: Modifier = {
     "icon": "/images/modifiers/shy.png",
     "description": "Staje się przezroczysty gdy się nie rusza.",
     "settings": {
-        ...probabilityOfAppearing(-1),
+        ...probabilityOfAppearing(0),
         'Transparency Delay': {
-            value: 0, type: SettingTypes.Time,
+            value: 5, type: SettingTypes.Time,
         },
         'Turn Transparent Duration': {
-            value: 0, type: SettingTypes.Time,
+            value: 5, type: SettingTypes.Time,
         },
         'Final Opacity': {
-            value: 10, type: SettingTypes.Percentage,
+            value: 20, type: SettingTypes.Percentage,
         },
     },
     "abilities": [CommonAbilities.None],

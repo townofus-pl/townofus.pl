@@ -30,9 +30,9 @@ export const Arsonist: Role = {
             grę.</p>
     </>),
     "settings": {
-        ...probabilityOfAppearing(-1),
+        ...probabilityOfAppearing(0),
         'Douse Cooldown': {
-            value: 35.0,
+            value: 25.0,
             type: SettingTypes.Time,
         },
         'Maximum Alive Players Doused': {
@@ -40,11 +40,11 @@ export const Arsonist: Role = {
             type: SettingTypes.Number,
         },
         'Arsonist Has Impostor Vision': {
-            value: true,
+            value: false,
             type: SettingTypes.Boolean,
         },
         'Ignite Cooldown Removed When Arsonist Is Last Killer': {
-            value: true,
+            value: false,
             type: SettingTypes.Boolean,
         },
     },

@@ -12,21 +12,21 @@ export const Sheriff: Role = {
     "icon": "/images/roles/sheriff.png",
     "description": "Crewmate, który posiada umiejętność zabijania ról Impostorskich, Neutralnych zabijających oraz Neutralnych złych. Jeśli spróbujesz zabić niewinnego gracza, umrzesz.",
     "settings": {
-        ...probabilityOfAppearing(-1),
+        ...probabilityOfAppearing(0),
         "Sheriff Miskill Kills Crewmate": {
             value: false,
             type: SettingTypes.Boolean,
         },
         "Sheriff Kills Neutral Evil Roles": {
-            value: true,
+            value: false,
             type: SettingTypes.Boolean,
         },
         "Sheriff Kills Neutral Killing Roles": {
-            value: true,
+            value: false,
             type: SettingTypes.Boolean,
         },
         "Sheriff Kill Cooldown": {
-            value: 22.5,
+            value: 25,
             type: SettingTypes.Time,
         },
         "Sheriff Can Report Who They've Killed": {

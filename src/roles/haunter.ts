@@ -12,7 +12,7 @@ export const Haunter: Role = {
     "icon": "/images/roles/haunter.png",
     "description": "Martwy Crewmate, który po ukończeniu wszystkich zadań ujawnia Impostorów. Jest to rola pośmiertna, losowy Crewmate dostaje ją po śmierci. Gdy wykona wszystkie zadania, Impostorzy zostają ujawnieni żywym Crewmate’om po wezwaniu spotkania. Gdy Haunterowi zostanie ostatnie zadanie, Impostorzy dostają alert. Jako Haunter gracz jest półprzezroczysty. Jednak jeśli Haunter zostanie odnaleziony i kliknięty, traci swoją zdolność ujawniania Impostorów i staje się zwykłym duchem.",
     "settings": {
-        ...probabilityOfAppearing(-1),
+        ...probabilityOfAppearing(0),
             "When Haunter Can Be Clicked": {
                 value: 5,
                 type: SettingTypes.Number,
@@ -26,7 +26,7 @@ export const Haunter: Role = {
                 type: SettingTypes.Boolean,
             },
             "Who can Click Haunter": {
-                value: "Imps Only",
+                value: "All",
                 type: SettingTypes.Text,
             },
     },

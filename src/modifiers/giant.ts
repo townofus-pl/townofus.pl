@@ -12,9 +12,9 @@ export const Giant: Modifier = {
     "icon": "/images/modifiers/giant.png",
     "description": "Jest gigantyczny i porusza się wolniej.",
     "settings": {
-        ...probabilityOfAppearing(-1),
+        ...probabilityOfAppearing(0),
         'Giant Speed': {
-            value: 1.0, 
+            value: 0.75, 
             type: SettingTypes.Multiplier,
         },
     },

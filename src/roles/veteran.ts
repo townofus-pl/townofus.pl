@@ -18,21 +18,21 @@ export const Veteran: Role = {
     "icon": "/images/roles/veteran.png",
     "description": "Crewmate, który może przejść w tryb czujności. Gdy Veteran jest w trybie czujności, każda osoba, niezależnie od tego, czy jest Crewmate'em, Neutralem, czy Impostorem, jeśli wejdzie w interakcję z Veteranem, umrze.",
     "settings": {
-        ...probabilityOfAppearing(-1),
+        ...probabilityOfAppearing(0),
         "Can Be Killed On Alert": {
             value: false,
             type: SettingTypes.Boolean,
         },
         "Alert Cooldown": {
-            value: 25.0,
+            value: 5.0,
             type: SettingTypes.Time,
         },
         "Alert Duration": {
-            value: 10.0,
+            value: 25.0,
             type: SettingTypes.Time,
         },
         "Maximum Number Of Alerts": {
-            value: 5,
+            value: 3,
             type: SettingTypes.Number,
         },
     },

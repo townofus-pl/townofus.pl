@@ -12,7 +12,7 @@ export const Tiebreaker: Modifier = {
     "icon": "/images/modifiers/placeholder.png",
     "description": "Jego głos rozstrzyga remisy podczas głosowania.",
     "settings": {
-        ...probabilityOfAppearing(-1),
+        ...probabilityOfAppearing(0),
     },
     "abilities": [CommonAbilities.None],
 };

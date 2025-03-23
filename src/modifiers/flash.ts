@@ -12,9 +12,9 @@ export const Flash: Modifier = {
     "icon": "/images/modifiers/flash.png",
     "description": "Porusza się z większą prędkością.",
     "settings": {
-        ...probabilityOfAppearing(-1),
+        ...probabilityOfAppearing(0),
         'Flash Speed': {
-            value: 1.5, type: SettingTypes.Multiplier,
+            value: 1.25, type: SettingTypes.Multiplier,
         },
     },
     "abilities": [CommonAbilities.None],

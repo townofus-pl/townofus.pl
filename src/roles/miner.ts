@@ -19,7 +19,7 @@ export const Miner: Role = {
     "icon": "/images/roles/miner.png",
     "description": "Impostor, który może tworzyć nowe wentylacje. Te wentylacje łączą się tylko ze sobą, tworząc nową ścieżkę.",
     "settings": {
-        ...probabilityOfAppearing(-1),
+        ...probabilityOfAppearing(0),
         "Mine Cooldown": {
             value: 25,
             type: SettingTypes.Time,

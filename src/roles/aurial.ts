@@ -12,7 +12,7 @@ export const Aurial: Role = {
     "icon": "/images/roles/aurial.png",
     "description": "Crewmate, który potrafi wyczuwać rzeczy w swojej aurze. Jeśli którykolwiek gracz w pobliżu Auriala użyje przycisku zdolności, Aurial otrzyma strzałkę wskazującą, gdzie ta zdolność została użyta. Jeżeli stanie się to wystarczająco blisko, to strzałka będzie miała kolor gracza który użył zdolności.",
     "settings": {
-        ...probabilityOfAppearing(-1),
+        ...probabilityOfAppearing(0),
         "Radiate Colour Range": {
             value: 0.5,
             type: SettingTypes.Multiplier,

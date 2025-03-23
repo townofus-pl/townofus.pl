@@ -18,9 +18,9 @@ export const Tracker: Role = {
     "icon": "/images/roles/tracker.png",
     "description": "Crewmate, który za pomocą swojej umiejętności może śledzić innych graczy podczas rundy. Gdy zacznie kogoś śledzić, strzałka będzie wskazywać położenie tej osoby, aktualizując się w określonych odstępach czasu.",
     "settings": {
-        ...probabilityOfAppearing(-1),
+        ...probabilityOfAppearing(0),
         "Arrow Update Interval": {
-            value: 3,
+            value: 5,
             type: SettingTypes.Time,
         },
         "Track Cooldown": {
@@ -28,7 +28,7 @@ export const Tracker: Role = {
             type: SettingTypes.Time,
         },
         "Tracker Arrows Reset After Each Round": {
-            value: false,
+            value: true,
             type: SettingTypes.Boolean,
         },
         "Maximum Number of Tracks": {
