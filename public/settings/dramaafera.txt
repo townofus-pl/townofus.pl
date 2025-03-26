@@ -1,115 +1,115 @@
 <color=#B34D99FF>Aurial</color>
-0
+10
 <color=#4D4DFFFF>Detective</color>
-0
+20
 <color=#D3D3D3FF>Haunter</color>
 0
 <color=#00B3B3FF>Investigator</color>
 40
 <color=#33FF66FF>Lookout</color>
-30
+10
 <color=#4D99E6FF>Mystic</color>
-80
+60
 <color=#BF00BFFF>Oracle</color>
 0
 <color=#FFCC80FF>Seer</color>
 40
 <color=#D4AF37FF>Snitch</color>
-60
+50
 <color=#CCA3CCFF>Spy</color>
-60
+30
 <color=#009900FF>Tracker</color>
-0
-<color=#A7D1B3FF>Trapper</color>
-0
-<color=#FFCC00FF>Deputy</color>
-10
-<color=#29AB87FF>Hunter</color>
 20
+<color=#A7D1B3FF>Trapper</color>
+20
+<color=#FFCC00FF>Deputy</color>
+30
+<color=#29AB87FF>Hunter</color>
+50
 <color=#A6A6A6FF>Jailor</color>
-30
+40
 <color=#FFFF00FF>Sheriff</color>
-40
+70
 <color=#998040FF>Veteran</color>
-40
+50
 <color=#FFFF99FF>Vigilante</color>
-10
+20
 <color=#660000FF>Altruist</color>
-0
-<color=#006600FF>Medic</color>
-60
-<color=#9900FFFF>Warden</color>
-0
-<color=#FFA60AFF>Engineer</color>
-50
-<color=#B3D94DFF>Imitator</color>
-30
-<color=#A680FFFF>Medium</color>
-0
-<color=#660099FF>Politician</color>
 40
-<color=#B38000FF>Prosecutor</color>
-60
-<color=#66E666FF>Swapper</color>
-0
-<color=#00EEFFFF>Transporter</color>
-30
-<color=#80B2FFFF>Amnesiac</color>
-0
-<color=#B3FFFFFF>Guardian Angel</color>
-0
-<color=#FFE64DFF>Survivor</color>
-80
-<color=#00FF80FF>Doomsayer</color>
+<color=#006600FF>Medic</color>
 50
+<color=#9900FFFF>Warden</color>
+40
+<color=#FFA60AFF>Engineer</color>
+40
+<color=#B3D94DFF>Imitator</color>
+10
+<color=#A680FFFF>Medium</color>
+40
+<color=#660099FF>Politician</color>
+0
+<color=#B38000FF>Prosecutor</color>
+50
+<color=#66E666FF>Swapper</color>
+40
+<color=#00EEFFFF>Transporter</color>
+40
+<color=#80B2FFFF>Amnesiac</color>
+30
+<color=#B3FFFFFF>Guardian Angel</color>
+20
+<color=#FFE64DFF>Survivor</color>
+70
+<color=#00FF80FF>Doomsayer</color>
+40
 <color=#8C4005FF>Executioner</color>
 20
 <color=#FFBFCCFF>Jester</color>
-40
+20
 <color=#662962FF>Phantom</color>
-0
-<color=#99FFCCFF>Soul Collector</color>
-30
-<color=#FF4D00FF>Arsonist</color>
-30
-<color=#8C004DFF>Juggernaut</color>
-60
-<color=#E6FFB3FF>Plaguebearer / Pestilence</color>
 10
+<color=#99FFCCFF>Soul Collector</color>
+40
+<color=#FF4D00FF>Arsonist</color>
+0
+<color=#8C004DFF>Juggernaut</color>
+40
+<color=#E6FFB3FF>Plaguebearer / Pestilence</color>
+20
 <color=#00FF00FF>The Glitch</color>
-50
+20
 <color=#262626FF>Vampire</color>
 0
 <color=#A86629FF>Werewolf</color>
-50
+20
 <color=#FF0000FF>Escapist</color>
 20
 <color=#FF0000FF>Grenadier</color>
-10
+20
 <color=#FF0000FF>Morphling</color>
-20
+10
 <color=#FF0000FF>Swooper</color>
-40
+50
 <color=#FF0000FF>Venerer</color>
-0
+10
 <color=#FF0000FF>Bomber</color>
-20
+10
 <color=#FF0000FF>Scavenger</color>
-0
+10
 <color=#FF0000FF>Traitor</color>
 0
 <color=#FF0000FF>Warlock</color>
 40
 <color=#FF0000FF>Blackmailer</color>
-0
+10
 <color=#FF0000FF>Hypnotist</color>
 0
 <color=#FF0000FF>Janitor</color>
-40
+20
 <color=#FF0000FF>Miner</color>
-40
+10
 <color=#FF0000FF>Undertaker</color>
-0
+10
 <color=#A6FFA6FF>Aftermath</color>
 0
 <color=#33B3B3FF>Bait</color>
@@ -123,19 +123,19 @@
 <color=#FFFF99FF>Torch</color>
 0
 <color=#E600FFFF>Button Barry</color>
-30
+20
 <color=#FF8080FF>Flash</color>
 30
 <color=#FFB34DFF>Giant</color>
-20
+10
 <color=#FF66CCFF>Lovers</color>
 0
 <color=#CCFFE6FF>Mini</color>
-30
+20
 <color=#FF0080FF>Radar</color>
 0
 <color=#FFB3CCFF>Shy</color>
-40
+80
 <color=#D9FF8CFF>Sixth Sense</color>
 0
 <color=#803333FF>Sleuth</color>
@@ -143,11 +143,11 @@
 <color=#99E699FF>Tiebreaker</color>
 50
 <color=#FF0000FF>Disperser</color>
-40
+30
 <color=#FF0000FF>Double Shot</color>
-50
+60
 <color=#FF0000FF>Saboteur</color>
-10
+20
 <color=#FF0000FF>Underdog</color>
 0
 All Roles Are Unique
@@ -243,7 +243,7 @@ True
 See Tasks During Round
 False
 See Tasks During Meetings
-True
+False
 See Tasks When Dead
 True
 Number Of Impostor Assassins
@@ -281,13 +281,13 @@ Radiate Max Range
 Sense Duration
 10
 Examine Cooldown
-25
+20
 Show Detective Reports
 True
 Time Where Detective Will Have Role
-15
+10
 Time Where Detective Will Have Faction
-30
+20
 Tasks Remaining When Haunter Can Be Clicked
 5
 Tasks Remaining When Alert Is Sent
@@ -295,7 +295,7 @@ Tasks Remaining When Alert Is Sent
 Haunter Reveals Neutral Roles
 False
 Who Can Click Haunter
-0
+All
 Footprint Size
 4
 Footprint Interval
@@ -315,7 +315,7 @@ Maximum Number Of Players That Can Be Watched
 Dead Body Arrow Duration
 1
 Confess Cooldown
-25
+20
 Reveal Accuracy
 80
 Neutral Benign Roles Show Evil
@@ -347,9 +347,9 @@ True
 Who Sees Dead Bodies On Admin
 Spy
 Arrow Update Interval
-1
+3
 Track Cooldown
-25
+20
 Tracker Arrows Reset After Each Round
 True
 Maximum Number Of Tracks
@@ -441,7 +441,7 @@ False
 Reveal The Medium To The Mediate Target
 True
 Who Is Revealed With Mediate
-1
+Newest Dead
 Campaign Cooldown
 20
 Prosecutor Dies When They Exile A Crewmate
@@ -467,15 +467,15 @@ Kill Cooldown Reset When Protected
 Maximum Number Of Protects
 5
 Show Protected Player
-2
+Self+GA
 GA Becomes On Target Dead
-1
+Survivor
 Target Knows GA Exists
 False
 GA Knows Targets Role
 False
 Odds Of Target Being Evil
-20
+100
 Vest Cooldown
 20
 Vest Duration
@@ -511,7 +511,7 @@ False
 Jester Haunts Player On Victory
 False
 Tasks Remaining When Phantom Can Be Clicked
-5
+9
 Phantom Spooks Player On Victory
 False
 Reap Cooldown
@@ -573,7 +573,7 @@ Rampage Cooldown
 Rampage Duration
 10
 Rampage Kill Cooldown
-5
+2.5
 Werewolf Can Vent When Rampaged
 True
 Recall Cooldown
@@ -643,7 +643,7 @@ False
 Maximum People Alive Where Blackmailed Can Vote
 1
 Hypnotize Cooldown
-25
+20
 Mine Cooldown
 20
 Drag Cooldown
