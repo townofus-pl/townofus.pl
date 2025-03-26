@@ -39,7 +39,7 @@ export const GuardianAngel: Role = {
             value: "Self",
             type: SettingTypes.Text,
         },
-        "Becomes On Target Dead": {
+        "GA Becomes On Target Dead": {
             value: RolesAfterDeath.Crewmate,
             type: SettingTypes.Text,
         },
