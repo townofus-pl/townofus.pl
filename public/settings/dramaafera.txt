@@ -468,7 +468,7 @@ Maximum Number Of Protects
 5
 Show Protected Player
 Self+GA
-GA Becomes On Target Dead
+Becomes On Target Dead
 Survivor
 Target Knows GA Exists
 False
