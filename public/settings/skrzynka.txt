@@ -1,5 +1,5 @@
 <color=#B34D99FF>Aurial</color>
-30
+20
 <color=#4D4DFFFF>Detective</color>
 0
 <color=#D3D3D3FF>Haunter</color>
@@ -7,7 +7,7 @@
 <color=#00B3B3FF>Investigator</color>
 60
 <color=#33FF66FF>Lookout</color>
-60
+20
 <color=#4D99E6FF>Mystic</color>
 60
 <color=#BF00BFFF>Oracle</color>
@@ -19,11 +19,11 @@
 <color=#CCA3CCFF>Spy</color>
 30
 <color=#009900FF>Tracker</color>
-30
+20
 <color=#A7D1B3FF>Trapper</color>
 60
 <color=#FFCC00FF>Deputy</color>
-0
+20
 <color=#29AB87FF>Hunter</color>
 0
 <color=#A6A6A6FF>Jailor</color>
@@ -74,12 +74,12 @@
 30
 <color=#8C004DFF>Juggernaut</color>
 60
-<color=#E6FFB3FF>Plaguebearer</color>
+<color=#E6FFB3FF>Plaguebearer / Pestilence</color>
 60
 <color=#00FF00FF>The Glitch</color>
 60
 <color=#262626FF>Vampire</color>
-30
+20
 <color=#A86629FF>Werewolf</color>
 60
 <color=#FF0000FF>Escapist</color>
@@ -95,9 +95,9 @@
 <color=#FF0000FF>Bomber</color>
 60
 <color=#FF0000FF>Scavenger</color>
-60
+0
 <color=#FF0000FF>Traitor</color>
-10
+0
 <color=#FF0000FF>Warlock</color>
 60
 <color=#FF0000FF>Blackmailer</color>
@@ -173,15 +173,15 @@ Slot 9
 Slot 10
 5
 Slot 11
-5
-Slot 12
 15
+Slot 12
+5
 Slot 13
 5
 Slot 14
-5
-Slot 15
 8
+Slot 15
+5
 Choose Random Map
 False
 Skeld Chance
@@ -271,7 +271,7 @@ True
 Assassin Can Guess Impostor Roles
 True
 Assassin Can Guess Crewmate Modifiers
-False
+True
 Assassin Can Guess Lovers
 False
 Radiate Colour Range
@@ -295,7 +295,7 @@ Tasks Remaining When Alert Is Sent
 Haunter Reveals Neutral Roles
 False
 Who Can Click Haunter
-2
+Imps Only
 Footprint Size
 3
 Footprint Interval
@@ -339,13 +339,13 @@ False
 Snitch Sees Neutral Roles
 False
 Tasks Remaining When Revealed
-2
+1
 Snitch Sees Impostors In Meetings
 True
 Snitch Sees Traitor
 False
 Who Sees Dead Bodies On Admin
-1
+Spy
 Arrow Update Interval
 2.5
 Track Cooldown
@@ -357,7 +357,7 @@ Maximum Number Of Tracks
 Min Amount Of Time In Trap To Register
 0.5
 Trap Cooldown
-25
+20
 Traps Removed After Each Round
 True
 Maximum Number Of Traps
@@ -411,7 +411,7 @@ True
 Vigilante Can Guess Neutral Killing Roles
 True
 Vigilante Can Guess Impostor Modifiers
-True
+False
 Vigilante Can Guess Lovers
 False
 Altruist Revive Duration
@@ -419,7 +419,7 @@ Altruist Revive Duration
 Target's Body Disappears On Beginning Of Revive
 True
 Show Shielded Player
-Self + Medic
+Self+Medic
 Who Gets Murder Attempt Indicator
 Medic
 Shield Breaks On Murder Attempt
@@ -441,7 +441,7 @@ True
 Reveal The Medium To The Mediate Target
 True
 Who Is Revealed With Mediate
-All Dead
+Newest Dead
 Campaign Cooldown
 25
 Prosecutor Dies When They Exile A Crewmate
@@ -467,7 +467,7 @@ Kill Cooldown Reset When Protected
 Maximum Number Of Protects
 5
 Show Protected Player
-Self + GA
+Self+GA
 GA Becomes On Target Dead
 Amnesiac
 Target Knows GA Exists
@@ -497,7 +497,7 @@ True
 Doomsayer Can't Observe
 False
 Executioner Becomes On Target Dead
-3
+Jester
 Executioner Can Button
 True
 Executioner Torments Player On Victory
@@ -523,7 +523,7 @@ Amount Of Souls Required To Win
 Douse Cooldown
 25
 Maximum Alive Players Doused
-3
+5
 Arsonist Has Impostor Vision
 True
 Ignite Cooldown Removed When Arsonist Is Last Killer
@@ -551,7 +551,7 @@ Hack Duration
 Glitch Kill Cooldown
 25
 Glitch Hack Distance
-0
+Short
 Glitch Can Vent
 True
 Vampire Bite Cooldown
@@ -595,7 +595,7 @@ Morphling Cooldown
 Morphling Duration
 10
 Morphling Can Vent
-False
+True
 Swoop Cooldown
 25
 Swoop Duration
@@ -651,9 +651,9 @@ Drag Cooldown
 Undertaker Drag Speed
 0.75
 Undertaker Can Vent
-False
+True
 Undertaker Can Vent While Dragging
-False
+True
 Minimum Delay for the Bait Report
 0
 Maximum Delay for the Bait Report
@@ -681,7 +681,7 @@ Transparency Delay
 Turn Transparent Duration
 5
 Final Opacity
-20
+0
 Reduced Sabotage Bonus
 10
 Kill Cooldown Bonus
