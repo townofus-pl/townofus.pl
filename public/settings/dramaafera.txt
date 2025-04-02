@@ -1,67 +1,67 @@
 <color=#B34D99FF>Aurial</color>
-10
+60
 <color=#4D4DFFFF>Detective</color>
 20
 <color=#D3D3D3FF>Haunter</color>
 0
 <color=#00B3B3FF>Investigator</color>
-40
-<color=#33FF66FF>Lookout</color>
-10
-<color=#4D99E6FF>Mystic</color>
 60
+<color=#33FF66FF>Lookout</color>
+20
+<color=#4D99E6FF>Mystic</color>
+20
 <color=#BF00BFFF>Oracle</color>
 0
 <color=#FFCC80FF>Seer</color>
-40
+20
 <color=#D4AF37FF>Snitch</color>
-50
+30
 <color=#CCA3CCFF>Spy</color>
 30
 <color=#009900FF>Tracker</color>
-20
+10
 <color=#A7D1B3FF>Trapper</color>
-20
+10
 <color=#FFCC00FF>Deputy</color>
-30
+40
 <color=#29AB87FF>Hunter</color>
-50
+20
 <color=#A6A6A6FF>Jailor</color>
 40
 <color=#FFFF00FF>Sheriff</color>
-70
+100
 <color=#998040FF>Veteran</color>
-50
+60
 <color=#FFFF99FF>Vigilante</color>
 20
 <color=#660000FF>Altruist</color>
-40
-<color=#006600FF>Medic</color>
-50
-<color=#9900FFFF>Warden</color>
-40
-<color=#FFA60AFF>Engineer</color>
-40
-<color=#B3D94DFF>Imitator</color>
 10
+<color=#006600FF>Medic</color>
+30
+<color=#9900FFFF>Warden</color>
+20
+<color=#FFA60AFF>Engineer</color>
+30
+<color=#B3D94DFF>Imitator</color>
+20
 <color=#A680FFFF>Medium</color>
-40
+30
 <color=#660099FF>Politician</color>
 0
 <color=#B38000FF>Prosecutor</color>
-50
+60
 <color=#66E666FF>Swapper</color>
-40
-<color=#00EEFFFF>Transporter</color>
-40
-<color=#80B2FFFF>Amnesiac</color>
 30
+<color=#00EEFFFF>Transporter</color>
+30
+<color=#80B2FFFF>Amnesiac</color>
+0
 <color=#B3FFFFFF>Guardian Angel</color>
-20
+50
 <color=#FFE64DFF>Survivor</color>
 70
 <color=#00FF80FF>Doomsayer</color>
-40
+50
 <color=#8C4005FF>Executioner</color>
 20
 <color=#FFBFCCFF>Jester</color>
@@ -69,45 +69,45 @@
 <color=#662962FF>Phantom</color>
 10
 <color=#99FFCCFF>Soul Collector</color>
-40
+30
 <color=#FF4D00FF>Arsonist</color>
 0
 <color=#8C004DFF>Juggernaut</color>
-40
+50
 <color=#E6FFB3FF>Plaguebearer / Pestilence</color>
-20
+30
 <color=#00FF00FF>The Glitch</color>
-20
+50
 <color=#262626FF>Vampire</color>
 0
 <color=#A86629FF>Werewolf</color>
-20
+50
 <color=#FF0000FF>Escapist</color>
 20
 <color=#FF0000FF>Grenadier</color>
-20
+10
 <color=#FF0000FF>Morphling</color>
-10
+30
 <color=#FF0000FF>Swooper</color>
-50
+30
 <color=#FF0000FF>Venerer</color>
-10
+0
 <color=#FF0000FF>Bomber</color>
-10
+40
 <color=#FF0000FF>Scavenger</color>
-10
+20
 <color=#FF0000FF>Traitor</color>
 0
 <color=#FF0000FF>Warlock</color>
 40
 <color=#FF0000FF>Blackmailer</color>
-10
+0
 <color=#FF0000FF>Hypnotist</color>
 0
 <color=#FF0000FF>Janitor</color>
-20
-<color=#FF0000FF>Miner</color>
 10
+<color=#FF0000FF>Miner</color>
+40
 <color=#FF0000FF>Undertaker</color>
 10
 <color=#A6FFA6FF>Aftermath</color>
@@ -115,39 +115,39 @@
 <color=#33B3B3FF>Bait</color>
 0
 <color=#808080FF>Diseased</color>
-0
+30
 <color=#99FFFFFF>Frosty</color>
 0
 <color=#FF804DFF>Multitasker</color>
-0
+10
 <color=#FFFF99FF>Torch</color>
 0
 <color=#E600FFFF>Button Barry</color>
 20
 <color=#FF8080FF>Flash</color>
-30
+20
 <color=#FFB34DFF>Giant</color>
 10
 <color=#FF66CCFF>Lovers</color>
 0
 <color=#CCFFE6FF>Mini</color>
-20
+10
 <color=#FF0080FF>Radar</color>
-0
+10
 <color=#FFB3CCFF>Shy</color>
-80
+40
 <color=#D9FF8CFF>Sixth Sense</color>
 0
 <color=#803333FF>Sleuth</color>
 0
 <color=#99E699FF>Tiebreaker</color>
-50
-<color=#FF0000FF>Disperser</color>
 30
+<color=#FF0000FF>Disperser</color>
+50
 <color=#FF0000FF>Double Shot</color>
-60
+70
 <color=#FF0000FF>Saboteur</color>
-20
+10
 <color=#FF0000FF>Underdog</color>
 0
 All Roles Are Unique
@@ -397,7 +397,7 @@ False
 Alert Cooldown
 20
 Alert Duration
-10
+7
 Maximum Number Of Alerts
 5
 Number Of Vigilante Kills
@@ -441,7 +441,7 @@ False
 Reveal The Medium To The Mediate Target
 True
 Who Is Revealed With Mediate
-Newest Dead
+All Dead
 Campaign Cooldown
 20
 Prosecutor Dies When They Exile A Crewmate
@@ -451,7 +451,7 @@ True
 Transport Cooldown
 20
 Maximum Number Of Transports
-5
+4
 Transporter Can Use Vitals
 True
 Amnesiac Gets Arrows Pointing To Dead Bodies
@@ -481,7 +481,7 @@ Vest Cooldown
 Vest Duration
 10
 Kill Cooldown Reset On Attack
-2.5
+10
 Maximum Number Of Vests
 5
 Observe Cooldown
@@ -511,7 +511,7 @@ False
 Jester Haunts Player On Victory
 False
 Tasks Remaining When Phantom Can Be Clicked
-9
+10
 Phantom Spooks Player On Victory
 False
 Reap Cooldown
@@ -519,7 +519,7 @@ Reap Cooldown
 Passively Collect A Soul Each Round
 False
 Amount Of Souls Required To Win
-4
+3
 Douse Cooldown
 20
 Maximum Alive Players Doused
@@ -627,7 +627,7 @@ Scavenge Duration Increase Per Kill
 Scavenge Kill Cooldown On Correct Kill
 10
 Kill Cooldown Multiplier On Incorrect Kill
-2
+1.5
 Minimum People Alive When Traitor Can Spawn
 7
 Traitor Won't Spawn If Any Neutral Killing Is Alive
