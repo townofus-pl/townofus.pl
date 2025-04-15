@@ -19,19 +19,19 @@ export const Vampire: Role = {
     "description": "Neutralna rola z własnym warunkiem zwycięstwa. Vampire może konwertować lub zabijać innych graczy poprzez ugryzienie. Jeżeli w grze jest jeden żywy wampir, ugryzienie Crewmate zamieni go w drugiego vampira. Jeżeli w grze jest dwóch wampirów lub cel nie jest Crewmate'em, ugryziony umrze.",
     "settings": {
         ...probabilityOfAppearing(0),
-        "Bite Cooldown": {
+        "Vampire Bite Cooldown": {
             value: 25.0,
             type: SettingTypes.Time,
         },
-        "Vampire Has Impostor Vision": {
+        "Vampires Have Impostor Vision": {
             value: false,
             type: SettingTypes.Boolean,
         },
-        "Vampire Can Vent": {
+        "Vampires Can Vent": {
             value: false,
             type: SettingTypes.Boolean,
         },
-        "New Vampire Can Assassinated": {
+        "New Vampire Can Assassinate": {
             value: false,
             type: SettingTypes.Boolean  ,
         },
