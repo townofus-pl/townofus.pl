@@ -3,7 +3,7 @@
 <color=#4D4DFFFF>Detective</color>
 0
 <color=#D3D3D3FF>Haunter</color>
-0
+30
 <color=#00B3B3FF>Investigator</color>
 60
 <color=#33FF66FF>Lookout</color>
@@ -25,7 +25,7 @@
 <color=#FFCC00FF>Deputy</color>
 20
 <color=#29AB87FF>Hunter</color>
-0
+40
 <color=#A6A6A6FF>Jailor</color>
 60
 <color=#FFFF00FF>Sheriff</color>
@@ -65,9 +65,9 @@
 <color=#8C4005FF>Executioner</color>
 60
 <color=#FFBFCCFF>Jester</color>
-0
+60
 <color=#662962FF>Phantom</color>
-0
+30
 <color=#99FFCCFF>Soul Collector</color>
 0
 <color=#FF4D00FF>Arsonist</color>
@@ -313,7 +313,7 @@ True
 Maximum Number Of Players That Can Be Watched
 3
 Dead Body Arrow Duration
-1.0
+1
 Confess Cooldown
 20
 Reveal Accuracy
@@ -497,7 +497,7 @@ True
 Doomsayer Can't Observe
 False
 Executioner Becomes On Target Dead
-Jester
+Crew
 Executioner Can Button
 True
 Executioner Torments Player On Victory
@@ -559,7 +559,7 @@ Vampire Bite Cooldown
 Vampires Have Impostor Vision
 True
 Vampires Can Vent
-False
+True
 New Vampire Can Assassinate
 True
 Maximum Vampires Per Game
