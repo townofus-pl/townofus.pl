@@ -59,7 +59,7 @@
 <color=#B3FFFFFF>Guardian Angel</color>
 40
 <color=#FFE64DFF>Survivor</color>
-0
+2
 <color=#00FF80FF>Doomsayer</color>
 0
 <color=#8C4005FF>Executioner</color>
