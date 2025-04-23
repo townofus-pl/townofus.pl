@@ -345,7 +345,7 @@ True
 Snitch Sees Traitor
 True
 Who Sees Dead Bodies On Admin
-Spy
+Nobody
 Arrow Update Interval
 3
 Track Cooldown
