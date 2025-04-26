@@ -1,7 +1,6 @@
 import {Modifier, RoleOrModifierTypes} from "@/constants/rolesAndModifiers";
 import {Teams} from "@/constants/teams";
 import {probabilityOfAppearing, SettingTypes} from "@/constants/settings";
-import {CommonAbilities} from "@/constants/abilities";
 
 export const SatelliteAbilities = {
     Broadcast: {
