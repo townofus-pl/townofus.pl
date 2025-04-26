@@ -21,7 +21,7 @@ export const Morphling: Role = {
 	"color": "#FF0000",
     "team": Teams.Impostor,
     "icon": "/images/roles/morphling.png",
-    "description": "Impostor, który może przebierać się za innych graczy. Poza spotkaniem może pobrać próbkę DNA od dowolnego gracza. Gdy to zrobi, zyskuje możliwość transformacji w wybranego wcześniej gracza. Nie może używać wentylacji.",
+    "description": "Impostor, który może przebierać się za innych graczy. Poza spotkaniem może pobrać próbkę DNA od dowolnego gracza. Gdy to zrobi, zyskuje możliwość transformacji w wybranego wcześniej gracza.",
     "settings": {
         ...probabilityOfAppearing(0),
         "Morphling Cooldown": {
@@ -37,6 +37,6 @@ export const Morphling: Role = {
             type: SettingTypes.Boolean,
         },
     },
-    "abilities": [CommonAbilities.Kill, MorphlingAbilities.Sample, MorphlingAbilities.Morph],
+    "abilities": [CommonAbilities.Kill, CommonAbilities.Vent, CommonAbilities.Sabotage, MorphlingAbilities.Sample, MorphlingAbilities.Morph],
     "tip": "gdy jesteś w przebraniu, nie pokazuj się w otoczeniu oryginału."
 };

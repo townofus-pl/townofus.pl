@@ -33,5 +33,5 @@ export const Swooper: Role = {
             type: SettingTypes.Boolean,
         },
     },
-    "abilities": [CommonAbilities.Kill, CommonAbilities.Sabotage, SwooperAbilities.Swoop],
+    "abilities": [CommonAbilities.Kill, CommonAbilities.Vent, CommonAbilities.Sabotage, SwooperAbilities.Swoop],
 };

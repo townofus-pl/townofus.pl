@@ -1,16 +1,16 @@
 import {Modifier, RoleOrModifierTypes} from "@/constants/rolesAndModifiers";
 import {Teams} from "@/constants/teams";
-import {probabilityOfAppearing} from "@/constants/settings";
+import {probabilityOfAppearing, SettingTypes} from "@/constants/settings";
 import {CommonAbilities} from "@/constants/abilities";
 
-export const Tiebreaker: Modifier = {
+export const Celebrity: Modifier = {
     "type": RoleOrModifierTypes.Modifier,
-    "name": "Tiebreaker",
-    "id": "tiebreaker",
-	"color": "#99e699",
-    "team": Teams.All,
+    "name": "Celebrity",
+    "id": "celebrity",
+	"color": "#ff9999",
+    "team": Teams.Crewmate,
     "icon": "/images/modifiers/placeholder.png",
-    "description": "Jego głos rozstrzyga remisy podczas głosowania.",
+    "description": "Gdy umrze, na najbliższym spotkaniu wszyscy gracze dowiedzą się kiedy, gdzie i jak zginął.",
     "settings": {
         ...probabilityOfAppearing(0),
     },

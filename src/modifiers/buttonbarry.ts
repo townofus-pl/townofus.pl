@@ -13,7 +13,7 @@ export const ButtonBarry: Modifier = {
     "type": RoleOrModifierTypes.Modifier,
     "name": "Button Barry",
     "id": "button_barry",
-	"color": "#FFFFFF",
+	"color": "#e600ff",
     "team": Teams.All,
     "icon": "/images/modifiers/buttonbarry.png",
     "description": "Może zwołać spotkanie z dowolnego miejsca na mapie.",

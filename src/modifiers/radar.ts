@@ -7,7 +7,7 @@ export const Radar: Modifier = {
     "type": RoleOrModifierTypes.Modifier,
     "name": "Radar",
     "id": "radar",
-	"color": "#FFFFFF",
+	"color": "#ff0080",
     "team": Teams.All,
     "icon": "/images/modifiers/placeholder.png",
     "description": "Posiada strzałkę wskazującą najbliższego gracza.",

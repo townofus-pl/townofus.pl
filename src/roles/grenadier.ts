@@ -41,5 +41,5 @@ export const Grenadier: Role = {
             type: SettingTypes.Boolean,
         },
     },
-    "abilities": [CommonAbilities.Kill, CommonAbilities.Sabotage, GrenadierAbilities.Flash],
+    "abilities": [CommonAbilities.Kill, CommonAbilities.Vent, CommonAbilities.Sabotage, GrenadierAbilities.Flash],
 };

@@ -33,5 +33,5 @@ export const Escapist: Role = {
             type: SettingTypes.Boolean,
         },
     },
-    "abilities": [CommonAbilities.Kill, CommonAbilities.Sabotage, EscapistAbilities.Mark, EscapistAbilities.Recall],
+    "abilities": [CommonAbilities.Kill, CommonAbilities.Vent, CommonAbilities.Sabotage, EscapistAbilities.Mark, EscapistAbilities.Recall],
 };

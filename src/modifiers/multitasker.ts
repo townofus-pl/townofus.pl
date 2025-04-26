@@ -7,7 +7,7 @@ export const Multitasker: Modifier = {
     "type": RoleOrModifierTypes.Modifier,
     "name": "Multitasker",
     "id": "multitasker",
-	"color": "#FFFFFF",
+	"color": "#ff804d",
     "team": Teams.Crewmate,
     "icon": "/images/modifiers/placeholder.png",
     "description": "Posiada półprzezroczyste zadania, dzięki czemu widzi co się wokół niego dzieje.",

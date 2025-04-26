@@ -3,15 +3,14 @@ import {Teams} from "@/constants/teams";
 import {probabilityOfAppearing} from "@/constants/settings";
 import {CommonAbilities} from "@/constants/abilities";
 
-
-export const Aftermath: Modifier = {
+export const Taskmaster: Modifier = {
     "type": RoleOrModifierTypes.Modifier,
-    "name": "Aftermath",
-    "id": "aftermath",
-	"color": "#A6FFA6",
+    "name": "Taskmaster",
+    "id": "taskmaster",
+	"color": "#669966",
     "team": Teams.Crewmate,
-    "icon": "/images/modifiers/aftermath.png",
-    "description": "Zmusza zabójcę do użycia jego zdolności specjalnej po śmierci (np. Blackmailer po zabiciu Aftermath zostaje sam zblackmailowany na kolejne głosowanie).",
+    "icon": "/images/modifiers/placeholder.png",
+    "description": "Po każdym spotkaniu automatycznie kończy losowe zadanie.",
     "settings": {
         ...probabilityOfAppearing(0),
     },

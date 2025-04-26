@@ -7,7 +7,7 @@ export const Frosty: Modifier = {
     "type": RoleOrModifierTypes.Modifier,
     "name": "Frosty",
     "id": "frosty",
-	"color": "#FFFFFF",
+	"color": "#99ffff",
     "team": Teams.Crewmate,
     "icon": "/images/modifiers/frosty.png",
     "description": "Gdy umrze, jego zabójca zostanie spowolniony.",

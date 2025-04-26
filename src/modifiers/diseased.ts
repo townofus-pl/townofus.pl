@@ -7,7 +7,7 @@ export const Diseased: Modifier = {
     "type": RoleOrModifierTypes.Modifier,
     "name": "Diseased",
     "id": "diseased",
-	"color": "#FFFFFF",
+	"color": "#808080",
     "team": Teams.Crewmate,
     "icon": "/images/modifiers/placeholder.png",
     "description": "Gdy umrze, czas odnowienia zabójstwa zabójcy wydłuża się.",

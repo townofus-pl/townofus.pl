@@ -16,16 +16,16 @@ export const Altruist: Role = {
 	"color": "#660000",
     "team": Teams.Crewmate,
     "icon": "/images/roles/altruist.png",
-    "description": "Crewmate, który ma zdolność wskrzeszania martwych graczy. Po znalezieniu martwego ciała, Altruist może poświęcić siebie dla wskrzeszenia innego gracza. Jeśli wskrzeszenie zostanie aktywowane, martwe ciało znika, pozostawiając tylko ciało Altruisty na miejscu. Po określonym czasie gracz zostanie wskrzeszony, o ile proces wskrzeszenia nie zostanie w jakiś sposób przerwany.",
+    "description": "Crewmate, który ma zdolność wskrzeszania martwych graczy. Po znalezieniu martwych ciał, Altruist może wskrzesić graczy w swojej okolicy. Gdy proces wskrzeszenia zostanie aktywowany, Altruista nie może się poruszać oraz każdemu zabójcy wyświetli się strzałka w jego stronę. Po określonym czasie gracze zostaną wskrzeszoni, o ile proces wskrzeszenia nie zostanie w jakiś sposób przerwany. Po wskrzeszeniu, zarówno Altruista jak i wskrzeszeni gracze nie mogą wcisnąć przycisku emergency.",
     "settings": {
         ...probabilityOfAppearing(0),
         'Altruist Revive Duration': {
             value: 10,
             type: SettingTypes.Time,
         },
-        "Target's Body Disappears On Beginning Of Revive": {
-            value: false,
-            type: SettingTypes.Boolean,
+        'Revive Uses': {
+            value: 3,
+            type: SettingTypes.Number,
         },
     },
     "abilities": [AltruistAbilities.Revive],

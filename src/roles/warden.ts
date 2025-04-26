@@ -1,6 +1,6 @@
 import {Role, RoleOrModifierTypes} from "@/constants/rolesAndModifiers";
 import {Teams} from "@/constants/teams";
-import {probabilityOfAppearing} from "@/constants/settings";
+import {probabilityOfAppearing, SettingTypes} from "@/constants/settings";
 
 export const WardenAbilities = {
     Fortify: {
@@ -16,9 +16,13 @@ export const Warden: Role = {
 	"color": "#9900FF",
     "team": Teams.Crewmate,
     "icon": "/images/roles/warden.png",
-    "description": "Crewmate, który może fortyfikować innych graczy. Ufortyfikowani gracze są odporni na wszelkiego rodzaju interkacje poza zabójstwem. Jeśli ktoś spróbuje interagować z ufortyfikowanym graczem, zarówno Warden, jak i osoba próbująca interakcji, otrzymują alert.",
+    "description": "Crewmate, który może fortyfikować innych graczy. Ufortyfikowani gracze są odporni na wszelkiego rodzaju interkacje. Jeśli ktoś spróbuje interagować z ufortyfikowanym graczem, zarówno Warden, jak i osoba próbująca interakcji, otrzymują alert.",
     "settings": {
         ...probabilityOfAppearing(0),
+        "Show Fortified Player": {
+            value: "Warden",
+            type: SettingTypes.Text,
+        },
     },
     "abilities": [WardenAbilities.Fortify],
 };

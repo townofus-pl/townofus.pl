@@ -1,16 +1,16 @@
 import {Modifier, RoleOrModifierTypes} from "@/constants/rolesAndModifiers";
 import {Teams} from "@/constants/teams";
-import {probabilityOfAppearing} from "@/constants/settings";
+import {probabilityOfAppearing, SettingTypes} from "@/constants/settings";
 import {CommonAbilities} from "@/constants/abilities";
 
-export const Tiebreaker: Modifier = {
+export const Immovable: Modifier = {
     "type": RoleOrModifierTypes.Modifier,
-    "name": "Tiebreaker",
-    "id": "tiebreaker",
-	"color": "#99e699",
+    "name": "Immovable",
+    "id": "immovable",
+	"color": "#e6e6cc",
     "team": Teams.All,
     "icon": "/images/modifiers/placeholder.png",
-    "description": "Jego głos rozstrzyga remisy podczas głosowania.",
+    "description": "Nie może zostać przeniesiony przez Transportera, Disperse, oraz spotkania.",
     "settings": {
         ...probabilityOfAppearing(0),
     },

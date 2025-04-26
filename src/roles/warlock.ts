@@ -10,7 +10,7 @@ export const Warlock: Role = {
 	"color": "#FF0000",
     "team": Teams.Impostor,
     "icon": "/images/roles/warlock.png",
-    "description": "Impostor, który może ładować manę. Gdy naładuje ją do 100%, może zabić wielu graczy bez cooldownu, pod warunkiem że zrobi to w jednej sekundzie. Warlock nie musi w pełni naładować many, aby móc zabijać, bez naładowanej many zabija jak zwykły impostor.",
+    "description": "Impostor, który może zabijać bez cooldownu, o ile ma naładowaną manę. W czasie rozgrywki, Warlockowi ładuje się mana. Manę mierzy się w procentach. W pełni naładowana mana (100%) pozwala na zabijanie bez cooldownu przez określony czas. W przypadku gdy mana nie jest naładowana do pełna, czas na nieograniczone zabijanie jest proporcjonalnie mniejszy.",
     "settings": {
         ...probabilityOfAppearing(0),
         "Time It Takes To Fully Charge": {
