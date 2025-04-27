@@ -32,7 +32,7 @@ export const Venerer: Role = {
             <ul>
             <li>Po swoim pierwszym zabójstwie, Venerer może się zakamuflować.</li>
             <li>Po drugim zabójstwie, Venerer może szybciej biegać.</li>
-            <li>Po trzecim zabójstwie, po aktywowaniu zdolności, wszyscy inni gracze są spowolnieni.</li>
+            <li>Po trzecim zabójstwie, po aktywowaniu zdolności, wszyscy gracze wokół Venerera są spowolnieni. Im bliżej Venerera, tym większe spowolnienie.</li>
             </ul>
             <p>
             Wszystkie zdolności są aktywowane jednym przyciskiem i mają tę samą długość trwania.
@@ -52,8 +52,12 @@ export const Venerer: Role = {
             value: 1.25,
             type: SettingTypes.Multiplier,
         },
-        "Freeze Speed": {
-            value: 0.75,
+        "Minimum Freeze Speed": {
+            value: 0.25,
+            type: SettingTypes.Multiplier,
+        },
+        "Freeze Radius": {
+            value: 1.0,
             type: SettingTypes.Multiplier,
         },
     },

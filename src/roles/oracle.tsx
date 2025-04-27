@@ -7,6 +7,10 @@ export const OracleAbilities = {
         "name": "Confess (Wyspowiadaj)",
         "icon": "/images/abilities/confess.png"
     },
+    Bless: {
+        "name": "Bless (Błogosław)",
+        "icon": "/images/abilities/bless.png"
+    },
 };
 
 export const Oracle: Role = {
@@ -17,11 +21,10 @@ export const Oracle: Role = {
     "team": Teams.Crewmate,
     "icon": "/images/roles/oracle.png",
     "description": (<>
-        <p>Crewmate, który może zmusić innego gracza do wyjawienia informacji. Oracle ma 3 zdolności:</p>
+        <p>Crewmate, który może zmusić innego gracza do wyjawienia informacji. Oracle ma 2 zdolności:</p>
         <ul className="list-disc list-inside">
-            <li>Gdy Oracle zginie, osoba wyznająca mu informacje ujawni wszystkim swoją przynależność (80% szans na prawidłową).</li>
-            <li>Podczas każdego spotkania Oracle otrzymuje wyznanie od spowiadanej osoby o tym, kto może być mordercą. Spowiadany zawsze wyjawia dwóch podejrzanych. Jeśli spowiadany jest Crewmatem, wydaje co najmniej jednego mordercę. W przeciwnym wypadku podejrzenia są fałszywe.</li>
-            <li>Oracle daje błogosławieństwo osobie spowiadanej, co zapewnia jej odporność na głosy.</li>
+            <li>Spowiedź - Podczas każdego spotkania Oracle otrzymuje wyznanie od spowiadanej osoby o tym, kto może być mordercą. Spowiadany zawsze wyjawia dwóch podejrzanych. Jeśli spowiadany jest Crewmatem, wydaje co najmniej jednego mordercę. W przeciwnym wypadku podejrzenia są fałszywe. Gdy Oracle zginie, osoba wyznająca mu informacje ujawni wszystkim swoją przynależność (z określoną dokładnością).</li>
+            <li>Błogosławieństwo - Sprawia, że pobłogosławiony gracz nie może zostać zabity na spotkaniu.</li>
         </ul>
     </>),
     "settings": {
@@ -47,5 +50,5 @@ export const Oracle: Role = {
             type: SettingTypes.Boolean,
         },
     },
-    "abilities": [OracleAbilities.Confess],
+    "abilities": [OracleAbilities.Confess, OracleAbilities.Bless],
 };

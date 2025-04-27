@@ -25,10 +25,18 @@ export const Jester: Role = {
             value: false,
             type: SettingTypes.Boolean,
         },
-        "Jester Haunts Player On Victory": {
+        "Jester Scatter Mechanic Enabled": {
             value: true,
             type: SettingTypes.Boolean,
-        }
+        },
+        "Jester Scatter Timer": {
+            value: 25,
+            type: SettingTypes.Time,
+        },
+        "Jester Win": { 
+            value: "Ends Game",
+            type: SettingTypes.Text,
+        },
     },
     "abilities": [CommonAbilities.Vent],
 }
