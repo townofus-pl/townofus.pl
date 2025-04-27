@@ -26,12 +26,12 @@ export default function ToUDownload() {
           </ul>
           <div className="flex justify-center space-x-4">
           <a
-              href="https://github.com/eDonnes124/Town-Of-Us/releases/download/v5.2.1/ToU.v5.2.1.zip"
+              href="https://github.com/eDonnes124/Town-Of-Us/releases/download/v5.3.1/ToU.v5.3.1.zip"
               rel="noopener noreferrer"
               className="px-4 py-3 bg-[rgba(0,167,0)] hover:bg-[rgba(0, 167, 0, 0.85)] text-white text-lg font-sans font-semibold rounded-lg transition duration-300 inline-flex items-center"
             >
               <img src="/images/download-button.svg" width="16" height="16"/> 
-              &nbsp; Download v5.2.1
+              &nbsp; Download v5.3.1
             </a>
             <a
               href="https://github.com/eDonnes124/Town-Of-Us-R"
