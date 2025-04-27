@@ -9,6 +9,7 @@ export default function Lobby15Plus() {
                 <div>
                   <p className="text-red-500 text-8xl font-brook font-bold drop-shadow-[0_0_10px_rgba(255,0,0,0.7)] text-center">AleLuduMod</p>
                   <p className="text-xl sm:text-2xl text-gray-100 mt-4 text-center">Mod umożliwiający grę na więcej niż 15 graczy.</p>
+                  <p className="text-xl sm:text-3xl text-yellow-500 mt-4 text-center">UWAGA: Póki co mod nie wspiera najnowszej wersji Town of Us (v5.0.3)!</p>
                 </div>
 
                 <div className="space-y-4">
