@@ -20,27 +20,19 @@ export const Doomsayer: Role = {
     "settings": {
         ...probabilityOfAppearing(0),
         "Observe Cooldown": {
-            value: 25,
+            value: 10,
             type: SettingTypes.Time,
         },
-        "Doomsayer Can Guess Neutral Benign Roles": {
-            value: false,
-            type: SettingTypes.Boolean,
-        },
-        "Doomsayer Can Guess Neutral Evil Roles": {
-            value: false,
-            type: SettingTypes.Boolean,
-        },
-        "Doomsayer Can Guess Neutral Killing Roles": {
-            value: false,
-            type: SettingTypes.Boolean,
-        },
-        "Doomsayer Can Guess Impostors Roles": {
-            value: false,
+        "Dooomsayer Guesses All At Once": {
+            value: true,
             type: SettingTypes.Boolean,
         },
         "Doomsayer Can't Observe": {
             value: false,
+            type: SettingTypes.Boolean,
+        },
+        "Doomsayer Win Ends Game": {
+            value: true,
             type: SettingTypes.Boolean,
         },
     },

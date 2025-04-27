@@ -24,7 +24,7 @@ export const Cleric: Role = {
         <p>Crewmate z dwiema umiejętnościami:</p>
         <ul className="list-disc list-inside">
             <li>Oczyszczenie - usuwa negatywne efekty z danego gracza.</li>
-            <li>Barrier - która daje czasową ochronę graczowi.</li>
+            <li>Bariera - która daje czasową ochronę graczowi.</li>
         </ul>
     </>),
     "settings": {
