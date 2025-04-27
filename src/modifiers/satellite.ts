@@ -16,7 +16,7 @@ export const Satellite: Modifier = {
 	"color": "#0099cc",
     "team": Teams.All,
     "icon": "/images/modifiers/placeholder.png",
-    "description": "",
+    "description": "Posiada jednorazową umiejętność, która wykrywa wszystkie martwe ciała.",
     "settings": {
         ...probabilityOfAppearing(0),
         "Broadcast Duration": {
