@@ -7,7 +7,7 @@ export const Bait: Modifier = {
     "type": RoleOrModifierTypes.Modifier,
     "name": "Bait",
     "id": "bait",
-	"color": "#FFFFFF",
+	"color": "#33b3b3",
     "team": Teams.Crewmate,
     "icon": "/images/modifiers/bait.png",
     "description": "Zmusza zabójcę do automatycznego zgłoszenia ciała.",

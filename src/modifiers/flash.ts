@@ -7,7 +7,7 @@ export const Flash: Modifier = {
     "type": RoleOrModifierTypes.Modifier,
     "name": "Flash",
     "id": "flash",
-	"color": "#FFFFFF",
+	"color": "#ff8080",
     "team": Teams.All,
     "icon": "/images/modifiers/flash.png",
     "description": "Porusza się z większą prędkością.",

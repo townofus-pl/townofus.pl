@@ -16,7 +16,7 @@ export const GlitchAbilities = {
 
 export const Glitch: Role = {
     "type": RoleOrModifierTypes.Role,
-    "name": "The Glitch",
+    "name": "Glitch",
     "id": "glitch",
 	"color": "#00FF00",
     "team": Teams.Neutral,

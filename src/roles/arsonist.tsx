@@ -1,6 +1,7 @@
 import {Role, RoleOrModifierTypes} from "@/constants/rolesAndModifiers";
 import {Teams} from "@/constants/teams";
 import {probabilityOfAppearing, SettingTypes} from "@/constants/settings";
+import {CommonAbilities} from "@/constants/abilities";
 
 export const ArsonistAbilities = {
     Douse: {
@@ -24,9 +25,9 @@ export const Arsonist: Role = {
         <p>Neutralna rola z własnym warunkiem zwycięstwa. Ma dwie zdolności:</p>
         <ul className="list-disc list-inside">
             <li>Polewanie innych graczy benzyną</li>
-            <li>Zapalanie wszystkich polanych graczy.</li>
+            <li>Zapalanie polanych graczy w pobliżu.</li>
         </ul>
-        <p>Arsonist może mieć maksymalnie 5 oblanych osób jednocześnie. Arsonist musi być ostatnim zabójcą, aby wygrać
+        <p>Arsonist musi być ostatnim zabójcą, aby wygrać
             grę.</p>
     </>),
     "settings": {
@@ -35,18 +36,14 @@ export const Arsonist: Role = {
             value: 25.0,
             type: SettingTypes.Time,
         },
-        'Maximum Alive Players Doused': {
-            value: 5,
-            type: SettingTypes.Number,
-        },
-        'Arsonist Has Impostor Vision': {
-            value: false,
-            type: SettingTypes.Boolean,
-        },
-        'Ignite Cooldown Removed When Arsonist Is Last Killer': {
+        'Ignite Radius': {
+            value: 0.25,
+            type: SettingTypes.Multiplier,
+        }, 
+        'Arsonist Can Vent': {
             value: false,
             type: SettingTypes.Boolean,
         },
     },
-    abilities: [ArsonistAbilities.Douse, ArsonistAbilities.Ignite],
+    abilities: [CommonAbilities.Vent, ArsonistAbilities.Douse, ArsonistAbilities.Ignite],
 };

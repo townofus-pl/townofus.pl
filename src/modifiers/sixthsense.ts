@@ -7,7 +7,7 @@ export const SixthSense: Modifier = {
     "type": RoleOrModifierTypes.Modifier,
     "name": "Sixth Sense",
     "id": "sixth_sense",
-	"color": "#FFFFFF",
+	"color": "#d9ff8c",
     "team": Teams.All,
     "icon": "/images/modifiers/sixth_sense.png",
     "description": "Ekran świeci mu się na żółto, gdy ktoś używa na nim swoich zdolności.",

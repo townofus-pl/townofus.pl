@@ -7,7 +7,7 @@ export const Tiebreaker: Modifier = {
     "type": RoleOrModifierTypes.Modifier,
     "name": "Tiebreaker",
     "id": "tiebreaker",
-	"color": "#FFFFFF",
+	"color": "#99e699",
     "team": Teams.All,
     "icon": "/images/modifiers/placeholder.png",
     "description": "Jego głos rozstrzyga remisy podczas głosowania.",

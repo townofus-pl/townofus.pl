@@ -3,15 +3,14 @@ import {Teams} from "@/constants/teams";
 import {probabilityOfAppearing} from "@/constants/settings";
 import {CommonAbilities} from "@/constants/abilities";
 
-
-export const Aftermath: Modifier = {
+export const Celebrity: Modifier = {
     "type": RoleOrModifierTypes.Modifier,
-    "name": "Aftermath",
-    "id": "aftermath",
-	"color": "#A6FFA6",
+    "name": "Celebrity",
+    "id": "celebrity",
+	"color": "#ff9999",
     "team": Teams.Crewmate,
-    "icon": "/images/modifiers/aftermath.png",
-    "description": "Zmusza zabójcę do użycia jego zdolności specjalnej po śmierci (np. Blackmailer po zabiciu Aftermath zostaje sam zblackmailowany na kolejne głosowanie).",
+    "icon": "/images/modifiers/placeholder.png",
+    "description": "Gdy umrze, na najbliższym spotkaniu wszyscy gracze dowiedzą się kiedy, gdzie i jak zginął.",
     "settings": {
         ...probabilityOfAppearing(0),
     },

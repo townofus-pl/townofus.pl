@@ -1,13 +1,7 @@
 import {Role, RoleOrModifierTypes} from "@/constants/rolesAndModifiers";
 import {Teams} from "@/constants/teams";
 import {probabilityOfAppearing, SettingTypes} from "@/constants/settings";
-
-export const JesterAbilities = {
-    Vent: {
-        "name": "Vent (Wejdź do wentylacji)",
-        "icon": "/images/abilities/vent.png"
-    }
-}
+import {CommonAbilities} from "@/constants/abilities";
 
 export const Jester: Role = {
     "type": RoleOrModifierTypes.Role,
@@ -36,5 +30,5 @@ export const Jester: Role = {
             type: SettingTypes.Boolean,
         }
     },
-    "abilities": [JesterAbilities.Vent],
+    "abilities": [CommonAbilities.Vent],
 }

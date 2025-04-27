@@ -1,6 +1,7 @@
 import {Role, RoleOrModifierTypes} from "@/constants/rolesAndModifiers";
 import {Teams} from "@/constants/teams";
 import {probabilityOfAppearing, SettingTypes} from "@/constants/settings";
+import {CommonAbilities} from "@/constants/abilities";
 
 export const VampireAbilities = {
     Bite: {
@@ -48,5 +49,5 @@ export const Vampire: Role = {
             type: SettingTypes.Boolean,
                 },
     },
-    "abilities": [VampireAbilities.Bite],
+    "abilities": [CommonAbilities.Vent, VampireAbilities.Bite],
 };

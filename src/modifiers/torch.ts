@@ -7,7 +7,7 @@ export const Torch: Modifier = {
     "type": RoleOrModifierTypes.Modifier,
     "name": "Torch",
     "id": "torch",
-	"color": "#FFFFFF",
+	"color": "#fdfd98",
     "team": Teams.Crewmate,
     "icon": "/images/modifiers/torch.png",
     "description": "Podczas sabotażu świateł nie zmniejsza mu się pole widzenia.",

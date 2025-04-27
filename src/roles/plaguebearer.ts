@@ -1,6 +1,7 @@
 import {Role, RoleOrModifierTypes} from "@/constants/rolesAndModifiers";
 import {Teams} from "@/constants/teams";
 import {probabilityOfAppearing, SettingTypes} from "@/constants/settings";
+import {CommonAbilities} from "@/constants/abilities";
 
 export const PlagueBearerAbilities = {
     Infect: {
@@ -36,5 +37,5 @@ export const Plaguebearer: Role = {
             type: SettingTypes.Boolean,
         },
     },
-    "abilities": [PlagueBearerAbilities.Infect, PlagueBearerAbilities.Kill],
+    "abilities": [CommonAbilities.Vent, PlagueBearerAbilities.Infect, PlagueBearerAbilities.Kill],
 };

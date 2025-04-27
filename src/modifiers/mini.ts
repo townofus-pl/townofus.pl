@@ -7,7 +7,7 @@ export const Mini: Modifier = {
     "type": RoleOrModifierTypes.Modifier,
     "name": "Mini",
     "id": "mini",
-	"color": "#FFFFFF",
+	"color": "#ccffe6",
     "team": Teams.All,
     "icon": "/images/modifiers/mini.png",
     "description": "Jest mały.",

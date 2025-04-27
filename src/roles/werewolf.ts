@@ -37,5 +37,5 @@ export const Werewolf: Role = {
             type: SettingTypes.Boolean,
         },
     },
-    "abilities": [CommonAbilities.Kill, WerewolfAbilities.Rampage],
+    "abilities": [CommonAbilities.Kill, CommonAbilities.Vent, WerewolfAbilities.Rampage],
 };

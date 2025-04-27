@@ -7,7 +7,7 @@ export const Shy: Modifier = {
     "type": RoleOrModifierTypes.Modifier,
     "name": "Shy",
     "id": "shy",
-	"color": "#FFFFFF",
+	"color": "#ffb3cc",
     "team": Teams.All,
     "icon": "/images/modifiers/shy.png",
     "description": "Staje się przezroczysty gdy się nie rusza.",

@@ -7,7 +7,7 @@ export const Giant: Modifier = {
     "type": RoleOrModifierTypes.Modifier,
     "name": "Giant",
     "id": "giant",
-	"color": "#FFFFFF",
+	"color": "#ffb34d",
     "team": Teams.All,
     "icon": "/images/modifiers/giant.png",
     "description": "Jest gigantyczny i porusza się wolniej.",

@@ -4,6 +4,8 @@ import {Arsonist} from "./arsonist";
 import {Aurial} from "./aurial";
 import {Blackmailer} from "./blackmailer";
 import {Bomber} from "./bomber";
+import {Cleric} from "./cleric";
+import {Eclipsal} from "./eclipsal";
 import {Deputy} from "./deputy";
 import {Detective} from "./detective";
 import {Doomsayer} from "./doomsayer";
@@ -25,12 +27,14 @@ import {Juggernaut} from "./juggernaut";
 import {Lookout} from "./lookout";
 import {Medic} from "./medic";
 import {Medium} from "./medium";
+import {Mercenary} from "./mercenary";
 import {Miner} from "./miner";
 import {Morphling} from "./morphling";
 import {Mystic} from "./mystic";
 import {Oracle} from "./oracle";
 import {Phantom} from "./phantom";
 import {Plaguebearer} from "./plaguebearer";
+import {Plumber} from "./plumber";
 import {Politician} from "./politician";
 import {Prosecutor} from "./prosecutor";
 import {Scavenger} from "./scavenger";
@@ -65,6 +69,8 @@ export const Roles = [
     Deputy,
     Detective,
     Doomsayer,
+    Cleric,
+    Eclipsal,
     Engineer,
     Escapist,
     Executioner,
@@ -83,12 +89,14 @@ export const Roles = [
     Lookout,
     Medic,
     Medium,
+    Mercenary,
     Miner,
     Morphling,
     Mystic,
     Oracle,
     Phantom,
     Plaguebearer,
+    Plumber,
     Politician,
     Prosecutor,
     Scavenger,

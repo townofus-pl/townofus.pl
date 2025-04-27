@@ -7,7 +7,7 @@ export const Sleuth: Modifier = {
     "type": RoleOrModifierTypes.Modifier,
     "name": "Sleuth",
     "id": "sleuth",
-	"color": "#FFFFFF",
+	"color": "#803333",
     "team": Teams.All,
     "icon": "/images/modifiers/placeholder.png",
     "description": "Zna rolę zgłoszonego przez siebie ciała.",
