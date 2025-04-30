@@ -553,7 +553,7 @@ False
 Douse Cooldown
 20
 Ignite Radius
-0.25
+0.35
 Arsonist Can Vent
 True
 Mimic Cooldown
