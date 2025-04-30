@@ -5,101 +5,109 @@
 <color=#D3D3D3FF>Haunter</color>
 0
 <color=#00B3B3FF>Investigator</color>
-30
+10
 <color=#33FF66FF>Lookout</color>
 10
 <color=#4D99E6FF>Mystic</color>
-30
-<color=#BF00BFFF>Oracle</color>
-0
+40
 <color=#FFCC80FF>Seer</color>
-10
+30
 <color=#D4AF37FF>Snitch</color>
 20
 <color=#CCA3CCFF>Spy</color>
-40
-<color=#009900FF>Tracker</color>
-10
-<color=#A7D1B3FF>Trapper</color>
-0
-<color=#FFCC00FF>Deputy</color>
-40
-<color=#29AB87FF>Hunter</color>
-50
-<color=#A6A6A6FF>Jailor</color>
 20
-<color=#FFFF00FF>Sheriff</color>
-70
-<color=#998040FF>Veteran</color>
+<color=#009900FF>Tracker</color>
+0
+<color=#A7D1B3FF>Trapper</color>
+10
+<color=#FFCC00FF>Deputy</color>
 50
+<color=#29AB87FF>Hunter</color>
+30
+<color=#FFFF00FF>Sheriff</color>
+60
+<color=#998040FF>Veteran</color>
+60
 <color=#FFFF99FF>Vigilante</color>
 20
-<color=#660000FF>Altruist</color>
-0
-<color=#006600FF>Medic</color>
+<color=#A6A6A6FF>Jailor</color>
 40
-<color=#9900FFFF>Warden</color>
-0
-<color=#FFA60AFF>Engineer</color>
-30
-<color=#B3D94DFF>Imitator</color>
-0
-<color=#A680FFFF>Medium</color>
-0
 <color=#660099FF>Politician</color>
 0
 <color=#B38000FF>Prosecutor</color>
-30
+40
 <color=#66E666FF>Swapper</color>
 40
+<color=#660000FF>Altruist</color>
+0
+<color=#00FFB3FF>Cleric</color>
+0
+<color=#006600FF>Medic</color>
+50
+<color=#BF00BFFF>Oracle</color>
+0
+<color=#9900FFFF>Warden</color>
+0
+<color=#FFA60AFF>Engineer</color>
+20
+<color=#B3D94DFF>Imitator</color>
+10
+<color=#A680FFFF>Medium</color>
+0
+<color=#CC6600FF>Plumber</color>
+0
 <color=#00EEFFFF>Transporter</color>
 20
 <color=#80B2FFFF>Amnesiac</color>
-60
-<color=#B3FFFFFF>Guardian Angel</color>
 30
+<color=#B3FFFFFF>Guardian Angel</color>
+50
+<color=#8C6699FF>Mercenary</color>
+0
 <color=#FFE64DFF>Survivor</color>
-2
+21.37
 <color=#00FF80FF>Doomsayer</color>
 0
 <color=#8C4005FF>Executioner</color>
 30
 <color=#FFBFCCFF>Jester</color>
-50
+20
 <color=#662962FF>Phantom</color>
 0
+<color=#FF4D00FF>Arsonist</color>
+10
+<color=#00FF00FF>Glitch</color>
+30
+<color=#8C004DFF>Juggernaut</color>
+40
+<color=#E6FFB3FF>Plaguebearer / Pestilence</color>
+30
 <color=#99FFCCFF>Soul Collector</color>
 0
-<color=#FF4D00FF>Arsonist</color>
-20
-<color=#8C004DFF>Juggernaut</color>
-30
-<color=#E6FFB3FF>Plaguebearer / Pestilence</color>
-10
-<color=#00FF00FF>The Glitch</color>
-20
 <color=#262626FF>Vampire</color>
-20
+10
 <color=#A86629FF>Werewolf</color>
-20
+30
+<color=#FF0000FF>Eclipsal</color>
+0
 <color=#FF0000FF>Escapist</color>
-20
+10
 <color=#FF0000FF>Grenadier</color>
 0
 <color=#FF0000FF>Morphling</color>
-30
+20
 <color=#FF0000FF>Swooper</color>
-40
+30
 <color=#FF0000FF>Venerer</color>
-40
+20
 <color=#FF0000FF>Bomber</color>
 10
 <color=#FF0000FF>Scavenger</color>
 0
 <color=#FF0000FF>Traitor</color>
-0
-<color=#FF0000FF>Warlock</color>
 10
+<color=#FF0000FF>Warlock</color>
+40
 <color=#FF0000FF>Blackmailer</color>
 10
 <color=#FF0000FF>Hypnotist</color>
@@ -109,16 +117,20 @@
 <color=#FF0000FF>Miner</color>
 10
 <color=#FF0000FF>Undertaker</color>
-20
+30
 <color=#A6FFA6FF>Aftermath</color>
 0
 <color=#33B3B3FF>Bait</color>
 0
+<color=#FF9999FF>Celebrity</color>
+0
 <color=#808080FF>Diseased</color>
-50
+30
 <color=#99FFFFFF>Frosty</color>
 0
 <color=#FF804DFF>Multitasker</color>
+0
+<color=#669966FF>Taskmaster</color>
 0
 <color=#FFFF99FF>Torch</color>
 0
@@ -128,11 +140,15 @@
 20
 <color=#FFB34DFF>Giant</color>
 10
+<color=#E6E6CCFF>Immovable</color>
+0
 <color=#FF66CCFF>Lovers</color>
 10
 <color=#CCFFE6FF>Mini</color>
 10
 <color=#FF0080FF>Radar</color>
+0
+<color=#0099CCFF>Satellite</color>
 0
 <color=#FFB3CCFF>Shy</color>
 40
@@ -141,47 +157,47 @@
 <color=#803333FF>Sleuth</color>
 0
 <color=#99E699FF>Tiebreaker</color>
-30
+20
 <color=#FF0000FF>Disperser</color>
-50
+40
 <color=#FF0000FF>Double Shot</color>
-70
+60
 <color=#FF0000FF>Saboteur</color>
-10
+30
 <color=#FF0000FF>Underdog</color>
-0
+40
 All Roles Are Unique
 True
 Slot 1
-15
+17
 Slot 2
-15
+17
 Slot 3
-15
+17
 Slot 4
-10
+12
 Slot 5
-10
+12
 Slot 6
-10
+12
 Slot 7
-10
+12
 Slot 8
-5
+7
 Slot 9
-5
+7
 Slot 10
-5
+7
 Slot 11
-5
+7
 Slot 12
-5
+7
 Slot 13
-5
+7
 Slot 14
-5
+7
 Slot 15
-5
+7
 Choose Random Map
 False
 Skeld Chance
@@ -215,10 +231,12 @@ Airship/Submerged Decreased Long Tasks
 Better Polus Vent Layout
 False
 Vitals Moved To Lab
-False
+True
 Cold Temp Moved To Death Valley
 False
 Reboot Wifi And Chart Course Swapped
+False
+Airship Doors Are Polus Doors
 False
 Camouflaged Comms
 True
@@ -230,13 +248,13 @@ Dead Can See Everyone's Roles/Votes
 True
 Game Start Cooldowns
 10
+Temp Save Cooldown Reset
+5
 Parallel Medbay Scans
 True
 Disable Meeting Skip Button
 0
 First Death Shield Next Game
-True
-Neutral Evil Win Ends Game
 True
 Crew Killers Continue Game
 True
@@ -246,16 +264,16 @@ See Tasks During Meetings
 False
 See Tasks When Dead
 True
-Number Of Impostor Assassins
-4
-Number Of Neutral Assassins
-5
+Impostor Assassins Count
+All
+Neutral Assassins Count
+All
 Amnesiac Turned Impostor Gets Ability
 True
 Amnesiac Turned Neutral Killing Gets Ability
 True
 Traitor Gets Ability
-False
+True
 Number Of Assassin Kills
 15
 Assassin Can Kill More Than Once Per Meeting
@@ -277,7 +295,7 @@ False
 Radiate Colour Range
 0.5
 Radiate Max Range
-1.5
+1
 Sense Duration
 10
 Examine Cooldown
@@ -314,16 +332,6 @@ Maximum Number Of Players That Can Be Watched
 5
 Dead Body Arrow Duration
 1
-Confess Cooldown
-20
-Reveal Accuracy
-80
-Neutral Benign Roles Show Evil
-True
-Neutral Evil Roles Show Evil
-True
-Neutral Killing Roles Show Evil
-True
 Seer Cooldown
 20
 Crewmate Killing Roles Are Red
@@ -378,10 +386,6 @@ Hunter Kills Last Voter If Voted Out
 False
 Hunter Can Report Who They've Killed
 True
-Jail Cooldown
-20
-Maximum Number Of Executes
-3
 Sheriff Miskill Kills Crewmate
 True
 Sheriff Kills Neutral Evil Roles
@@ -414,9 +418,27 @@ Vigilante Can Guess Impostor Modifiers
 False
 Vigilante Can Guess Lovers
 False
+Jail Cooldown
+20
+Maximum Number Of Executes
+3
+Campaign Cooldown
+20
+Prosecutor Dies When They Exile A Crewmate
+True
+Swapper Can Button
+True
 Altruist Revive Duration
 1
-Target's Body Disappears On Beginning Of Revive
+Revive Uses
+3
+Revive Radius
+1
+Barrier Cooldown
+25
+Show Barriered Player
+Cleric
+Cleric Gets Attack Notification
 True
 Show Shielded Player
 Self+Medic
@@ -426,14 +448,24 @@ Shield Breaks On Murder Attempt
 False
 Show Medic Reports
 True
-Time Where Medic Will Have Name
-2.5
 Time Where Medic Will Have Color Type
 15
+Confess Cooldown
+20
+Initial Bless Cooldown
+10
+Reveal Accuracy
+80
+Neutral Benign Roles Show Evil
+True
+Neutral Evil Roles Show Evil
+True
+Neutral Killing Roles Show Evil
+True
+Show Fortified Player
+Warden
 Maximum Number Of Fixes
 4
-Imitator Can Become Mayor
-False
 Mediate Cooldown
 5
 Reveal Appearance Of Mediate Target
@@ -442,12 +474,10 @@ Reveal The Medium To The Mediate Target
 True
 Who Is Revealed With Mediate
 All Dead
-Campaign Cooldown
-20
-Prosecutor Dies When They Exile A Crewmate
-True
-Swapper Can Button
-True
+Flush Cooldown
+25
+Maximum Number Of Barricades
+5
 Transport Cooldown
 20
 Maximum Number Of Transports
@@ -462,8 +492,6 @@ Protect Cooldown
 20
 Protect Duration
 10
-Kill Cooldown Reset When Protected
-15
 Maximum Number Of Protects
 5
 Show Protected Player
@@ -476,58 +504,70 @@ GA Knows Targets Role
 False
 Odds Of Target Being Evil
 100
+Guard Cooldown
+10
+Maximum Number Of Guards
+3
+Gold To Bribe
+3
 Vest Cooldown
 20
 Vest Duration
 10
-Kill Cooldown Reset On Attack
-10
 Maximum Number Of Vests
 5
+Survivor Scatter Mechanic Enabled
+True
+Survivor Scatter Timer
+20
 Observe Cooldown
 20
-Doomsayer Can Guess Neutral Benign Roles
-True
-Doomsayer Can Guess Neutral Evil Roles
-True
-Doomsayer Can Guess Neutral Killing Roles
-True
-Doomsayer Can Guess Impostor Roles
+Doomsayer Guesses All Roles At Once
 True
 Doomsayer Can't Observe
 False
+Doomsayer Win Ends Game
+True
 Executioner Becomes On Target Dead
 Survivor
 Executioner Can Button
 True
-Executioner Torments Player On Victory
-False
+Executioner Win
+Ends Game
 Jester Can Button
 True
 Jester Can Hide In Vents
-True
+False
 Jester Has Impostor Vision
 False
-Jester Haunts Player On Victory
-False
+Jester Scatter Mechanic Enabled
+True
+Jester Scatter Timer
+20
+Jester Win
+Ends Game
 Tasks Remaining When Phantom Can Be Clicked
 10
-Phantom Spooks Player On Victory
+Phantom Win Ends Game
 False
-Reap Cooldown
-15
-Passively Collect A Soul Each Round
-False
-Amount Of Souls Required To Win
-3
 Douse Cooldown
 20
-Maximum Alive Players Doused
+Ignite Radius
+0.25
+Arsonist Can Vent
+True
+Mimic Cooldown
+20
+Mimic Duration
 5
-Arsonist Has Impostor Vision
-False
-Ignite Cooldown Removed When Arsonist Is Last Killer
-False
+Hack Cooldown
+20
+Hack Duration
+5
+Glitch Kill Cooldown
+20
+Glitch Can Vent
+True
 Juggernaut Initial Kill Cooldown
 20
 Reduced Kill Cooldown Per Kill
@@ -540,20 +580,10 @@ Pestilence Kill Cooldown
 10
 Pestilence Can Vent
 True
-Mimic Cooldown
-20
-Mimic Duration
-5
-Hack Cooldown
-20
-Hack Duration
-5
-Glitch Kill Cooldown
-20
-Glitch Hack Distance
-Short
-Glitch Can Vent
-True
+Reap Cooldown
+15
+Soul Collector Can Vent
+False
 Vampire Bite Cooldown
 20
 Vampires Have Impostor Vision
@@ -573,9 +603,15 @@ Rampage Cooldown
 Rampage Duration
 10
 Rampage Kill Cooldown
-2.5
+3
 Werewolf Can Vent When Rampaged
 True
+Blind Cooldown
+25
+Blind Duration
+25
+Blind Radius
+1
 Recall Cooldown
 20
 Escapist Can Vent
@@ -586,8 +622,6 @@ Flash Grenade Duration
 7
 Flash Radius
 1
-Indicate Flashed Crewmates
-True
 Grenadier Can Vent
 True
 Morphling Cooldown
@@ -608,14 +642,16 @@ Ability Duration
 5
 Sprint Speed
 1.5
-Freeze Speed
-0.5
+Minimum Freeze Speed
+0.25
+Freeze Radius
+1
 Detonate Delay
 5
 Max Kills In Detonation
 15
 Detonate Radius
-0.35
+0.5
 Bomber Can Vent
 True
 All Impostors See Bomb
@@ -676,6 +712,8 @@ Neutral Roles Can Be Lovers
 True
 Impostor Lover Can Kill Teammate
 False
+Broadcast Duration
+10
 Transparency Delay
 3
 Turn Transparent Duration
@@ -687,4 +725,4 @@ Reduced Sabotage Bonus
 Kill Cooldown Bonus
 10
 Increased Kill Cooldown When 2+ Imps
-True
+False
