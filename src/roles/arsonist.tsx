@@ -24,10 +24,10 @@ export const Arsonist: Role = {
     "description": (<>
         <p>Neutralna rola z własnym warunkiem zwycięstwa. Ma dwie zdolności:</p>
         <ul className="list-disc list-inside">
-            <li>Polewanie innych graczy benzyną</li>
+            <li>Polewanie innych graczy benzyną,</li>
             <li>Zapalanie polanych graczy w pobliżu.</li>
         </ul>
-        <p>Arsonist musi być ostatnim zabójcą, aby wygrać
+        <p>Oprócz tego, każdy gracz który wejdzie w interakcję z Arsonistą, również zostanie polany benzyną. Arsonist musi być ostatnim zabójcą, aby wygrać
             grę.</p>
     </>),
     "settings": {
