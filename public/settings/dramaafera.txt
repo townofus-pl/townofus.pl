@@ -65,7 +65,7 @@
 <color=#8C6699FF>Mercenary</color>
 0
 <color=#FFE64DFF>Survivor</color>
-0
+21.37
 <color=#00FF80FF>Doomsayer</color>
 0
 <color=#8C4005FF>Executioner</color>
