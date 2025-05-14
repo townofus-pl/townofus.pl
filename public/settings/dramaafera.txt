@@ -65,7 +65,7 @@
 <color=#8C6699FF>Mercenary</color>
 10
 <color=#FFE64DFF>Survivor</color>
-40
+21.37
 <color=#00FF80FF>Doomsayer</color>
 30
 <color=#8C4005FF>Executioner</color>
@@ -553,7 +553,7 @@ False
 Douse Cooldown
 20
 Ignite Radius
-0.5
+0.35
 Arsonist Can Vent
 True
 Mimic Cooldown
