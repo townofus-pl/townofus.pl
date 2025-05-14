@@ -23,7 +23,7 @@ export const Doomsayer: Role = {
             value: 10,
             type: SettingTypes.Time,
         },
-        "Dooomsayer Guesses All At Once": {
+        "Dooomsayer Guesses All Roles At Once": {
             value: true,
             type: SettingTypes.Boolean,
         },
