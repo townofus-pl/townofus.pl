@@ -1,5 +1,5 @@
 <color=#B34D99FF>Aurial</color>
-10
+30
 <color=#4D4DFFFF>Detective</color>
 10
 <color=#D3D3D3FF>Haunter</color>
@@ -13,41 +13,41 @@
 <color=#FFCC80FF>Seer</color>
 10
 <color=#D4AF37FF>Snitch</color>
-30
+20
 <color=#CCA3CCFF>Spy</color>
-10
+20
 <color=#009900FF>Tracker</color>
 0
 <color=#A7D1B3FF>Trapper</color>
 20
 <color=#FFCC00FF>Deputy</color>
-30
+20
 <color=#29AB87FF>Hunter</color>
-20
-<color=#FFFF00FF>Sheriff</color>
-60
-<color=#998040FF>Veteran</color>
-40
-<color=#FFFF99FF>Vigilante</color>
-20
-<color=#A6A6A6FF>Jailor</color>
-50
-<color=#660099FF>Politician</color>
 0
-<color=#B38000FF>Prosecutor</color>
+<color=#FFFF00FF>Sheriff</color>
+90
+<color=#998040FF>Veteran</color>
+60
+<color=#FFFF99FF>Vigilante</color>
 10
+<color=#A6A6A6FF>Jailor</color>
+40
+<color=#660099FF>Politician</color>
+10
+<color=#B38000FF>Prosecutor</color>
+30
 <color=#66E666FF>Swapper</color>
 10
 <color=#660000FF>Altruist</color>
-50
+40
 <color=#00FFB3FF>Cleric</color>
-20
+30
 <color=#006600FF>Medic</color>
-50
+40
 <color=#BF00BFFF>Oracle</color>
 0
 <color=#9900FFFF>Warden</color>
-20
+30
 <color=#FFA60AFF>Engineer</color>
 40
 <color=#B3D94DFF>Imitator</color>
@@ -55,39 +55,39 @@
 <color=#A680FFFF>Medium</color>
 0
 <color=#CC6600FF>Plumber</color>
-30
-<color=#00EEFFFF>Transporter</color>
 20
-<color=#80B2FFFF>Amnesiac</color>
-0
-<color=#B3FFFFFF>Guardian Angel</color>
-40
-<color=#8C6699FF>Mercenary</color>
+<color=#00EEFFFF>Transporter</color>
 10
-<color=#FFE64DFF>Survivor</color>
+<color=#80B2FFFF>Amnesiac</color>
+70
+<color=#B3FFFFFF>Guardian Angel</color>
+0
+<color=#8C6699FF>Mercenary</color>
 40
+<color=#FFE64DFF>Survivor</color>
+21.37
 <color=#00FF80FF>Doomsayer</color>
 30
 <color=#8C4005FF>Executioner</color>
-10
+20
 <color=#FFBFCCFF>Jester</color>
-30
+10
 <color=#662962FF>Phantom</color>
 0
 <color=#FF4D00FF>Arsonist</color>
-30
+10
 <color=#00FF00FF>Glitch</color>
 30
 <color=#8C004DFF>Juggernaut</color>
-50
+40
 <color=#E6FFB3FF>Plaguebearer / Pestilence</color>
-0
+10
 <color=#99FFCCFF>Soul Collector</color>
-20
+10
 <color=#262626FF>Vampire</color>
-10
+0
 <color=#A86629FF>Werewolf</color>
-10
+0
 <color=#FF0000FF>Eclipsal</color>
 10
 <color=#FF0000FF>Escapist</color>
@@ -101,19 +101,19 @@
 <color=#FF0000FF>Venerer</color>
 0
 <color=#FF0000FF>Bomber</color>
-10
+20
 <color=#FF0000FF>Scavenger</color>
-0
+20
 <color=#FF0000FF>Traitor</color>
 10
 <color=#FF0000FF>Warlock</color>
-20
+30
 <color=#FF0000FF>Blackmailer</color>
-0
+10
 <color=#FF0000FF>Hypnotist</color>
 10
 <color=#FF0000FF>Janitor</color>
-30
+10
 <color=#FF0000FF>Miner</color>
 0
 <color=#FF0000FF>Undertaker</color>
@@ -125,47 +125,47 @@
 <color=#FF9999FF>Celebrity</color>
 40
 <color=#808080FF>Diseased</color>
-20
+30
 <color=#99FFFFFF>Frosty</color>
 0
 <color=#FF804DFF>Multitasker</color>
 0
 <color=#669966FF>Taskmaster</color>
-30
+40
 <color=#FFFF99FF>Torch</color>
 0
 <color=#E600FFFF>Button Barry</color>
-20
-<color=#FF8080FF>Flash</color>
-20
-<color=#FFB34DFF>Giant</color>
-20
-<color=#E6E6CCFF>Immovable</color>
-20
-<color=#FF66CCFF>Lovers</color>
-0
-<color=#CCFFE6FF>Mini</color>
-20
-<color=#FF0080FF>Radar</color>
-10
-<color=#0099CCFF>Satellite</color>
-10
-<color=#FFB3CCFF>Shy</color>
 30
+<color=#FF8080FF>Flash</color>
+0
+<color=#FFB34DFF>Giant</color>
+0
+<color=#E6E6CCFF>Immovable</color>
+40
+<color=#FF66CCFF>Lovers</color>
+10
+<color=#CCFFE6FF>Mini</color>
+0
+<color=#FF0080FF>Radar</color>
+20
+<color=#0099CCFF>Satellite</color>
+30
+<color=#FFB3CCFF>Shy</color>
+60
 <color=#D9FF8CFF>Sixth Sense</color>
 0
 <color=#803333FF>Sleuth</color>
-0
-<color=#99E699FF>Tiebreaker</color>
-20
-<color=#FF0000FF>Disperser</color>
-30
-<color=#FF0000FF>Double Shot</color>
-50
-<color=#FF0000FF>Saboteur</color>
-20
-<color=#FF0000FF>Underdog</color>
 40
+<color=#99E699FF>Tiebreaker</color>
+60
+<color=#FF0000FF>Disperser</color>
+50
+<color=#FF0000FF>Double Shot</color>
+80
+<color=#FF0000FF>Saboteur</color>
+30
+<color=#FF0000FF>Underdog</color>
+20
 All Roles Are Unique
 True
 Slot 1
@@ -229,13 +229,13 @@ Airship/Submerged Decreased Short Tasks
 Airship/Submerged Decreased Long Tasks
 0
 Better Polus Vent Layout
-False
+True
 Vitals Moved To Lab
 True
 Cold Temp Moved To Death Valley
-False
+True
 Reboot Wifi And Chart Course Swapped
-False
+True
 Airship Doors Are Polus Doors
 False
 Camouflaged Comms
@@ -289,9 +289,9 @@ True
 Assassin Can Guess Impostor Roles
 True
 Assassin Can Guess Crewmate Modifiers
-False
+True
 Assassin Can Guess Lovers
-False
+True
 Radiate Colour Range
 0.5
 Radiate Max Range
@@ -335,7 +335,7 @@ Dead Body Arrow Duration
 Seer Cooldown
 20
 Crewmate Killing Roles Are Red
-True
+False
 Neutral Benign Roles Are Red
 True
 Neutral Evil Roles Are Red
@@ -387,9 +387,9 @@ False
 Hunter Can Report Who They've Killed
 True
 Sheriff Miskill Kills Crewmate
-True
+False
 Sheriff Kills Neutral Evil Roles
-True
+False
 Sheriff Kills Neutral Killing Roles
 True
 Sheriff Kill Cooldown
@@ -397,7 +397,7 @@ Sheriff Kill Cooldown
 Sheriff Can Report Who They've Killed
 True
 Can Be Killed On Alert
-True
+False
 Alert Cooldown
 20
 Alert Duration
@@ -421,7 +421,7 @@ False
 Jail Cooldown
 20
 Maximum Number Of Executes
-3
+2
 Campaign Cooldown
 20
 Prosecutor Dies When They Exile A Crewmate
@@ -437,7 +437,7 @@ Revive Radius
 Barrier Cooldown
 20
 Show Barriered Player
-Cleric
+Self+Cleric
 Cleric Gets Attack Notification
 True
 Show Shielded Player
@@ -463,7 +463,7 @@ True
 Neutral Killing Roles Show Evil
 True
 Show Fortified Player
-Warden
+Self+Warden
 Maximum Number Of Fixes
 4
 Mediate Cooldown
@@ -495,7 +495,7 @@ Protect Duration
 Maximum Number Of Protects
 5
 Show Protected Player
-Self+GA
+GA
 GA Becomes On Target Dead
 Survivor
 Target Knows GA Exists
@@ -529,7 +529,7 @@ False
 Doomsayer Win Ends Game
 True
 Executioner Becomes On Target Dead
-Survivor
+Amnesiac
 Executioner Can Button
 True
 Executioner Win
@@ -537,7 +537,7 @@ Ends Game
 Jester Can Button
 True
 Jester Can Hide In Vents
-False
+True
 Jester Has Impostor Vision
 False
 Jester Scatter Mechanic Enabled
@@ -553,7 +553,7 @@ False
 Douse Cooldown
 20
 Ignite Radius
-0.5
+0.50000006
 Arsonist Can Vent
 True
 Mimic Cooldown
@@ -581,7 +581,7 @@ Pestilence Kill Cooldown
 Pestilence Can Vent
 True
 Reap Cooldown
-15
+10
 Soul Collector Can Vent
 True
 Vampire Bite Cooldown
@@ -613,13 +613,13 @@ Blind Duration
 Blind Radius
 1.5
 Recall Cooldown
-15
+10
 Escapist Can Vent
 True
 Flash Grenade Cooldown
 20
 Flash Grenade Duration
-7
+10
 Flash Radius
 1
 Grenadier Can Vent
@@ -641,7 +641,7 @@ Ability Cooldown
 Ability Duration
 5
 Sprint Speed
-1.5
+1.4999998
 Minimum Freeze Speed
 0.25
 Freeze Radius
@@ -651,7 +651,7 @@ Detonate Delay
 Max Kills In Detonation
 15
 Detonate Radius
-0.5
+0.50000006
 Bomber Can Vent
 True
 All Impostors See Bomb
@@ -671,7 +671,7 @@ False
 Time It Takes To Fully Charge
 20
 Time It Takes To Use Full Charge
-2
+2.4999988
 Initial Blackmail Cooldown
 10
 Only Target Sees Blackmail
@@ -699,9 +699,9 @@ Diseased Kill Multiplier
 Chill Duration
 10
 Chill Start Speed
-0.5
+0.49999994
 Flash Speed
-1.5
+1.4999998
 Giant Speed
 1
 Both Lovers Die
