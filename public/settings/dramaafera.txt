@@ -1,89 +1,89 @@
 <color=#B34D99FF>Aurial</color>
-30
+10
 <color=#4D4DFFFF>Detective</color>
 10
 <color=#D3D3D3FF>Haunter</color>
 0
 <color=#00B3B3FF>Investigator</color>
-10
+30
 <color=#33FF66FF>Lookout</color>
 0
 <color=#4D99E6FF>Mystic</color>
-20
+40
 <color=#FFCC80FF>Seer</color>
-10
+20
 <color=#D4AF37FF>Snitch</color>
-20
+40
 <color=#CCA3CCFF>Spy</color>
-20
+30
 <color=#009900FF>Tracker</color>
-0
+20
 <color=#A7D1B3FF>Trapper</color>
-20
+30
 <color=#FFCC00FF>Deputy</color>
-20
+30
 <color=#29AB87FF>Hunter</color>
 0
 <color=#FFFF00FF>Sheriff</color>
-90
-<color=#998040FF>Veteran</color>
-60
-<color=#FFFF99FF>Vigilante</color>
-10
-<color=#A6A6A6FF>Jailor</color>
 40
-<color=#660099FF>Politician</color>
-10
-<color=#B38000FF>Prosecutor</color>
+<color=#998040FF>Veteran</color>
+40
+<color=#FFFF99FF>Vigilante</color>
 30
+<color=#A6A6A6FF>Jailor</color>
+20
+<color=#660099FF>Politician</color>
+20
+<color=#B38000FF>Prosecutor</color>
+40
 <color=#66E666FF>Swapper</color>
-10
+20
 <color=#660000FF>Altruist</color>
 40
 <color=#00FFB3FF>Cleric</color>
-30
-<color=#006600FF>Medic</color>
 40
+<color=#006600FF>Medic</color>
+50
 <color=#BF00BFFF>Oracle</color>
 0
 <color=#9900FFFF>Warden</color>
-30
+20
 <color=#FFA60AFF>Engineer</color>
 40
 <color=#B3D94DFF>Imitator</color>
-30
+40
 <color=#A680FFFF>Medium</color>
 0
 <color=#CC6600FF>Plumber</color>
-20
+30
 <color=#00EEFFFF>Transporter</color>
-10
+20
 <color=#80B2FFFF>Amnesiac</color>
-70
+60
 <color=#B3FFFFFF>Guardian Angel</color>
 0
 <color=#8C6699FF>Mercenary</color>
-40
-<color=#FFE64DFF>Survivor</color>
-21.37
-<color=#00FF80FF>Doomsayer</color>
-30
-<color=#8C4005FF>Executioner</color>
 20
+<color=#FFE64DFF>Survivor</color>
+0
+<color=#00FF80FF>Doomsayer</color>
+60
+<color=#8C4005FF>Executioner</color>
+30
 <color=#FFBFCCFF>Jester</color>
 10
 <color=#662962FF>Phantom</color>
-0
+10
 <color=#FF4D00FF>Arsonist</color>
 10
 <color=#00FF00FF>Glitch</color>
-30
+20
 <color=#8C004DFF>Juggernaut</color>
-40
+50
 <color=#E6FFB3FF>Plaguebearer / Pestilence</color>
 10
 <color=#99FFCCFF>Soul Collector</color>
-10
+30
 <color=#262626FF>Vampire</color>
 0
 <color=#A86629FF>Werewolf</color>
@@ -91,77 +91,77 @@
 <color=#FF0000FF>Eclipsal</color>
 10
 <color=#FF0000FF>Escapist</color>
-20
+30
 <color=#FF0000FF>Grenadier</color>
-10
-<color=#FF0000FF>Morphling</color>
 20
+<color=#FF0000FF>Morphling</color>
+10
 <color=#FF0000FF>Swooper</color>
 30
 <color=#FF0000FF>Venerer</color>
 0
 <color=#FF0000FF>Bomber</color>
-20
+10
 <color=#FF0000FF>Scavenger</color>
-20
+10
 <color=#FF0000FF>Traitor</color>
-10
+0
 <color=#FF0000FF>Warlock</color>
-30
+20
 <color=#FF0000FF>Blackmailer</color>
-10
+20
 <color=#FF0000FF>Hypnotist</color>
-10
+0
 <color=#FF0000FF>Janitor</color>
-10
+40
 <color=#FF0000FF>Miner</color>
 0
 <color=#FF0000FF>Undertaker</color>
-20
-<color=#A6FFA6FF>Aftermath</color>
 0
+<color=#A6FFA6FF>Aftermath</color>
+20
 <color=#33B3B3FF>Bait</color>
 10
 <color=#FF9999FF>Celebrity</color>
 40
 <color=#808080FF>Diseased</color>
-30
+40
 <color=#99FFFFFF>Frosty</color>
 0
 <color=#FF804DFF>Multitasker</color>
-0
+20
 <color=#669966FF>Taskmaster</color>
-40
+50
 <color=#FFFF99FF>Torch</color>
-0
+10
 <color=#E600FFFF>Button Barry</color>
-30
+20
 <color=#FF8080FF>Flash</color>
 0
 <color=#FFB34DFF>Giant</color>
 0
 <color=#E6E6CCFF>Immovable</color>
-40
+10
 <color=#FF66CCFF>Lovers</color>
 10
 <color=#CCFFE6FF>Mini</color>
 0
 <color=#FF0080FF>Radar</color>
-20
+10
 <color=#0099CCFF>Satellite</color>
-30
+10
 <color=#FFB3CCFF>Shy</color>
-60
+40
 <color=#D9FF8CFF>Sixth Sense</color>
 0
 <color=#803333FF>Sleuth</color>
-40
+20
 <color=#99E699FF>Tiebreaker</color>
-60
+30
 <color=#FF0000FF>Disperser</color>
 50
 <color=#FF0000FF>Double Shot</color>
-80
+60
 <color=#FF0000FF>Saboteur</color>
 30
 <color=#FF0000FF>Underdog</color>
@@ -183,7 +183,7 @@ Slot 6
 Slot 7
 12
 Slot 8
-7
+12
 Slot 9
 7
 Slot 10
@@ -265,9 +265,9 @@ False
 See Tasks When Dead
 True
 Impostor Assassins Count
-All
+2
 Neutral Assassins Count
-All
+2
 Amnesiac Turned Impostor Gets Ability
 True
 Amnesiac Turned Neutral Killing Gets Ability
@@ -335,7 +335,7 @@ Dead Body Arrow Duration
 Seer Cooldown
 20
 Crewmate Killing Roles Are Red
-False
+True
 Neutral Benign Roles Are Red
 True
 Neutral Evil Roles Are Red
@@ -387,9 +387,9 @@ False
 Hunter Can Report Who They've Killed
 True
 Sheriff Miskill Kills Crewmate
-False
+True
 Sheriff Kills Neutral Evil Roles
-False
+True
 Sheriff Kills Neutral Killing Roles
 True
 Sheriff Kill Cooldown
@@ -433,7 +433,7 @@ Altruist Revive Duration
 Revive Uses
 3
 Revive Radius
-1
+0.75
 Barrier Cooldown
 20
 Show Barriered Player
@@ -509,7 +509,7 @@ Guard Cooldown
 Maximum Number Of Guards
 3
 Gold To Bribe
-3
+2
 Vest Cooldown
 20
 Vest Duration
@@ -517,7 +517,7 @@ Vest Duration
 Maximum Number Of Vests
 5
 Survivor Scatter Mechanic Enabled
-True
+False
 Survivor Scatter Timer
 30
 Observe Cooldown
@@ -537,11 +537,11 @@ Ends Game
 Jester Can Button
 True
 Jester Can Hide In Vents
-True
+False
 Jester Has Impostor Vision
 False
 Jester Scatter Mechanic Enabled
-True
+False
 Jester Scatter Timer
 30
 Jester Win
@@ -549,11 +549,11 @@ Ends Game
 Tasks Remaining When Phantom Can Be Clicked
 10
 Phantom Win Ends Game
-False
+True
 Douse Cooldown
-20
+15
 Ignite Radius
-0.50000006
+0.75
 Arsonist Can Vent
 True
 Mimic Cooldown
@@ -671,7 +671,7 @@ False
 Time It Takes To Fully Charge
 20
 Time It Takes To Use Full Charge
-2.4999988
+2
 Initial Blackmail Cooldown
 10
 Only Target Sees Blackmail
@@ -699,9 +699,9 @@ Diseased Kill Multiplier
 Chill Duration
 10
 Chill Start Speed
-0.49999994
+0.5
 Flash Speed
-1.4999998
+1.5
 Giant Speed
 1
 Both Lovers Die
