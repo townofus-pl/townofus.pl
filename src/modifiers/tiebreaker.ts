@@ -9,7 +9,7 @@ export const Tiebreaker: Modifier = {
     "id": "tiebreaker",
 	"color": "#99e699",
     "team": Teams.All,
-    "icon": "/images/modifiers/placeholder.png",
+    "icon": "/images/modifiers/tiebreaker.png",
     "description": "Jego głos rozstrzyga remisy podczas głosowania.",
     "settings": {
         ...probabilityOfAppearing(0),
