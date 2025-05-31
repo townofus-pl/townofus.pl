@@ -9,7 +9,7 @@ export const Immovable: Modifier = {
     "id": "immovable",
 	"color": "#e6e6cc",
     "team": Teams.All,
-    "icon": "/images/modifiers/placeholder.png",
+    "icon": "/images/modifiers/immovable.png",
     "description": "Nie może zostać przeniesiony przez Transportera, Disperse, oraz spotkania.",
     "settings": {
         ...probabilityOfAppearing(0),
