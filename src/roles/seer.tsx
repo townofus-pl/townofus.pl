@@ -5,7 +5,7 @@ import {probabilityOfAppearing, SettingTypes} from "@/constants/settings";
 export const SeerAbilities = {
     Reveal: {
         "name": "Reveal (Odkryj)",
-        "icon": "/images/abilities/reveal.png"
+        "icon": "/images/abilities/seer.png"
     },
 };
 
@@ -18,11 +18,7 @@ export const Seer: Role = {
     "icon": "/images/roles/seer.png",
     "description": (
         <>
-            <p>Crewmate, który może sprawdzić przynależność drużynową innego gracza. Po użyciu zdolności, nick sprawdzanego gracza zmienia kolor:</p>
-            <ul>
-            <li>Na <span style={{ color: "#00ff00" }}>Zielony</span> – jeśli gracz należy do drużyny Crewmateów.</li>
-            <li>Na <span style={{ color: "#ff0000" }}>Czerwony</span> – jeśli gracz ma inną rolę (Impostor lub neutralną).</li>
-            </ul>
+            <p>Crewmate, który może sprawdzić przynależność drużynową innego gracza. Po użyciu zdolności, nick sprawdzanego gracza zmienia kolor na <span style={{ color: "#00ff00" }}>Zielony</span> lub <span style={{ color: "#ff0000" }}>Czerwony</span>. Znaczenie tych kolorów jest zależne od ustawień.</p>
         </>
     ),
 
