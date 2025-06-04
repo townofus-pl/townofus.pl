@@ -32,7 +32,7 @@
 40
 <color=#A6A6A6FF>Jailor</color>
 30
-<color=#660099FF>Politician</color>
+<color=#660099FF>Politician / Mayor</color>
 10
 <color=#B38000FF>Prosecutor</color>
 50
