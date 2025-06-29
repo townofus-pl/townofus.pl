@@ -27,6 +27,10 @@ export const Altruist: Role = {
             value: 3,
             type: SettingTypes.Number,
         },
+        'Revive Radius': {
+            value: 0.5,
+            type: SettingTypes.Multiplier,
+        },
     },
     "abilities": [AltruistAbilities.Revive],
 };
