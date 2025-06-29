@@ -11,7 +11,7 @@ export const Executioner: Role = {
     "team": Teams.Neutral,
     "icon": "/images/roles/executioner.png",
     "description": (<p>
-        Neutralna rola z własnym warunkiem zwycięstwa. Jego celem jest <u>wygłosowanie</u> gracza, wskazanego na początku gry. Jeśli ten gracz zostanie wygnany, Executioner wygrywa grę. Jeśli cel zginie w inny sposób, Executioner zamienia się w Jestera.
+        Neutralna rola z własnym warunkiem zwycięstwa. Jego celem jest <u>wygłosowanie</u> gracza, wskazanego na początku gry. Jeśli ten gracz zostanie wygnany, Executioner wygrywa grę. Jeśli cel zginie w inny sposób, Executioner zamienia się w inną rolę (zależną od ustawień).
         </p>),
     "settings": {
         ...probabilityOfAppearing(0),
