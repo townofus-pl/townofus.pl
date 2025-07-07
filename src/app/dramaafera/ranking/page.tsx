@@ -9,13 +9,18 @@ function getPlayerAvatarPath(playerName: string): string {
     return `/images/avatars/${playerName}.png`;
 }
 
+// Funkcja pomocnicza do konwersji nicku na format URL-friendly
+function convertNickToUrlSlug(nick: string): string {
+    return nick.replace(/\s+/g, '-').toLowerCase();
+}
+
 export default async function RankingPage() {
     // Pobierz prawdziwe dane gier i wygeneruj statystyki
     const games = await getAllGamesData();
     const playerStats = generatePlayerRankingStats(games);
 
     return (
-        <div className="min-h-screen bg-zinc-900/50 text-white">
+        <div className="min-h-screen rounded-xl bg-zinc-900/50 text-white">
             <div className="container mx-auto px-4 py-8">
                 <div className="mb-8">
                     <Link 
@@ -59,16 +64,18 @@ export default async function RankingPage() {
                                             </div>
                                         </td>
                                         <td className="py-4 px-2">
-                                            <div className="flex items-center space-x-3">
-                                                <Image
-                                                    src={getPlayerAvatarPath(player.name)}
-                                                    alt={`Avatar ${player.name}`}
-                                                    width={40}
-                                                    height={40}
-                                                    className="rounded-full border-2 border-gray-600"
-                                                />
-                                                <span className="font-semibold text-lg">{player.name}</span>
-                                            </div>
+                                            <Link href={`/dramaafera/user/${convertNickToUrlSlug(player.name)}`}>
+                                                <div className="flex items-center space-x-3 hover:bg-gray-700/30 rounded-lg p-2 transition-colors cursor-pointer">
+                                                    <Image
+                                                        src={getPlayerAvatarPath(player.name)}
+                                                        alt={`Avatar ${player.name}`}
+                                                        width={40}
+                                                        height={40}
+                                                        className="rounded-full border-2 border-gray-600"
+                                                    />
+                                                    <span className="font-semibold text-lg text-white hover:text-gray-300 transition-colors">{player.name}</span>
+                                                </div>
+                                            </Link>
                                         </td>
                                         <td className="py-4 px-2 text-gray-300">{player.gamesPlayed}</td>
                                         <td className="py-4 px-2 text-green-400 font-semibold">{player.wins}</td>
@@ -94,16 +101,18 @@ export default async function RankingPage() {
                     <div className="bg-gradient-to-br from-yellow-500/20 to-orange-500/20 rounded-lg p-6 border border-yellow-500/30">
                         <h3 className="text-xl font-semibold text-yellow-400 mb-3">🏆 Najlepszy gracz</h3>
                         {playerStats[0] && (
-                            <div className="flex items-center space-x-3 mb-2">
-                                <Image
-                                    src={getPlayerAvatarPath(playerStats[0].name)}
-                                    alt={`Avatar ${playerStats[0].name}`}
-                                    width={48}
-                                    height={48}
-                                    className="rounded-full border-2 border-yellow-400"
-                                />
-                                <p className="text-2xl font-bold">{playerStats[0].name}</p>
-                            </div>
+                            <Link href={`/dramaafera/user/${convertNickToUrlSlug(playerStats[0].name)}`}>
+                                <div className="flex items-center space-x-3 mb-2 hover:bg-yellow-500/10 rounded-lg p-2 transition-colors cursor-pointer">
+                                    <Image
+                                        src={getPlayerAvatarPath(playerStats[0].name)}
+                                        alt={`Avatar ${playerStats[0].name}`}
+                                        width={48}
+                                        height={48}
+                                        className="rounded-full border-2 border-yellow-400"
+                                    />
+                                    <p className="text-2xl font-bold text-white hover:text-gray-300 transition-colors">{playerStats[0].name}</p>
+                                </div>
+                            </Link>
                         )}
                         <p className="text-gray-300">Procent wygranych: {playerStats[0]?.winRate || 0}%</p>
                     </div>
@@ -113,16 +122,18 @@ export default async function RankingPage() {
                         {(() => {
                             const mostActivePlayer = playerStats.find(p => p.gamesPlayed === Math.max(...playerStats.map(p => p.gamesPlayed)));
                             return mostActivePlayer ? (
-                                <div className="flex items-center space-x-3 mb-2">
-                                    <Image
-                                        src={getPlayerAvatarPath(mostActivePlayer.name)}
-                                        alt={`Avatar ${mostActivePlayer.name}`}
-                                        width={48}
-                                        height={48}
-                                        className="rounded-full border-2 border-blue-400"
-                                    />
-                                    <p className="text-2xl font-bold">{mostActivePlayer.name}</p>
-                                </div>
+                                <Link href={`/dramaafera/user/${convertNickToUrlSlug(mostActivePlayer.name)}`}>
+                                    <div className="flex items-center space-x-3 mb-2 hover:bg-blue-500/10 rounded-lg p-2 transition-colors cursor-pointer">
+                                        <Image
+                                            src={getPlayerAvatarPath(mostActivePlayer.name)}
+                                            alt={`Avatar ${mostActivePlayer.name}`}
+                                            width={48}
+                                            height={48}
+                                            className="rounded-full border-2 border-blue-400"
+                                        />
+                                        <p className="text-2xl font-bold text-white hover:text-gray-300 transition-colors">{mostActivePlayer.name}</p>
+                                    </div>
+                                </Link>
                             ) : (
                                 <p className="text-2xl font-bold">Brak danych</p>
                             );

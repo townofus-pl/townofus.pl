@@ -11,6 +11,13 @@ function getPlayerAvatarPath(playerName: string): string {
     return `/images/avatars/${playerName}.png`;
 }
 
+// Funkcja pomocnicza do konwersji nazwy roli na format URL-friendly
+function convertRoleToUrlSlug(role: string): string {
+    return role.toLowerCase()
+        .replace(/\s+/g, '-')
+        .replace(/[^\w\-]/g, '');
+}
+
 interface GamePageProps {
     params: Promise<{
         date: string;
@@ -40,16 +47,18 @@ function renderRoleHistory(roleHistory: string[] | undefined) {
         const role = roleHistory?.[roleHistory.length - 1] || 'Unknown';
         const roleColor = getRoleColor(role);
         return (
-            <span 
-                className="px-3 py-1 rounded-lg text-base font-semibold"
-                style={{ 
-                    backgroundColor: `${roleColor}20`, 
-                    color: roleColor,
-                    border: `1px solid ${roleColor}40`
-                }}
-            >
-                {role}
-            </span>
+            <Link href={`/dramaafera/role/${convertRoleToUrlSlug(role)}`}>
+                <span 
+                    className="px-3 py-1 rounded-lg text-base font-semibold hover:opacity-80 transition-opacity cursor-pointer inline-flex items-center h-8"
+                    style={{ 
+                        backgroundColor: `${roleColor}20`, 
+                        color: roleColor,
+                        border: `1px solid ${roleColor}40`
+                    }}
+                >
+                    {role}
+                </span>
+            </Link>
         );
     }
 
@@ -60,16 +69,18 @@ function renderRoleHistory(roleHistory: string[] | undefined) {
                 const roleColor = getRoleColor(role);
                 return (
                     <span key={roleIndex} className="flex items-center">
-                        <span 
-                            className="px-3 py-1 rounded-lg text-base font-semibold"
-                            style={{ 
-                                backgroundColor: `${roleColor}20`, 
-                                color: roleColor,
-                                border: `1px solid ${roleColor}40`
-                            }}
-                        >
-                            {role}
-                        </span>
+                        <Link href={`/dramaafera/role/${convertRoleToUrlSlug(role)}`}>
+                            <span 
+                                className="px-3 py-1 rounded-lg text-base font-semibold hover:opacity-80 transition-opacity cursor-pointer inline-flex items-center h-8"
+                                style={{ 
+                                    backgroundColor: `${roleColor}20`, 
+                                    color: roleColor,
+                                    border: `1px solid ${roleColor}40`
+                                }}
+                            >
+                                {role}
+                            </span>
+                        </Link>
                         {roleIndex < roleHistory.length - 1 && (
                             <span className="mx-2 text-white font-bold text-lg">{'>'}</span>
                         )}
@@ -91,7 +102,7 @@ export default async function GameDetailPage({ params }: GamePageProps) {
     const displayDate = formatDisplayDate(resolvedParams.date);
 
     return (
-        <div className="min-h-screen bg-zinc-900/50 text-white">
+        <div className="min-h-screen rounded-xl bg-zinc-900/50 text-white">
             <div className="container mx-auto px-4 py-8">
                 <div className="mb-8">
                     <Link 
@@ -237,11 +248,11 @@ export default async function GameDetailPage({ params }: GamePageProps) {
                                         {player.modifiers.length > 0 && player.modifiers.map((modifier, modIndex) => (
                                             <span 
                                                 key={modIndex}
-                                                className="px-3 py-1 rounded-lg text-base font-medium"
+                                                className="px-3 py-1 rounded-lg text-base font-semibold hover:opacity-80 transition-opacity inline-flex items-center h-8"
                                                 style={{
-                                                    backgroundColor: '#6B728030',
+                                                    backgroundColor: `${player.modifierColors[modIndex] || '#6B7280'}30`,
                                                     color: player.modifierColors[modIndex] || '#9CA3AF',
-                                                    border: '1px solid #6B728050'
+                                                    border: `1px solid ${player.modifierColors[modIndex] || '#6B7280'}40`
                                                 }}
                                             >
                                                 {modifier}

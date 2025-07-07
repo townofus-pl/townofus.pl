@@ -1,0 +1,353 @@
+import Link from "next/link";
+import Image from "next/image";
+import { getAllGamesData } from "@/data/games";
+import { getRoleColor } from "@/data/games/converter";
+import { notFound } from "next/navigation";
+import { RoleImage } from "../_components/RoleImage";
+
+// Funkcja pomocnicza do konwersji nazwy roli na format URL-friendly
+function convertRoleToUrlSlug(role: string): string {
+    return role.toLowerCase()
+        .replace(/\s+/g, '-')
+        .replace(/[^\w\-]/g, '');
+}
+
+// Funkcja pomocnicza do konwersji URL slug z powrotem na nazwę roli
+function convertUrlSlugToRole(slug: string, allRoles: string[]): string {
+    // Najpierw spróbuj znaleźć dokładne dopasowanie przez konwersję wszystkich ról
+    const slugLower = slug.toLowerCase();
+    for (const role of allRoles) {
+        if (convertRoleToUrlSlug(role) === slugLower) {
+            return role;
+        }
+    }
+    
+    // Fallback - konwertuj myślniki na spacje i zdekoduj
+    return decodeURIComponent(slug.replace(/-/g, ' '));
+}
+
+// Funkcja pomocnicza do generowania ścieżki obrazka roli
+function getRoleImagePath(roleName: string): string {
+    // Mapowanie specjalnych przypadków
+    const specialCases: Record<string, string> = {
+        'SoulCollector': 'soul_collector',
+        'Soul Collector': 'soul_collector',
+        'GuardianAngel': 'guardian_angel',
+        'Guardian Angel': 'guardian_angel',
+        'TimeLord': 'time_lord',
+        'Time Lord': 'time_lord'
+    };
+    
+    // Sprawdź czy to specjalny przypadek
+    if (specialCases[roleName]) {
+        return `/images/roles/${specialCases[roleName]}.png`;
+    }
+    
+    // Standardowa konwersja: usuń spacje, zamień na małe litery
+    const fileName = roleName.toLowerCase().replace(/\s+/g, '');
+    return `/images/roles/${fileName}.png`;
+}
+
+// Interface dla statystyk roli
+interface RoleStats {
+    roleName: string;
+    gamesPlayed: number;
+    wins: number;
+    winRate: number;
+    players: PlayerRoleStats[]; // Zmienione na szczegółowe statystyki graczy
+}
+
+// Interface dla statystyk gracza z daną rolą
+interface PlayerRoleStats {
+    name: string;
+    gamesWithRole: number;
+    winsWithRole: number;
+    winRateWithRole: number;
+}
+
+// Funkcja do generowania statystyk roli
+function generateRoleStats(allGames: any[], targetRole: string): RoleStats {
+    let totalGamesPlayed = 0;
+    let totalWins = 0;
+    const playerStats = new Map<string, { games: number; wins: number }>();
+    
+    allGames.forEach(game => {
+        game.detailedStats.playersData.forEach((player: any) => {
+            // Sprawdź czy gracz miał tę rolę (sprawdzaj zarówno końcową rolę jak i historię ról)
+            const hasRole = player.role === targetRole || 
+                           (player.roleHistory && player.roleHistory.includes(targetRole));
+            
+            if (hasRole) {
+                totalGamesPlayed++;
+                
+                // Aktualizuj statystyki gracza
+                const current = playerStats.get(player.nickname) || { games: 0, wins: 0 };
+                current.games++;
+                
+                if (player.win) {
+                    totalWins++;
+                    current.wins++;
+                }
+                
+                playerStats.set(player.nickname, current);
+            }
+        });
+    });
+    
+    // Konwertuj mapę na tablicę z winratio i posortuj według winratio (malejąco)
+    const players: PlayerRoleStats[] = Array.from(playerStats.entries())
+        .map(([name, stats]) => ({
+            name,
+            gamesWithRole: stats.games,
+            winsWithRole: stats.wins,
+            winRateWithRole: stats.games > 0 ? parseFloat(((stats.wins / stats.games) * 100).toFixed(1)) : 0
+        }))
+        .sort((a, b) => {
+            // Sortuj według winratio (malejąco), potem według liczby gier (malejąco)
+            if (b.winRateWithRole !== a.winRateWithRole) {
+                return b.winRateWithRole - a.winRateWithRole;
+            }
+            return b.gamesWithRole - a.gamesWithRole;
+        });
+    
+    return {
+        roleName: targetRole,
+        gamesPlayed: totalGamesPlayed,
+        wins: totalWins,
+        winRate: totalGamesPlayed > 0 ? parseFloat(((totalWins / totalGamesPlayed) * 100).toFixed(1)) : 0,
+        players
+    };
+}
+
+interface RolePageProps {
+    params: Promise<{
+        nazwa: string;
+    }>;
+}
+
+export async function generateStaticParams() {
+    const games = await getAllGamesData();
+    const allRoles = new Set<string>();
+    
+    games.forEach(game => {
+        game.detailedStats.playersData.forEach(player => {
+            // Dodaj końcową rolę
+            allRoles.add(player.role);
+            
+            // Dodaj wszystkie role z historii
+            if (player.roleHistory) {
+                player.roleHistory.forEach(role => allRoles.add(role));
+            }
+        });
+    });
+    
+    return Array.from(allRoles).map(role => ({
+        nazwa: convertRoleToUrlSlug(role),
+    }));
+}
+
+export default async function RoleStatsPage({ params }: RolePageProps) {
+    const resolvedParams = await params;
+    
+    // Pobierz wszystkie gry
+    const games = await getAllGamesData();
+    
+    // Pobierz listę wszystkich ról
+    const allRoles: string[] = [];
+    games.forEach(game => {
+        game.detailedStats.playersData.forEach(player => {
+            if (!allRoles.includes(player.role)) {
+                allRoles.push(player.role);
+            }
+            if (player.roleHistory) {
+                player.roleHistory.forEach(role => {
+                    if (!allRoles.includes(role)) {
+                        allRoles.push(role);
+                    }
+                });
+            }
+        });
+    });
+    
+    const roleName = convertUrlSlugToRole(resolvedParams.nazwa, allRoles);
+    
+    // Wygeneruj statystyki dla roli
+    const roleStats = generateRoleStats(games, roleName);
+    
+    if (roleStats.gamesPlayed === 0) {
+        notFound();
+    }
+    
+    const roleColor = getRoleColor(roleName);
+
+    return (
+        <div className="min-h-screen bg-zinc-900/50 text-white">
+            {/* Header */}
+            <div className="bg-zinc-900/50 backdrop-blur-md border-b border-zinc-700/50 p-6">
+                <div className="max-w-4xl mx-auto">
+                    <Link 
+                        href="/dramaafera"
+                        className="text-white hover:text-gray-300 transition-colors mb-4 inline-flex items-center gap-2"
+                    >
+                        ← Powrót do Drama Afera
+                    </Link>
+                    <h1 className="text-4xl font-bold text-white">
+                        Statystyki roli
+                    </h1>
+                </div>
+            </div>
+
+            <div className="max-w-4xl mx-auto p-6">
+                {/* Główna sekcja roli */}
+                <div className="bg-zinc-900/50 backdrop-blur-md rounded-xl border border-zinc-700/50 p-8 mb-6">
+                    <div className="flex flex-col md:flex-row items-center gap-8">
+                        {/* Obrazek roli */}
+                        <div className="flex-shrink-0">
+                            <div className="relative">
+                                <RoleImage
+                                    roleName={roleName}
+                                    width={128}
+                                    height={128}
+                                    className="scale-[1.7]"
+                                />
+                            </div>
+                        </div>
+
+                        {/* Informacje o roli */}
+                        <div className="flex-1 text-center md:text-left">
+                            <h2 
+                                className="text-5xl font-bold mb-4"
+                                style={{ color: roleColor }}
+                            >
+                                {roleName}
+                            </h2>
+                            
+                            {/* Link do opisu roli - prowadzi do głównej strony z opisem wszystkich ról */}
+                            <Link 
+                                href="/#roles"
+                                className="inline-block mb-6 px-4 py-2 bg-zinc-800/50 rounded-lg border border-zinc-700/50 text-white hover:text-gray-300 hover:bg-zinc-700/50 transition-colors"
+                            >
+                                📖 Zobacz opis roli
+                            </Link>
+                            
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                {/* Liczba gier */}
+                                <div className="bg-zinc-800/50 rounded-lg p-4 border border-zinc-700/50">
+                                    <div className="text-3xl font-bold text-blue-400 mb-1">
+                                        {roleStats.gamesPlayed}
+                                    </div>
+                                    <div className="text-sm text-zinc-400 uppercase tracking-wide">
+                                        Gier tej roli
+                                    </div>
+                                </div>
+
+                                {/* Liczba zwycięstw */}
+                                <div className="bg-zinc-800/50 rounded-lg p-4 border border-zinc-700/50">
+                                    <div className="text-3xl font-bold text-green-400 mb-1">
+                                        {roleStats.wins}
+                                    </div>
+                                    <div className="text-sm text-zinc-400 uppercase tracking-wide">
+                                        Zwycięstw
+                                    </div>
+                                </div>
+
+                                {/* Win ratio */}
+                                <div className="bg-zinc-800/50 rounded-lg p-4 border border-zinc-700/50">
+                                    <div className="text-3xl font-bold text-purple-400 mb-1">
+                                        {roleStats.winRate}%
+                                    </div>
+                                    <div className="text-sm text-zinc-400 uppercase tracking-wide">
+                                        Współczynnik wygranych
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                {/* Ranking graczy którzy grali jako ta rola */}
+                <div className="bg-zinc-900/50 backdrop-blur-md rounded-xl border border-zinc-700/50 p-6">
+                    <h3 className="text-2xl font-bold mb-4 text-center">
+                        Gracze którzy grali jako {roleName}
+                    </h3>
+                    
+                    {roleStats.players.length > 0 ? (
+                        <div className="overflow-x-auto">
+                            <table className="w-full table-auto">
+                                <thead>
+                                    <tr className="border-b border-gray-600">
+                                        <th className="text-left py-3 px-4 text-yellow-400 font-semibold">Pozycja</th>
+                                        <th className="text-left py-3 px-4 text-yellow-400 font-semibold">Gracz</th>
+                                        <th className="text-left py-3 px-4 text-yellow-400 font-semibold">Gry</th>
+                                        <th className="text-left py-3 px-4 text-yellow-400 font-semibold">Wygrane</th>
+                                        <th className="text-left py-3 px-4 text-yellow-400 font-semibold">Win Rate</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {roleStats.players.map((playerStats, index) => (
+                                        <tr key={playerStats.name} className="border-b border-gray-700/30 hover:bg-zinc-800/30 transition-colors">
+                                            <td className="py-3 px-4">
+                                                <span className="text-gray-300 font-medium">#{index + 1}</span>
+                                            </td>
+                                            <td className="py-3 px-4">
+                                                <Link
+                                                    href={`/dramaafera/user/${convertNickToUrlSlug(playerStats.name)}`}
+                                                    className="flex items-center space-x-3 hover:text-gray-300 transition-colors"
+                                                >
+                                                    <Image
+                                                        src={`/images/avatars/${playerStats.name}.png`}
+                                                        alt={playerStats.name}
+                                                        width={32}
+                                                        height={32}
+                                                        className="rounded-full border border-gray-600"
+                                                    />
+                                                    <span className="text-white font-medium">
+                                                        {playerStats.name}
+                                                    </span>
+                                                </Link>
+                                            </td>
+                                            <td className="py-3 px-4">
+                                                <span className="text-blue-400 font-semibold">
+                                                    {playerStats.gamesWithRole}
+                                                </span>
+                                            </td>
+                                            <td className="py-3 px-4">
+                                                <span className="text-green-400 font-semibold">
+                                                    {playerStats.winsWithRole}
+                                                </span>
+                                            </td>
+                                            <td className="py-3 px-4">
+                                                <span 
+                                                    className="font-bold text-lg"
+                                                    style={{ 
+                                                        color: playerStats.winRateWithRole >= 70 ? '#10B981' : 
+                                                               playerStats.winRateWithRole >= 50 ? '#F59E0B' : '#EF4444'
+                                                    }}
+                                                >
+                                                    {playerStats.winRateWithRole}%
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+                    ) : (
+                        <div className="text-center py-8">
+                            <p className="text-gray-400 text-lg">Nikt jeszcze nie grał tą rolą</p>
+                        </div>
+                    )}
+                    
+                    <div className="mt-4 text-center text-zinc-400">
+                        Łącznie {roleStats.players.length} różnych graczy grało tą rolą
+                    </div>
+                </div>
+            </div>
+        </div>
+    );
+}
+
+// Funkcja pomocnicza do konwersji nicku na format URL-friendly (kopiujemy z user page)
+function convertNickToUrlSlug(nick: string): string {
+    return nick.replace(/\s+/g, '-').toLowerCase();
+}

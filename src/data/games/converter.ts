@@ -85,6 +85,22 @@ export interface PlayerRankingStats {
     winRate: number;
 }
 
+// Interface for user profile statistics
+export interface UserProfileStats {
+    name: string;
+    gamesPlayed: number;
+    wins: number;
+    winRate: number;
+    impostorGames: number;
+    crewmateGames: number;
+    neutralGames: number;
+    totalTasks: number;
+    correctKills: number;
+    incorrectKills: number;
+    correctGuesses: number;
+    incorrectGuesses: number;
+}
+
 // Funkcje konwersji
 export function determineWinner(players: PlayerStats[]): { winner: string; winnerColor?: string; winnerNames: string[]; winnerColors: Record<string, string>; winCondition: string } {
     const winners = players.filter(p => p.win > 0);
@@ -583,4 +599,87 @@ export function generatePlayerRankingStats(allGames: UIGameData[]): PlayerRankin
     });
     
     return rankingStats;
+}
+
+// Dodano: Funkcja do generowania szczegółowych statystyk profilu użytkownika
+export function generateUserProfileStats(allGames: UIGameData[]): UserProfileStats[] {
+    const playerStats = new Map<string, { 
+        played: number; 
+        won: number; 
+        impostorGames: number; 
+        crewmateGames: number; 
+        neutralGames: number; 
+        totalTasks: number; 
+        correctKills: number;
+        incorrectKills: number;
+        correctGuesses: number;
+        incorrectGuesses: number;
+    }>();
+    
+    // Przeiteruj przez wszystkie gry i zlicz statystyki
+    allGames.forEach(game => {
+        game.detailedStats.playersData.forEach(player => {
+            const playerName = player.nickname;
+            
+            if (!playerStats.has(playerName)) {
+                playerStats.set(playerName, { 
+                    played: 0, 
+                    won: 0, 
+                    impostorGames: 0, 
+                    crewmateGames: 0, 
+                    neutralGames: 0, 
+                    totalTasks: 0,
+                    correctKills: 0,
+                    incorrectKills: 0,
+                    correctGuesses: 0,
+                    incorrectGuesses: 0
+                });
+            }
+            
+            const stats = playerStats.get(playerName)!;
+            stats.played += 1;
+            stats.totalTasks += player.tasksCompleted;
+            
+            // Agreguj nowe statystyki z oryginalnych danych
+            stats.correctKills += player.originalStats.correctKills || 0;
+            stats.incorrectKills += player.originalStats.incorrectKills || 0;
+            stats.correctGuesses += player.originalStats.correctGuesses || 0;
+            stats.incorrectGuesses += player.originalStats.incorrectGuesses || 0;
+            
+            if (player.win) {
+                stats.won += 1;
+            }
+            
+            // Zlicz gry według drużyn
+            switch (player.team) {
+                case 'Impostor':
+                    stats.impostorGames += 1;
+                    break;
+                case 'Crewmate':
+                    stats.crewmateGames += 1;
+                    break;
+                case 'Neutral':
+                    stats.neutralGames += 1;
+                    break;
+            }
+        });
+    });
+    
+    // Konwertuj na tablicę z obliczonym procentem wygranych
+    const profileStats: UserProfileStats[] = Array.from(playerStats.entries()).map(([playerName, stats]) => ({
+        name: playerName,
+        gamesPlayed: stats.played,
+        wins: stats.won,
+        winRate: stats.played > 0 ? parseFloat(((stats.won / stats.played) * 100).toFixed(1)) : 0,
+        impostorGames: stats.impostorGames,
+        crewmateGames: stats.crewmateGames,
+        neutralGames: stats.neutralGames,
+        totalTasks: stats.totalTasks,
+        correctKills: stats.correctKills,
+        incorrectKills: stats.incorrectKills,
+        correctGuesses: stats.correctGuesses,
+        incorrectGuesses: stats.incorrectGuesses
+    }));
+    
+    return profileStats;
 }

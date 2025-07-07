@@ -13,7 +13,7 @@ export default async function HistoriaGierPage() {
     const games = await getGamesList();
 
     return (
-        <div className="min-h-screen bg-zinc-900/50 text-white">
+        <div className="min-h-screen rounded-xl bg-zinc-900/50 text-white">
             <div className="container mx-auto px-4 py-8">
                 <div className="mb-8">
                     <Link 
