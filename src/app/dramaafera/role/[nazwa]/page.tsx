@@ -54,7 +54,12 @@ interface RoleStats {
     gamesPlayed: number;
     wins: number;
     winRate: number;
-    players: PlayerRoleStats[]; // Zmienione na szczegółowe statystyki graczy
+    players: PlayerRoleStats[];
+    // Specjalne statystyki dla ról zabijających
+    totalCorrectKills?: number;
+    totalIncorrectKills?: number;
+    killAccuracy?: number;
+    isKillerRole: boolean;
 }
 
 // Interface dla statystyk gracza z daną rolą
@@ -63,13 +68,41 @@ interface PlayerRoleStats {
     gamesWithRole: number;
     winsWithRole: number;
     winRateWithRole: number;
+    // Specjalne statystyki dla ról zabijających
+    correctKills?: number;
+    incorrectKills?: number;
+    killAccuracy?: number;
+}
+
+// Funkcja do sprawdzania czy rola jest rolą zabijającą
+function isKillerRole(roleName: string): boolean {
+    const killerRoles = [
+        // Impostorzy (wszyscy mogą zabijać)
+        'Impostor', 'Miner', 'Shapeshifter', 'Camouflager', 'Morphling', 'Swooper', 
+        'Escapist', 'Grenadier', 'Venerer', 'Blackmailer', 'Janitor', 'Bomber',
+        'Warlock', 'Hypnotist', 'Eclipsal', 'Undertaker',
+        // Neutralne role zabijające
+        'Arsonist', 'Glitch', 'Juggernaut', 'Pestilence', 'Soul Collector', 'Vampire', 'Werewolf',
+        // Crewmate role zabijające
+        'Sheriff', 'Hunter', 'Veteran'
+    ];
+    return killerRoles.includes(roleName);
 }
 
 // Funkcja do generowania statystyk roli
 function generateRoleStats(allGames: any[], targetRole: string): RoleStats {
     let totalGamesPlayed = 0;
     let totalWins = 0;
-    const playerStats = new Map<string, { games: number; wins: number }>();
+    let totalCorrectKills = 0;
+    let totalIncorrectKills = 0;
+    const isKiller = isKillerRole(targetRole);
+    
+    const playerStats = new Map<string, { 
+        games: number; 
+        wins: number; 
+        correctKills: number; 
+        incorrectKills: number; 
+    }>();
     
     allGames.forEach(game => {
         game.detailedStats.playersData.forEach((player: any) => {
@@ -81,12 +114,28 @@ function generateRoleStats(allGames: any[], targetRole: string): RoleStats {
                 totalGamesPlayed++;
                 
                 // Aktualizuj statystyki gracza
-                const current = playerStats.get(player.nickname) || { games: 0, wins: 0 };
+                const current = playerStats.get(player.nickname) || { 
+                    games: 0, 
+                    wins: 0, 
+                    correctKills: 0, 
+                    incorrectKills: 0 
+                };
                 current.games++;
                 
                 if (player.win) {
                     totalWins++;
                     current.wins++;
+                }
+                
+                // Dodaj statystyki zabójstw jeśli to rola zabijająca
+                if (isKiller) {
+                    const correctKills = player.correctKills || 0;
+                    const incorrectKills = player.incorrectKills || 0;
+                    
+                    current.correctKills += correctKills;
+                    current.incorrectKills += incorrectKills;
+                    totalCorrectKills += correctKills;
+                    totalIncorrectKills += incorrectKills;
                 }
                 
                 playerStats.set(player.nickname, current);
@@ -96,12 +145,27 @@ function generateRoleStats(allGames: any[], targetRole: string): RoleStats {
     
     // Konwertuj mapę na tablicę z winratio i posortuj według winratio (malejąco)
     const players: PlayerRoleStats[] = Array.from(playerStats.entries())
-        .map(([name, stats]) => ({
-            name,
-            gamesWithRole: stats.games,
-            winsWithRole: stats.wins,
-            winRateWithRole: stats.games > 0 ? parseFloat(((stats.wins / stats.games) * 100).toFixed(1)) : 0
-        }))
+        .map(([name, stats]) => {
+            const baseStats = {
+                name,
+                gamesWithRole: stats.games,
+                winsWithRole: stats.wins,
+                winRateWithRole: stats.games > 0 ? parseFloat(((stats.wins / stats.games) * 100).toFixed(1)) : 0
+            };
+            
+            // Dodaj statystyki zabójstw jeśli to rola zabijająca
+            if (isKiller) {
+                const totalKills = stats.correctKills + stats.incorrectKills;
+                return {
+                    ...baseStats,
+                    correctKills: stats.correctKills,
+                    incorrectKills: stats.incorrectKills,
+                    killAccuracy: totalKills > 0 ? parseFloat(((stats.correctKills / totalKills) * 100).toFixed(1)) : 0
+                };
+            }
+            
+            return baseStats;
+        })
         .sort((a, b) => {
             // Sortuj według winratio (malejąco), potem według liczby gier (malejąco)
             if (b.winRateWithRole !== a.winRateWithRole) {
@@ -110,13 +174,27 @@ function generateRoleStats(allGames: any[], targetRole: string): RoleStats {
             return b.gamesWithRole - a.gamesWithRole;
         });
     
-    return {
+    const baseStats = {
         roleName: targetRole,
         gamesPlayed: totalGamesPlayed,
         wins: totalWins,
         winRate: totalGamesPlayed > 0 ? parseFloat(((totalWins / totalGamesPlayed) * 100).toFixed(1)) : 0,
-        players
+        players,
+        isKillerRole: isKiller
     };
+    
+    // Dodaj statystyki zabójstw jeśli to rola zabijająca
+    if (isKiller) {
+        const totalKills = totalCorrectKills + totalIncorrectKills;
+        return {
+            ...baseStats,
+            totalCorrectKills,
+            totalIncorrectKills,
+            killAccuracy: totalKills > 0 ? parseFloat(((totalCorrectKills / totalKills) * 100).toFixed(1)) : 0
+        };
+    }
+    
+    return baseStats;
 }
 
 interface RolePageProps {
@@ -230,7 +308,7 @@ export default async function RoleStatsPage({ params }: RolePageProps) {
                                 📖 Zobacz opis roli
                             </Link>
                             
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                            <div className={`grid grid-cols-1 ${roleStats.isKillerRole ? 'md:grid-cols-2 lg:grid-cols-5' : 'md:grid-cols-3'} gap-6`}>
                                 {/* Liczba gier */}
                                 <div className="bg-zinc-800/50 rounded-lg p-4 border border-zinc-700/50">
                                     <div className="text-3xl font-bold text-blue-400 mb-1">
@@ -260,6 +338,37 @@ export default async function RoleStatsPage({ params }: RolePageProps) {
                                         Współczynnik wygranych
                                     </div>
                                 </div>
+
+                                {/* Statystyki zabójstw - tylko dla ról zabijających */}
+                                {roleStats.isKillerRole && (
+                                    <>
+                                        {/* Poprawne zabójstwa */}
+                                        <div className="bg-zinc-800/50 rounded-lg p-4 border border-zinc-700/50">
+                                            <div className="text-3xl font-bold text-green-500 mb-1">
+                                                {roleStats.totalCorrectKills || 0}
+                                            </div>
+                                            <div className="text-sm text-zinc-400 uppercase tracking-wide">
+                                                Poprawne zabójstwa
+                                            </div>
+                                        </div>
+
+                                        {/* Skuteczność zabójstw */}
+                                        <div className="bg-zinc-800/50 rounded-lg p-4 border border-zinc-700/50">
+                                            <div 
+                                                className="text-3xl font-bold mb-1"
+                                                style={{ 
+                                                    color: (roleStats.killAccuracy || 0) >= 70 ? '#10B981' : 
+                                                           (roleStats.killAccuracy || 0) >= 50 ? '#F59E0B' : '#EF4444'
+                                                }}
+                                            >
+                                                {roleStats.killAccuracy || 0}%
+                                            </div>
+                                            <div className="text-sm text-zinc-400 uppercase tracking-wide">
+                                                Skuteczność zabójstw
+                                            </div>
+                                        </div>
+                                    </>
+                                )}
                             </div>
                         </div>
                     </div>

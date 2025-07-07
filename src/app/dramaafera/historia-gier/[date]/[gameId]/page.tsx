@@ -11,11 +11,31 @@ function getPlayerAvatarPath(playerName: string): string {
     return `/images/avatars/${playerName}.png`;
 }
 
+// Funkcja pomocnicza do konwersji nicku na format URL-friendly
+function convertNickToUrlSlug(nick: string): string {
+    return nick.replace(/\s+/g, '-').toLowerCase();
+}
+
 // Funkcja pomocnicza do konwersji nazwy roli na format URL-friendly
 function convertRoleToUrlSlug(role: string): string {
     return role.toLowerCase()
         .replace(/\s+/g, '-')
         .replace(/[^\w\-]/g, '');
+}
+
+// Funkcja do sprawdzania czy rola jest rolą zabijającą
+function isKillerRole(roleName: string): boolean {
+    const killerRoles = [
+        // Impostorzy (wszyscy mogą zabijać)
+        'Impostor', 'Miner', 'Shapeshifter', 'Camouflager', 'Morphling', 'Swooper', 
+        'Escapist', 'Grenadier', 'Venerer', 'Blackmailer', 'Janitor', 'Bomber',
+        'Warlock', 'Hypnotist', 'Eclipsal', 'Undertaker',
+        // Neutralne role zabijające
+        'Arsonist', 'Glitch', 'Juggernaut', 'Pestilence', 'Soul Collector', 'Vampire', 'Werewolf',
+        // Crewmate role zabijające
+        'Sheriff', 'Hunter', 'Veteran'
+    ];
+    return killerRoles.includes(roleName);
 }
 
 interface GamePageProps {
@@ -285,6 +305,90 @@ export default async function GameDetailPage({ params }: GamePageProps) {
                         ))}
                     </div>
                 </div>
+
+                {/* Statystyki zabójstw dla ról zabijających */}
+                {gameData.detailedStats.playersData.some(player => {
+                    const lastRole = player.roleHistory?.[player.roleHistory.length - 1] || '';
+                    return isKillerRole(lastRole) && (player.originalStats.correctKills > 0 || player.originalStats.incorrectKills > 0);
+                }) && (
+                    <div className="mb-8">
+                        <h2 className="text-3xl font-bold mb-4">🗡️ Statystyki Zabójstw</h2>
+                        <div className="space-y-4">
+                            {gameData.detailedStats.playersData
+                                .filter(player => {
+                                    const lastRole = player.roleHistory?.[player.roleHistory.length - 1] || '';
+                                    return isKillerRole(lastRole) && (player.originalStats.correctKills > 0 || player.originalStats.incorrectKills > 0);
+                                })
+                                .map((player, index) => {
+                                    const lastRole = player.roleHistory?.[player.roleHistory.length - 1] || '';
+                                    const roleColor = getRoleColor(lastRole);
+                                    const totalKills = player.originalStats.correctKills + player.originalStats.incorrectKills;
+                                    const accuracy = totalKills > 0 ? ((player.originalStats.correctKills / totalKills) * 100).toFixed(1) : '0.0';
+                                    
+                                    return (
+                                        <div key={index} className="bg-gray-800/50 rounded-lg p-4 border border-gray-700/50">
+                                            <div className="flex items-center justify-between">
+                                                <div className="flex items-center space-x-3">
+                                                    <Image
+                                                        src={getPlayerAvatarPath(player.nickname)}
+                                                        alt={`Avatar ${player.nickname}`}
+                                                        width={40}
+                                                        height={40}
+                                                        className="rounded-full border-2"
+                                                        style={{ borderColor: roleColor }}
+                                                    />
+                                                    <div>
+                                                        <Link 
+                                                            href={`/dramaafera/user/${convertNickToUrlSlug(player.nickname)}`}
+                                                            className="text-lg font-bold text-white hover:text-blue-300 transition-colors"
+                                                        >
+                                                            {player.nickname}
+                                                        </Link>
+                                                        <span 
+                                                            className="ml-2 px-2 py-1 rounded text-sm font-semibold"
+                                                            style={{
+                                                                backgroundColor: `${roleColor}20`,
+                                                                color: roleColor,
+                                                                border: `1px solid ${roleColor}40`
+                                                            }}
+                                                        >
+                                                            {lastRole}
+                                                        </span>
+                                                    </div>
+                                                </div>
+                                                
+                                                <div className="flex items-center space-x-6">
+                                                    <div className="text-center">
+                                                        <div className="text-2xl font-bold text-green-400">{player.originalStats.correctKills}</div>
+                                                        <div className="text-sm text-gray-400">Poprawne</div>
+                                                    </div>
+                                                    <div className="text-center">
+                                                        <div className="text-2xl font-bold text-red-400">{player.originalStats.incorrectKills}</div>
+                                                        <div className="text-sm text-gray-400">Niepoprawne</div>
+                                                    </div>
+                                                    <div className="text-center">
+                                                        <div className="text-2xl font-bold text-blue-400">{totalKills}</div>
+                                                        <div className="text-sm text-gray-400">Łącznie</div>
+                                                    </div>
+                                                    <div className="text-center">
+                                                        <div className={`text-2xl font-bold ${
+                                                            parseFloat(accuracy) >= 80 ? 'text-green-400' :
+                                                            parseFloat(accuracy) >= 60 ? 'text-yellow-400' :
+                                                            'text-red-400'
+                                                        }`}>
+                                                            {accuracy}%
+                                                        </div>
+                                                        <div className="text-sm text-gray-400">Skuteczność</div>
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    );
+                                })
+                            }
+                        </div>
+                    </div>
+                )}
 
                 {/* Timeline wydarzeń */}
                 <div className="mb-8">
