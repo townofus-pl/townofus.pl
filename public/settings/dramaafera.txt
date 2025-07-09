@@ -80,7 +80,7 @@
 50
 <color=#8C004DFF>Juggernaut</color>
 50
-<color=#E6FFB3FF>Plaguebearer</color>
+<color=#E6FFB3FF>Plaguebearer / Pestilence</color>
 50
 <color=#99FFCCFF>Soul Collector</color>
 50
@@ -293,9 +293,9 @@ True
 Assassin Can Guess Lovers
 True
 Radiate Colour Range
-0,5
+0.5
 Radiate Max Range
-1,5
+1.5
 Sense Duration
 5
 Examine Cooldown
@@ -313,11 +313,11 @@ Tasks Remaining When Alert Is Sent
 Haunter Reveals Neutral Roles
 False
 Who Can Click Haunter
-0
+All
 Footprint Size
 5
 Footprint Interval
-0,25
+0.25
 Footprint Duration
 2
 Anonymous Footprint
@@ -331,7 +331,7 @@ True
 Maximum Number Of Players That Can Be Watched
 5
 Dead Body Arrow Duration
-0,50000006
+0.50000006
 Seer Cooldown
 20
 Crewmate Killing Roles Are Red
@@ -353,7 +353,7 @@ True
 Snitch Sees Traitor
 True
 Who Sees Dead Bodies On Admin
-1
+Spy
 Arrow Update Interval
 3
 Track Cooldown
@@ -371,7 +371,7 @@ True
 Maximum Number Of Traps
 3
 Trap Size
-0,50000006
+0.5
 Minimum Number Of Roles Required To Trigger Trap
 3
 Hunter Kill Cooldown
@@ -433,17 +433,17 @@ Altruist Revive Duration
 Revive Uses
 3
 Revive Radius
-0,5
+0.5
 Barrier Cooldown
 20
 Show Barriered Player
-2
+Self+Cleric
 Cleric Gets Attack Notification
 True
 Show Shielded Player
-2
+Self+Medic
 Who Gets Murder Attempt Indicator
-0
+Medic
 Shield Breaks On Murder Attempt
 False
 Show Medic Reports
@@ -463,7 +463,7 @@ True
 Neutral Killing Roles Show Evil
 True
 Show Fortified Player
-2
+Self+Warden
 Maximum Number Of Fixes
 5
 Mediate Cooldown
@@ -473,7 +473,7 @@ False
 Reveal The Medium To The Mediate Target
 True
 Who Is Revealed With Mediate
-2
+All Dead
 Flush Cooldown
 20
 Maximum Number Of Barricades
@@ -495,9 +495,9 @@ Protect Duration
 Maximum Number Of Protects
 5
 Show Protected Player
-2
+Self+GA
 GA Becomes On Target Dead
-1
+Amnesiac
 Target Knows GA Exists
 True
 GA Knows Targets Role
@@ -529,11 +529,11 @@ False
 Doomsayer Win Ends Game
 True
 Executioner Becomes On Target Dead
-1
+Amnesiac
 Executioner Can Button
 True
 Executioner Win
-0
+Ends Game
 Jester Can Button
 True
 Jester Can Hide In Vents
@@ -545,7 +545,7 @@ False
 Jester Scatter Timer
 30
 Jester Win
-0
+Ends Game
 Tasks Remaining When Phantom Can Be Clicked
 9
 Phantom Win Ends Game
@@ -553,7 +553,7 @@ True
 Douse Cooldown
 20
 Ignite Radius
-0,50000006
+0.5
 Arsonist Can Vent
 True
 Mimic Cooldown
@@ -571,7 +571,7 @@ True
 Juggernaut Initial Kill Cooldown
 20
 Reduced Kill Cooldown Per Kill
-2,5
+2.5
 Juggernaut Can Vent
 True
 Infect Cooldown
@@ -603,7 +603,7 @@ Rampage Cooldown
 Rampage Duration
 15
 Rampage Kill Cooldown
-2,5
+2.5
 Werewolf Can Vent When Rampaged
 True
 Blind Cooldown
@@ -641,9 +641,9 @@ Ability Cooldown
 Ability Duration
 10
 Sprint Speed
-1,4999998
+1.5
 Minimum Freeze Speed
-0,50000006
+0.5
 Freeze Radius
 1
 Detonate Delay
@@ -651,7 +651,7 @@ Detonate Delay
 Max Kills In Detonation
 15
 Detonate Radius
-0,50000006
+0.5
 Bomber Can Vent
 True
 All Impostors See Bomb
@@ -671,7 +671,7 @@ False
 Time It Takes To Fully Charge
 20
 Time It Takes To Use Full Charge
-1,9999993
+2
 Initial Blackmail Cooldown
 15
 Only Target Sees Blackmail
@@ -699,9 +699,9 @@ Diseased Kill Multiplier
 Chill Duration
 10
 Chill Start Speed
-0,49999994
+0.5
 Flash Speed
-1,4999998
+1.5
 Giant Speed
 1
 Both Lovers Die
