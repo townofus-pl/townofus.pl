@@ -240,7 +240,7 @@ export const gameData: GameData = {
     },
     {
       playerName: "siupax",
-      roleHistory: ["Arosnist"],
+      roleHistory: ["Arsonist"],
       modifiers: ["Sixth Sense"],
       win: 0,
       initialRolePoints: 0,

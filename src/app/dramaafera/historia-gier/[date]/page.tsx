@@ -65,6 +65,14 @@ export default async function DateGamesPage({ params }: DatePageProps) {
                     <p className="text-center text-gray-300 mt-4 text-lg">
                         {games.length} {games.length === 1 ? 'rozgrywka' : games.length < 5 ? 'rozgrywki' : 'rozgrywek'} z tego dnia
                     </p>
+                    <div className="text-center mt-4">
+                        <Link
+                            href={`/dramaafera/historia-gier/${resolvedParams.date}/wyniki`}
+                            className="inline-block bg-yellow-500 hover:bg-yellow-600 text-black font-bold px-6 py-3 rounded-lg shadow transition-colors text-lg"
+                        >
+                            🏅 Zobacz wyniki dnia
+                        </Link>
+                    </div>
                 </div>
 
                 <div className="space-y-4">

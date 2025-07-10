@@ -40,19 +40,7 @@ export default async function HistoriaGierPage() {
                 </div>
 
                 {/* Link do wszystkich gier */}
-                <div className="mb-6">
-                    <Link 
-                        href="/dramaafera/historia-gier/wszystkie"
-                        className="block"
-                    >
-                        <div className="bg-zinc-900/50 rounded-xl p-6 border border-blue-500/50 hover:border-blue-400/70 hover:bg-zinc-900/70 transition-all duration-200 cursor-pointer">
-                            <div className="text-center">
-                                <h3 className="text-2xl font-bold text-blue-400 mb-2">📋 Wszystkie gry</h3>
-                                <p className="text-gray-300">Pokaż wszystkie rozgrywki w jednej liście</p>
-                            </div>
-                        </div>
-                    </Link>
-                </div>
+
 
                 <div className="space-y-4">
                     {dates.map((dateGroup) => (
@@ -79,15 +67,19 @@ export default async function HistoriaGierPage() {
                                             <div className="flex flex-wrap gap-1 items-center">
                                                 <span className="text-sm mr-2">Gracze:</span>
                                                 {getUniquePlayersFromDate(dateGroup).map((playerName) => (
-                                                    <Image
-                                                        key={playerName}
-                                                        src={getPlayerAvatarPath(playerName)}
-                                                        alt={playerName}
-                                                        width={20}
-                                                        height={20}
-                                                        className="rounded-full border border-gray-600"
-                                                        title={playerName}
-                                                    />
+                                                    <div key={playerName} className="relative group">
+                                                        <Image
+                                                            src={getPlayerAvatarPath(playerName)}
+                                                            alt={playerName}
+                                                            width={20}
+                                                            height={20}
+                                                            className="rounded-full border border-gray-600 hover:border-white transition-colors cursor-pointer"
+                                                        />
+                                                        {/* Tooltip z nickiem */}
+                                                        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-1 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10">
+                                                            {playerName}
+                                                        </div>
+                                                    </div>
                                                 ))}
                                             </div>
                                         </div>

@@ -23,21 +23,6 @@ function convertRoleToUrlSlug(role: string): string {
         .replace(/[^\w\-]/g, '');
 }
 
-// Funkcja do sprawdzania czy rola jest rolą zabijającą
-function isKillerRole(roleName: string): boolean {
-    const killerRoles = [
-        // Impostorzy (wszyscy mogą zabijać)
-        'Impostor', 'Miner', 'Shapeshifter', 'Camouflager', 'Morphling', 'Swooper', 
-        'Escapist', 'Grenadier', 'Venerer', 'Blackmailer', 'Janitor', 'Bomber',
-        'Warlock', 'Hypnotist', 'Eclipsal', 'Undertaker',
-        // Neutralne role zabijające
-        'Arsonist', 'Glitch', 'Juggernaut', 'Pestilence', 'Soul Collector', 'Vampire', 'Werewolf',
-        // Crewmate role zabijające
-        'Sheriff', 'Hunter', 'Veteran'
-    ];
-    return killerRoles.includes(roleName);
-}
-
 interface GamePageProps {
     params: Promise<{
         date: string;
@@ -306,90 +291,6 @@ export default async function GameDetailPage({ params }: GamePageProps) {
                     </div>
                 </div>
 
-                {/* Statystyki zabójstw dla ról zabijających */}
-                {gameData.detailedStats.playersData.some(player => {
-                    const lastRole = player.roleHistory?.[player.roleHistory.length - 1] || '';
-                    return isKillerRole(lastRole) && (player.originalStats.correctKills > 0 || player.originalStats.incorrectKills > 0);
-                }) && (
-                    <div className="mb-8">
-                        <h2 className="text-3xl font-bold mb-4">🗡️ Statystyki Zabójstw</h2>
-                        <div className="space-y-4">
-                            {gameData.detailedStats.playersData
-                                .filter(player => {
-                                    const lastRole = player.roleHistory?.[player.roleHistory.length - 1] || '';
-                                    return isKillerRole(lastRole) && (player.originalStats.correctKills > 0 || player.originalStats.incorrectKills > 0);
-                                })
-                                .map((player, index) => {
-                                    const lastRole = player.roleHistory?.[player.roleHistory.length - 1] || '';
-                                    const roleColor = getRoleColor(lastRole);
-                                    const totalKills = player.originalStats.correctKills + player.originalStats.incorrectKills;
-                                    const accuracy = totalKills > 0 ? ((player.originalStats.correctKills / totalKills) * 100).toFixed(1) : '0.0';
-                                    
-                                    return (
-                                        <div key={index} className="bg-gray-800/50 rounded-lg p-4 border border-gray-700/50">
-                                            <div className="flex items-center justify-between">
-                                                <div className="flex items-center space-x-3">
-                                                    <Image
-                                                        src={getPlayerAvatarPath(player.nickname)}
-                                                        alt={`Avatar ${player.nickname}`}
-                                                        width={40}
-                                                        height={40}
-                                                        className="rounded-full border-2"
-                                                        style={{ borderColor: roleColor }}
-                                                    />
-                                                    <div>
-                                                        <Link 
-                                                            href={`/dramaafera/user/${convertNickToUrlSlug(player.nickname)}`}
-                                                            className="text-lg font-bold text-white hover:text-blue-300 transition-colors"
-                                                        >
-                                                            {player.nickname}
-                                                        </Link>
-                                                        <span 
-                                                            className="ml-2 px-2 py-1 rounded text-sm font-semibold"
-                                                            style={{
-                                                                backgroundColor: `${roleColor}20`,
-                                                                color: roleColor,
-                                                                border: `1px solid ${roleColor}40`
-                                                            }}
-                                                        >
-                                                            {lastRole}
-                                                        </span>
-                                                    </div>
-                                                </div>
-                                                
-                                                <div className="flex items-center space-x-6">
-                                                    <div className="text-center">
-                                                        <div className="text-2xl font-bold text-green-400">{player.originalStats.correctKills}</div>
-                                                        <div className="text-sm text-gray-400">Poprawne</div>
-                                                    </div>
-                                                    <div className="text-center">
-                                                        <div className="text-2xl font-bold text-red-400">{player.originalStats.incorrectKills}</div>
-                                                        <div className="text-sm text-gray-400">Niepoprawne</div>
-                                                    </div>
-                                                    <div className="text-center">
-                                                        <div className="text-2xl font-bold text-blue-400">{totalKills}</div>
-                                                        <div className="text-sm text-gray-400">Łącznie</div>
-                                                    </div>
-                                                    <div className="text-center">
-                                                        <div className={`text-2xl font-bold ${
-                                                            parseFloat(accuracy) >= 80 ? 'text-green-400' :
-                                                            parseFloat(accuracy) >= 60 ? 'text-yellow-400' :
-                                                            'text-red-400'
-                                                        }`}>
-                                                            {accuracy}%
-                                                        </div>
-                                                        <div className="text-sm text-gray-400">Skuteczność</div>
-                                                    </div>
-                                                </div>
-                                            </div>
-                                        </div>
-                                    );
-                                })
-                            }
-                        </div>
-                    </div>
-                )}
-
                 {/* Timeline wydarzeń */}
                 <div className="mb-8">
                     <h2 className="text-3xl font-bold mb-4">⏰ Przebieg Gry</h2>
@@ -428,45 +329,204 @@ export default async function GameDetailPage({ params }: GamePageProps) {
                             <div key={index} className="bg-gray-800/50 rounded-lg p-6 border border-gray-700/50">
                                 <h3 className="text-xl font-bold mb-4 text-blue-400">
                                     Spotkanie #{meeting.meetingNumber}
-                                    {meeting.wasTie && <span className="text-yellow-400 ml-2">(Remis)</span>}
-                                    {meeting.wasBlessed && <span className="text-purple-400 ml-2">(Błogosławione)</span>}
+                                    {meeting.wasTie && <span className="text-yellow-400 ml-2">(Tie)</span>}
+                                    {meeting.wasBlessed && <span className="text-purple-400 ml-2">(Blessed)</span>}
                                 </h3>
                                 
                                 {meeting.deathsSinceLastMeeting.length > 0 && (
                                     <div className="mb-4">
                                         <h4 className="font-semibold text-red-400 mb-2">Zgony od ostatniego spotkania:</h4>
-                                        <ul className="list-disc list-inside text-gray-300">
-                                            {meeting.deathsSinceLastMeeting.map((death, i) => (
-                                                <li key={i}>{death}</li>
-                                            ))}
-                                        </ul>
+                                        <div className="flex flex-wrap gap-2">
+                                            {meeting.deathsSinceLastMeeting.map((death, i) => {
+                                                // Wyciągnij nick zmarłego (do pierwszego nawiasu)
+                                                const deadPlayerName = death.split(' (')[0];
+                                                return (
+                                                    <div key={i} className="relative group">
+                                                        <div className="flex items-center space-x-2 bg-red-600/20 text-red-300 px-2 py-1 rounded border border-red-400/50 cursor-pointer hover:bg-red-600/30 transition-colors">
+                                                            <Image
+                                                                src={getPlayerAvatarPath(deadPlayerName)}
+                                                                alt={`Avatar ${deadPlayerName}`}
+                                                                width={24}
+                                                                height={24}
+                                                                className="rounded-full border border-red-400"
+                                                            />
+                                                            <span>{deadPlayerName}</span>
+                                                        </div>
+                                                        {/* Tooltip z pełnym opisem */}
+                                                        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-1 px-3 py-2 bg-black text-white text-sm rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10 max-w-xs">
+                                                            {death}
+                                                        </div>
+                                                    </div>
+                                                );
+                                            })}
+                                        </div>
                                     </div>
                                 )}
 
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     <div>
-                                        <h4 className="font-semibold text-green-400 mb-2">Głosowania:</h4>
-                                        <div className="space-y-1">
-                                            {Object.entries(meeting.votes).map(([voter, votes]) => (
-                                                <div key={voter} className="text-gray-300">
-                                                    <span className="font-medium">{voter}:</span> {votes.join(', ')}
+                                        <h4 className="font-semibold text-green-400 mb-3">Głosowania:</h4>
+                                        <div className="space-y-3">
+                                            {Object.entries(meeting.votes).map(([target, voters]) => (
+                                                <div key={target} className="flex items-center space-x-3 p-3 bg-gray-700/30 rounded-lg">
+                                                    {/* Średni avatar i nick osoby otrzymującej głosy */}
+                                                    <div className="flex items-center space-x-2">
+                                                        <Image
+                                                            src={getPlayerAvatarPath(target)}
+                                                            alt={`Avatar ${target}`}
+                                                            width={48}
+                                                            height={48}
+                                                            className="rounded-full border-2 border-green-400"
+                                                        />
+                                                        <span className="text-lg font-semibold text-green-300">{target}</span>
+                                                    </div>
+                                                    
+                                                    {/* Strzałka */}
+                                                    <span className="text-gray-400">←</span>
+                                                    
+                                                    {/* Małe avatary głosujących */}
+                                                    <div className="flex space-x-1">
+                                                        {voters.map((voter, index) => (
+                                                            <div key={index} className="relative group">
+                                                                <Image
+                                                                    src={getPlayerAvatarPath(voter)}
+                                                                    alt={`Avatar ${voter}`}
+                                                                    width={24}
+                                                                    height={24}
+                                                                    className="rounded-full border border-gray-400 hover:border-white transition-colors cursor-pointer"
+                                                                />
+                                                                {/* Tooltip z nickiem */}
+                                                                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-1 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10">
+                                                                    {voter}
+                                                                </div>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                    
+                                                    {/* Liczba głosów */}
+                                                    <span className="text-sm text-gray-400 ml-auto">
+                                                        ({voters.length} głos{voters.length === 1 ? '' : voters.length < 5 ? 'y' : 'ów'})
+                                                    </span>
                                                 </div>
                                             ))}
+                                            
+                                            {/* Pominięcia na dole sekcji głosowań */}
+                                            {meeting.skipVotes.length > 0 && (
+                                                <div className="flex items-center space-x-3 p-3 bg-gray-700/30 rounded-lg">
+                                                    {/* Napis SKIP zamiast avatara */}
+                                                    <div className="flex items-center space-x-2">
+                                                        <div className="w-12 h-12 rounded-full border-2 border-yellow-400 bg-yellow-400/20 flex items-center justify-center">
+                                                            <span className="text-yellow-300 font-bold text-s">SKIP</span>
+                                                        </div>
+                                                        <span className="text-lg font-semibold text-yellow-300">Skip</span>
+                                                    </div>
+                                                    
+                                                    {/* Strzałka */}
+                                                    <span className="text-gray-400">←</span>
+                                                    
+                                                    {/* Małe avatary głosujących na skip */}
+                                                    <div className="flex space-x-1">
+                                                        {meeting.skipVotes.map((voter, index) => (
+                                                            <div key={index} className="relative group">
+                                                                <Image
+                                                                    src={getPlayerAvatarPath(voter)}
+                                                                    alt={`Avatar ${voter}`}
+                                                                    width={24}
+                                                                    height={24}
+                                                                    className="rounded-full border border-gray-400 hover:border-white transition-colors cursor-pointer"
+                                                                />
+                                                                {/* Tooltip z nickiem */}
+                                                                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-1 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10">
+                                                                    {voter}
+                                                                </div>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                    
+                                                    {/* Liczba głosów */}
+                                                    <span className="text-sm text-gray-400 ml-auto">
+                                                        ({meeting.skipVotes.length} głos{meeting.skipVotes.length === 1 ? '' : meeting.skipVotes.length < 5 ? 'y' : 'ów'})
+                                                    </span>
+                                                </div>
+                                            )}
+                                            
+                                            {/* Brak głosu na dole sekcji głosowań */}
+                                            {meeting.noVotes.length > 0 && (
+                                                <div className="flex items-center space-x-3 p-3 bg-gray-700/30 rounded-lg">
+                                                    {/* Szary napis zamiast avatara */}
+                                                    <div className="flex items-center space-x-2">
+                                                        <span className="text-lg font-semibold text-gray-400">Brak głosu:</span>
+                                                    </div>
+                                                    
+                                                    
+                                                    {/* Małe avatary graczy którzy nie głosowali */}
+                                                    <div className="flex space-x-1">
+                                                        {meeting.noVotes.map((voter, index) => (
+                                                            <div key={index} className="relative group">
+                                                                <Image
+                                                                    src={getPlayerAvatarPath(voter)}
+                                                                    alt={`Avatar ${voter}`}
+                                                                    width={24}
+                                                                    height={24}
+                                                                    className="rounded-full border border-gray-400 hover:border-white transition-colors cursor-pointer"
+                                                                />
+                                                                {/* Tooltip z nickiem */}
+                                                                <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-1 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10">
+                                                                    {voter}
+                                                                </div>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                    
+                                                    {/* Liczba graczy */}
+                                                    <span className="text-sm text-gray-400 ml-auto">
+                                                        ({meeting.noVotes.length} {meeting.noVotes.length === 1 ? 'gracz' : meeting.noVotes.length < 5 ? 'graczy' : 'graczy'})
+                                                    </span>
+                                                </div>
+                                            )}
                                         </div>
                                     </div>
                                     
                                     <div>
-                                        {meeting.skipVotes.length > 0 && (
+                                        {meeting.blackmailedPlayers && meeting.blackmailedPlayers.length > 0 && (
                                             <div className="mb-2">
-                                                <h4 className="font-semibold text-yellow-400 mb-1">Pominięcia:</h4>
-                                                <p className="text-gray-300">{meeting.skipVotes.join(', ')}</p>
+                                                <h4 className="font-semibold mb-2" style={{ color: '#FF0000' }}>🤐 Blackmailed:</h4>
+                                                <div className="flex flex-wrap gap-2">
+                                                    {meeting.blackmailedPlayers.map((playerName, index) => (
+                                                        <div key={index} className="flex items-center space-x-2 px-2 py-1 rounded" style={{ backgroundColor: '#FF000020', border: '1px solid #FF000050' }}>
+                                                            <Image
+                                                                src={getPlayerAvatarPath(playerName)}
+                                                                alt={`Avatar ${playerName}`}
+                                                                width={24}
+                                                                height={24}
+                                                                className="rounded-full border"
+                                                                style={{ borderColor: '#FF0000' }}
+                                                            />
+                                                            <span className="text-base font-medium" style={{ color: '#FF6666' }}>{playerName}</span>
+                                                        </div>
+                                                    ))}
+                                                </div>
                                             </div>
                                         )}
-                                        
-                                        {meeting.noVotes.length > 0 && (
+
+                                        {meeting.jailedPlayers && meeting.jailedPlayers.length > 0 && (
                                             <div>
-                                                <h4 className="font-semibold text-gray-400 mb-1">Brak głosu:</h4>
-                                                <p className="text-gray-300">{meeting.noVotes.join(', ')}</p>
+                                                <h4 className="font-semibold mb-2" style={{ color: '#A5A5A5' }}>🔒 Jailed:</h4>
+                                                <div className="flex flex-wrap gap-2">
+                                                    {meeting.jailedPlayers.map((playerName, index) => (
+                                                        <div key={index} className="flex items-center space-x-2 px-2 py-1 rounded" style={{ backgroundColor: '#A5A5A520', border: '1px solid #A5A5A550' }}>
+                                                            <Image
+                                                                src={getPlayerAvatarPath(playerName)}
+                                                                alt={`Avatar ${playerName}`}
+                                                                width={24}
+                                                                height={24}
+                                                                className="rounded-full border"
+                                                                style={{ borderColor: '#A5A5A5' }}
+                                                            />
+                                                            <span className="text-base font-medium" style={{ color: '#CCCCCC' }}>{playerName}</span>
+                                                        </div>
+                                                    ))}
+                                                </div>
                                             </div>
                                         )}
                                     </div>

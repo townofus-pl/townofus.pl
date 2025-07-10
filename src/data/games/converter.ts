@@ -73,6 +73,8 @@ export interface UIMeetingData {
     votes: { [playerName: string]: string[] };
     skipVotes: string[];
     noVotes: string[];
+    blackmailedPlayers?: string[]; // Gracze uciszeni przez Blackmailer
+    jailedPlayers?: string[]; // Gracze uwięzieni przez Jailor
     wasTie: boolean;
     wasBlessed: boolean;
 }
@@ -490,6 +492,8 @@ export function convertMeetingData(meeting: MeetingData): UIMeetingData {
         votes: meeting.votes,
         skipVotes: meeting.skipVotes,
         noVotes: meeting.noVotes,
+        blackmailedPlayers: meeting.blackmailedPlayers || [],
+        jailedPlayers: meeting.jailedPlayers || [],
         wasTie: meeting.wasTie,
         wasBlessed: meeting.wasBlessed
     };
@@ -543,6 +547,21 @@ export function formatPlayerStatsWithColors(player: UIPlayerData, maxTasks?: num
         statParts.push({
             text: tasksText,
             color: undefined // Bez specjalnego koloru
+        });
+    }
+    
+    // Dodaj nowe statystyki
+    if (stats.survivedRounds !== undefined && stats.survivedRounds >= 0) {
+        statParts.push({
+            text: `Survived Rounds: ${stats.survivedRounds}`,
+            color: '#06B6D4' // cyjan
+        });
+    }
+    
+    if (stats.disconnected === 1) {
+        statParts.push({
+            text: '🔌 Disconnected',
+            color: '#EF4444' // czerwony
         });
     }
     

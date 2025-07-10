@@ -80,7 +80,7 @@ function isKillerRole(roleName: string): boolean {
         // Impostorzy (wszyscy mogą zabijać)
         'Impostor', 'Miner', 'Shapeshifter', 'Camouflager', 'Morphling', 'Swooper', 
         'Escapist', 'Grenadier', 'Venerer', 'Blackmailer', 'Janitor', 'Bomber',
-        'Warlock', 'Hypnotist', 'Eclipsal', 'Undertaker',
+        'Warlock', 'Hypnotist', 'Eclipsal', 'Undertaker', 'Scavenger',
         // Neutralne role zabijające
         'Arsonist', 'Glitch', 'Juggernaut', 'Pestilence', 'Soul Collector', 'Vampire', 'Werewolf',
         // Crewmate role zabijające
@@ -128,9 +128,9 @@ function generateRoleStats(allGames: any[], targetRole: string): RoleStats {
                 }
                 
                 // Dodaj statystyki zabójstw jeśli to rola zabijająca
-                if (isKiller) {
-                    const correctKills = player.correctKills || 0;
-                    const incorrectKills = player.incorrectKills || 0;
+                if (isKiller && player.originalStats) {
+                    const correctKills = player.originalStats.correctKills || 0;
+                    const incorrectKills = player.originalStats.incorrectKills || 0;
                     
                     current.correctKills += correctKills;
                     current.incorrectKills += incorrectKills;
@@ -302,13 +302,14 @@ export default async function RoleStatsPage({ params }: RolePageProps) {
                             
                             {/* Link do opisu roli - prowadzi do głównej strony z opisem wszystkich ról */}
                             <Link 
-                                href="/#roles"
+                                href={`/#${convertRoleToUrlSlug(roleName)}`}
                                 className="inline-block mb-6 px-4 py-2 bg-zinc-800/50 rounded-lg border border-zinc-700/50 text-white hover:text-gray-300 hover:bg-zinc-700/50 transition-colors"
                             >
                                 📖 Zobacz opis roli
                             </Link>
                             
-                            <div className={`grid grid-cols-1 ${roleStats.isKillerRole ? 'md:grid-cols-2 lg:grid-cols-5' : 'md:grid-cols-3'} gap-6`}>
+                            {/* Podstawowe statystyki roli */}
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
                                 {/* Liczba gier */}
                                 <div className="bg-zinc-800/50 rounded-lg p-4 border border-zinc-700/50">
                                     <div className="text-3xl font-bold text-blue-400 mb-1">
@@ -338,38 +339,48 @@ export default async function RoleStatsPage({ params }: RolePageProps) {
                                         Współczynnik wygranych
                                     </div>
                                 </div>
-
-                                {/* Statystyki zabójstw - tylko dla ról zabijających */}
-                                {roleStats.isKillerRole && (
-                                    <>
-                                        {/* Poprawne zabójstwa */}
-                                        <div className="bg-zinc-800/50 rounded-lg p-4 border border-zinc-700/50">
-                                            <div className="text-3xl font-bold text-green-500 mb-1">
-                                                {roleStats.totalCorrectKills || 0}
-                                            </div>
-                                            <div className="text-sm text-zinc-400 uppercase tracking-wide">
-                                                Poprawne zabójstwa
-                                            </div>
-                                        </div>
-
-                                        {/* Skuteczność zabójstw */}
-                                        <div className="bg-zinc-800/50 rounded-lg p-4 border border-zinc-700/50">
-                                            <div 
-                                                className="text-3xl font-bold mb-1"
-                                                style={{ 
-                                                    color: (roleStats.killAccuracy || 0) >= 70 ? '#10B981' : 
-                                                           (roleStats.killAccuracy || 0) >= 50 ? '#F59E0B' : '#EF4444'
-                                                }}
-                                            >
-                                                {roleStats.killAccuracy || 0}%
-                                            </div>
-                                            <div className="text-sm text-zinc-400 uppercase tracking-wide">
-                                                Skuteczność zabójstw
-                                            </div>
-                                        </div>
-                                    </>
-                                )}
                             </div>
+
+                            {/* Statystyki zabójstw - tylko dla ról zabijających */}
+                            {roleStats.isKillerRole && (
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                                    {/* Poprawne zabójstwa */}
+                                    <div className="bg-zinc-800/50 rounded-lg p-4 border border-zinc-700/50">
+                                        <div className="text-3xl font-bold text-green-500 mb-1">
+                                            {roleStats.totalCorrectKills || 0}
+                                        </div>
+                                        <div className="text-sm text-zinc-400 uppercase tracking-wide">
+                                            Poprawne zabójstwa
+                                        </div>
+                                    </div>
+
+                                    {/* Niepoprawne zabójstwa */}
+                                    <div className="bg-zinc-800/50 rounded-lg p-4 border border-zinc-700/50">
+                                        <div className="text-3xl font-bold text-red-500 mb-1">
+                                            {roleStats.totalIncorrectKills || 0}
+                                        </div>
+                                        <div className="text-sm text-zinc-400 uppercase tracking-wide">
+                                            Niepoprawne zabójstwa
+                                        </div>
+                                    </div>
+
+                                    {/* Skuteczność zabójstw */}
+                                    <div className="bg-zinc-800/50 rounded-lg p-4 border border-zinc-700/50">
+                                        <div 
+                                            className="text-3xl font-bold mb-1"
+                                            style={{ 
+                                                color: (roleStats.killAccuracy || 0) >= 70 ? '#10B981' : 
+                                                       (roleStats.killAccuracy || 0) >= 50 ? '#F59E0B' : '#EF4444'
+                                            }}
+                                        >
+                                            {roleStats.killAccuracy || 0}%
+                                        </div>
+                                        <div className="text-sm text-zinc-400 uppercase tracking-wide">
+                                            Skuteczność zabójstw
+                                        </div>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>

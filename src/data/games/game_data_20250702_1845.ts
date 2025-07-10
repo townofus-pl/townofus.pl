@@ -14,6 +14,7 @@ export interface PlayerStats {
   roleHistory: string[];
   modifiers: string[];
   win: number;
+  disconnected?: number;
   initialRolePoints: number;
   correctKills: number;
   incorrectKills: number;
@@ -438,7 +439,8 @@ export const gameData: GameData = {
       playerName: "MokraJola",
       roleHistory: ["Snitch"],
       modifiers: [],
-      win: 1,
+      win: 0,
+      disconnected: 1,
       initialRolePoints: 0,
       correctKills: 0,
       incorrectKills: 0,

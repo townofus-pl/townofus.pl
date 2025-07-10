@@ -14,6 +14,7 @@ export interface PlayerStats {
   roleHistory: string[];
   modifiers: string[];
   win: number;
+  disconnected?: number; // 0 = nie rozłączony, 1 = rozłączony
   initialRolePoints: number;
   correctKills: number;
   incorrectKills: number;
@@ -31,6 +32,7 @@ export interface PlayerStats {
   incorrectWardenFortifies: number;
   janitorCleans: number;
   completedTasks: number;
+  survivedRounds?: number; // Liczba rund które gracz przeżył
   correctAltruistRevives: number;
   incorrectAltruistRevives: number;
   correctSwaps: number;
@@ -49,6 +51,8 @@ export interface MeetingData {
   votes: { [playerId: string]: string[] };
   skipVotes: string[];
   noVotes: string[];
+  blackmailedPlayers?: string[]; // Gracze uciszeni przez Blackmailer
+  jailedPlayers?: string[]; // Gracze uwięzieni przez Jailor
   wasTie: boolean;
   wasBlessed: boolean;
 }
