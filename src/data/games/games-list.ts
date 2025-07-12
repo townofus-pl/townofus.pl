@@ -248,6 +248,58 @@ export const availableGames = [
         id: "20250611_1830_01",
         fileName: "game_data_20250611_1830"
     },
+    {
+        id: "20250604_2154_13",
+        fileName: "game_data_20250604_2154"
+    },
+    {
+        id: "20250604_2139_12",
+        fileName: "game_data_20250604_2139"
+    },
+    {
+        id: "20250604_2125_11",
+        fileName: "game_data_20250604_2125"
+    },
+    {
+        id: "20250604_2113_10",
+        fileName: "game_data_20250604_2113"
+    },
+    {
+        id: "20250604_2100_09",
+        fileName: "game_data_20250604_2100"
+    },
+    {
+        id: "20250604_2034_08",
+        fileName: "game_data_20250604_2034"
+    },
+    {
+        id: "20250604_2011_07",
+        fileName: "game_data_20250604_2011"
+    },
+    {
+        id: "20250604_1954_06",
+        fileName: "game_data_20250604_1954"
+    },
+    {
+        id: "20250604_1934_05",
+        fileName: "game_data_20250604_1934"
+    },
+    {
+        id: "20250604_1906_04",
+        fileName: "game_data_20250604_1906"
+    },
+    {
+        id: "20250604_1852_03",
+        fileName: "game_data_20250604_1852"
+    },
+    {
+        id: "20250604_1830_02",
+        fileName: "game_data_20250604_1830"
+    },
+    {
+        id: "20250604_1815_01",
+        fileName: "game_data_20250604_1815"
+    },
     // Dodaj kolejne gry tutaj w formacie:
     // {
     //     id: "YYYYMMDD_HHMM", 
