@@ -156,6 +156,98 @@ export const availableGames = [
         id: "20250709_1832_01",
         fileName: "game_data_20250709_1832"
     },
+    {
+        id: "20250709_1832_01",
+        fileName: "game_data_20250709_1832"
+    },
+    {
+        id: "20250618_2136_11",
+        fileName: "game_data_20250618_2136"
+    },
+    {
+        id: "20250618_2116_10",
+        fileName: "game_data_20250618_2116"
+    },
+    {
+        id: "20250618_2049_09",
+        fileName: "game_data_20250618_2049"
+    },
+    {
+        id: "20250618_2028_08",
+        fileName: "game_data_20250618_2028"
+    },
+    {
+        id: "20250618_2008_07",
+        fileName: "game_data_20250618_2008"
+    },
+    {
+        id: "20250618_1942_06",
+        fileName: "game_data_20250618_1942"
+    },
+    {
+        id: "20250618_1921_05",
+        fileName: "game_data_20250618_1921"
+    },
+    {
+        id: "20250618_1912_04",
+        fileName: "game_data_20250618_1912"
+    },
+    {
+        id: "20250618_1853_03",
+        fileName: "game_data_20250618_1853"
+    },
+    {
+        id: "20250618_1837_02",
+        fileName: "game_data_20250618_1837"
+    },
+    {
+        id: "20250618_1818_01",
+        fileName: "game_data_20250618_1818"
+    },
+    {
+        id: "20250611_2136_11",
+        fileName: "game_data_20250611_2136"
+    },
+    {
+        id: "20250611_2114_10",
+        fileName: "game_data_20250611_2114"
+    },
+    {
+        id: "20250611_2059_09",
+        fileName: "game_data_20250611_2059"
+    },
+    {
+        id: "20250611_2045_08",
+        fileName: "game_data_20250611_2045"
+    },
+    {
+        id: "20250611_2019_07",
+        fileName: "game_data_20250611_2019"
+    },
+    {
+        id: "20250611_2006_06",
+        fileName: "game_data_20250611_2006"
+    },
+    {
+        id: "20250611_1945_05",
+        fileName: "game_data_20250611_1945"
+    },
+    {
+        id: "20250611_1923_04",
+        fileName: "game_data_20250611_1923"
+    },
+    {
+        id: "20250611_1913_03",
+        fileName: "game_data_20250611_1913"
+    },
+    {
+        id: "20250611_1853_02",
+        fileName: "game_data_20250611_1853"
+    },
+    {
+        id: "20250611_1830_01",
+        fileName: "game_data_20250611_1830"
+    },
     // Dodaj kolejne gry tutaj w formacie:
     // {
     //     id: "YYYYMMDD_HHMM", 
