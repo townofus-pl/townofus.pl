@@ -6,7 +6,7 @@ const nextConfig: NextConfig = {
      *
      * @see https://nextjs.org/docs/app/building-your-application/deploying/static-exports
      */
-    output: "export",
+    // output: "export", // Wyłączone, aby API routes działały w trybie serwerowym
 
     /**
      * Disable server-based image optimization. Next.js does not support

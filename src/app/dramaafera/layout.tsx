@@ -19,8 +19,8 @@ const barlow = Barlow({
 });
 
 export const metadata: Metadata = {
-    title: "townofus.pl – Among Us Town of Us Polska",
-    description: "Szybka wyszukiwarka ról z modyfikacji Town of Us",
+    title: "Among Us Drama Afera XD",
+    description: "Boxdel na KoGmawie. Hexakill na FameMMA 18. UWAGA: Martwy Wojciech Gola",
 };
 
 export default function RootLayout({
