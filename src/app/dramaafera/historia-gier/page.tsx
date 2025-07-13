@@ -25,12 +25,6 @@ export default async function HistoriaGierPage() {
         <div className="min-h-screen rounded-xl bg-zinc-900/50 text-white">
             <div className="container mx-auto px-4 py-8">
                 <div className="mb-8">
-                    <Link 
-                        href="/dramaafera" 
-                        className="text-blue-400 hover:text-blue-300 transition-colors mb-4 inline-block"
-                    >
-                        ← Powrót do Drama Afera
-                    </Link>
                     <h1 className="text-6xl font-brook font-bold text-center drop-shadow-[0_0_10px_rgba(255,0,0,0.7)]">
                         Historia Gier
                     </h1>
