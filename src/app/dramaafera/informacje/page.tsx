@@ -41,7 +41,7 @@ export default function InnePage() {
                                 <li>Za niepoprawne zabójstwo.</li>
                                 <li>Za niepoprawnego guessa.</li>
                                 <li>Za niepoprawną egzekucję jako Jailor.</li>
-                                <li>Za poprawne skazanie jako Prosecutor.</li>
+                                <li>Za niepoprawne skazanie jako Prosecutor.</li>
                                 <li>Wskrzeszenie Impostora lub Neutrala jako Altruist.</li>
                                 <li>Za nałożenie tarczy Impostorowi lub Neutralowi jako Medic.</li>
                                 <li>Za nałożenie Fortify Impostorowi lub Neutralowi jako Warden.</li>
