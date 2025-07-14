@@ -20,7 +20,7 @@ const barlow = Barlow({
 
 export const metadata: Metadata = {
     title: "Among Us Drama Afera XD",
-    description: "Boxdel na KoGmawie. Hexakill na FameMMA 18. UWAGA: Martwy Wojciech Gola",
+    description: "Boxdel na KogMawie. Hexakill na FameMMA 18. UWAGA: Martwy Wojciech Gola",
 };
 
 export default function RootLayout({
