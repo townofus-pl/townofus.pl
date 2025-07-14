@@ -53,7 +53,7 @@
 <color=#B3D94DFF>Imitator</color>
 50
 <color=#A680FFFF>Medium</color>
-50
+0
 <color=#CC6600FF>Plumber</color>
 50
 <color=#00EEFFFF>Transporter</color>
@@ -293,7 +293,7 @@ True
 Assassin Can Guess Lovers
 True
 Radiate Colour Range
-0.5
+0,5
 Radiate Max Range
 1.5
 Sense Duration
@@ -313,11 +313,11 @@ Tasks Remaining When Alert Is Sent
 Haunter Reveals Neutral Roles
 False
 Who Can Click Haunter
-All
+0
 Footprint Size
 5
 Footprint Interval
-0.25
+0,25
 Footprint Duration
 2
 Anonymous Footprint
@@ -331,7 +331,7 @@ True
 Maximum Number Of Players That Can Be Watched
 5
 Dead Body Arrow Duration
-0.50000006
+0,50000006
 Seer Cooldown
 20
 Crewmate Killing Roles Are Red
@@ -361,7 +361,7 @@ Track Cooldown
 Tracker Arrows Reset After Each Round
 True
 Maximum Number Of Tracks
-5
+3
 Min Amount Of Time In Trap To Register
 0
 Trap Cooldown
@@ -371,7 +371,7 @@ True
 Maximum Number Of Traps
 3
 Trap Size
-0.5
+0,7000001
 Minimum Number Of Roles Required To Trigger Trap
 3
 Hunter Kill Cooldown
@@ -419,7 +419,7 @@ True
 Vigilante Can Guess Lovers
 True
 Jail Cooldown
-20
+15
 Maximum Number Of Executes
 5
 Campaign Cooldown
@@ -433,23 +433,23 @@ Altruist Revive Duration
 Revive Uses
 3
 Revive Radius
-0.5
+0,5
 Barrier Cooldown
-20
+15
 Show Barriered Player
-Self+Cleric
+2
 Cleric Gets Attack Notification
 True
 Show Shielded Player
-Self+Medic
+2
 Who Gets Murder Attempt Indicator
-Medic
+0
 Shield Breaks On Murder Attempt
 False
 Show Medic Reports
 True
 Time Where Medic Will Have Color Type
-10
+0
 Confess Cooldown
 20
 Initial Bless Cooldown
@@ -463,7 +463,7 @@ True
 Neutral Killing Roles Show Evil
 True
 Show Fortified Player
-Self+Warden
+2
 Maximum Number Of Fixes
 5
 Mediate Cooldown
@@ -481,7 +481,7 @@ Maximum Number Of Barricades
 Transport Cooldown
 20
 Maximum Number Of Transports
-5
+4
 Transporter Can Use Vitals
 False
 Amnesiac Gets Arrows Pointing To Dead Bodies
@@ -489,15 +489,15 @@ True
 Time After Death Arrow Appears
 1
 Protect Cooldown
-20
+15
 Protect Duration
 10
 Maximum Number Of Protects
 5
 Show Protected Player
-Self+GA
+2
 GA Becomes On Target Dead
-Amnesiac
+1
 Target Knows GA Exists
 True
 GA Knows Targets Role
@@ -515,13 +515,13 @@ Vest Cooldown
 Vest Duration
 10
 Maximum Number Of Vests
-5
+4
 Survivor Scatter Mechanic Enabled
 False
 Survivor Scatter Timer
 30
 Observe Cooldown
-15
+10
 Doomsayer Guesses All Roles At Once
 False
 Doomsayer Can't Observe
@@ -529,11 +529,11 @@ False
 Doomsayer Win Ends Game
 True
 Executioner Becomes On Target Dead
-Amnesiac
+1
 Executioner Can Button
 True
 Executioner Win
-Ends Game
+0
 Jester Can Button
 True
 Jester Can Hide In Vents
@@ -545,7 +545,7 @@ False
 Jester Scatter Timer
 30
 Jester Win
-Ends Game
+0
 Tasks Remaining When Phantom Can Be Clicked
 9
 Phantom Win Ends Game
@@ -553,7 +553,7 @@ True
 Douse Cooldown
 20
 Ignite Radius
-0.5
+0,7500001
 Arsonist Can Vent
 True
 Mimic Cooldown
@@ -571,7 +571,7 @@ True
 Juggernaut Initial Kill Cooldown
 20
 Reduced Kill Cooldown Per Kill
-2.5
+2,5
 Juggernaut Can Vent
 True
 Infect Cooldown
@@ -585,7 +585,7 @@ Reap Cooldown
 Soul Collector Can Vent
 True
 Vampire Bite Cooldown
-20
+17,5
 Vampires Have Impostor Vision
 False
 Vampires Can Vent
@@ -603,11 +603,11 @@ Rampage Cooldown
 Rampage Duration
 15
 Rampage Kill Cooldown
-2.5
+2,5
 Werewolf Can Vent When Rampaged
 True
 Blind Cooldown
-20
+10
 Blind Duration
 10
 Blind Radius
@@ -619,7 +619,7 @@ True
 Flash Grenade Cooldown
 20
 Flash Grenade Duration
-10
+12
 Flash Radius
 1
 Grenadier Can Vent
@@ -641,17 +641,17 @@ Ability Cooldown
 Ability Duration
 10
 Sprint Speed
-1.5
+1,4999998
 Minimum Freeze Speed
-0.5
+0,50000006
 Freeze Radius
 1
 Detonate Delay
-5
+3
 Max Kills In Detonation
-15
+5
 Detonate Radius
-0.5
+0,3
 Bomber Can Vent
 True
 All Impostors See Bomb
@@ -671,7 +671,7 @@ False
 Time It Takes To Fully Charge
 20
 Time It Takes To Use Full Charge
-2
+2,9999983
 Initial Blackmail Cooldown
 15
 Only Target Sees Blackmail
@@ -679,7 +679,7 @@ False
 Maximum People Alive Where Blackmailed Can Vote
 1
 Hypnotize Cooldown
-20
+10
 Mine Cooldown
 20
 Drag Cooldown
@@ -699,9 +699,9 @@ Diseased Kill Multiplier
 Chill Duration
 10
 Chill Start Speed
-0.5
+0,49999994
 Flash Speed
-1.5
+1,4999998
 Giant Speed
 1
 Both Lovers Die

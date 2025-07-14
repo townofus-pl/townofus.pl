@@ -6,7 +6,7 @@ import { Roles } from "../_roles";
 import { Modifiers } from "@/modifiers";
 import { SettingTypes } from "@/constants/settings";
 
-export function SettingsDramaAfera() {
+export function     SettingsDramaAfera() {
     const [fileContent, setFileContent] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(true); // Początkowo ustawione na true
 
@@ -34,57 +34,45 @@ export function SettingsDramaAfera() {
             };
         }
 
-        // Tworzymy mapę z zawartości pliku
-        const fileContentMap = new Map(
-            (fileContent || '')
-                .split("\n")
-                .reduce((acc, current, index, array) => {
-                    if (current && current.trim() !== '') {
-                        if (index % 2 === 0 && array[index + 1] !== undefined) {
-                            acc.push([current, array[index + 1]]);
-                        } else {
-                            if (acc.length > 0) {
-                                acc[acc.length - 1].push(current);
-                            }
-                        }
-                    }
-                    return acc;
-                }, [] as [string, string][])
-        );
 
-        // Funkcja do usuwania tagów <color=...>...</color>
+        // Parsowanie pliku: pary linia-klucz, linia-wartość
+        const lines = (fileContent || '').split("\n").map(l => l.trim()).filter(Boolean);
+        const fileContentMap = new Map<string, string>();
+        for (let i = 0; i < lines.length - 1; i += 2) {
+            fileContentMap.set(lines[i], lines[i + 1]);
+        }
+
+        // Usuwanie tagów <color=...>...</color>
         const extractName = (str: string): string => str.replace(/<color=[^>]+>(.*?)<\/color>/, "$1");
 
         // Mapa oczyszczonych nazw postaci i ich szans na wystąpienie
         const cleanedFileContentMap = new Map<string, number>();
-        fileContentMap.forEach((value, key) => {
-            cleanedFileContentMap.set(extractName(key), Number(value));
-        });
+        for (const [key, value] of fileContentMap.entries()) {
+            // Zamień przecinki na kropki dla liczb
+            const normalized = typeof value === 'string' ? value.replace(/,/g, '.') : value;
+            cleanedFileContentMap.set(extractName(key), Number(normalized));
+        }
 
-
-        // **Filtrowanie ról**
+        // Filtrowanie ról: tylko te z szansą > 0
         const filteredRoles = Roles
             .filter(
                 (char) =>
                     cleanedFileContentMap.has(char.name) &&
-                    (cleanedFileContentMap.get(char.name) ?? 0) > 1
+                    (cleanedFileContentMap.get(char.name) ?? 0) > 0
             )
             .reduce((acc, char) => {
                 acc[char.id] = char;
                 return acc;
             }, {} as Record<string, (typeof Roles)[number]>);
 
-
-        // **Przetwarzanie ról**
+        // Przetwarzanie ról
         const rolesArray = Array.isArray(Roles) ? Object.values(Roles) : [];
-
         const roles = rolesArray.map(role => {
             Object.keys(role.settings).forEach(key => {
                 if (fileContentMap.has(key)) {
                     const value = fileContentMap.get(key);
                     if (value !== undefined) {
                         const setting = role.settings[key];
-
                         switch (setting.type) {
                             case SettingTypes.Boolean:
                                 setting.value = value.toLowerCase() === 'true';
@@ -92,9 +80,15 @@ export function SettingsDramaAfera() {
                             case SettingTypes.Number:
                             case SettingTypes.Percentage:
                             case SettingTypes.Time:
-                            case SettingTypes.Multiplier:
-                                setting.value = Number(value);
+                            case SettingTypes.Multiplier: {
+                                const num = Number(value.replace(/,/g, '.'));
+                                if (!isNaN(num)) {
+                                    setting.value = Number.isInteger(num) ? num : Number(num.toFixed(2));
+                                } else {
+                                    setting.value = num;
+                                }
                                 break;
+                            }
                             case SettingTypes.Text:
                                 setting.value = value;
                                 break;
@@ -102,15 +96,12 @@ export function SettingsDramaAfera() {
                     }
                 }
             });
-
-            // **Nowa logika: Aktualizacja Probability Of Appearing**
             if (role.settings["Probability Of Appearing"]) {
                 const probability = cleanedFileContentMap.get(role.name);
                 if (probability !== undefined) {
-                    role.settings["Probability Of Appearing"].value = probability;
+                    role.settings["Probability Of Appearing"].value = Number.isInteger(probability) ? probability : Number(probability.toFixed(2));
                 }
             }
-
             return role;
         });
 
@@ -120,70 +111,47 @@ export function SettingsDramaAfera() {
                 filteredRoles[role.id] = role;
             }
         });
-        console.log(filteredRoles);
 
         return { roles, filteredRoles };
     }, [fileContent]);
 
 
+
     const { filteredModifiers } = useMemo(() => {
-        // Jeśli fileContent jest null lub undefined, zwróć domyślne wartości
         if (!fileContent) {
             return {
                 modifiers: [],
                 filteredModifiers: {}
             };
         }
-
-        // Tworzymy mapę z zawartości pliku
-        const fileContentMap = new Map(
-            fileContent
-                .split("\n")
-                .reduce((acc, current, index, array) => {
-                    if (current && current.trim() !== '') {
-                        if (index % 2 === 0 && array[index + 1] !== undefined) {
-                            acc.push([current, array[index + 1]]); // Klucz (nazwa postaci z tagami)
-                        } else {
-                            if (acc.length > 0) {
-                                acc[acc.length - 1].push(current); // Wartość (szansa na wystąpienie)
-                            }
-                        }
-                    }
-                    return acc;
-                }, [] as [string, string][])
-        );
-
-        // Funkcja do usuwania tagów <color=...>...</color>
+        const lines = (fileContent || '').split("\n").map(l => l.trim()).filter(Boolean);
+        const fileContentMap = new Map<string, string>();
+        for (let i = 0; i < lines.length - 1; i += 2) {
+            fileContentMap.set(lines[i], lines[i + 1]);
+        }
         const extractName = (str: string): string => str.replace(/<color=[^>]+>(.*?)<\/color>/, "$1");
-
-        // Mapa oczyszczonych nazw postaci i ich szans na wystąpienie
         const cleanedFileContentMap = new Map<string, number>();
-        fileContentMap.forEach((value, key) => {
-            cleanedFileContentMap.set(extractName(key), Number(value));
-        });
-
-        // **Filtrowanie Modifiers**
+        for (const [key, value] of fileContentMap.entries()) {
+            const normalized = typeof value === 'string' ? value.replace(/,/g, '.') : value;
+            cleanedFileContentMap.set(extractName(key), Number(normalized));
+        }
         const filteredModifiers = Modifiers
             .filter(
                 (char) =>
                     cleanedFileContentMap.has(char.name) &&
-                    (cleanedFileContentMap.get(char.name) ?? 0) > 1
+                    (cleanedFileContentMap.get(char.name) ?? 0) > 0
             )
             .reduce((acc, char) => {
                 acc[char.id] = char;
                 return acc;
             }, {} as Record<string, (typeof Modifiers)[number]>);
-
-        // **Przetwarzanie Modifiers**
         const modifiersArray = Array.isArray(Modifiers) ? Object.values(Modifiers) : [];
-
         const modifiers = modifiersArray.map(modifier => {
             Object.keys(modifier.settings).forEach(key => {
                 if (fileContentMap.has(key)) {
                     const value = fileContentMap.get(key);
                     if (value !== undefined) {
                         const setting = modifier.settings[key];
-
                         switch (setting.type) {
                             case SettingTypes.Boolean:
                                 setting.value = value.toLowerCase() === 'true';
@@ -191,9 +159,15 @@ export function SettingsDramaAfera() {
                             case SettingTypes.Number:
                             case SettingTypes.Percentage:
                             case SettingTypes.Time:
-                            case SettingTypes.Multiplier:
-                                setting.value = Number(value);
+                            case SettingTypes.Multiplier: {
+                                const num = Number(value.replace(/,/g, '.'));
+                                if (!isNaN(num)) {
+                                    setting.value = Number.isInteger(num) ? num : Number(num.toFixed(2));
+                                } else {
+                                    setting.value = num;
+                                }
                                 break;
+                            }
                             case SettingTypes.Text:
                                 setting.value = value;
                                 break;
@@ -201,18 +175,14 @@ export function SettingsDramaAfera() {
                     }
                 }
             });
-
-            // **Nowa logika: Aktualizacja Probability Of Appearing**
             if (modifier.settings["Probability Of Appearing"]) {
                 const probability = cleanedFileContentMap.get(modifier.name);
                 if (probability !== undefined) {
                     modifier.settings["Probability Of Appearing"].value = probability;
                 }
             }
-
             return modifier;
         });
-
         return { modifiers, filteredModifiers };
     }, [fileContent]);
 
