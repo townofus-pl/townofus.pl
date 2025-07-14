@@ -2,7 +2,7 @@ import type {Metadata} from "next";
 import localFont from "next/font/local";
 import {Barlow} from "next/font/google";
 import {GoogleAnalytics} from "@next/third-parties/google";
-import {Header} from "./_components";
+import {HeaderConditional} from "./HeaderConditional";
 import "./globals.css";
 
 const brook = localFont({
@@ -32,11 +32,11 @@ export default function RootLayout({
         <html lang="en" className="text-sm md:text-base">
             <body className={`${brook.variable} ${barlow.variable} ${barlow.className}`}>
                 <div className="max-w-screen-xl m-auto">
-                     <Header/>
+                    <HeaderConditional />
                     {children}
                 </div>
+                <GoogleAnalytics gaId="G-W12ZGZ57HF"/>
             </body>
-            <GoogleAnalytics gaId="G-W12ZGZ57HF"/>
         </html>
     );
 }

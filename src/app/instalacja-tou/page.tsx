@@ -1,3 +1,4 @@
+import Image from "next/image";
 export default function ToUDownload() {
   return (
     <div className="grid grid-cols-1 gap-6 bg-zinc-900/50 rounded-xl mb-5">
@@ -30,7 +31,7 @@ export default function ToUDownload() {
               rel="noopener noreferrer"
               className="px-4 py-3 bg-[rgba(0,167,0)] hover:bg-[rgba(0, 167, 0, 0.85)] text-white text-lg font-sans font-semibold rounded-lg transition duration-300 inline-flex items-center"
             >
-              <img src="/images/download-button.svg" width="16" height="16"/> 
+              <Image src="/images/download-button.svg" width={16} height={16} alt="download" />
               &nbsp; Download v5.3.1
             </a>
             <a
@@ -39,7 +40,7 @@ export default function ToUDownload() {
               rel="noopener noreferrer"
               className="px-4 py-3 bg-[rgba(63,63,63)] hover:bg-[rgba(63,63,63,0.85)] text-white text-lg font-sans font-semibold rounded-lg transition duration-300 inline-flex items-center"
             >
-              <img src="/images/github-logo.svg" width="16" height="16"/> 
+              <Image src="/images/github-logo.svg" width={16} height={16} alt="github" />
               &nbsp; GitHub
             </a>
           </div>
