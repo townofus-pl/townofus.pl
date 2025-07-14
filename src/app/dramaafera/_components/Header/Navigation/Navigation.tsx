@@ -30,11 +30,6 @@ const navigationItems: NavigationItemProps[] = [
         label: "Skiny Drama Afera",
 
     },
-    {   
-        href: "/dramaafera/zapisy",
-        label: "Zapisy",
-
-    },
 ];
 
 export const Navigation = () => {
