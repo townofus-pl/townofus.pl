@@ -80,7 +80,7 @@
 50
 <color=#8C004DFF>Juggernaut</color>
 50
-<color=#E6FFB3FF>Plaguebearer</color>
+<color=#E6FFB3FF>Plaguebearer / Pestilence</color>
 50
 <color=#99FFCCFF>Soul Collector</color>
 50
@@ -295,9 +295,9 @@ True
 Radiate Colour Range
 0,5
 Radiate Max Range
-1
+1.5
 Sense Duration
-3
+5
 Examine Cooldown
 20
 Show Detective Reports
@@ -353,7 +353,7 @@ True
 Snitch Sees Traitor
 True
 Who Sees Dead Bodies On Admin
-1
+Spy
 Arrow Update Interval
 3
 Track Cooldown
@@ -365,7 +365,7 @@ Maximum Number Of Tracks
 Min Amount Of Time In Trap To Register
 0
 Trap Cooldown
-15
+20
 Traps Removed After Each Round
 True
 Maximum Number Of Traps
@@ -421,7 +421,7 @@ True
 Jail Cooldown
 15
 Maximum Number Of Executes
-2
+5
 Campaign Cooldown
 20
 Prosecutor Dies When They Exile A Crewmate
@@ -465,7 +465,7 @@ True
 Show Fortified Player
 2
 Maximum Number Of Fixes
-3
+5
 Mediate Cooldown
 5
 Reveal Appearance Of Mediate Target
@@ -473,7 +473,7 @@ False
 Reveal The Medium To The Mediate Target
 True
 Who Is Revealed With Mediate
-2
+All Dead
 Flush Cooldown
 20
 Maximum Number Of Barricades
@@ -491,7 +491,7 @@ Time After Death Arrow Appears
 Protect Cooldown
 15
 Protect Duration
-15
+10
 Maximum Number Of Protects
 5
 Show Protected Player
@@ -551,7 +551,7 @@ Tasks Remaining When Phantom Can Be Clicked
 Phantom Win Ends Game
 True
 Douse Cooldown
-15
+20
 Ignite Radius
 0,7500001
 Arsonist Can Vent
@@ -617,7 +617,7 @@ Recall Cooldown
 Escapist Can Vent
 True
 Flash Grenade Cooldown
-15
+20
 Flash Grenade Duration
 12
 Flash Radius
@@ -625,7 +625,7 @@ Flash Radius
 Grenadier Can Vent
 True
 Morphling Cooldown
-10
+20
 Morphling Duration
 10
 Morphling Can Vent
