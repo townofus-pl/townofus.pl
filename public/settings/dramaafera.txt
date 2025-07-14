@@ -465,7 +465,7 @@ True
 Show Fortified Player
 2
 Maximum Number Of Fixes
-5
+3
 Mediate Cooldown
 5
 Reveal Appearance Of Mediate Target
