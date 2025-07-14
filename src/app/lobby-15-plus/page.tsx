@@ -1,3 +1,4 @@
+import Image from "next/image";
 export default function Lobby15Plus() {
   return (
     <div className="grid grid-cols-1 gap-6 bg-zinc-900/50 rounded-xl mb-5 p-4">
@@ -35,7 +36,7 @@ export default function Lobby15Plus() {
                     rel="noopener noreferrer"
                     className="px-4 py-3 bg-[rgba(0,167,0)] hover:bg-[rgba(0,167,0,0.85)] text-white text-lg font-sans font-semibold rounded-lg transition duration-300 inline-flex items-center justify-center"
                   >
-                    <img src="/images/download-button.svg" width="16" height="16" alt="download"/> 
+                    <Image src="/images/download-button.svg" width={16} height={16} alt="download" />
                     <span className="ml-2">Download v1.0.4</span>
                   </a>
                   <a
@@ -44,7 +45,7 @@ export default function Lobby15Plus() {
                     rel="noopener noreferrer"
                     className="px-4 py-3 bg-[rgba(63,63,63)] hover:bg-[rgba(63,63,63,0.85)] text-white text-lg font-sans font-semibold rounded-lg transition duration-300 inline-flex items-center justify-center"
                   >
-                    <img src="/images/github-logo.svg" width="16" height="16" alt="github"/> 
+                    <Image src="/images/github-logo.svg" width={16} height={16} alt="github" />
                     <span className="ml-2">GitHub</span>
                   </a>
                   <a
@@ -53,7 +54,7 @@ export default function Lobby15Plus() {
                     rel="noopener noreferrer"
                     className="px-4 py-3 bg-[rgba(86,98,246)] hover:bg-[rgba(86,98,246,0.85)] text-white text-lg font-sans font-semibold rounded-lg transition duration-300 inline-flex items-center justify-center"
                   >
-                    <img src="/images/discord-logo.svg" width="16" height="16" alt="discord"/>
+                    <Image src="/images/discord-logo.svg" width={16} height={16} alt="discord" />
                     <span className="ml-2">Feedback</span>
                   </a>
                 </div>
@@ -62,15 +63,19 @@ export default function Lobby15Plus() {
               </div>
 
               <div className="md:w-1/2 flex flex-col items-center justify-center gap-4">
-                <img 
-                  className="w-full max-w-xl rounded-lg" 
-                  src="/images/aleludumodtownofus.png" 
+                <Image
+                  className="w-full max-w-xl rounded-lg"
+                  src="/images/aleludumodtownofus.png"
                   alt="AleLuduMod Town of Us"
+                  width={800}
+                  height={450}
                 />
-                <img 
-                  className="w-full max-w-xl rounded-lg" 
-                  src="/images/aleludumodmenu.png" 
+                <Image
+                  className="w-full max-w-xl rounded-lg"
+                  src="/images/aleludumodmenu.png"
                   alt="AleLuduMod Menu"
+                  width={800}
+                  height={450}
                 />
               </div>
             </div>

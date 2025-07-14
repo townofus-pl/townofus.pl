@@ -31,7 +31,6 @@ import Image from "next/image";
 import { getAllGamesData } from "@/data/games";
 import { generatePlayerRankingStats } from "@/data/games/converter";
 import playerRankingPoints from "@/data/games/playerRankingPoints";
-import { useState } from "react";
 
 // Funkcja pomocnicza do generowania ścieżki avatara
 function getPlayerAvatarPath(playerName: string): string {
@@ -85,6 +84,7 @@ export default function RankingPageWrapper() {
             }));
             setPlayerStats(stats);
         })();
+        // setPlayerStats is a stable setter from useState, so it does not need to be in the dependency array
     }, []);
 
 

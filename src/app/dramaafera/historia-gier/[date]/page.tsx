@@ -40,14 +40,14 @@ export async function generateStaticParams() {
 }
 
 export default async function DateGamesPage({ params }: DatePageProps) {
-    const resolvedParams = await params;
-    const games = await getGamesListByDate(resolvedParams.date);
+    const {date} = await params;
+    const games = await getGamesListByDate(date);
     
     if (games.length === 0) {
         notFound();
     }
 
-    const displayDate = formatDisplayDate(resolvedParams.date);
+    const displayDate = formatDisplayDate(date);
 
     return (
         <div className="min-h-screen rounded-xl bg-zinc-900/50 text-white">
@@ -67,7 +67,7 @@ export default async function DateGamesPage({ params }: DatePageProps) {
                     </p>
                     <div className="text-center mt-4">
                         <Link
-                            href={`/dramaafera/historia-gier/${resolvedParams.date}/wyniki`}
+                            href={`/dramaafera/historia-gier/${date}/wyniki`}
                             className="inline-block bg-yellow-500 hover:bg-yellow-600 text-black font-bold px-6 py-3 rounded-lg shadow transition-colors text-lg"
                         >
                             🏅 Zobacz wyniki dnia
@@ -79,7 +79,7 @@ export default async function DateGamesPage({ params }: DatePageProps) {
                     {games.map((game) => (
                         <Link 
                             key={game.id}
-                            href={`/dramaafera/historia-gier/${resolvedParams.date}/${game.id}`}
+                            href={`/dramaafera/historia-gier/${date}/${game.id}`}
                             className="block"
                         >
                             <div className="bg-zinc-900/50 rounded-xl p-6 border border-gray-700/50 hover:border-gray-600/50 hover:bg-zinc-900/70 transition-all duration-200 cursor-pointer">

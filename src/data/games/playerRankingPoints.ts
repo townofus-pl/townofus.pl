@@ -20,7 +20,7 @@ const playerRankingPoints: Record<string, number> = {
     "Dziekansqr": 1988,
     "GIMPER 2": 1977,
     "Miras": 1958,
-    "Ignoranckyy": 1864,
+    "Ignorancky": 1864,
 };
 
 export default playerRankingPoints;

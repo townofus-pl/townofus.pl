@@ -1,3 +1,4 @@
+import Image from "next/image";
 export default function DiscordInvite() {
   return (
     <div className="grid grid-cols-1 gap-6 bg-zinc-900/50 rounded-xl mb-5">
@@ -27,7 +28,7 @@ export default function DiscordInvite() {
                 rel="noopener noreferrer"
                 className="px-4 py-3 bg-[rgba(86,98,246)] hover:bg-[rgba(86,98,246,0.85)] text-white text-lg font-sans font-semibold rounded-lg transition duration-300 inline-flex place-items-center"
               >
-                <img src="/images/discord-logo.svg" width="16" height="16"/>  &nbsp; Dołącz do Discorda
+                <Image src="/images/discord-logo.svg" width={16} height={16} alt="discord" />  &nbsp; Dołącz do Discorda
               </a>
             </div>
             <br />

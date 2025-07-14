@@ -1,6 +1,5 @@
 // Generated game data - 2025-07-06 18:09:32
 
-import { Satellite } from "@/modifiers/satellite";
 
 export interface GameMetadata {
   startTime: string;

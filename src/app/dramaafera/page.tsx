@@ -1,4 +1,4 @@
-import Link from "next/link";
+
 import { SettingsDramaAfera } from "./_components/SettingsDramaAfera";
 
 export default function DramaAfera() {

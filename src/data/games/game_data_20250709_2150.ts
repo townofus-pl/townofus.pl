@@ -632,8 +632,7 @@ export const gameData: GameData = {
 ,        "MokraJola (Warlock) - Killed by GIMPER 2 (Glitch)"
       ],
       votes: {
-        Malkiz: [ "Malkiz", "Orzehh", "Fastovsky", "GIMPER 2", "Dusia", "Bartek", "DawDu"],
-        Orzehh: ["ziomson", "Cleopatrie", "KiwiSpice", "MokraJola", "Mamika"],
+
       },
       skipVotes: [
 

@@ -1,11 +1,25 @@
+
 import Link from "next/link";
 import Image from "next/image";
 import { getGameDatesList } from "@/data/games";
 
+// Typy dla danych gier i grupy dat
+type GameSummary = {
+    id: string;
+    allPlayerNames?: string[];
+    // inne pola jeśli potrzebne
+};
+type DateGroup = {
+    date: string;
+    displayDate: string;
+    totalGames: number;
+    games: GameSummary[];
+};
+
 // Funkcja pomocnicza do zbierania unikalnych nicków graczy z danej daty
-function getUniquePlayersFromDate(dateGroup: any): string[] {
+function getUniquePlayersFromDate(dateGroup: DateGroup): string[] {
     const allPlayers = new Set<string>();
-    dateGroup.games.forEach((game: any) => {
+    dateGroup.games.forEach((game) => {
         game.allPlayerNames?.forEach((playerName: string) => {
             allPlayers.add(playerName);
         });

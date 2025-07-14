@@ -1,4 +1,5 @@
 "use client";
+import Image from "next/image";
 import React, { useEffect, useState } from "react";
 
 type Data = {
@@ -87,13 +88,13 @@ export default function ZapisyPage() {
           {data.users.map((user) => (
             <tr key={user} className={editUser === user ? "bg-white-300" : ""}>
               <td className="px-2 py-1 font-semibold flex items-center gap-2">
-                <img
+                <Image
                   src={`/images/avatars/${user}.png`}
                   alt={user}
+                  width={32}
+                  height={32}
                   className="w-8 h-8 rounded-full object-cover bg-gray-200 border border-gray-500"
-                  onError={(e) => {
-                    (e.target as HTMLImageElement).src = "/images/avatars/default.png";
-                  }}
+                  // onError is not supported by next/image; fallback logic should be handled differently if needed
                 />
                 {user}
               </td>

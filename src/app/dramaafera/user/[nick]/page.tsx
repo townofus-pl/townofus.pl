@@ -29,9 +29,7 @@ function convertUrlSlugToNick(slug: string, allPlayerNames: string[]): string {
 }
 
 interface UserProfileProps {
-    params: Promise<{
-        nick: string;
-    }>;
+    params: Promise<{ nick: string }>;
 }
 
 export async function generateStaticParams() {
@@ -49,12 +47,12 @@ export async function generateStaticParams() {
     }));
 }
 
+
 export default async function UserProfilePage({ params }: UserProfileProps) {
-    const resolvedParams = await params;
-    
     // Pobierz wszystkie gry
+    const { nick } = await params;
     const games = await getAllGamesData();
-    
+
     // Pobierz listę wszystkich nicków
     const allPlayerNames: string[] = [];
     games.forEach(game => {
@@ -64,19 +62,19 @@ export default async function UserProfilePage({ params }: UserProfileProps) {
             }
         });
     });
-    
-    const playerNick = convertUrlSlugToNick(resolvedParams.nick, allPlayerNames);
-    
+
+    const playerNick = convertUrlSlugToNick(nick, allPlayerNames);
+
     // Wygeneruj statystyki dla wszystkich graczy
     const allStats = generateUserProfileStats(games);
-    
+
     // Znajdź statystyki dla konkretnego gracza
     const playerStats = allStats.find(stats => stats.name === playerNick);
-    
+
     if (!playerStats) {
         notFound();
     }
-    
+
     // Oblicz winratio (już jest obliczone w generateUserProfileStats)
     const winRatio = playerStats.winRate;
 

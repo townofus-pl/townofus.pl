@@ -27,26 +27,6 @@ function convertUrlSlugToRole(slug: string, allRoles: string[]): string {
 }
 
 // Funkcja pomocnicza do generowania ścieżki obrazka roli
-function getRoleImagePath(roleName: string): string {
-    // Mapowanie specjalnych przypadków
-    const specialCases: Record<string, string> = {
-        'SoulCollector': 'soul_collector',
-        'Soul Collector': 'soul_collector',
-        'GuardianAngel': 'guardian_angel',
-        'Guardian Angel': 'guardian_angel',
-        'TimeLord': 'time_lord',
-        'Time Lord': 'time_lord'
-    };
-    
-    // Sprawdź czy to specjalny przypadek
-    if (specialCases[roleName]) {
-        return `/images/roles/${specialCases[roleName]}.png`;
-    }
-    
-    // Standardowa konwersja: usuń spacje, zamień na małe litery
-    const fileName = roleName.toLowerCase().replace(/\s+/g, '');
-    return `/images/roles/${fileName}.png`;
-}
 
 // Interface dla statystyk roli
 interface RoleStats {
@@ -89,60 +69,79 @@ function isKillerRole(roleName: string): boolean {
     return killerRoles.includes(roleName);
 }
 
+// Typy dla gracza i gry
+type UIGamePlayer = {
+    nickname: string;
+    win: boolean;
+    role?: string;
+    roleHistory?: string[];
+    originalStats?: {
+        correctKills?: number;
+        incorrectKills?: number;
+    };
+};
+type UIGameData = {
+    id: string;
+    winner?: string;
+    detailedStats: {
+        playersData: UIGamePlayer[];
+    };
+};
+
 // Funkcja do generowania statystyk roli
-function generateRoleStats(allGames: any[], targetRole: string): RoleStats {
+function generateRoleStats(allGames: UIGameData[], targetRole: string): RoleStats {
     let totalGamesPlayed = 0;
     let totalWins = 0;
     let totalCorrectKills = 0;
     let totalIncorrectKills = 0;
     const isKiller = isKillerRole(targetRole);
-    
-    const playerStats = new Map<string, { 
-        games: number; 
-        wins: number; 
-        correctKills: number; 
-        incorrectKills: number; 
+
+    const playerStats = new Map<string, {
+        games: number;
+        wins: number;
+        correctKills: number;
+        incorrectKills: number;
     }>();
-    
+
     allGames.forEach(game => {
-        game.detailedStats.playersData.forEach((player: any) => {
+        game.detailedStats.playersData.forEach((player: UIGamePlayer) => {
             // Sprawdź czy gracz miał tę rolę (sprawdzaj zarówno końcową rolę jak i historię ról)
-            const hasRole = player.role === targetRole || 
-                           (player.roleHistory && player.roleHistory.includes(targetRole));
-            
+            const hasRole = player.role === targetRole ||
+                (player.roleHistory && player.roleHistory.includes(targetRole));
+
             if (hasRole) {
                 totalGamesPlayed++;
-                
+
                 // Aktualizuj statystyki gracza
-                const current = playerStats.get(player.nickname) || { 
-                    games: 0, 
-                    wins: 0, 
-                    correctKills: 0, 
-                    incorrectKills: 0 
+                const current = playerStats.get(player.nickname) || {
+                    games: 0,
+                    wins: 0,
+                    correctKills: 0,
+                    incorrectKills: 0
                 };
                 current.games++;
-                
+
                 if (player.win) {
                     totalWins++;
                     current.wins++;
                 }
-                
+
                 // Dodaj statystyki zabójstw jeśli to rola zabijająca
                 if (isKiller && player.originalStats) {
                     const correctKills = player.originalStats.correctKills || 0;
                     const incorrectKills = player.originalStats.incorrectKills || 0;
-                    
+
                     current.correctKills += correctKills;
                     current.incorrectKills += incorrectKills;
                     totalCorrectKills += correctKills;
                     totalIncorrectKills += incorrectKills;
                 }
-                
+
                 playerStats.set(player.nickname, current);
             }
         });
     });
-    
+
     // Konwertuj mapę na tablicę z winratio i posortuj według winratio (malejąco)
     const players: PlayerRoleStats[] = Array.from(playerStats.entries())
         .map(([name, stats]) => {
@@ -152,7 +151,7 @@ function generateRoleStats(allGames: any[], targetRole: string): RoleStats {
                 winsWithRole: stats.wins,
                 winRateWithRole: stats.games > 0 ? parseFloat(((stats.wins / stats.games) * 100).toFixed(1)) : 0
             };
-            
+
             // Dodaj statystyki zabójstw jeśli to rola zabijająca
             if (isKiller) {
                 const totalKills = stats.correctKills + stats.incorrectKills;
@@ -163,7 +162,7 @@ function generateRoleStats(allGames: any[], targetRole: string): RoleStats {
                     killAccuracy: totalKills > 0 ? parseFloat(((stats.correctKills / totalKills) * 100).toFixed(1)) : 0
                 };
             }
-            
+
             return baseStats;
         })
         .sort((a, b) => {
@@ -173,7 +172,7 @@ function generateRoleStats(allGames: any[], targetRole: string): RoleStats {
             }
             return b.gamesWithRole - a.gamesWithRole;
         });
-    
+
     const baseStats = {
         roleName: targetRole,
         gamesPlayed: totalGamesPlayed,
@@ -182,7 +181,7 @@ function generateRoleStats(allGames: any[], targetRole: string): RoleStats {
         players,
         isKillerRole: isKiller
     };
-    
+
     // Dodaj statystyki zabójstw jeśli to rola zabijająca
     if (isKiller) {
         const totalKills = totalCorrectKills + totalIncorrectKills;
@@ -193,7 +192,7 @@ function generateRoleStats(allGames: any[], targetRole: string): RoleStats {
             killAccuracy: totalKills > 0 ? parseFloat(((totalCorrectKills / totalKills) * 100).toFixed(1)) : 0
         };
     }
-    
+
     return baseStats;
 }
 
@@ -225,7 +224,7 @@ export async function generateStaticParams() {
 }
 
 export default async function RoleStatsPage({ params }: RolePageProps) {
-    const resolvedParams = await params;
+    const {nazwa} = await params;
     
     // Pobierz wszystkie gry
     const games = await getAllGamesData();
@@ -247,7 +246,7 @@ export default async function RoleStatsPage({ params }: RolePageProps) {
         });
     });
     
-    const roleName = convertUrlSlugToRole(resolvedParams.nazwa, allRoles);
+    const roleName = convertUrlSlugToRole(nazwa, allRoles);
     
     // Wygeneruj statystyki dla roli
     const roleStats = generateRoleStats(games, roleName);

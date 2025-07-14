@@ -17,22 +17,42 @@ interface PlayerDayStats {
   results: ('W' | 'L' | null)[];
 }
 
-export default async function WynikiDniaPage({ params }: { params: { date: string } }) {
+export default async function WynikiDniaPage({ params }: { params: Promise<{ date: string }> }) {
   // Pobierz wszystkie gry z danego dnia (GameSummary)
-  const games = await getGamesListByDate(params.date);
+  const { date } = await params;
+  const games = await getGamesListByDate(date);
   if (!games || games.length === 0) {
     return <div className="text-center text-white py-12">Brak gier dla wybranego dnia.</div>;
   }
 
   // Pobierz szczegółowe dane każdej gry (UIGameData) w odwrotnej kolejności (od najnowszej)
   const reversedGames = [...games].reverse();
-  const detailedGames = await Promise.all(reversedGames.map(async (game) => await getGameData(game.id)));
+  // Typy dla gracza i gry
+  type UIGamePlayer = {
+    nickname: string;
+    win: boolean;
+    role?: string;
+    roleHistory?: string[];
+    originalStats?: {
+      correctKills?: number;
+      incorrectKills?: number;
+    };
+  };
+  type UIGameData = {
+    id: string;
+    winner?: string;
+    detailedStats?: {
+      playersData: UIGamePlayer[];
+    };
+  };
+
+  const detailedGames = await Promise.all(reversedGames.map(async (game): Promise<UIGameData | null> => await getGameData(game.id)));
 
   // Zbierz wszystkich graczy i ich wyniki
   const playerMap = new Map<string, PlayerDayStats>();
   detailedGames.forEach((game, gameIdx) => {
     if (!game?.detailedStats?.playersData) return;
-    game.detailedStats.playersData.forEach((player: any) => {
+    game.detailedStats.playersData.forEach((player: UIGamePlayer) => {
       if (!playerMap.has(player.nickname)) {
         playerMap.set(player.nickname, {
           name: player.nickname,
@@ -79,7 +99,7 @@ export default async function WynikiDniaPage({ params }: { params: { date: strin
 
   return (
     <div className="min-h-screen bg-zinc-900/80 text-white p-8">
-      <h1 className="text-4xl font-bold mb-8 text-center">Wyniki dnia {params.date}</h1>
+      <h1 className="text-4xl font-bold mb-8 text-center">Wyniki dnia {date}</h1>
       <div className="overflow-x-visible">
         <table className="w-full border border-zinc-700 bg-zinc-800/80 rounded-lg table-fixed">
           <thead>
@@ -95,14 +115,14 @@ export default async function WynikiDniaPage({ params }: { params: { date: strin
               <th className="px-2 py-2 text-yellow-400 font-bold">WIN</th>
               <th className="px-2 py-2 text-yellow-400 font-bold">LOSE</th>
               <th className="px-2 py-2 text-yellow-400 font-bold">WINRATIO</th>
-      {reversedGames.map((g: any, idx: number) => (
+      {reversedGames.map((g, idx: number) => (
         <th
           key={idx}
           className="text-yellow-400 font-bold text-xs p-0"
           style={{ minWidth: '2.5rem', width: '2.5rem', maxWidth: '3.5rem' }}
         >
           <Link
-            href={`/dramaafera/historia-gier/${params.date}/${g.id}`}
+            href={`/dramaafera/historia-gier/${date}/${g.id}`}
             className="block w-full h-full py-2 hover:underline hover:text-blue-400 text-center"
             style={{ minWidth: '2.5rem', minHeight: '2.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
           >
@@ -134,7 +154,7 @@ export default async function WynikiDniaPage({ params }: { params: { date: strin
                   let role = '';
                   const game = detailedGames[i];
                   if (game && game.detailedStats && game.detailedStats.playersData) {
-                    const found = game.detailedStats.playersData.find((p: any) => p.nickname === player.name);
+                    const found = game.detailedStats.playersData.find((p: UIGamePlayer) => p.nickname === player.name);
                     if (found) {
                       // Jeśli jest historia ról, pokaż ostatnią
                       if (found.roleHistory && found.roleHistory.length > 0) {

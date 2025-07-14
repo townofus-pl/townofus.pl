@@ -12,9 +12,7 @@ function getPlayerAvatarPath(playerName: string): string {
 }
 
 // Funkcja pomocnicza do konwersji nicku na format URL-friendly
-function convertNickToUrlSlug(nick: string): string {
-    return nick.replace(/\s+/g, '-').toLowerCase();
-}
+
 
 // Funkcja pomocnicza do konwersji nazwy roli na format URL-friendly
 function convertRoleToUrlSlug(role: string): string {
@@ -24,10 +22,7 @@ function convertRoleToUrlSlug(role: string): string {
 }
 
 interface GamePageProps {
-    params: Promise<{
-        date: string;
-        gameId: string;
-    }>;
+    params: Promise<{ date: string; gameId: string}> ;
 }
 
 export async function generateStaticParams() {
@@ -96,22 +91,23 @@ function renderRoleHistory(roleHistory: string[] | undefined) {
     );
 }
 
-export default async function GameDetailPage({ params }: GamePageProps) {
-    const resolvedParams = await params;
-    const gameData = await getGameData(resolvedParams.gameId);
+
+export default async function GamePage({ params }: GamePageProps) {
+    const {date, gameId} = await params;
+    const gameData = await getGameData(gameId);
 
     if (!gameData) {
         notFound();
     }
 
-    const displayDate = formatDisplayDate(resolvedParams.date);
+    const displayDate = formatDisplayDate(date);
 
     return (
         <div className="min-h-screen rounded-xl bg-zinc-900/50 text-white">
             <div className="container mx-auto px-4 py-8">
                 <div className="mb-8">
                     <Link 
-                        href={`/dramaafera/historia-gier/${resolvedParams.date}`}
+                        href={`/dramaafera/historia-gier/${date}`}
                         className="text-blue-400 hover:text-blue-300 transition-colors mb-4 inline-block"
                     >
                         ← Powrót do {displayDate}
@@ -538,7 +534,7 @@ export default async function GameDetailPage({ params }: GamePageProps) {
 
                 <div className="text-center">
                     <Link 
-                        href={`/dramaafera/historia-gier/${resolvedParams.date}`}
+                        href={`/dramaafera/historia-gier/${date}`}
                         className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition-colors font-semibold inline-block"
                     >
                         ← Powrót do {displayDate}
