@@ -72,7 +72,7 @@ export default function RankingPageWrapper() {
     const [sortOrder, setSortOrder] = useClientState<"asc" | "desc">("desc");
 
 
-
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => {
         (async () => {
             const games = await getAllGamesData();
