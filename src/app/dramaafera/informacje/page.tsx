@@ -31,8 +31,8 @@ export default function InnePage() {
                                 <li>Za poprawnego Swapa jako Swapper (Wygłosowany Impostor albo Neutral).</li>
                                 <li>Za zabójstwo jako Deputy.</li>
                                 <li>Za sprzątnięcie ciała jako Janitor.</li>
-                                <li>Za wykonane taski. Taski nie liczą się graczom z modyfikatorem Lover oraz graczom którzy nie zaczęli gry jako Crewmate.
-                                </li>
+                                <li>Za wykonane taski. Taski nie liczą się graczom z modyfikatorem Lover oraz graczom którzy nie zaczęli gry jako Crewmate.</li>
+                                <li>Za wygraną grę.</li>
                             </ul>
                         </div>
                         <div>
