@@ -157,10 +157,6 @@ export const availableGames = [
         fileName: "game_data_20250709_1832"
     },
     {
-        id: "20250709_1832_01",
-        fileName: "game_data_20250709_1832"
-    },
-    {
         id: "20250618_2136_11",
         fileName: "game_data_20250618_2136"
     },
