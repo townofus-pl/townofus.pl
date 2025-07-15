@@ -371,7 +371,7 @@ True
 Maximum Number Of Traps
 3
 Trap Size
-0,7000001
+0,7000002
 Minimum Number Of Roles Required To Trigger Trap
 3
 Hunter Kill Cooldown
