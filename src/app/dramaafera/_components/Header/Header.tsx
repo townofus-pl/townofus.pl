@@ -13,7 +13,7 @@ export const Header = () => (
             <Navigation/>
         </div>
         <div className="font-barlow text-base text-gray-500 flex items-start justify-start lg:justify-end">
-            <p>Created by Malkiz</p>
+            <p>Podstronka zrobiona przez Malkiza, ale całą resztę strony zrobili Malkiz, Orzehh oraz Quarties.</p>
         </div>
     </header>
 );
