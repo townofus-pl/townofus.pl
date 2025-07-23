@@ -480,6 +480,10 @@ export const availableGames = [
         id: "20250723_1952_07",
         fileName: "game_data_20250723_1952"
     },
+    {
+        id: "20250723_2009_08",
+        fileName: "game_data_20250723_2009"
+    },
     // Dodaj kolejne gry tutaj w formacie:
     // {
     //     id: "YYYYMMDD_HHMM", 
