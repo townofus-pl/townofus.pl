@@ -5,7 +5,7 @@ compatibility_flags = ["nodejs_compat"]
 account_id = "d1287f321cc95882fc773ab71241b51a"
 
 workers_dev = false
-route = { pattern = "next.townofus.pl", custom_domain = true }
+route = { pattern = "townofus.pl", custom_domain = true }
 
 [assets]
 binding = "ASSETS"
