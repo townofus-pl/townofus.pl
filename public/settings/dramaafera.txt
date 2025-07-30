@@ -33,7 +33,7 @@
 <color=#A6A6A6FF>Jailor</color>
 50
 <color=#660099FF>Politician</color>
-50
+0
 <color=#B38000FF>Prosecutor</color>
 50
 <color=#66E666FF>Swapper</color>
@@ -45,7 +45,7 @@
 <color=#006600FF>Medic</color>
 50
 <color=#BF00BFFF>Oracle</color>
-50
+0
 <color=#9900FFFF>Warden</color>
 50
 <color=#FFA60AFF>Engineer</color>
@@ -53,7 +53,7 @@
 <color=#B3D94DFF>Imitator</color>
 50
 <color=#A680FFFF>Medium</color>
-50
+0
 <color=#CC6600FF>Plumber</color>
 50
 <color=#00EEFFFF>Transporter</color>
@@ -317,9 +317,9 @@ Who Can Click Haunter
 Footprint Size
 5
 Footprint Interval
-0,25
+0,15
 Footprint Duration
-2
+3
 Anonymous Footprint
 False
 Footprint Vent Visible
@@ -331,9 +331,9 @@ True
 Maximum Number Of Players That Can Be Watched
 5
 Dead Body Arrow Duration
-0,50000006
+0,74999994
 Seer Cooldown
-17,5
+12,5
 Crewmate Killing Roles Are Red
 True
 Neutral Benign Roles Are Red
@@ -347,7 +347,7 @@ False
 Snitch Sees Neutral Roles
 False
 Tasks Remaining When Revealed
-2
+1
 Snitch Sees Impostors In Meetings
 True
 Snitch Sees Traitor
@@ -373,9 +373,9 @@ Maximum Number Of Traps
 Trap Size
 0,7000001
 Minimum Number Of Roles Required To Trigger Trap
-3
+2
 Hunter Kill Cooldown
-15
+12,5
 Hunter Stalk Cooldown
 10
 Hunter Stalk Duration
@@ -421,7 +421,7 @@ True
 Jail Cooldown
 15
 Maximum Number Of Executes
-1
+2
 Campaign Cooldown
 20
 Prosecutor Dies When They Exile A Crewmate
@@ -429,13 +429,13 @@ True
 Swapper Can Button
 True
 Altruist Revive Duration
-3
+1
 Revive Uses
 3
 Revive Radius
 0,75
 Barrier Cooldown
-15
+10
 Show Barriered Player
 2
 Cleric Gets Attack Notification
@@ -449,7 +449,7 @@ False
 Show Medic Reports
 True
 Time Where Medic Will Have Color Type
-0
+7,5
 Confess Cooldown
 20
 Initial Bless Cooldown
@@ -465,7 +465,7 @@ True
 Show Fortified Player
 2
 Maximum Number Of Fixes
-4
+6
 Mediate Cooldown
 5
 Reveal Appearance Of Mediate Target
@@ -477,7 +477,7 @@ Who Is Revealed With Mediate
 Flush Cooldown
 20
 Maximum Number Of Barricades
-4
+5
 Transport Cooldown
 20
 Maximum Number Of Transports
@@ -509,7 +509,7 @@ Guard Cooldown
 Maximum Number Of Guards
 5
 Gold To Bribe
-2
+1
 Vest Cooldown
 20
 Vest Duration
@@ -521,7 +521,7 @@ False
 Survivor Scatter Timer
 30
 Observe Cooldown
-5
+3
 Doomsayer Guesses All Roles At Once
 False
 Doomsayer Can't Observe
@@ -581,7 +581,7 @@ Pestilence Kill Cooldown
 Pestilence Can Vent
 True
 Reap Cooldown
-17,5
+15
 Soul Collector Can Vent
 True
 Vampire Bite Cooldown
@@ -613,7 +613,7 @@ Blind Duration
 Blind Radius
 1
 Recall Cooldown
-32,5
+25
 Escapist Can Vent
 True
 Flash Grenade Cooldown
@@ -633,31 +633,31 @@ True
 Swoop Cooldown
 25
 Swoop Duration
-7
+5
 Swooper Can Vent
 True
 Ability Cooldown
 20
 Ability Duration
-7
+5
 Sprint Speed
-1,4999998
+1,3499999
 Minimum Freeze Speed
 0,50000006
 Freeze Radius
-1
+0,5
 Detonate Delay
 3
 Max Kills In Detonation
 3
 Detonate Radius
-0,25
+0,2
 Bomber Can Vent
 True
 All Impostors See Bomb
 True
 Scavenge Duration
-15
+20
 Scavenge Duration Increase Per Kill
 10
 Scavenge Kill Cooldown On Correct Kill
@@ -673,7 +673,7 @@ Time It Takes To Fully Charge
 Time It Takes To Use Full Charge
 2,9999983
 Initial Blackmail Cooldown
-5
+10
 Only Target Sees Blackmail
 False
 Maximum People Alive Where Blackmailed Can Vote
@@ -681,11 +681,11 @@ Maximum People Alive Where Blackmailed Can Vote
 Hypnotize Cooldown
 10
 Mine Cooldown
-20
+17,5
 Drag Cooldown
-20
+25
 Undertaker Drag Speed
-0,74999994
+0,5999999
 Undertaker Can Vent
 True
 Undertaker Can Vent While Dragging
