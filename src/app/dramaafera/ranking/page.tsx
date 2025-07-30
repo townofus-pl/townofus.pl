@@ -71,8 +71,6 @@ export default function RankingPageWrapper() {
     const [sortBy, setSortBy] = useClientState<keyof PlayerRankingStats>("rankingPoints");
     const [sortOrder, setSortOrder] = useClientState<"asc" | "desc">("desc");
 
-
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => {
         (async () => {
             const games = await getAllGamesData();
@@ -85,7 +83,7 @@ export default function RankingPageWrapper() {
             setPlayerStats(stats);
         })();
         // setPlayerStats is a stable setter from useState, so it does not need to be in the dependency array
-    }, []);
+    }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
 
     // Rozszerz sortowanie o rankingPoints
