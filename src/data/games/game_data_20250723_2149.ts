@@ -111,7 +111,7 @@ export const gameData: GameData = {
       win: 0,
       disconnected: 0,
       initialRolePoints: 3,
-      correctKills: 3,
+      correctKills: 2,
       incorrectKills: 0,
       correctProsecutes: 0,
       incorrectProsecutes: 0,
@@ -613,10 +613,6 @@ export const gameData: GameData = {
       description: "Ph4 (Pestilence) killed Cleopatrie (Soul Collector) — Correct kill",
     },
     {
-      timestamp: "22:00:21",
-      description: "Ph4 (Pestilence) killed Cleopatrie (Soul Collector) — Correct kill",
-    },
-    {
       timestamp: "22:00:27",
       description: "Miras (Arsonist) reported Barox24's (Undertaker) body! Meeting started.",
     },
@@ -708,7 +704,6 @@ export const gameData: GameData = {
       deathsSinceLastMeeting: [
         "Orzehh (Investigator) - Voted out in Meeting 3"
 ,        "Barox24 (Undertaker) - Killed by Ph4 (Pestilence)"
-,        "Cleopatrie (Soul Collector) - Killed by Ph4 (Pestilence)"
 ,        "Cleopatrie (Soul Collector) - Killed by Ph4 (Pestilence)"
       ],
       votes: {
