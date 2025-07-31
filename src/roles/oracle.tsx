@@ -23,7 +23,7 @@ export const Oracle: Role = {
     "description": (<>
         <p>Crewmate, który może zmusić innego gracza do wyjawienia informacji. Oracle ma 2 zdolności:</p>
         <ul className="list-disc list-inside">
-            <li>Spowiedź - Podczas każdego spotkania Oracle otrzymuje wyznanie od spowiadanej osoby o tym, kto może być mordercą. Spowiadany zawsze wyjawia dwóch podejrzanych. Jeśli spowiadany jest Crewmatem, wydaje co najmniej jednego mordercę. W przeciwnym wypadku podejrzenia są fałszywe. Gdy Oracle zginie, osoba wyznająca mu informacje ujawni wszystkim swoją przynależność (z określoną dokładnością).</li>
+            <li>Spowiedź - Podczas każdego spotkania Oracle otrzymuje wyznanie od spowiadanej osoby o tym, kto może być mordercą. Spowiadany zawsze wyjawia trzech podejrzanych: siebie, oraz dwóch dodatkowych. Wśród tej trójki zawsze jest morderca. Gdy Oracle zginie, osoba wyznająca mu informacje ujawni wszystkim swoją przynależność (z określoną dokładnością).</li>
             <li>Błogosławieństwo - Sprawia, że pobłogosławiony gracz nie może zostać zabity na spotkaniu.</li>
         </ul>
     </>),
