@@ -13,7 +13,11 @@ const navigationItems: NavigationItemProps[] = [
     },
     {
         href: "/dramaafera/ranking",
-        label: "Ranking"
+        label: "Ranking Graczy",
+    },
+        {
+        href: "/dramaafera/role",
+        label: "Ranking Ról",
     },
     {   
         href: "/dramaafera/historia-gier",

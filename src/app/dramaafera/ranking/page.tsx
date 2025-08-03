@@ -82,8 +82,8 @@ export default function RankingPageWrapper() {
             }));
             setPlayerStats(stats);
         })();
-        // setPlayerStats is a stable setter from useState, so it does not need to be in the dependency array
-    }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    }, [setPlayerStats]);
+
 
 
     // Rozszerz sortowanie o rankingPoints

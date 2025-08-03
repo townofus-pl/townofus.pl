@@ -4,12 +4,25 @@ export async function generateStaticParams() {
   return dates.map(dateGroup => ({ date: dateGroup.date }));
 }
 import { getGameDatesList, getGamesListByDate, getGameData } from '@/data/games';
-import Image from 'next/image';
-import Link from 'next/link';
+import { normalizeRoleName, getRoleColor, determineTeam, UIGameData, UIPlayerData } from '@/data/games/converter';
+import PlayerTable from '@/app/_components/PlayerTable';
+import RoleTable from '@/app/_components/RoleTable';
 
 interface PlayerDayStats {
   name: string;
   avatar: string;
+  games: number;
+  wins: number;
+  loses: number;
+  winRatio: number;
+  results: ('W' | 'L' | null)[];
+}
+
+interface RoleDayStats {
+  name: string;
+  displayName: string;
+  color: string;
+  team: string;
   games: number;
   wins: number;
   loses: number;
@@ -27,24 +40,6 @@ export default async function WynikiDniaPage({ params }: { params: Promise<{ dat
 
   // Pobierz szczegółowe dane każdej gry (UIGameData) w odwrotnej kolejności (od najnowszej)
   const reversedGames = [...games].reverse();
-  // Typy dla gracza i gry
-  type UIGamePlayer = {
-    nickname: string;
-    win: boolean;
-    role?: string;
-    roleHistory?: string[];
-    originalStats?: {
-      correctKills?: number;
-      incorrectKills?: number;
-    };
-  };
-  type UIGameData = {
-    id: string;
-    winner?: string;
-    detailedStats?: {
-      playersData: UIGamePlayer[];
-    };
-  };
 
   const detailedGames = await Promise.all(reversedGames.map(async (game): Promise<UIGameData | null> => await getGameData(game.id)));
 
@@ -52,7 +47,7 @@ export default async function WynikiDniaPage({ params }: { params: Promise<{ dat
   const playerMap = new Map<string, PlayerDayStats>();
   detailedGames.forEach((game, gameIdx) => {
     if (!game?.detailedStats?.playersData) return;
-    game.detailedStats.playersData.forEach((player: UIGamePlayer) => {
+    game.detailedStats.playersData.forEach((player: UIPlayerData) => {
       if (!playerMap.has(player.nickname)) {
         playerMap.set(player.nickname, {
           name: player.nickname,
@@ -86,6 +81,55 @@ export default async function WynikiDniaPage({ params }: { params: Promise<{ dat
     return a.name.localeCompare(b.name);
   });
 
+  // Zbierz wszystkie role i ich wyniki
+  const roleMap = new Map<string, RoleDayStats>();
+  detailedGames.forEach((game, gameIdx) => {
+    if (!game?.detailedStats?.playersData) return;
+    game.detailedStats.playersData.forEach((player: UIPlayerData) => {
+      // Użyj ostatniej roli z historii lub podstawowej roli
+      const roleName = player.roleHistory && player.roleHistory.length > 0 
+        ? player.roleHistory[player.roleHistory.length - 1] 
+        : player.role || 'Unknown';
+      
+      if (!roleMap.has(roleName)) {
+        const displayName = normalizeRoleName(roleName);
+        const color = getRoleColor(roleName);
+        const team = determineTeam([roleName]);
+        
+        roleMap.set(roleName, {
+          name: roleName,
+          displayName: displayName,
+          color: color,
+          team: team,
+          games: 0,
+          wins: 0,
+          loses: 0,
+          winRatio: 0,
+          results: Array(games.length).fill(null)
+        });
+      }
+      const stats = roleMap.get(roleName)!;
+      stats.games++;
+      if (player.win) {
+        stats.wins++;
+        stats.results[gameIdx] = 'W';
+      } else {
+        stats.loses++;
+        stats.results[gameIdx] = 'L';
+      }
+    });
+  });
+
+  // Oblicz winratio ról i posortuj
+  const roles = Array.from(roleMap.values()).map((r: RoleDayStats) => ({
+    ...r,
+    winRatio: r.games > 0 ? Math.round((r.wins / r.games) * 10000) / 100 : 0
+  })).sort((a, b) => {
+    if (b.winRatio !== a.winRatio) return b.winRatio - a.winRatio;
+    if (b.wins !== a.wins) return b.wins - a.wins;
+    return a.displayName.localeCompare(b.displayName);
+  });
+
   // Statystyki zwycięstw
   let crewmateWins = 0;
   let impostorWins = 0;
@@ -100,90 +144,25 @@ export default async function WynikiDniaPage({ params }: { params: Promise<{ dat
   return (
     <div className="min-h-screen bg-zinc-900/80 text-white p-8">
       <h1 className="text-4xl font-bold mb-8 text-center">Wyniki dnia {date}</h1>
-      <div className="overflow-x-visible">
-        <table className="w-full border border-zinc-700 bg-zinc-800/80 rounded-lg table-fixed">
-          <thead>
-            <tr className="bg-zinc-900/80">
-              <th
-                className="text-yellow-400 font-bold"
-                style={{ minWidth: '2.5rem', width: '2.5rem', maxWidth: '3.5rem', padding: '0.25rem 0.25rem' }}
-              >
-                #
-              </th>
-              <th className="px-2 py-2 text-yellow-400 font-bold">GRACZ</th>
-              <th className="px-2 py-2 text-yellow-400 font-bold">ILOŚĆ GIER</th>
-              <th className="px-2 py-2 text-yellow-400 font-bold">WIN</th>
-              <th className="px-2 py-2 text-yellow-400 font-bold">LOSE</th>
-              <th className="px-2 py-2 text-yellow-400 font-bold">WINRATIO</th>
-      {reversedGames.map((g, idx: number) => (
-        <th
-          key={idx}
-          className="text-yellow-400 font-bold text-xs p-0"
-          style={{ minWidth: '2.5rem', width: '2.5rem', maxWidth: '3.5rem' }}
-        >
-          <Link
-            href={`/dramaafera/historia-gier/${date}/${g.id}`}
-            className="block w-full h-full py-2 hover:underline hover:text-blue-400 text-center"
-            style={{ minWidth: '2.5rem', minHeight: '2.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
-          >
-            {idx + 1}
-          </Link>
-        </th>
-      ))}
-            </tr>
-          </thead>
-          <tbody>
-            {players.map((player, idx: number) => (
-              <tr key={player.name} className="border-b border-zinc-700">
-                <td
-                  className="text-center text-yellow-300 font-bold"
-                  style={{ minWidth: '2.5rem', width: '2.5rem', maxWidth: '3.5rem', height: '2.5rem', padding: 0 }}
-                >
-                  <span className="flex items-center justify-center w-full h-full" style={{ minHeight: '2.5rem' }}>{idx + 1}</span>
-                </td>
-                <td className="px-2 py-1 flex items-center gap-2">
-                  <Image src={player.avatar} alt={player.name} width={32} height={32} className="rounded-full border border-zinc-600" />
-                  <span className="font-bold text-orange-300">{player.name}</span>
-                </td>
-                <td className="px-2 py-1 text-center">{player.games}</td>
-                <td className="px-2 py-1 text-center text-green-400 font-bold">{player.wins}</td>
-                <td className="px-2 py-1 text-center text-red-400 font-bold">{player.loses}</td>
-                <td className="px-2 py-1 text-center font-bold" style={{ color: player.winRatio >= 50 ? '#22C55E' : player.winRatio >= 30 ? '#F59E0B' : '#EF4444' }}>{player.winRatio.toFixed(2)}%</td>
-                {player.results.map((res, i) => {
-                  // Pobierz rolę gracza w danej grze (jeśli grał)
-                  let role = '';
-                  const game = detailedGames[i];
-                  if (game && game.detailedStats && game.detailedStats.playersData) {
-                    const found = game.detailedStats.playersData.find((p: UIGamePlayer) => p.nickname === player.name);
-                    if (found) {
-                      // Jeśli jest historia ról, pokaż ostatnią
-                      if (found.roleHistory && found.roleHistory.length > 0) {
-                        role = found.roleHistory[found.roleHistory.length - 1];
-                      } else if (found.role) {
-                        role = found.role;
-                      }
-                    }
-                  }
-                  return (
-                    <td
-                      key={i}
-                      className={`text-center font-bold relative group ${res === 'W' ? 'bg-green-700/80 text-green-300' : res === 'L' ? 'bg-red-800/80 text-red-300' : 'bg-zinc-900/40'}`}
-                      style={{ minWidth: '2.5rem', width: '2.5rem', maxWidth: '3.5rem', height: '2.5rem', padding: 0 }}
-                    >
-                      <span className="flex items-center justify-center w-full h-full" style={{ minHeight: '2.5rem' }}>{res || ''}</span>
-                      {role && (
-                        <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-1 px-3 py-2 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10 max-w-xs shadow-lg border border-gray-700">
-                          {role}
-                        </div>
-                      )}
-                    </td>
-                  );
-                })}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+      
+      <PlayerTable 
+        players={players}
+        reversedGames={reversedGames}
+        detailedGames={detailedGames}
+        date={date}
+        hideZeroStats={true}
+      />
+
+      {/* Tabela ról */}
+      <h2 className="text-3xl font-bold mb-6 mt-12 text-center">Statystyki ról</h2>
+      <RoleTable 
+        roles={roles}
+        reversedGames={reversedGames}
+        detailedGames={detailedGames}
+        date={date}
+        hideZeroStats={true}
+      />
+
       {/* Statystyki zwycięstw pod tabelą */}
       <div className="mt-8 flex flex-wrap justify-center gap-6 text-lg">
         <div className="bg-blue-900/60 rounded-lg px-6 py-3 border border-blue-700/50 text-blue-200 font-semibold flex items-center gap-2">
