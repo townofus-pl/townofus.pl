@@ -130,6 +130,14 @@ export default function RankingPageWrapper() {
                     <p className="text-center text-gray-300 mt-4 text-lg">
                         Najlepsi gracze Drama Afera Among Us
                     </p>
+                    <div className="text-center mt-4">
+                        <Link 
+                            href="/dramaafera/role"
+                            className="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-lg transition-colors inline-flex items-center gap-2"
+                        >
+                            🎭 Ranking Ról
+                        </Link>
+                    </div>
                 </div>
 
                 <div className="bg-gray-800/50 rounded-lg p-6 backdrop-blur-sm">

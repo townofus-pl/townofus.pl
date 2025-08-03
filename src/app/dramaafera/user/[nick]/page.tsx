@@ -78,6 +78,22 @@ export default async function UserProfilePage({ params }: UserProfileProps) {
     // Oblicz winratio (już jest obliczone w generateUserProfileStats)
     const winRatio = playerStats.winRate;
 
+    // Oblicz sumę poprawnych i niepoprawnych zagrań
+    const totalCorrectPlays = playerStats.correctKills + playerStats.correctGuesses + 
+                             playerStats.correctMedicShields + playerStats.correctJailorExecutes +
+                             playerStats.correctDeputyShoots + playerStats.correctProsecutes +
+                             playerStats.correctWardenFortifies + playerStats.correctAltruistRevives +
+                             playerStats.correctSwaps;
+
+    const totalIncorrectPlays = playerStats.incorrectKills + playerStats.incorrectGuesses + 
+                               playerStats.incorrectMedicShields + playerStats.incorrectJailorExecutes +
+                               playerStats.incorrectDeputyShoots + playerStats.incorrectProsecutes +
+                               playerStats.incorrectWardenFortifies + playerStats.incorrectAltruistRevives +
+                               playerStats.incorrectSwaps;
+
+    const totalPlays = totalCorrectPlays + totalIncorrectPlays;
+    const correctnessRatio = totalPlays > 0 ? Math.round((totalCorrectPlays / totalPlays) * 100) : 0;
+
     return (
         <div className="min-h-screen bg-zinc-900/50 rounded-xl text-white">
             {/* Header */}
@@ -149,6 +165,39 @@ export default async function UserProfilePage({ params }: UserProfileProps) {
                                     </div>
                                 </div>
                             </div>
+
+                            {/* Dodatkowy rząd ze statystykami poprawności */}
+                            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-6">
+                                {/* Poprawne zagrania */}
+                                <div className="bg-zinc-800/50 rounded-lg p-4 border border-zinc-700/50">
+                                    <div className="text-2xl font-bold text-green-400 mb-1">
+                                        {totalCorrectPlays}
+                                    </div>
+                                    <div className="text-sm text-zinc-400 uppercase tracking-wide">
+                                        Poprawnych zagrań
+                                    </div>
+                                </div>
+
+                                {/* Niepoprawne zagrania */}
+                                <div className="bg-zinc-800/50 rounded-lg p-4 border border-zinc-700/50">
+                                    <div className="text-2xl font-bold text-red-400 mb-1">
+                                        {totalIncorrectPlays}
+                                    </div>
+                                    <div className="text-sm text-zinc-400 uppercase tracking-wide">
+                                        Niepoprawnych zagrań
+                                    </div>
+                                </div>
+
+                                {/* Współczynnik poprawności */}
+                                <div className="bg-zinc-800/50 rounded-lg p-4 border border-zinc-700/50">
+                                    <div className="text-2xl font-bold text-yellow-400 mb-1">
+                                        {correctnessRatio}%
+                                    </div>
+                                    <div className="text-sm text-zinc-400 uppercase tracking-wide">
+                                        Współczynnik poprawności
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -187,20 +236,20 @@ export default async function UserProfilePage({ params }: UserProfileProps) {
                         
                         <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
                             <div className="text-xl font-bold text-pink-400">
-                                {playerStats.totalTasks}
+                                {playerStats.maxTasks > 0 ? `${playerStats.totalTasks}/${playerStats.maxTasks}` : playerStats.totalTasks}
                             </div>
                             <div className="text-sm text-zinc-400">
                                 Wykonanych tasków
                             </div>
                         </div>
 
-                        {/* Nowe statystyki */}
+                        {/* Statystyki zabójstw */}
                         <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
                             <div className="text-xl font-bold text-green-400">
                                 {playerStats.correctKills}
                             </div>
                             <div className="text-sm text-zinc-400">
-                                Poprawnych zabójstw
+                                Correct kills
                             </div>
                         </div>
 
@@ -209,16 +258,17 @@ export default async function UserProfilePage({ params }: UserProfileProps) {
                                 {playerStats.incorrectKills}
                             </div>
                             <div className="text-sm text-zinc-400">
-                                Niepoprawnych zabójstw
+                                Incorrect kills
                             </div>
                         </div>
 
+                        {/* Statystyki zgadywań */}
                         <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
                             <div className="text-xl font-bold text-green-400">
                                 {playerStats.correctGuesses}
                             </div>
                             <div className="text-sm text-zinc-400">
-                                Poprawnych guessów
+                                Correct guesses
                             </div>
                         </div>
 
@@ -227,8 +277,166 @@ export default async function UserProfilePage({ params }: UserProfileProps) {
                                 {playerStats.incorrectGuesses}
                             </div>
                             <div className="text-sm text-zinc-400">
-                                Niepoprawnych guessów
+                                Incorrect guesses
                             </div>
+                        </div>
+
+                        {/* Statystyki tarcz medyka */}
+                        <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
+                            <div className="text-xl font-bold text-green-400">
+                                {playerStats.correctMedicShields}
+                            </div>
+                            <div className="text-sm text-zinc-400">
+                                Correct shields
+                            </div>
+                        </div>
+
+                        <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
+                            <div className="text-xl font-bold text-red-400">
+                                {playerStats.incorrectMedicShields}
+                            </div>
+                            <div className="text-sm text-zinc-400">
+                                Incorrect shields
+                            </div>
+                        </div>
+
+                        {/* Statystyki Jailor Executes */}
+                        <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
+                            <div className="text-xl font-bold text-green-400">
+                                {playerStats.correctJailorExecutes}
+                            </div>
+                            <div className="text-sm text-zinc-400">
+                                Correct executions
+                            </div>
+                        </div>
+
+                        <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
+                            <div className="text-xl font-bold text-red-400">
+                                {playerStats.incorrectJailorExecutes}
+                            </div>
+                            <div className="text-sm text-zinc-400">
+                                Incorrect executions
+                            </div>
+                        </div>
+
+                        {/* Statystyki Deputy Shoots */}
+                        <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
+                            <div className="text-xl font-bold text-green-400">
+                                {playerStats.correctDeputyShoots}
+                            </div>
+                            <div className="text-sm text-zinc-400">
+                                Correct Deputy shoots
+                            </div>
+                        </div>
+
+                        <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
+                            <div className="text-xl font-bold text-red-400">
+                                {playerStats.incorrectDeputyShoots}
+                            </div>
+                            <div className="text-sm text-zinc-400">
+                                Incorrect Deputy shoots
+                            </div>
+                        </div>
+
+                        {/* Statystyki Prosecutes */}
+                        <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
+                            <div className="text-xl font-bold text-green-400">
+                                {playerStats.correctProsecutes}
+                            </div>
+                            <div className="text-sm text-zinc-400">
+                                Correct Prosecutes
+                            </div>
+                        </div>
+
+                        <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
+                            <div className="text-xl font-bold text-red-400">
+                                {playerStats.incorrectProsecutes}
+                            </div>
+                            <div className="text-sm text-zinc-400">
+                                Incorrect Prosecutes
+                            </div>
+                        </div>
+
+                        {/* Statystyki Warden Fortifies */}
+                        <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
+                            <div className="text-xl font-bold text-green-400">
+                                {playerStats.correctWardenFortifies}
+                            </div>
+                            <div className="text-sm text-zinc-400">
+                                Correct Warden fortifies
+                            </div>
+                        </div>
+
+                        <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
+                            <div className="text-xl font-bold text-red-400">
+                                {playerStats.incorrectWardenFortifies}
+                            </div>
+                            <div className="text-sm text-zinc-400">
+                                Incorrect Warden fortifies
+                            </div>
+                        </div>
+
+                        {/* Statystyki Altruist Revives */}
+                        <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
+                            <div className="text-xl font-bold text-green-400">
+                                {playerStats.correctAltruistRevives}
+                            </div>
+                            <div className="text-sm text-zinc-400">
+                                Correct Altruist revives
+                            </div>
+                        </div>
+
+                        <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
+                            <div className="text-xl font-bold text-red-400">
+                                {playerStats.incorrectAltruistRevives}
+                            </div>
+                            <div className="text-sm text-zinc-400">
+                                Incorrect Altruist revives
+                            </div>
+                        </div>
+
+                        {/* Statystyki Swaps */}
+                        <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
+                            <div className="text-xl font-bold text-green-400">
+                                {playerStats.correctSwaps}
+                            </div>
+                            <div className="text-sm text-zinc-400">
+                                Correct swaps
+                            </div>
+                        </div>
+
+                        <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
+                            <div className="text-xl font-bold text-red-400">
+                                {playerStats.incorrectSwaps}
+                            </div>
+                            <div className="text-sm text-zinc-400">
+                                Incorrect swaps
+                            </div>
+                        </div>
+
+                        {/* Janitor Cleans */}
+                        <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
+                            <div className="text-xl font-bold text-purple-400">
+                                {playerStats.janitorCleans}
+                            </div>
+                            <div className="text-sm text-zinc-400">
+                                Janitor cleans
+                            </div>
+                        </div>
+
+                        {/* Statystyki przetrwanych rund */}
+                        <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
+                            <div className="text-xl font-bold text-cyan-400">
+                                {playerStats.survivedRounds}/{playerStats.totalRounds}
+                            </div>
+                            <div className="text-sm text-zinc-400">
+                                Przeżytych rund
+                            </div>
+                            {playerStats.totalRounds > 0 && (
+                                <div className="text-xs text-zinc-500 mt-1">
+                                    {Math.round((playerStats.survivedRounds / playerStats.totalRounds) * 100)}% przeżywalności
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
