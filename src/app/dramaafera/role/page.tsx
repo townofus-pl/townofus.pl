@@ -4,7 +4,14 @@ import { useState, useMemo, useEffect } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import { getAllGamesData } from '@/data/games';
-import { generateRoleRankingStats, type RoleRankingStats, type UIGameData } from '@/data/games/converter';
+import { generateRoleRankingStats, type UIGameData } from '@/data/games/converter';
+
+// Funkcja pomocnicza do konwersji nazwy roli na format URL-friendly
+function convertRoleToUrlSlug(role: string): string {
+  return role.toLowerCase()
+    .replace(/\s+/g, '-')
+    .replace(/[^\w\-]/g, '');
+}
 
 // Wszystkie gry w formacie UI
 type SortField = 'winRate' | 'gamesPlayed' | 'wins' | 'name';
@@ -192,14 +199,6 @@ export default function RolePage() {
                     <p className="text-center text-gray-300 mt-4 text-lg">
                         Statystyki efektywności wszystkich ról w grach DramaAfera
                     </p>      
-                    <div className="text-center mt-4">              
-                        <Link 
-                            href="/dramaafera/ranking"
-                            className="bg-blue-600 hover:bg-blue-700 px-4 py-2 rounded-lg transition-colors"
-                        >
-                            👤 Ranking Graczy
-                        </Link>
-                    </div>
                 </div>
 
                 {/* Loading state */}
@@ -276,12 +275,13 @@ export default function RolePage() {
                                                                 />
                                                             </div>
                                                             <div>
-                                                                <div 
-                                                                    className="font-semibold text-lg"
+                                                                <Link
+                                                                    href={`/dramaafera/role/${convertRoleToUrlSlug(role.name)}`}
+                                                                    className="font-semibold text-lg hover:underline transition-colors"
                                                                     style={{ color: role.color }}
                                                                 >
                                                                     {role.displayName}
-                                                                </div>
+                                                                </Link>
                                                             </div>
                                                         </div>
                                                     </td>

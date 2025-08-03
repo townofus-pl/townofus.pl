@@ -72,7 +72,6 @@ export default function RankingPageWrapper() {
     const [sortOrder, setSortOrder] = useClientState<"asc" | "desc">("desc");
 
 
-    // eslint-disable-next-line react-hooks/exhaustive-deps
     useEffect(() => {
         (async () => {
             const games = await getAllGamesData();
@@ -84,8 +83,7 @@ export default function RankingPageWrapper() {
             }));
             setPlayerStats(stats);
         })();
-        // setPlayerStats is a stable setter from useState, so it does not need to be in the dependency array
-    }, []);
+    }, [setPlayerStats]);
 
 
     // Rozszerz sortowanie o rankingPoints
@@ -130,14 +128,6 @@ export default function RankingPageWrapper() {
                     <p className="text-center text-gray-300 mt-4 text-lg">
                         Najlepsi gracze Drama Afera Among Us
                     </p>
-                    <div className="text-center mt-4">
-                        <Link 
-                            href="/dramaafera/role"
-                            className="bg-purple-600 hover:bg-purple-700 px-4 py-2 rounded-lg transition-colors inline-flex items-center gap-2"
-                        >
-                            🎭 Ranking Ról
-                        </Link>
-                    </div>
                 </div>
 
                 <div className="bg-gray-800/50 rounded-lg p-6 backdrop-blur-sm">

@@ -167,7 +167,7 @@ export default async function UserProfilePage({ params }: UserProfileProps) {
                             </div>
 
                             {/* Dodatkowy rząd ze statystykami poprawności */}
-                            <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mt-6">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
                                 {/* Poprawne zagrania */}
                                 <div className="bg-zinc-800/50 rounded-lg p-4 border border-zinc-700/50">
                                     <div className="text-2xl font-bold text-green-400 mb-1">

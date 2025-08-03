@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
+import { UIGameData, UIPlayerData } from '@/data/games/converter';
 
 interface PlayerDayStats {
   name: string;
@@ -14,48 +15,21 @@ interface PlayerDayStats {
   results: ('W' | 'L' | null)[];
 }
 
-interface UIGamePlayer {
-  nickname: string;
-  role?: string;
-  roleHistory?: string[];
-  win: boolean;
-  originalStats?: {
-    correctKills?: number;
-    incorrectKills?: number;
-    correctMedicShields?: number;
-    incorrectMedicShields?: number;
-    completedTasks?: number;
-    totalTasks?: number;
-    survivedRounds?: number;
-    totalRounds?: number;
-    correctGuesses?: number;
-    incorrectGuesses?: number;
-    timesRevived?: number;
-    timesKilled?: number;
-    bodiesReported?: number;
-    emergencyMeetingsCalled?: number;
-    tasksCompleted?: number;
-    sabotagesFixed?: number;
-    deadBodiesReported?: number;
-    timesDied?: number;
-    timesEjected?: number;
-    crewmatesKilled?: number;
-    impostorsKilled?: number;
-    neutralsKilled?: number;
-    [key: string]: any;
-  };
-}
-
 interface PlayerTableProps {
   players: PlayerDayStats[];
   reversedGames: { id: string }[];
-  detailedGames: any[];
+  detailedGames: (UIGameData | null)[];
   date: string;
   hideZeroStats?: boolean; // Nowy prop do kontrolowania wyświetlania statystyk równych 0
 }
 
 export default function PlayerTable({ players, reversedGames, detailedGames, date, hideZeroStats = false }: PlayerTableProps) {
   const [expandedPlayers, setExpandedPlayers] = useState<Set<string>>(new Set());
+
+  // Funkcja pomocnicza do konwersji nicku na format URL-friendly
+  const convertNickToUrlSlug = (nick: string): string => {
+    return nick.replace(/\s+/g, '-').toLowerCase();
+  };
 
   const togglePlayerExpansion = (playerName: string) => {
     const newExpanded = new Set(expandedPlayers);
@@ -112,18 +86,32 @@ export default function PlayerTable({ players, reversedGames, detailedGames, dat
     detailedGames.forEach((game) => {
       if (!game?.detailedStats?.playersData) return;
       
-      const playerData = game.detailedStats.playersData.find((p: UIGamePlayer) => p.nickname === playerName);
+      const playerData = game.detailedStats.playersData.find((p: UIPlayerData) => p.nickname === playerName);
       if (!playerData?.originalStats) return;
 
       aggregatedStats.gamesPlayed++;
       const stats = playerData.originalStats;
 
       // Sumuj wszystkie statystyki oprócz tasków i rund
-      Object.keys(aggregatedStats).forEach(key => {
-        if (key !== 'gamesPlayed' && key !== 'totalTasks' && key !== 'totalRounds' && key !== 'completedTasks' && stats[key] !== undefined) {
-          aggregatedStats[key as keyof typeof aggregatedStats] += stats[key] || 0;
-        }
-      });
+      aggregatedStats.correctKills += stats.correctKills || 0;
+      aggregatedStats.incorrectKills += stats.incorrectKills || 0;
+      aggregatedStats.correctMedicShields += stats.correctMedicShields || 0;
+      aggregatedStats.incorrectMedicShields += stats.incorrectMedicShields || 0;
+      aggregatedStats.correctJailorExecutes += stats.correctJailorExecutes || 0;
+      aggregatedStats.incorrectJailorExecutes += stats.incorrectJailorExecutes || 0;
+      aggregatedStats.correctDeputyShoots += stats.correctDeputyShoots || 0;
+      aggregatedStats.incorrectDeputyShoots += stats.incorrectDeputyShoots || 0;
+      aggregatedStats.correctProsecutes += stats.correctProsecutes || 0;
+      aggregatedStats.incorrectProsecutes += stats.incorrectProsecutes || 0;
+      aggregatedStats.correctWardenFortifies += stats.correctWardenFortifies || 0;
+      aggregatedStats.incorrectWardenFortifies += stats.incorrectWardenFortifies || 0;
+      aggregatedStats.correctAltruistRevives += stats.correctAltruistRevives || 0;
+      aggregatedStats.incorrectAltruistRevives += stats.incorrectAltruistRevives || 0;
+      aggregatedStats.correctSwaps += stats.correctSwaps || 0;
+      aggregatedStats.incorrectSwaps += stats.incorrectSwaps || 0;
+      aggregatedStats.correctGuesses += stats.correctGuesses || 0;
+      aggregatedStats.incorrectGuesses += stats.incorrectGuesses || 0;
+      aggregatedStats.janitorCleans += stats.janitorCleans || 0;
 
       // Specjalna logika dla tasków: użyj maxTasks z gry
       if (stats.completedTasks && stats.completedTasks > 0) {
@@ -136,7 +124,7 @@ export default function PlayerTable({ players, reversedGames, detailedGames, dat
 
       // Specjalna logika dla przeżytych rund: znajdź maksimum dla tej konkretnej gry
       let maxRoundsInThisGame = 0;
-      game.detailedStats.playersData.forEach((p: UIGamePlayer) => {
+      game.detailedStats.playersData.forEach((p: UIPlayerData) => {
         if (p.originalStats?.survivedRounds) {
           maxRoundsInThisGame = Math.max(maxRoundsInThisGame, p.originalStats.survivedRounds);
         }
@@ -200,7 +188,12 @@ export default function PlayerTable({ players, reversedGames, detailedGames, dat
                   </td>
                   <td className="px-2 py-1 flex items-center gap-2">
                     <Image src={player.avatar} alt={player.name} width={32} height={32} className="rounded-full border border-zinc-600" />
-                    <span className="font-bold text-orange-300">{player.name}</span>
+                    <Link 
+                      href={`/dramaafera/user/${convertNickToUrlSlug(player.name)}`}
+                      className="font-bold text-orange-300 hover:text-orange-200 transition-colors"
+                    >
+                      {player.name}
+                    </Link>
                     <button
                       onClick={() => togglePlayerExpansion(player.name)}
                       className="ml-2 text-yellow-400 hover:text-yellow-300 transition-colors"
@@ -218,7 +211,7 @@ export default function PlayerTable({ players, reversedGames, detailedGames, dat
                     let role = '';
                     const game = detailedGames[i];
                     if (game && game.detailedStats && game.detailedStats.playersData) {
-                      const found = game.detailedStats.playersData.find((p: UIGamePlayer) => p.nickname === player.name);
+                      const found = game.detailedStats.playersData.find((p: UIPlayerData) => p.nickname === player.name);
                       if (found) {
                         // Jeśli jest historia ról, pokaż ostatnią
                         if (found.roleHistory && found.roleHistory.length > 0) {

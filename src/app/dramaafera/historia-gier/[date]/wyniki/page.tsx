@@ -4,9 +4,7 @@ export async function generateStaticParams() {
   return dates.map(dateGroup => ({ date: dateGroup.date }));
 }
 import { getGameDatesList, getGamesListByDate, getGameData } from '@/data/games';
-import { normalizeRoleName, getRoleColor, determineTeam } from '@/data/games/converter';
-import Image from 'next/image';
-import Link from 'next/link';
+import { normalizeRoleName, getRoleColor, determineTeam, UIGameData, UIPlayerData } from '@/data/games/converter';
 import PlayerTable from '@/app/_components/PlayerTable';
 import RoleTable from '@/app/_components/RoleTable';
 
@@ -33,77 +31,6 @@ interface RoleDayStats {
 }
 
 export default async function WynikiDniaPage({ params }: { params: Promise<{ date: string }> }) {
-  // Funkcja do pobierania ikony roli
-  const getRoleIcon = (roleName: string): string => {
-    const roleIconMappings: Record<string, string> = {
-      'Crewmate': 'placeholder.png',
-      'Impostor': 'placeholder.png',
-      'Sheriff': 'sheriff.png',
-      'Engineer': 'engineer.png',
-      'Medic': 'medic.png',
-      'Investigator': 'investigator.png',
-      'Mystic': 'mystic.png',
-      'Detective': 'detective.png',
-      'Seer': 'seer.png',
-      'Spy': 'spy.png',
-      'Snitch': 'snitch.png',
-      'Altruist': 'altruist.png',
-      'Medium': 'medium.png',
-      'Swapper': 'swapper.png',
-      'Transporter': 'transporter.png',
-      'Tracker': 'tracker.png',
-      'Trapper': 'trapper.png',
-      'Mayor': 'politician.png',
-      'Politician': 'politician.png',
-      'Vigilante': 'vigilante.png',
-      'Veteran': 'veteran.png',
-      'Hunter': 'hunter.png',
-      'Deputy': 'deputy.png',
-      'Undertaker': 'undertaker.png',
-      'Imitator': 'imitator.png',
-      'Prosecutor': 'prosecutor.png',
-      'Oracle': 'oracle.png',
-      'Aurial': 'aurial.png',
-      'Lookout': 'lookout.png',
-      'Jailor': 'jailor.png',
-      'Morphling': 'morphling.png',
-      'Swooper': 'swooper.png',
-      'Miner': 'miner.png',
-      'Escapist': 'escapist.png',
-      'Grenadier': 'grenadier.png',
-      'Traitor': 'traitor.png',
-      'Blackmailer': 'blackmailer.png',
-      'Janitor': 'janitor.png',
-      'Vampire': 'vampire.png',
-      'Hypnotist': 'hypnotist.png',
-      'Bomber': 'bomber.png',
-      'Warlock': 'warlock.png',
-      'Venerer': 'venerer.png',
-      'Jester': 'jester.png',
-      'Executioner': 'executioner.png',
-      'Arsonist': 'arsonist.png',
-      'Plaguebearer': 'plaguebearer.png',
-      'Pestilence': 'plaguebearer.png',
-      'Glitch': 'glitch.png',
-      'Juggernaut': 'juggernaut.png',
-      'Survivor': 'survivor.png',
-      'Guardian Angel': 'guardian_angel.png',
-      'GuardianAngel': 'guardian_angel.png',
-      'Amnesiac': 'amnesiac.png',
-      'Phantom': 'phantom.png',
-      'Doomsayer': 'doomsayer.png',
-      'Scavenger': 'scavenger.png',
-      'Soul Collector': 'soul_collector.png',
-      'Mercenary': 'placeholder.png',
-      'Cleric': 'cleric.png',
-      'Warden': 'warden.png',
-      'Plumber': 'placeholder.png',
-      'Eclipsal': 'placeholder.png',
-      'Haunter': 'haunter.png'
-    };
-    return roleIconMappings[roleName] || 'placeholder.png';
-  };
-
   // Pobierz wszystkie gry z danego dnia (GameSummary)
   const { date } = await params;
   const games = await getGamesListByDate(date);
@@ -113,24 +40,6 @@ export default async function WynikiDniaPage({ params }: { params: Promise<{ dat
 
   // Pobierz szczegółowe dane każdej gry (UIGameData) w odwrotnej kolejności (od najnowszej)
   const reversedGames = [...games].reverse();
-  // Typy dla gracza i gry
-  type UIGamePlayer = {
-    nickname: string;
-    win: boolean;
-    role?: string;
-    roleHistory?: string[];
-    originalStats?: {
-      correctKills?: number;
-      incorrectKills?: number;
-    };
-  };
-  type UIGameData = {
-    id: string;
-    winner?: string;
-    detailedStats?: {
-      playersData: UIGamePlayer[];
-    };
-  };
 
   const detailedGames = await Promise.all(reversedGames.map(async (game): Promise<UIGameData | null> => await getGameData(game.id)));
 
@@ -138,7 +47,7 @@ export default async function WynikiDniaPage({ params }: { params: Promise<{ dat
   const playerMap = new Map<string, PlayerDayStats>();
   detailedGames.forEach((game, gameIdx) => {
     if (!game?.detailedStats?.playersData) return;
-    game.detailedStats.playersData.forEach((player: UIGamePlayer) => {
+    game.detailedStats.playersData.forEach((player: UIPlayerData) => {
       if (!playerMap.has(player.nickname)) {
         playerMap.set(player.nickname, {
           name: player.nickname,
@@ -176,7 +85,7 @@ export default async function WynikiDniaPage({ params }: { params: Promise<{ dat
   const roleMap = new Map<string, RoleDayStats>();
   detailedGames.forEach((game, gameIdx) => {
     if (!game?.detailedStats?.playersData) return;
-    game.detailedStats.playersData.forEach((player: UIGamePlayer) => {
+    game.detailedStats.playersData.forEach((player: UIPlayerData) => {
       // Użyj ostatniej roli z historii lub podstawowej roli
       const roleName = player.roleHistory && player.roleHistory.length > 0 
         ? player.roleHistory[player.roleHistory.length - 1] 

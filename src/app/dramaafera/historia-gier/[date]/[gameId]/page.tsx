@@ -12,7 +12,9 @@ function getPlayerAvatarPath(playerName: string): string {
 }
 
 // Funkcja pomocnicza do konwersji nicku na format URL-friendly
-
+function convertNickToUrlSlug(nick: string): string {
+    return nick.replace(/\s+/g, '-').toLowerCase();
+}
 
 // Funkcja pomocnicza do konwersji nazwy roli na format URL-friendly
 function convertRoleToUrlSlug(role: string): string {
@@ -224,7 +226,12 @@ export default async function GamePage({ params }: GamePageProps) {
                                             }}
                                         />
                                         <div className="flex items-center space-x-3">
-                                            <span className="text-xl font-bold text-white">{player.nickname}</span>
+                                            <Link 
+                                                href={`/dramaafera/user/${convertNickToUrlSlug(player.nickname)}`}
+                                                className="text-xl font-bold text-white hover:text-orange-300 transition-colors"
+                                            >
+                                                {player.nickname}
+                                            </Link>
                                             <span 
                                                 className="text-lg"
                                                 style={{
