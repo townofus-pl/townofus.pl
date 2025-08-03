@@ -211,6 +211,9 @@ export default function RoleTable({ roles, reversedGames, detailedGames, date, h
         aggregatedStats.correctGuesses += stats.correctGuesses || 0;
         aggregatedStats.incorrectGuesses += stats.incorrectGuesses || 0;
         aggregatedStats.janitorCleans += stats.janitorCleans || 0;
+        
+        // Dodaj przeżyte rundy dla tego gracza
+        aggregatedStats.survivedRounds += stats.survivedRounds || 0;
 
       // Specjalna logika dla tasków: użyj maxTasks z gry
       if (stats.completedTasks && stats.completedTasks > 0) {
