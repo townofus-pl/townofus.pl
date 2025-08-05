@@ -290,7 +290,7 @@ export const gameData: GameData = {
       modifiers: ["Lover"],
       win: 1,
       disconnected: 0,
-      initialRolePoints: 3,
+      initialRolePoints: 4,
       correctKills: 0,
       incorrectKills: 0,
       correctProsecutes: 0,
@@ -312,7 +312,7 @@ export const gameData: GameData = {
       incorrectAltruistRevives: 0,
       correctSwaps: 0,
       incorrectSwaps: 0,
-      totalPoints: 8.0,
+      totalPoints: 9.0,
     },
     {
       playerName: "smoqu",
@@ -440,7 +440,7 @@ export const gameData: GameData = {
       modifiers: ["Tiebreaker", "Lover"],
       win: 1,
       disconnected: 0,
-      initialRolePoints: 2,
+      initialRolePoints: 3,
       correctKills: 0,
       incorrectKills: 0,
       correctProsecutes: 0,
@@ -462,7 +462,7 @@ export const gameData: GameData = {
       incorrectAltruistRevives: 0,
       correctSwaps: 0,
       incorrectSwaps: 0,
-      totalPoints: 7.0,
+      totalPoints: 8.0,
     }
   ],
   gameEvents: [

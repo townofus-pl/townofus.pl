@@ -290,7 +290,7 @@ export const gameData: GameData = {
       modifiers: ["Torch", "Lover"],
       win: 0,
       disconnected: 0,
-      initialRolePoints: 2,
+      initialRolePoints: 3,
       correctKills: 0,
       incorrectKills: 0,
       correctProsecutes: 0,
@@ -312,7 +312,7 @@ export const gameData: GameData = {
       incorrectAltruistRevives: 0,
       correctSwaps: 0,
       incorrectSwaps: 0,
-      totalPoints: 2.0,
+      totalPoints: 3.0,
     },
     {
       playerName: "Dziekansqr",

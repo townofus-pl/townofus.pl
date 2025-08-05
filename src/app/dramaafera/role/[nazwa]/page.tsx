@@ -262,12 +262,6 @@ export default async function RoleStatsPage({ params }: RolePageProps) {
             {/* Header */}
             <div className="bg-zinc-900/50 backdrop-blur-md border-b border-zinc-700/50 p-6">
                 <div className="max-w-4xl mx-auto">
-                    <Link 
-                        href="/dramaafera"
-                        className="text-white hover:text-gray-300 transition-colors mb-4 inline-flex items-center gap-2"
-                    >
-                        ← Powrót do Drama Afera
-                    </Link>
                     <h1 className="text-4xl font-bold text-white">
                         Statystyki roli
                     </h1>

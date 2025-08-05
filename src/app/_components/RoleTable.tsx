@@ -101,7 +101,8 @@ export default function RoleTable({ roles, reversedGames, detailedGames, date, h
       'Warden': 'warden.png',
       'Plumber': 'placeholder.png',
       'Eclipsal': 'placeholder.png',
-      'Haunter': 'haunter.png'
+      'Haunter': 'haunter.png',
+      'Werewolf': 'werewolf.png'
     };
     
     return roleIconMappings[roleName] || 'placeholder.png';
