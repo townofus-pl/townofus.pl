@@ -4,7 +4,7 @@ import { getAllGamesData } from "@/data/games";
 import { getRoleColor } from "@/data/games/converter";
 import { notFound } from "next/navigation";
 import { RoleImage } from "../_components/RoleImage";
-import type { GameData, PlayerStats } from "@/data/games/converter";
+import type { PlayerStats } from "@/data/games/converter";
 
 // Funkcja pomocnicza do konwersji nazwy roli na format URL-friendly
 function convertRoleToUrlSlug(role: string): string {
