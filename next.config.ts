@@ -1,22 +1,10 @@
 import type { NextConfig } from "next";
+import { initOpenNextCloudflareForDev } from "@opennextjs/cloudflare";
 
 const nextConfig: NextConfig = {
-    /**
-     * Enable static exports for the App Router.
-     *
-     * @see https://nextjs.org/docs/app/building-your-application/deploying/static-exports
-     */
-    // output: "export", // Wyłączone, aby API routes działały w trybie serwerowym
-
-    /**
-     * Disable server-based image optimization. Next.js does not support
-     * dynamic features with static exports.
-     *
-     * @see https://nextjs.org/docs/app/api-reference/components/image#unoptimized
-     */
-    images: {
-        unoptimized: true,
-    },
+    poweredByHeader: false,
 };
 
 export default nextConfig;
+
+initOpenNextCloudflareForDev();
