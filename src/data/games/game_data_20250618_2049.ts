@@ -277,7 +277,7 @@ export const gameData: GameData = {
     },
     {
       playerName: "GIMPER 2",
-      roleHistory: ["Crewmate"],
+      roleHistory: ["Altruist"],
       modifiers: ["S_Surgeon"],
       win: 1,
       disconnected: 0,

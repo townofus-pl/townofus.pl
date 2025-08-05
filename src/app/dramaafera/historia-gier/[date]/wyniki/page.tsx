@@ -86,9 +86,9 @@ export default async function WynikiDniaPage({ params }: { params: Promise<{ dat
   detailedGames.forEach((game, gameIdx) => {
     if (!game?.detailedStats?.playersData) return;
     game.detailedStats.playersData.forEach((player: UIPlayerData) => {
-      // Użyj ostatniej roli z historii lub podstawowej roli
+      // Użyj tylko pierwotnej roli (pierwszej z historii lub podstawowej)
       const roleName = player.roleHistory && player.roleHistory.length > 0 
-        ? player.roleHistory[player.roleHistory.length - 1] 
+        ? player.roleHistory[0] 
         : player.role || 'Unknown';
       
       if (!roleMap.has(roleName)) {
