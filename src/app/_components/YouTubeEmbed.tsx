@@ -11,8 +11,6 @@ interface YouTubeEmbedProps {
 export function YouTubeEmbed({ 
   videoId, 
   title = "YouTube video",
-  width = "100%",
-  height = "315",
   className = ""
 }: YouTubeEmbedProps) {
   if (!videoId) {
