@@ -1,25 +1,39 @@
+'use client';
+
+import { useState } from 'react';
 import { YouTubeEmbed } from '@/app/_components/YouTubeEmbed';
 
-export default function PlaylistaPage() {
-    const week27VideoId = "yFIAhC0WcJE";
-    const week21VideoId = "ibE4Ql6ShDU"; 
-    const week20VideoId = "-BOeA3D4Xtg";
-    const week19VideoId = "8qKUwso6Ruc";
-    const week18VideoId = "KDKBb4dcOsM";
-    const week17VideoId = "sGwCtfPY3JM";
-    const week16VideoId = "_YYblrMyDgo";
-    const week15VideoId = "OOcUHKPQoQM";
-    const week14VideoId = "ZJqbN2f6MEM";
-    const week13VideoId = "LiosBxvyTK8";
-    const week12VideoId = "ph4MRWhIP-I";
-    const week11VideoId = "J5cUtHbZzDo";
-    const week10VideoId = "lT6-ktFybVY";
-    const week9VideoId = "wHn8JTDBu8M";
-    const week8VideoId = "dHqWJdCIcts";
-    const week7VideoId = "r-TGZ8DAdvU";
-    const week6VideoId = "5GYZthg3k-s";
-    const week4And5VideoId = "4xhZFRJlXZc";
+interface WeekData {
+  id: string;
+  title: string;
+  videoId: string;
+}
 
+export default function PlaylistaPage() {
+  // Dane wszystkich tygodni
+  const weeks: WeekData[] = [
+    { id: "week27", title: "WEEK 27", videoId: "yFIAhC0WcJE" },
+    { id: "week21", title: "WEEK 21", videoId: "ibE4Ql6ShDU" },
+    { id: "week20", title: "WEEK 20", videoId: "-BOeA3D4Xtg" },
+    { id: "week19", title: "WEEK 19", videoId: "8qKUwso6Ruc" },
+    { id: "week18", title: "WEEK 18", videoId: "KDKBb4dcOsM" },
+    { id: "week17", title: "WEEK 17", videoId: "sGwCtfPY3JM" },
+    { id: "week16", title: "WEEK 16", videoId: "_YYblrMyDgo" },
+    { id: "week15", title: "WEEK 15", videoId: "OOcUHKPQoQM" },
+    { id: "week14", title: "WEEK 14", videoId: "ZJqbN2f6MEM" },
+    { id: "week13", title: "WEEK 13", videoId: "LiosBxvyTK8" },
+    { id: "week12", title: "WEEK 12", videoId: "ph4MRWhIP-I" },
+    { id: "week11", title: "WEEK 11", videoId: "J5cUtHbZzDo" },
+    { id: "week10", title: "WEEK 10", videoId: "lT6-ktFybVY" },
+    { id: "week9", title: "WEEK 9", videoId: "wHn8JTDBu8M" },
+    { id: "week8", title: "WEEK 8", videoId: "dHqWJdCIcts" },
+    { id: "week7", title: "WEEK 7", videoId: "r-TGZ8DAdvU" },
+    { id: "week6", title: "WEEK 6", videoId: "5GYZthg3k-s" },
+    { id: "week4And5", title: "WEEK 4 & 5", videoId: "4xhZFRJlXZc" },
+  ];
+
+  // Stan dla wybranego tygodnia (domyślnie najnowszy)
+  const [selectedWeek, setSelectedWeek] = useState<WeekData>(weeks[0]);
 
   return (
     <div className="min-h-screen rounded-xl bg-zinc-900/50 text-white">
@@ -30,228 +44,46 @@ export default function PlaylistaPage() {
             Playlista DramaAfera
           </h1>
           <p className="text-center text-gray-300 mt-4 text-lg">
-            Plejlista z filmami z Dramy Afery!
+            Playlista z filmami z Dramy Afery!
           </p>
         </div>
 
-        {/* Videos */}
-        <div className="space-y-12">
-          <div className="bg-gray-800/50 rounded-lg p-6 backdrop-blur-sm">
-            <h2 className="text-3xl font-bold text-yellow-400 mb-6 text-center">
-              WEEK 27
-            </h2>
-            <div className="max-w-4xl mx-auto">
-              <YouTubeEmbed 
-                videoId={week27VideoId}
-                title="DramaAfera - Week 27"
-              />
-            </div>
+
+        {/* Wybrany film */}
+        <div className="bg-gray-800/50 rounded-lg p-6 backdrop-blur-sm">
+          <h2 className="text-3xl font-bold text-yellow-400 mb-6 text-center">
+            {selectedWeek.title}
+          </h2>
+          <div className="max-w-4xl mx-auto">
+            <YouTubeEmbed 
+              videoId={selectedWeek.videoId}
+              title={`DramaAfera - ${selectedWeek.title}`}
+            />
           </div>
+        </div>
 
-          <div className="bg-gray-800/50 rounded-lg p-6 backdrop-blur-sm">
-            <h2 className="text-3xl font-bold text-yellow-400 mb-6 text-center">
-              WEEK 21
-            </h2>
-            <div className="max-w-4xl mx-auto">
-              <YouTubeEmbed 
-                videoId={week21VideoId}
-                title="DramaAfera - Week 21"
-              />
-            </div>
+        {/* Lista wszystkich tygodni (opcjonalnie) */}
+        <div className="mt-12 bg-gray-800/30 rounded-lg p-6">
+          <h3 className="text-xl font-bold text-yellow-400 mb-4 text-center">
+            Wszystkie dostępne tygodnie
+          </h3>
+          <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-3">
+            {weeks.map((week) => (
+              <button
+                key={week.id}
+                onClick={() => setSelectedWeek(week)}
+                className={`px-4 py-2 rounded-lg font-medium transition-colors ${
+                  selectedWeek.id === week.id
+                    ? 'bg-yellow-500 text-black'
+                    : 'bg-gray-700 text-gray-300 hover:bg-gray-600'
+                }`}
+              >
+                {week.title}
+              </button>
+            ))}
           </div>
-
-             <div className="bg-gray-800/50 rounded-lg p-6 backdrop-blur-sm">
-                <h2 className="text-3xl font-bold text-yellow-400 mb-6 text-center">
-                WEEK 20
-                </h2>
-                <div className="max-w-4xl mx-auto">
-                <YouTubeEmbed 
-                    videoId={week20VideoId}
-                    title="DramaAfera - Week 20"
-                />
-                </div>
-            </div>
-
-            <div className="bg-gray-800/50 rounded-lg p-6 backdrop-blur-sm">
-                <h2 className="text-3xl font-bold text-yellow-400 mb-6 text-center">
-                WEEK 19
-                </h2>
-                <div className="max-w-4xl mx-auto">
-                <YouTubeEmbed 
-                    videoId={week19VideoId}
-                    title="DramaAfera - Week 19"
-                />
-                </div>
-            </div>
-
-            <div className="bg-gray-800/50 rounded-lg p-6 backdrop-blur-sm">
-                <h2 className="text-3xl font-bold text-yellow-400 mb-6 text-center">
-                WEEK 18
-                </h2>
-                <div className="max-w-4xl mx-auto">
-                <YouTubeEmbed 
-                    videoId={week18VideoId}
-                    title="DramaAfera - Week 18"
-                />
-                </div>
-            </div>
-
-            <div className="bg-gray-800/50 rounded-lg p-6 backdrop-blur-sm">
-                <h2 className="text-3xl font-bold text-yellow-400 mb-6 text-center">
-                WEEK 17
-                </h2>
-                <div className="max-w-4xl mx-auto">
-                <YouTubeEmbed 
-                    videoId={week17VideoId}
-                    title="DramaAfera - Week 17"
-                />
-                </div>
-            </div>
-
-            <div className="bg-gray-800/50 rounded-lg p-6 backdrop-blur-sm">
-                <h2 className="text-3xl font-bold text-yellow-400 mb-6 text-center">
-                WEEK 16
-                </h2>
-                <div className="max-w-4xl mx-auto">
-                <YouTubeEmbed 
-                    videoId={week16VideoId}
-                    title="DramaAfera - Week 16"
-                />
-                </div>
-            </div>
-
-            <div className="bg-gray-800/50 rounded-lg p-6 backdrop-blur-sm">
-                <h2 className="text-3xl font-bold text-yellow-400 mb-6 text-center">
-                WEEK 15
-                </h2>
-                <div className="max-w-4xl mx-auto">
-                <YouTubeEmbed 
-                    videoId={week15VideoId}
-                    title="DramaAfera - Week 15"
-                />
-                </div>
-            </div>
-
-            <div className="bg-gray-800/50 rounded-lg p-6 backdrop-blur-sm">
-                <h2 className="text-3xl font-bold text-yellow-400 mb-6 text-center">
-                WEEK 14
-                </h2>
-                <div className="max-w-4xl mx-auto">
-                <YouTubeEmbed 
-                    videoId={week14VideoId}
-                    title="DramaAfera - Week 14"
-                />
-                </div>
-            </div>
-
-            <div className="bg-gray-800/50 rounded-lg p-6 backdrop-blur-sm">
-                <h2 className="text-3xl font-bold text-yellow-400 mb-6 text-center">
-                WEEK 13
-                </h2>
-                <div className="max-w-4xl mx-auto">
-                <YouTubeEmbed 
-                    videoId={week13VideoId}
-                    title="DramaAfera - Week 13"
-                />
-                </div>
-            </div>
-
-            <div className="bg-gray-800/50 rounded-lg p-6 backdrop-blur-sm">
-                <h2 className="text-3xl font-bold text-yellow-400 mb-6 text-center">
-                WEEK 12
-                </h2>
-                <div className="max-w-4xl mx-auto">
-                <YouTubeEmbed 
-                    videoId={week12VideoId}
-                    title="DramaAfera - Week 12"
-                />
-                </div>
-            </div>
-
-            <div className="bg-gray-800/50 rounded-lg p-6 backdrop-blur-sm">
-                <h2 className="text-3xl font-bold text-yellow-400 mb-6 text-center">
-                WEEK 11
-                </h2>
-                <div className="max-w-4xl mx-auto">
-                <YouTubeEmbed 
-                    videoId={week11VideoId}
-                    title="DramaAfera - Week 11"
-                />
-                </div>
-            </div>
-
-            <div className="bg-gray-800/50 rounded-lg p-6 backdrop-blur-sm">
-                <h2 className="text-3xl font-bold text-yellow-400 mb-6 text-center">
-                WEEK 10
-                </h2>
-                <div className="max-w-4xl mx-auto">
-                <YouTubeEmbed 
-                    videoId={week10VideoId}
-                    title="DramaAfera - Week 10"
-                />
-                </div>
-            </div>
-
-            <div className="bg-gray-800/50 rounded-lg p-6 backdrop-blur-sm">
-                <h2 className="text-3xl font-bold text-yellow-400 mb-6 text-center">
-                WEEK 9
-                </h2>
-                <div className="max-w-4xl mx-auto">
-                <YouTubeEmbed 
-                    videoId={week9VideoId}
-                    title="DramaAfera - Week 9"
-                />
-                </div>
-            </div>
-
-            <div className="bg-gray-800/50 rounded-lg p-6 backdrop-blur-sm">
-                <h2 className="text-3xl font-bold text-yellow-400 mb-6 text-center">
-                WEEK 8
-                </h2>
-                <div className="max-w-4xl mx-auto">
-                <YouTubeEmbed 
-                    videoId={week8VideoId}
-                    title="DramaAfera - Week 8"
-                />
-                </div>
-            </div>
-
-            <div className="bg-gray-800/50 rounded-lg p-6 backdrop-blur-sm">
-                <h2 className="text-3xl font-bold text-yellow-400 mb-6 text-center">
-                WEEK 7
-                </h2>
-                <div className="max-w-4xl mx-auto">
-                <YouTubeEmbed 
-                    videoId={week7VideoId}
-                    title="DramaAfera - Week 7"
-                />
-                </div>
-            </div>
-
-            <div className="bg-gray-800/50 rounded-lg p-6 backdrop-blur-sm">
-                <h2 className="text-3xl font-bold text-yellow-400 mb-6 text-center">
-                WEEK 6
-                </h2>
-                <div className="max-w-4xl mx-auto">
-                <YouTubeEmbed 
-                    videoId={week6VideoId}
-                    title="DramaAfera - Week 6"
-                />
-                </div>
-            </div>
-
-            <div className="bg-gray-800/50 rounded-lg p-6 backdrop-blur-sm">
-                <h2 className="text-3xl font-bold text-yellow-400 mb-6 text-center">
-                WEEK 4 & 5
-                </h2>
-                <div className="max-w-4xl mx-auto">
-                <YouTubeEmbed 
-                    videoId={week4And5VideoId}
-                    title="DramaAfera - Week 4 & 5"
-                />
-                </div>
-            </div>
         </div>
       </div>
-    </div>);
+    </div>
+  );
 }
