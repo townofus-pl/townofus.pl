@@ -70,17 +70,25 @@ export default function RankingPageWrapper() {
     const [playerStats, setPlayerStats] = useClientState<PlayerRankingStats[]>([]);
     const [sortBy, setSortBy] = useClientState<keyof PlayerRankingStats>("rankingPoints");
     const [sortOrder, setSortOrder] = useClientState<"asc" | "desc">("desc");
+    const [isLoading, setIsLoading] = useClientState(true);
 
     useEffect(() => {
         (async () => {
-            const games = await getAllGamesData();
-            let stats = generatePlayerRankingStats(games);
-            // Dodaj rankingPoints z playerRankingPoints lub domyślnie 2000
-            stats = stats.map(player => ({
-                ...player,
-                rankingPoints: playerRankingPoints[player.name]
-            }));
-            setPlayerStats(stats);
+            try {
+                setIsLoading(true);
+                const games = await getAllGamesData();
+                let stats = generatePlayerRankingStats(games);
+                // Dodaj rankingPoints z playerRankingPoints lub domyślnie 2000
+                stats = stats.map(player => ({
+                    ...player,
+                    rankingPoints: playerRankingPoints[player.name]
+                }));
+                setPlayerStats(stats);
+            } catch (error) {
+                console.error('Błąd ładowania danych rankingu:', error);
+            } finally {
+                setIsLoading(false);
+            }
         })();
     }, [setPlayerStats]);
 
@@ -130,6 +138,16 @@ export default function RankingPageWrapper() {
                     </p>
                 </div>
 
+                {/* Loading state */}
+                {isLoading && (
+                    <div className="text-center py-12">
+                        <div className="inline-block animate-spin rounded-full h-8 w-8 border-b-2 border-yellow-400"></div>
+                        <p className="mt-4 text-gray-300">Ładowanie danych gier...</p>
+                    </div>
+                )}
+
+                {/* Content - only show when not loading */}
+                {!isLoading && (
                 <div className="bg-gray-800/50 rounded-lg p-6 backdrop-blur-sm">
                     <div className="overflow-x-auto">
                         <table className="w-full table-auto">
@@ -200,6 +218,7 @@ export default function RankingPageWrapper() {
                         </table>
                     </div>
                 </div>
+                )}
             </div>
         </div>
     );

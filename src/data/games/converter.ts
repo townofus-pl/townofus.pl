@@ -135,6 +135,18 @@ export function determineWinner(players: PlayerStats[]): { winner: string; winne
         };
     }
 
+    // Role pasożytnicze, które nigdy nie powinny być głównym zwycięzcą
+    const parasiticRoles = ['guardian angel', 'guardianangel', 'survivor', 'mercenary'];
+    
+    // Przefiltruj zwycięzców, usuwając role pasożytnicze jeśli są inne role
+    const nonParasiticWinners = winners.filter(winner => {
+        const lastRole = winner.roleHistory[winner.roleHistory.length - 1];
+        return !parasiticRoles.includes(lastRole.toLowerCase());
+    });
+    
+    // Użyj niepassożytniczych zwycięzców jeśli są, w przeciwnym razie zachowaj wszystkich
+    const primaryWinners = nonParasiticWinners.length > 0 ? nonParasiticWinners : winners;
+
     // Wszystkie nazwy zwycięzców (niezależnie od drużyny)
     const allWinnerNames = winners.map(w => w.playerName);
     
@@ -147,7 +159,7 @@ export function determineWinner(players: PlayerStats[]): { winner: string; winne
     });
 
     // SPECJALNY PRZYPADEK: Sprawdź czy wszyscy zwycięzcy mają modyfikator "Lover"
-    const allHaveLoverModifier = winners.length > 1 && winners.every(winner => 
+    const allHaveLoverModifier = primaryWinners.length > 1 && primaryWinners.every(winner => 
         winner.modifiers.some((modifier: string) => modifier.toLowerCase() === 'lover')
     );
     
@@ -166,7 +178,7 @@ export function determineWinner(players: PlayerStats[]): { winner: string; winne
     }
 
     // PRIORYTET 1: Sprawdź czy są Impostorzy (najwyższy priorytet)
-    const impostorWinners = winners.filter(w => {
+    const impostorWinners = primaryWinners.filter(w => {
         const lastRole = w.roleHistory[w.roleHistory.length - 1];
         const roleDefinition = Roles.find(role => {
             const normalizedRoleName = role.name.toLowerCase().replace(/\s+/g, '');
@@ -186,7 +198,7 @@ export function determineWinner(players: PlayerStats[]): { winner: string; winne
     }
 
     // PRIORYTET 2: Sprawdź czy są Crewmates (średni priorytet)
-    const crewmateWinners = winners.filter(w => {
+    const crewmateWinners = primaryWinners.filter(w => {
         const lastRole = w.roleHistory[w.roleHistory.length - 1];
         const roleDefinition = Roles.find(role => {
             const normalizedRoleName = role.name.toLowerCase().replace(/\s+/g, '');
@@ -206,8 +218,14 @@ export function determineWinner(players: PlayerStats[]): { winner: string; winne
     }
 
     // PRIORYTET 3: Sprawdź czy są role neutralne (najniższy priorytet)
-    const neutralWinners = winners.filter(w => {
+    const neutralWinners = primaryWinners.filter(w => {
         const lastRole = w.roleHistory[w.roleHistory.length - 1];
+        
+        // Specjalna obsługa dla Pestilence (transformacja Plaguebearer)
+        if (lastRole.toLowerCase() === 'pestilence') {
+            return true; // Pestilence to Neutral
+        }
+        
         const roleDefinition = Roles.find(role => {
             const normalizedRoleName = role.name.toLowerCase().replace(/\s+/g, '');
             const normalizedLastRole = lastRole.toLowerCase().replace(/\s+/g, '');

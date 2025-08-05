@@ -173,7 +173,8 @@ export default function RolePage() {
             'Warden': 'warden.png',
             'Plumber': 'placeholder.png', // Brak ikony plumber
             'Eclipsal': 'placeholder.png', // Brak ikony eclipsal
-            'Haunter': 'haunter.png'
+            'Haunter': 'haunter.png',
+            'Werewolf': 'werewolf.png'
         };
 
         return roleIconMappings[roleName] || 'placeholder.png';
@@ -337,29 +338,6 @@ export default function RolePage() {
                                         })}
                                     </tbody>
                                 </table>
-                            </div>
-                        </div>
-
-                        {/* Informacje dodatkowe */}
-                        <div className="mt-8 bg-gray-800 rounded-lg p-6">
-                            <h3 className="text-lg font-semibold mb-4">📊 Informacje o rankingu</h3>
-                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm text-gray-300">
-                                <div>
-                                    <p className="mb-2">
-                                        <strong>Win Rate:</strong> Procent wygranych gier dla danej roli
-                                    </p>
-                                    <p className="mb-2">
-                                        <strong>Gry:</strong> Całkowita liczba gier rozegranych daną rolą
-                                    </p>
-                                </div>
-                                <div>
-                                    <p className="mb-2">
-                                        <strong>Wygrane:</strong> Liczba wygranych gier dla danej roli
-                                    </p>
-                                    <p className="mb-2">
-                                        <strong>Ranking:</strong> Sortowanie według win rate, następnie według liczby gier
-                                    </p>
-                                </div>
                             </div>
                         </div>
                     </>
