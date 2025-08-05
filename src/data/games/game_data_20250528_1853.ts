@@ -354,7 +354,7 @@ export const gameData: GameData = {
       correctWardenFortifies: 0,
       incorrectWardenFortifies: 0,
       janitorCleans: 0,
-      completedTasks: 1,
+      completedTasks: 0,
       correctAltruistRevives: 0,
       incorrectAltruistRevives: 0,
       correctSwaps: 0,

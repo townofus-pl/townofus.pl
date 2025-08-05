@@ -4,6 +4,7 @@ import { getAllGamesData } from "@/data/games";
 import { getRoleColor } from "@/data/games/converter";
 import { notFound } from "next/navigation";
 import { RoleImage } from "../_components/RoleImage";
+import type { GameData, PlayerStats } from "@/data/games/converter";
 
 // Funkcja pomocnicza do konwersji nazwy roli na format URL-friendly
 function convertRoleToUrlSlug(role: string): string {
@@ -32,14 +33,36 @@ function convertUrlSlugToRole(slug: string, allRoles: string[]): string {
 interface RoleStats {
     roleName: string;
     gamesPlayed: number;
+    totalAppearances: number; // Dodane - całkowita liczba wystąpień roli
     wins: number;
     winRate: number;
     players: PlayerRoleStats[];
     // Specjalne statystyki dla ról zabijających
     totalCorrectKills?: number;
     totalIncorrectKills?: number;
-    killAccuracy?: number;
     isKillerRole: boolean;
+    // Dodatkowe szczegółowe statystyki
+    totalTasks: number;
+    maxTasks: number;
+    correctGuesses: number;
+    incorrectGuesses: number;
+    correctProsecutes: number;
+    incorrectProsecutes: number;
+    correctDeputyShoots: number;
+    incorrectDeputyShoots: number;
+    correctJailorExecutes: number;
+    incorrectJailorExecutes: number;
+    correctMedicShields: number;
+    incorrectMedicShields: number;
+    correctWardenFortifies: number;
+    incorrectWardenFortifies: number;
+    janitorCleans: number;
+    survivedRounds: number;
+    totalRounds: number;
+    correctAltruistRevives: number;
+    incorrectAltruistRevives: number;
+    correctSwaps: number;
+    incorrectSwaps: number;
 }
 
 // Interface dla statystyk gracza z daną rolą
@@ -51,7 +74,6 @@ interface PlayerRoleStats {
     // Specjalne statystyki dla ról zabijających
     correctKills?: number;
     incorrectKills?: number;
-    killAccuracy?: number;
 }
 
 // Funkcja do sprawdzania czy rola jest rolą zabijającą
@@ -75,14 +97,12 @@ type UIGamePlayer = {
     win: boolean;
     role?: string;
     roleHistory?: string[];
-    originalStats?: {
-        correctKills?: number;
-        incorrectKills?: number;
-    };
+    originalStats?: PlayerStats;
 };
 type UIGameData = {
     id: string;
     winner?: string;
+    maxTasks?: number;
     detailedStats: {
         playersData: UIGamePlayer[];
     };
@@ -91,9 +111,32 @@ type UIGameData = {
 // Funkcja do generowania statystyk roli
 function generateRoleStats(allGames: UIGameData[], targetRole: string): RoleStats {
     let totalGamesPlayed = 0;
+    let totalAppearances = 0; // Dodane - wszystkie wystąpienia roli
     let totalWins = 0;
     let totalCorrectKills = 0;
     let totalIncorrectKills = 0;
+    let totalTasks = 0;
+    let maxTasks = 0;
+    let correctGuesses = 0;
+    let incorrectGuesses = 0;
+    let correctProsecutes = 0;
+    let incorrectProsecutes = 0;
+    let correctDeputyShoots = 0;
+    let incorrectDeputyShoots = 0;
+    let correctJailorExecutes = 0;
+    let incorrectJailorExecutes = 0;
+    let correctMedicShields = 0;
+    let incorrectMedicShields = 0;
+    let correctWardenFortifies = 0;
+    let incorrectWardenFortifies = 0;
+    let janitorCleans = 0;
+    let survivedRounds = 0;
+    let totalRounds = 0;
+    let correctAltruistRevives = 0;
+    let incorrectAltruistRevives = 0;
+    let correctSwaps = 0;
+    let incorrectSwaps = 0;
+    
     const isKiller = isKillerRole(targetRole);
 
     const playerStats = new Map<string, {
@@ -104,10 +147,28 @@ function generateRoleStats(allGames: UIGameData[], targetRole: string): RoleStat
     }>();
 
     allGames.forEach(game => {
+        // Znajdź maksymalną liczbę rund dla tej gry
+        let maxRoundsInThisGame = 0;
+        game.detailedStats.playersData.forEach(p => {
+            if (p.originalStats?.survivedRounds) {
+                maxRoundsInThisGame = Math.max(maxRoundsInThisGame, p.originalStats.survivedRounds);
+            }
+        });
+
         game.detailedStats.playersData.forEach((player: UIGamePlayer) => {
-            // Sprawdź czy gracz miał tę rolę (sprawdzaj zarówno końcową rolę jak i historię ról)
-            const hasRole = player.role === targetRole ||
+            // Sprawdź wystąpienia roli w całej historii (dla totalAppearances)
+            const hasRoleInHistory = player.role === targetRole ||
                 (player.roleHistory && player.roleHistory.includes(targetRole));
+            
+            if (hasRoleInHistory) {
+                totalAppearances++;
+            }
+            
+            // Sprawdź czy gracz miał tę rolę tylko jako pierwotną rolę
+            const originalRole = player.roleHistory && player.roleHistory.length > 0 
+                ? player.roleHistory[0] 
+                : player.role;
+            const hasRole = originalRole === targetRole;
 
             if (hasRole) {
                 totalGamesPlayed++;
@@ -126,15 +187,63 @@ function generateRoleStats(allGames: UIGameData[], targetRole: string): RoleStat
                     current.wins++;
                 }
 
-                // Dodaj statystyki zabójstw jeśli to rola zabijająca
-                if (isKiller && player.originalStats) {
-                    const correctKills = player.originalStats.correctKills || 0;
-                    const incorrectKills = player.originalStats.incorrectKills || 0;
+                // Agreguj wszystkie dostępne statystyki z originalStats
+                if (player.originalStats) {
+                    // Statystyki zabójstw
+                    const kills = player.originalStats.correctKills || 0;
+                    const incorrectKill = player.originalStats.incorrectKills || 0;
+                    current.correctKills += kills;
+                    current.incorrectKills += incorrectKill;
+                    totalCorrectKills += kills;
+                    totalIncorrectKills += incorrectKill;
 
-                    current.correctKills += correctKills;
-                    current.incorrectKills += incorrectKills;
-                    totalCorrectKills += correctKills;
-                    totalIncorrectKills += incorrectKills;
+                    // Statystyki tasków
+                    const completedTasks = player.originalStats.completedTasks || 0;
+                    totalTasks += completedTasks;
+                    // Dodaj maxTasks z gry jeśli gracz wykonał jakieś zadania (podobnie jak w converter.ts)
+                    if (completedTasks > 0 && game.maxTasks) {
+                        maxTasks += game.maxTasks;
+                    }
+
+                    // Statystyki zgadywań
+                    correctGuesses += player.originalStats.correctGuesses || 0;
+                    incorrectGuesses += player.originalStats.incorrectGuesses || 0;
+
+                    // Statystyki Prosecute
+                    correctProsecutes += player.originalStats.correctProsecutes || 0;
+                    incorrectProsecutes += player.originalStats.incorrectProsecutes || 0;
+
+                    // Statystyki Deputy
+                    correctDeputyShoots += player.originalStats.correctDeputyShoots || 0;
+                    incorrectDeputyShoots += player.originalStats.incorrectDeputyShoots || 0;
+
+                    // Statystyki Jailor
+                    correctJailorExecutes += player.originalStats.correctJailorExecutes || 0;
+                    incorrectJailorExecutes += player.originalStats.incorrectJailorExecutes || 0;
+
+                    // Statystyki Medic
+                    correctMedicShields += player.originalStats.correctMedicShields || 0;
+                    incorrectMedicShields += player.originalStats.incorrectMedicShields || 0;
+
+                    // Statystyki Warden
+                    correctWardenFortifies += player.originalStats.correctWardenFortifies || 0;
+                    incorrectWardenFortifies += player.originalStats.incorrectWardenFortifies || 0;
+
+                    // Statystyki Janitor
+                    janitorCleans += player.originalStats.janitorCleans || 0;
+
+                    // Statystyki przetrwania
+                    survivedRounds += player.originalStats.survivedRounds || 0;
+                    // totalRounds - obliczamy jako sumę maksymalnych rund dla każdej gry gdzie gracz miał tę rolę
+                    totalRounds += maxRoundsInThisGame;
+
+                    // Statystyki Altruist
+                    correctAltruistRevives += player.originalStats.correctAltruistRevives || 0;
+                    incorrectAltruistRevives += player.originalStats.incorrectAltruistRevives || 0;
+
+                    // Statystyki Swapper
+                    correctSwaps += player.originalStats.correctSwaps || 0;
+                    incorrectSwaps += player.originalStats.incorrectSwaps || 0;
                 }
 
                 playerStats.set(player.nickname, current);
@@ -154,12 +263,10 @@ function generateRoleStats(allGames: UIGameData[], targetRole: string): RoleStat
 
             // Dodaj statystyki zabójstw jeśli to rola zabijająca
             if (isKiller) {
-                const totalKills = stats.correctKills + stats.incorrectKills;
                 return {
                     ...baseStats,
                     correctKills: stats.correctKills,
-                    incorrectKills: stats.incorrectKills,
-                    killAccuracy: totalKills > 0 ? parseFloat(((stats.correctKills / totalKills) * 100).toFixed(1)) : 0
+                    incorrectKills: stats.incorrectKills
                 };
             }
 
@@ -176,20 +283,40 @@ function generateRoleStats(allGames: UIGameData[], targetRole: string): RoleStat
     const baseStats = {
         roleName: targetRole,
         gamesPlayed: totalGamesPlayed,
+        totalAppearances: totalAppearances,
         wins: totalWins,
         winRate: totalGamesPlayed > 0 ? parseFloat(((totalWins / totalGamesPlayed) * 100).toFixed(1)) : 0,
         players,
-        isKillerRole: isKiller
+        isKillerRole: isKiller,
+        totalTasks,
+        maxTasks,
+        correctGuesses,
+        incorrectGuesses,
+        correctProsecutes,
+        incorrectProsecutes,
+        correctDeputyShoots,
+        incorrectDeputyShoots,
+        correctJailorExecutes,
+        incorrectJailorExecutes,
+        correctMedicShields,
+        incorrectMedicShields,
+        correctWardenFortifies,
+        incorrectWardenFortifies,
+        janitorCleans,
+        survivedRounds,
+        totalRounds,
+        correctAltruistRevives,
+        incorrectAltruistRevives,
+        correctSwaps,
+        incorrectSwaps
     };
 
     // Dodaj statystyki zabójstw jeśli to rola zabijająca
     if (isKiller) {
-        const totalKills = totalCorrectKills + totalIncorrectKills;
         return {
             ...baseStats,
             totalCorrectKills,
-            totalIncorrectKills,
-            killAccuracy: totalKills > 0 ? parseFloat(((totalCorrectKills / totalKills) * 100).toFixed(1)) : 0
+            totalIncorrectKills
         };
     }
 
@@ -302,14 +429,24 @@ export default async function RoleStatsPage({ params }: RolePageProps) {
                             </Link>
                             
                             {/* Podstawowe statystyki roli */}
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-6">
-                                {/* Liczba gier */}
+                            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+                                {/* Wystąpienia */}
+                                <div className="bg-zinc-800/50 rounded-lg p-4 border border-zinc-700/50">
+                                    <div className="text-3xl font-bold text-cyan-400 mb-1">
+                                        {roleStats.totalAppearances}
+                                    </div>
+                                    <div className="text-sm text-zinc-400 uppercase tracking-wide">
+                                        Wystąpienia
+                                    </div>
+                                </div>
+
+                                {/* Gry jako pierwotna rola */}
                                 <div className="bg-zinc-800/50 rounded-lg p-4 border border-zinc-700/50">
                                     <div className="text-3xl font-bold text-blue-400 mb-1">
                                         {roleStats.gamesPlayed}
                                     </div>
                                     <div className="text-sm text-zinc-400 uppercase tracking-wide">
-                                        Gier tej roli
+                                        Gier jako pierwotna rola
                                     </div>
                                 </div>
 
@@ -333,48 +470,254 @@ export default async function RoleStatsPage({ params }: RolePageProps) {
                                     </div>
                                 </div>
                             </div>
+                        </div>
+                    </div>
+                </div>
 
-                            {/* Statystyki zabójstw - tylko dla ról zabijających */}
-                            {roleStats.isKillerRole && (
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                                    {/* Poprawne zabójstwa */}
-                                    <div className="bg-zinc-800/50 rounded-lg p-4 border border-zinc-700/50">
-                                        <div className="text-3xl font-bold text-green-500 mb-1">
-                                            {roleStats.totalCorrectKills || 0}
-                                        </div>
-                                        <div className="text-sm text-zinc-400 uppercase tracking-wide">
-                                            Poprawne zabójstwa
-                                        </div>
+                {/* Szczegółowe statystyki roli */}
+                <div className="bg-zinc-900/50 backdrop-blur-md rounded-xl border border-zinc-700/50 p-6 mb-6">
+                    <h3 className="text-2xl font-bold mb-3 text-center">Szczegółowe statystyki</h3>
+                    <div className="text-xs text-zinc-400 tracking-wide mb-4 text-center"> Widzisz statystykę niepasującą do roli? To kwestia zmiany roli w trakcie gry.</div>
+                    
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        {/* Wyświetl tylko statystyki różne od zera */}
+                        
+                        {/* Statystyki zabójstw dla ról zabijających */}
+                        {roleStats.isKillerRole && (roleStats.totalCorrectKills! > 0 || roleStats.totalIncorrectKills! > 0) && (
+                            <>
+                                <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
+                                    <div className="text-xl font-bold text-green-400">
+                                        {roleStats.totalCorrectKills}
                                     </div>
-
-                                    {/* Niepoprawne zabójstwa */}
-                                    <div className="bg-zinc-800/50 rounded-lg p-4 border border-zinc-700/50">
-                                        <div className="text-3xl font-bold text-red-500 mb-1">
-                                            {roleStats.totalIncorrectKills || 0}
-                                        </div>
-                                        <div className="text-sm text-zinc-400 uppercase tracking-wide">
-                                            Niepoprawne zabójstwa
-                                        </div>
-                                    </div>
-
-                                    {/* Skuteczność zabójstw */}
-                                    <div className="bg-zinc-800/50 rounded-lg p-4 border border-zinc-700/50">
-                                        <div 
-                                            className="text-3xl font-bold mb-1"
-                                            style={{ 
-                                                color: (roleStats.killAccuracy || 0) >= 70 ? '#10B981' : 
-                                                       (roleStats.killAccuracy || 0) >= 50 ? '#F59E0B' : '#EF4444'
-                                            }}
-                                        >
-                                            {roleStats.killAccuracy || 0}%
-                                        </div>
-                                        <div className="text-sm text-zinc-400 uppercase tracking-wide">
-                                            Skuteczność zabójstw
-                                        </div>
+                                    <div className="text-sm text-zinc-400">
+                                        Correct kills
                                     </div>
                                 </div>
-                            )}
-                        </div>
+
+                                <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
+                                    <div className="text-xl font-bold text-red-400">
+                                        {roleStats.totalIncorrectKills}
+                                    </div>
+                                    <div className="text-sm text-zinc-400">
+                                        Incorrect kills
+                                    </div>
+                                </div>
+                            </>
+                        )}
+
+                        {roleStats.totalTasks > 0 && (
+                            <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
+                                <div className="text-xl font-bold text-pink-400">
+                                    {roleStats.maxTasks > 0 ? `${roleStats.totalTasks}/${roleStats.maxTasks}` : roleStats.totalTasks}
+                                </div>
+                                <div className="text-sm text-zinc-400">
+                                    Wykonanych tasków
+                                </div>
+                            </div>
+                        )}
+
+                        {roleStats.correctGuesses > 0 && (
+                            <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
+                                <div className="text-xl font-bold text-green-400">
+                                    {roleStats.correctGuesses}
+                                </div>
+                                <div className="text-sm text-zinc-400">
+                                    Correct guesses
+                                </div>
+                            </div>
+                        )}
+
+                        {roleStats.incorrectGuesses > 0 && (
+                            <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
+                                <div className="text-xl font-bold text-red-400">
+                                    {roleStats.incorrectGuesses}
+                                </div>
+                                <div className="text-sm text-zinc-400">
+                                    Incorrect guesses
+                                </div>
+                            </div>
+                        )}
+
+                        {roleStats.correctProsecutes > 0 && (
+                            <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
+                                <div className="text-xl font-bold text-green-400">
+                                    {roleStats.correctProsecutes}
+                                </div>
+                                <div className="text-sm text-zinc-400">
+                                    Correct Prosecutes
+                                </div>
+                            </div>
+                        )}
+
+                        {roleStats.incorrectProsecutes > 0 && (
+                            <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
+                                <div className="text-xl font-bold text-red-400">
+                                    {roleStats.incorrectProsecutes}
+                                </div>
+                                <div className="text-sm text-zinc-400">
+                                    Incorrect Prosecutes
+                                </div>
+                            </div>
+                        )}
+
+                        {roleStats.correctDeputyShoots > 0 && (
+                            <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
+                                <div className="text-xl font-bold text-green-400">
+                                    {roleStats.correctDeputyShoots}
+                                </div>
+                                <div className="text-sm text-zinc-400">
+                                    Correct Deputy shoots
+                                </div>
+                            </div>
+                        )}
+
+                        {roleStats.incorrectDeputyShoots > 0 && (
+                            <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
+                                <div className="text-xl font-bold text-red-400">
+                                    {roleStats.incorrectDeputyShoots}
+                                </div>
+                                <div className="text-sm text-zinc-400">
+                                    Incorrect Deputy shoots
+                                </div>
+                            </div>
+                        )}
+
+                        {roleStats.correctJailorExecutes > 0 && (
+                            <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
+                                <div className="text-xl font-bold text-green-400">
+                                    {roleStats.correctJailorExecutes}
+                                </div>
+                                <div className="text-sm text-zinc-400">
+                                    Correct executions
+                                </div>
+                            </div>
+                        )}
+
+                        {roleStats.incorrectJailorExecutes > 0 && (
+                            <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
+                                <div className="text-xl font-bold text-red-400">
+                                    {roleStats.incorrectJailorExecutes}
+                                </div>
+                                <div className="text-sm text-zinc-400">
+                                    Incorrect executions
+                                </div>
+                            </div>
+                        )}
+
+                        {roleStats.correctMedicShields > 0 && (
+                            <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
+                                <div className="text-xl font-bold text-green-400">
+                                    {roleStats.correctMedicShields}
+                                </div>
+                                <div className="text-sm text-zinc-400">
+                                    Correct shields
+                                </div>
+                            </div>
+                        )}
+
+                        {roleStats.incorrectMedicShields > 0 && (
+                            <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
+                                <div className="text-xl font-bold text-red-400">
+                                    {roleStats.incorrectMedicShields}
+                                </div>
+                                <div className="text-sm text-zinc-400">
+                                    Incorrect shields
+                                </div>
+                            </div>
+                        )}
+
+                        {roleStats.correctWardenFortifies > 0 && (
+                            <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
+                                <div className="text-xl font-bold text-green-400">
+                                    {roleStats.correctWardenFortifies}
+                                </div>
+                                <div className="text-sm text-zinc-400">
+                                    Correct Warden fortifies
+                                </div>
+                            </div>
+                        )}
+
+                        {roleStats.incorrectWardenFortifies > 0 && (
+                            <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
+                                <div className="text-xl font-bold text-red-400">
+                                    {roleStats.incorrectWardenFortifies}
+                                </div>
+                                <div className="text-sm text-zinc-400">
+                                    Incorrect Warden fortifies
+                                </div>
+                            </div>
+                        )}
+
+                        {roleStats.correctAltruistRevives > 0 && (
+                            <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
+                                <div className="text-xl font-bold text-green-400">
+                                    {roleStats.correctAltruistRevives}
+                                </div>
+                                <div className="text-sm text-zinc-400">
+                                    Correct Altruist revives
+                                </div>
+                            </div>
+                        )}
+
+                        {roleStats.incorrectAltruistRevives > 0 && (
+                            <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
+                                <div className="text-xl font-bold text-red-400">
+                                    {roleStats.incorrectAltruistRevives}
+                                </div>
+                                <div className="text-sm text-zinc-400">
+                                    Incorrect Altruist revives
+                                </div>
+                            </div>
+                        )}
+
+                        {roleStats.correctSwaps > 0 && (
+                            <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
+                                <div className="text-xl font-bold text-green-400">
+                                    {roleStats.correctSwaps}
+                                </div>
+                                <div className="text-sm text-zinc-400">
+                                    Correct swaps
+                                </div>
+                            </div>
+                        )}
+
+                        {roleStats.incorrectSwaps > 0 && (
+                            <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
+                                <div className="text-xl font-bold text-red-400">
+                                    {roleStats.incorrectSwaps}
+                                </div>
+                                <div className="text-sm text-zinc-400">
+                                    Incorrect swaps
+                                </div>
+                            </div>
+                        )}
+
+                        {roleStats.janitorCleans > 0 && (
+                            <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
+                                <div className="text-xl font-bold text-purple-400">
+                                    {roleStats.janitorCleans}
+                                </div>
+                                <div className="text-sm text-zinc-400">
+                                    Janitor cleans
+                                </div>
+                            </div>
+                        )}
+
+                        {roleStats.survivedRounds > 0 && (
+                            <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
+                                <div className="text-xl font-bold text-cyan-400">
+                                    {roleStats.totalRounds > 0 ? `${roleStats.survivedRounds}/${roleStats.totalRounds}` : roleStats.survivedRounds}
+                                </div>
+                                <div className="text-sm text-zinc-400">
+                                    Przeżytych rund
+                                </div>
+                                {roleStats.totalRounds > 0 && (
+                                    <div className="text-xs text-zinc-500 mt-1">
+                                        {Math.round((roleStats.survivedRounds / roleStats.totalRounds) * 100)}% przeżywalności
+                                    </div>
+                                )}
+                            </div>
+                        )}
                     </div>
                 </div>
 

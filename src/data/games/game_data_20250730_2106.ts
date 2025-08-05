@@ -668,7 +668,6 @@ export const gameData: GameData = {
 ,        "QukaVadi (Jailor) - Killed by Mamika (Blackmailer)"
       ],
       votes: {
-        "252": ["DawDu"],
         "Bushej": ["Budyn", "Dziekansqr", "smoqu", "Zieloony", "ziomson", "Malkiz", "Olivka"],
         "DawDu": ["Jakubeq"]
       },

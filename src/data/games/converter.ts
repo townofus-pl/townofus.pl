@@ -850,9 +850,11 @@ export function generateRoleRankingStats(allGames: UIGameData[]): RoleRankingSta
     // Przeiteruj przez wszystkie gry i zlicz statystyki ról
     allGames.forEach(game => {
         game.detailedStats.playersData.forEach(player => {
-            // Używaj ostatniej roli z historii
-            const lastRole = player.roleHistory ? player.roleHistory[player.roleHistory.length - 1] : player.role;
-            const roleName = lastRole || player.role;
+            // Używaj tylko pierwotnej roli (pierwszej z historii lub podstawowej)
+            const originalRole = player.roleHistory && player.roleHistory.length > 0 
+                ? player.roleHistory[0] 
+                : player.role;
+            const roleName = originalRole || player.role;
             
             if (!roleStats.has(roleName)) {
                 roleStats.set(roleName, { played: 0, won: 0 });

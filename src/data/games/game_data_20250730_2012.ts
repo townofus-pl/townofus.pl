@@ -171,7 +171,7 @@ export const gameData: GameData = {
       win: 1,
       disconnected: 0,
       initialRolePoints: 3,
-      correctKills: 4,
+      correctKills: 3,
       incorrectKills: 0,
       correctProsecutes: 0,
       incorrectProsecutes: 0,
@@ -192,7 +192,7 @@ export const gameData: GameData = {
       incorrectAltruistRevives: 0,
       correctSwaps: 0,
       incorrectSwaps: 0,
-      totalPoints: 13.0,
+      totalPoints: 12.0,
     },
     {
       playerName: "Jakubeq",
@@ -554,10 +554,6 @@ export const gameData: GameData = {
     },
     {
       timestamp: "20:19:22",
-      description: "Cleopatrie (Pestilence) killed Zieloony (Vampire) — Correct kill",
-    },
-    {
-      timestamp: "20:19:22",
       description: "ziomson (Vampire) killed smoqu (Snitch) — Correct kill",
     },
     {
@@ -605,7 +601,6 @@ export const gameData: GameData = {
 ,        "Jakubeq (Warden) - Killed by Dziekansqr (Blackmailer)"
       ],
       votes: {
-        "252": ["Mamika"],
         "ziomson": ["Bushej"],
         "Bushej": ["DawDu"]
       },
