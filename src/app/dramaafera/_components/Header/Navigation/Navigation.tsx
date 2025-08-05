@@ -25,6 +25,11 @@ const navigationItems: NavigationItemProps[] = [
 
     },
     {   
+        href: "/dramaafera/playlista",
+        label: "Playlista",
+
+    },
+    {   
         href: "/dramaafera/informacje",
         label: "Informacje",
 
