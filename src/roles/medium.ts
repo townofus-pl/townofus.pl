@@ -5,7 +5,7 @@ import {probabilityOfAppearing, SettingTypes} from "@/constants/settings";
 export const MediumAbilities = {
     Mediate: {
         "name": "Mediate (Dokonaj mediacji) ",
-        "icon": "images/abilities/mediate.png"
+        "icon": "/images/abilities/mediate.png"
     },
 };
 
