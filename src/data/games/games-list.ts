@@ -605,12 +605,28 @@ export const availableGames = [
         fileName: "game_data_20250806_2043"
     },
     {
-        id: "20250806_2104_12",
+        id: "20250806_2055_12",
+        fileName: "game_data_20250806_2055"
+    },
+    {
+        id: "20250806_2104_13",
         fileName: "game_data_20250806_2104"
     },
     {
-        id: "20250806_2114_13",
+        id: "20250806_2114_14",
         fileName: "game_data_20250806_2114"
+    },
+    {
+        id: "20250806_2127_15",
+        fileName: "game_data_20250806_2127"
+    },
+    {
+        id: "20250806_2139_16",
+        fileName: "game_data_20250806_2139"
+    },
+    {
+        id: "20250806_2155_17",
+        fileName: "game_data_20250806_2155"
     },
     // Dodaj kolejne gry tutaj w formacie:
     // {
