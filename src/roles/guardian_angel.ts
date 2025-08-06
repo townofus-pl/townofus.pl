@@ -38,10 +38,22 @@ export const GuardianAngel: Role = {
         "Show Protected Player": {
             value: "Self",
             type: SettingTypes.Text,
+            description: {
+                0: "Self",
+                1: "Guardian Angel",
+                2: "Self+Guardian Angel"
+            }
         },
         "GA Becomes On Target Dead": {
             value: RolesAfterDeath.Crewmate,
             type: SettingTypes.Text,
+            description: {
+                0: "Crewmate",
+                1: "Amnesiac",
+                2: "Mercenary",
+                3: "Survivor",
+                4: "Jester"
+            }
         },
         "Target Knows GA Exists": {
             value: false,

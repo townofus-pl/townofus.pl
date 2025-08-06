@@ -34,6 +34,11 @@ export const Medium: Role = {
         "Who Is Revealed With Mediate": {
             value: "Oldest Dead",
             type: SettingTypes.Text,
+            description: {
+                0: "Oldest Dead",
+                1: "Newest Dead",
+                2: "All Dead"
+            }
         },
     },
     "abilities": [MediumAbilities.Mediate],

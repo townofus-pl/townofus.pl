@@ -5,6 +5,8 @@ import { RolesList } from "@/app/_components";
 import { Roles } from "../_roles";
 import { Modifiers } from "@/modifiers";
 import { SettingTypes } from "@/constants/settings";
+import { SlotsDisplay } from "./SlotsDisplay";
+import { SpecialSettingsAccordion } from "./SpecialSettingsAccordion";
 
 export function     SettingsDramaAfera() {
     const [fileContent, setFileContent] = useState<string | null>(null);
@@ -26,11 +28,13 @@ export function     SettingsDramaAfera() {
             });
     }, []);
 
-    const { filteredRoles } = useMemo(() => {
+    const { filteredRoles, modSettings, impostorSettings } = useMemo(() => {
         if (!fileContent) {
             return {
                 roles: [],
-                filteredRoles: {}
+                filteredRoles: {},
+                modSettings: null,
+                impostorSettings: null
             };
         }
 
@@ -53,12 +57,14 @@ export function     SettingsDramaAfera() {
             cleanedFileContentMap.set(extractName(key), Number(normalized));
         }
 
-        // Filtrowanie ról: tylko te z szansą > 0
+        // Filtrowanie ról: tylko te z szansą > 0 i wyłącz Mod Settings oraz Impostor Settings
         const filteredRoles = Roles
             .filter(
                 (char) =>
                     cleanedFileContentMap.has(char.name) &&
-                    (cleanedFileContentMap.get(char.name) ?? 0) > 0
+                    (cleanedFileContentMap.get(char.name) ?? 0) > 0 &&
+                    char.name !== "Mod Settings" &&
+                    char.name !== "Impostor Settings"
             )
             .reduce((acc, char) => {
                 acc[char.id] = char;
@@ -105,14 +111,45 @@ export function     SettingsDramaAfera() {
             return role;
         });
 
-        ["Mod Settings", "Impostor Settings"].forEach(roleName => {
-            const role = Roles.find(r => r.name === roleName);
+        // Oddzielne przetwarzanie dla Mod Settings i Impostor Settings
+        const modSettings = Roles.find(r => r.name === "Mod Settings");
+        const impostorSettings = Roles.find(r => r.name === "Impostor Settings");
+        
+        // Przetwórz ustawienia dla specjalnych ról
+        [modSettings, impostorSettings].forEach(role => {
             if (role) {
-                filteredRoles[role.id] = role;
+                Object.keys(role.settings).forEach(key => {
+                    if (fileContentMap.has(key)) {
+                        const value = fileContentMap.get(key);
+                        if (value !== undefined) {
+                            const setting = role.settings[key];
+                            switch (setting.type) {
+                                case SettingTypes.Boolean:
+                                    setting.value = value.toLowerCase() === 'true';
+                                    break;
+                                case SettingTypes.Number:
+                                case SettingTypes.Percentage:
+                                case SettingTypes.Time:
+                                case SettingTypes.Multiplier: {
+                                    const num = Number(value.replace(/,/g, '.'));
+                                    if (!isNaN(num)) {
+                                        setting.value = Number.isInteger(num) ? num : Number(num.toFixed(2));
+                                    } else {
+                                        setting.value = num;
+                                    }
+                                    break;
+                                }
+                                case SettingTypes.Text:
+                                    setting.value = value;
+                                    break;
+                            }
+                        }
+                    }
+                });
             }
         });
 
-        return { roles, filteredRoles };
+        return { roles, filteredRoles, modSettings: modSettings || null, impostorSettings: impostorSettings || null };
     }, [fileContent]);
 
 
@@ -193,9 +230,16 @@ export function     SettingsDramaAfera() {
     }
 
     return (
-        <RolesList
-            roles={Object.values(filteredRoles) || []}
-            modifiers={Object.values(filteredModifiers) || []}
-        />
+        <div>
+            <SlotsDisplay fileContent={fileContent} />
+            <SpecialSettingsAccordion 
+                modSettings={modSettings} 
+                impostorSettings={impostorSettings} 
+            />
+            <RolesList
+                roles={Object.values(filteredRoles) || []}
+                modifiers={Object.values(filteredModifiers) || []}
+            />
+        </div>
     );
 }

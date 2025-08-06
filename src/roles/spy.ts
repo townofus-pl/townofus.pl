@@ -16,6 +16,12 @@ export const Spy: Role = {
         "Who Sees Dead Bodies On Admin": {
             value: "Nobody",
             type: SettingTypes.Text,
+            description: {
+                0: "Nobody",
+                1: "Spy",
+                2: "Everyone But Spy",
+                3: "Everyone"
+            }
         },
     },
     "abilities": [CommonAbilities.None],

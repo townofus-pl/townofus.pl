@@ -18,10 +18,25 @@ export const Executioner: Role = {
         "Executioner Becomes On Target Dead": {
             value: RolesAfterDeath.Crewmate,
             type: SettingTypes.Text,
+            description: {
+                0: "Crewmate",
+                1: "Amnesiac",
+                2: "Mercenary",
+                3: "Survivor",
+                4: "Jester"
+            }
         },
         "Executioner Can Button": {
             value: true,
             type: SettingTypes.Boolean,
+        },
+        "Executioner Win": {
+            value: 0,
+            type: SettingTypes.Number,
+            description: {
+                0: "Lives to see target voted out",
+                1: "Executed"
+            }
         },
         "Executioner Torments Player On Victory": {
             value: true,
