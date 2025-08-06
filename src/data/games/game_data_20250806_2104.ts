@@ -87,7 +87,7 @@ export const gameData: GameData = {
       incorrectProsecutes: 0,
       correctGuesses: 0,
       incorrectGuesses: 0,
-      correctDeputyShoots: 0,
+      correctDeputyShoots: 2,
       incorrectDeputyShoots: 0,
       correctJailorExecutes: 0,
       incorrectJailorExecutes: 0,
@@ -102,7 +102,7 @@ export const gameData: GameData = {
       incorrectAltruistRevives: 0,
       correctSwaps: 0,
       incorrectSwaps: 0,
-      totalPoints: 8.5,
+      totalPoints: 10.5,
     },
     {
       playerName: "Dusia",
@@ -650,3 +650,4 @@ export const gameData: GameData = {
     }
   ],
 };
+
