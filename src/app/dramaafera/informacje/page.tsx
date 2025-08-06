@@ -32,6 +32,7 @@ export default function InnePage() {
                                 <li>Za zabójstwo jako Deputy.</li>
                                 <li>Za sprzątnięcie ciała jako Janitor.</li>
                                 <li>Za wykonane taski. Taski nie liczą się graczom z modyfikatorem Lover oraz graczom którzy nie zaczęli gry jako Crewmate.</li>
+                                <li>Za każdą przeżytą rundę.</li>
                                 <li>Za wygraną grę.</li>
                             </ul>
                         </div>
