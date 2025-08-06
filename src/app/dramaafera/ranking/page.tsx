@@ -72,7 +72,6 @@ export default function RankingPageWrapper() {
     const [sortOrder, setSortOrder] = useClientState<"asc" | "desc">("desc");
     const [isLoading, setIsLoading] = useClientState(true);
 
-
     useEffect(() => {
         (async () => {
             try {
@@ -92,6 +91,7 @@ export default function RankingPageWrapper() {
             }
         })();
     }, [setPlayerStats]);
+
 
 
     // Rozszerz sortowanie o rankingPoints
