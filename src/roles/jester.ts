@@ -34,8 +34,13 @@ export const Jester: Role = {
             type: SettingTypes.Time,
         },
         "Jester Win": { 
-            value: "Ends Game",
-            type: SettingTypes.Text,
+            value: 0,
+            type: SettingTypes.Number,
+            description: {
+                0: "Ends Game",
+                1: "Ghosts Win", 
+                2: "Nobody Wins"
+            }
         },
     },
     "abilities": [CommonAbilities.Vent],

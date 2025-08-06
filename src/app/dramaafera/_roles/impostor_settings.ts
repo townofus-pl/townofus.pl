@@ -12,13 +12,23 @@ export const ImpostorSettings: Role = {
     "icon": "/images/roles/placeholder.png", //ten sam obrazek
     "description": "Ustawienia impostorów.",
     "settings": {
-        "Number Of Impostor Assassins": {
-            value: 4,
+        "Impostor Assassins Count": {
+            value: 2,
             type: SettingTypes.Number,
+            description: {
+                0: "None",
+                1: "1",
+                2: "All"
+            }
         },
-        "Number Of Neutral Assassins": {
-            value: 5,
+        "Neutral Assassins Count": {
+            value: 2,
             type: SettingTypes.Number,
+            description: {
+                0: "None",
+                1: "1",
+                2: "All"
+            }
         },
         "Amnesiac Turned Impostor Gets Ability": {
             value: true,
@@ -38,6 +48,10 @@ export const ImpostorSettings: Role = {
         },
         "Assassin Can Kill More Than Once Per Meeting": {
             value: true,
+            type: SettingTypes.Boolean,
+        },
+        "Assassin Can Guess \"Crewmate\"": {
+            value: false,
             type: SettingTypes.Boolean,
         },
         "Assassin Can Guess Neutral Benign Roles": {

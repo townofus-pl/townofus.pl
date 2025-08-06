@@ -48,19 +48,28 @@ export const ModSettings: Role = {
             value: true,
             type: SettingTypes.Boolean,
         },
+        "Game Start Cooldowns": {
+            value: 10,
+            type: SettingTypes.Time,
+        },
+        "Temp Save Cooldown Reset": {
+            value: 5,
+            type: SettingTypes.Time,
+        },
         "Parallel Medbay Scans": {
             value: true,
             type: SettingTypes.Boolean,
         },
         "Disable Meeting Skip Button": {
-            value: true,
-            type: SettingTypes.Boolean,
+            value: 0,
+            type: SettingTypes.Number,
+            description: {
+                0: "No",
+                1: "Emergency",
+                2: "Always"
+            }
         },
         "First Death Shield Next Game": {
-            value: true,
-            type: SettingTypes.Boolean,
-        },
-        "Neutral Evil Win Ends Game": {
             value: true,
             type: SettingTypes.Boolean,
         },

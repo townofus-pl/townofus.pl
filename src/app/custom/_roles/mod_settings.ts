@@ -32,6 +32,70 @@ export const ModSettings: Role = {
             value: true,
             type: SettingTypes.Boolean,
         },
+        "Airship Doors Are Polus Doors": {
+            value: false,
+            type: SettingTypes.Boolean,
+        },
+        "Choose Random Map": {
+            value: false,
+            type: SettingTypes.Boolean,
+        },
+        "Skeld Chance": {
+            value: 0,
+            type: SettingTypes.Number,
+        },
+        "Mira Chance": {
+            value: 0,
+            type: SettingTypes.Number,
+        },
+        "Polus Chance": {
+            value: 0,
+            type: SettingTypes.Number,
+        },
+        "Airship Chance": {
+            value: 0,
+            type: SettingTypes.Number,
+        },
+        "Fungle Chance": {
+            value: 0,
+            type: SettingTypes.Number,
+        },
+        "Submerged Chance": {
+            value: 0,
+            type: SettingTypes.Number,
+        },
+        "Level Impostor Chance": {
+            value: 0,
+            type: SettingTypes.Number,
+        },
+        "Half Vision On Skeld/Mira HQ": {
+            value: false,
+            type: SettingTypes.Boolean,
+        },
+        "Mira HQ Decreased Cooldowns": {
+            value: 0,
+            type: SettingTypes.Number,
+        },
+        "Airship/Submerged Increased Cooldowns": {
+            value: 0,
+            type: SettingTypes.Number,
+        },
+        "Skeld/Mira HQ Increased Short Tasks": {
+            value: 0,
+            type: SettingTypes.Number,
+        },
+        "Skeld/Mira HQ Increased Long Tasks": {
+            value: 0,
+            type: SettingTypes.Number,
+        },
+        "Airship/Submerged Decreased Short Tasks": {
+            value: 0,
+            type: SettingTypes.Number,
+        },
+        "Airship/Submerged Decreased Long Tasks": {
+            value: 0,
+            type: SettingTypes.Number,
+        },
         "Camouflaged Comms": {
             value: true,
             type: SettingTypes.Boolean,
@@ -48,19 +112,28 @@ export const ModSettings: Role = {
             value: true,
             type: SettingTypes.Boolean,
         },
+        "Game Start Cooldowns": {
+            value: 10,
+            type: SettingTypes.Time,
+        },
+        "Temp Save Cooldown Reset": {
+            value: 5,
+            type: SettingTypes.Time,
+        },
         "Parallel Medbay Scans": {
             value: true,
             type: SettingTypes.Boolean,
         },
         "Disable Meeting Skip Button": {
-            value: true,
-            type: SettingTypes.Boolean,
+            value: 0,
+            type: SettingTypes.Number,
+            description: {
+                0: "No",
+                1: "Emergency",
+                2: "Always"
+            }
         },
         "First Death Shield Next Game": {
-            value: true,
-            type: SettingTypes.Boolean,
-        },
-        "Neutral Evil Win Ends Game": {
             value: true,
             type: SettingTypes.Boolean,
         },

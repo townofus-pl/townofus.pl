@@ -21,11 +21,21 @@ export const Medic: Role = {
         ...probabilityOfAppearing(0),
         "Show Shielded Player": {
             value: "Self",
-            type: SettingTypes.Text
+            type: SettingTypes.Text,
+            description: {
+                0: "Self",
+                1: "Medic", 
+                2: "Self+Medic"
+            }
         },
         "Who Gets Murder Attempt Indicator": {
             value: 'Medic',
-            type: SettingTypes.Text
+            type: SettingTypes.Text,
+            description: {
+                0: "Medic",
+                1: "Shielded",
+                2: "Nobody"
+            }
         },
         "Shield Breaks On Murder Attempt": {
             value: false,

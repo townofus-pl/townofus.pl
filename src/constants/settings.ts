@@ -22,13 +22,16 @@ export enum Distances {
 
 export type Setting = {
     value: number,
-    type: SettingTypes.Percentage | SettingTypes.Time | SettingTypes.Number | SettingTypes.Multiplier
+    type: SettingTypes.Percentage | SettingTypes.Time | SettingTypes.Number | SettingTypes.Multiplier,
+    description?: Record<number, string>
 } | {
     value: boolean,
-    type: SettingTypes.Boolean
+    type: SettingTypes.Boolean,
+    description?: Record<number, string>
 } | {
     value: string,
-    type: SettingTypes.Text
+    type: SettingTypes.Text,
+    description?: Record<number, string>
 };
 
 export enum CommonSettingNames {

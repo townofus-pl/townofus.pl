@@ -35,7 +35,12 @@ export const Cleric: Role = {
         },
         "Show Barriered Player": {
             value: "Cleric",
-            type: SettingTypes.Text
+            type: SettingTypes.Text,
+            description: {
+                0: "Self",
+                1: "Cleric",
+                2: "Self+Cleric"
+            }
         },
         "Cleric Gets Attack Notification": {
             value: true,
