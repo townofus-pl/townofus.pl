@@ -90,7 +90,7 @@ export default function RankingPageWrapper() {
                 setIsLoading(false);
             }
         })();
-    }, [setPlayerStats]);
+    }, [setPlayerStats]); // eslint-disable-line react-hooks/exhaustive-deps
 
 
 
