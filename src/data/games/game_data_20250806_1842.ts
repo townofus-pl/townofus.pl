@@ -91,7 +91,7 @@ export const gameData: GameData = {
       incorrectDeputyShoots: 0,
       correctJailorExecutes: 0,
       incorrectJailorExecutes: 0,
-      correctMedicShields: 0,
+      correctMedicShields: 1,
       incorrectMedicShields: 0,
       correctWardenFortifies: 0,
       incorrectWardenFortifies: 0,
@@ -102,7 +102,7 @@ export const gameData: GameData = {
       incorrectAltruistRevives: 0,
       correctSwaps: 0,
       incorrectSwaps: 0,
-      totalPoints: 8.5,
+      totalPoints: 9.5,
     },
     {
       playerName: "Cleopatrie",
