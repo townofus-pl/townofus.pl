@@ -10,14 +10,13 @@ export default function Lobby15Plus() {
                 <div>
                   <p className="text-red-500 text-8xl font-brook font-bold drop-shadow-[0_0_10px_rgba(255,0,0,0.7)] text-center">AleLuduMod</p>
                   <p className="text-xl sm:text-2xl text-gray-100 mt-4 text-center">Mod umożliwiający grę na więcej niż 15 graczy.</p>
-                  <p className="text-xl sm:text-3xl text-yellow-500 mt-4 text-center">UWAGA: Póki co mod nie wspiera najnowszej wersji Town of Us (v5.3.0+)!</p>
                 </div>
 
                 <div className="space-y-4">
                   <p className="text-xl text-gray-100">Mod zawiera:</p>
                   <ul className="text-left text-lg text-gray-100 space-y-2 list-disc pl-6">
-                    <li>poprawiony widok podczas głosowania oraz na vitalsach,</li>
-                    <li>opcję tworzenia lobby do 35 graczy.</li>
+                    <li>poprawiony widok podczas głosowania, na vitalsach oraz na ekranie Transportera/Glitcha,</li>
+                    <li>opcję tworzenia lobby do 35 graczy (komenda <code className="bg-gray-800 text-base text-white px-1 rounded font-mono">!limit [number]</code>).</li>
                   </ul>
                 </div>
 
@@ -32,12 +31,12 @@ export default function Lobby15Plus() {
 
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                   <a
-                    href="https://github.com/townofus-pl/AleLuduMod/releases/download/v1.0.4/AleLuduMod.dll"
+                    href="https://github.com/townofus-pl/AleLuduMod/releases/download/v1.0.6/AleLuduMod.dll"
                     rel="noopener noreferrer"
                     className="px-4 py-3 bg-[rgba(0,167,0)] hover:bg-[rgba(0,167,0,0.85)] text-white text-lg font-sans font-semibold rounded-lg transition duration-300 inline-flex items-center justify-center"
                   >
                     <Image src="/images/download-button.svg" width={16} height={16} alt="download" />
-                    <span className="ml-2">Download v1.0.4</span>
+                    <span className="ml-2">Download v1.0.6</span>
                   </a>
                   <a
                     href="https://github.com/townofus-pl/AleLuduMod/"
