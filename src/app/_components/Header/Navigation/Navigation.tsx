@@ -18,8 +18,12 @@ const navigationItems: NavigationItemProps[] = [
     },
     {
         href: "/lobby-15-plus",
-        label: "Lobby na więcej graczy",
-
+        label: "AleLuduMod",
+        badge: (
+            <span className="ml-2 text-yellow-400 font-bold drop-shadow-[0_0_4px_rgba(250,204,21,0.7)]">
+                UPDATE!
+            </span>
+        )
     },
     {
         href: '/discord',
@@ -93,13 +97,14 @@ export const Navigation = () => {
                 />
             </div>
             <ul className={menuListClassNames}>
-                {navigationItems.map(({href, label, image, external}) => (
+                {navigationItems.map(({href, label, image, external, badge}) => (
                     <NavigationItem
                         key={href}
                         href={href}
                         label={label}
                         image={image}
                         external={external}
+                        badge={badge}
                         selected={currentPath === href}
                     />
                 ))}
