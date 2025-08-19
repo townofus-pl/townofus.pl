@@ -47,13 +47,23 @@ jobs:
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: d1287f321cc95882fc773ab71241b51a
+          API_USERNAME: ${{ secrets.API_USERNAME }}
+          API_PASSWORD: ${{ secrets.API_PASSWORD }}
 
-      # Build the application and deploy to Cloudflare Workers
-      # Includes API authentication credentials for the deployed application
-      - name: Build and deploy
-        run: npm run deploy
+      # Set environment variables in Cloudflare Workers
+      - name: Set API credentials in Cloudflare Workers
+        run: |
+          echo "$API_USERNAME" | npx wrangler secret put API_USERNAME
+          echo "$API_PASSWORD" | npx wrangler secret put API_PASSWORD
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: d1287f321cc95882fc773ab71241b51a
           API_USERNAME: ${{ secrets.API_USERNAME }}
           API_PASSWORD: ${{ secrets.API_PASSWORD }}
+
+      # Build the application and deploy to Cloudflare Workers
+      - name: Build and deploy
+        run: npm run deploy
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: d1287f321cc95882fc773ab71241b51a
