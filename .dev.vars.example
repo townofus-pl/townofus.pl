@@ -1,0 +1,9 @@
+NEXTJS_ENV=development
+
+# Database configuration (only used by Prisma CLI tools, not runtime)
+# Runtime uses Cloudflare D1 binding instead
+DATABASE_URL="file:./prisma/dev.db"
+
+# Demo API credentials (safe for public repos - not used in production)
+API_USERNAME=demo_user
+API_PASSWORD=demo_pass

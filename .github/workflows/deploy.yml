@@ -1,5 +1,16 @@
 name: Deploy to Cloudflare Workers
 
+# Deployment Process:
+# 1. Generate Prisma client for D1 database
+# 2. Apply any pending database migrations to remote D1
+# 3. Build and deploy the application to Cloudflare Workers
+# 4. Includes API authentication environment variables
+#
+# Required GitHub Secrets:
+# - CLOUDFLARE_API_TOKEN: Cloudflare API token with Workers and D1 permissions
+# - API_USERNAME: Basic auth username for API endpoints
+# - API_PASSWORD: Basic auth password for API endpoints
+
 on:
   push:
     branches:
@@ -24,8 +35,25 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      # Generate Prisma client with D1 adapter for database operations
+      - name: Generate Prisma client
+        run: npm run db:generate
+
+      # Apply any pending database migrations to the remote D1 database
+      # This ensures the production database schema is up-to-date before deployment
+      # Will gracefully skip if no new migrations are available
+      - name: Apply database migrations to remote D1
+        run: npm run db:migrate:apply:remote
+        env:
+          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+          CLOUDFLARE_ACCOUNT_ID: d1287f321cc95882fc773ab71241b51a
+
+      # Build the application and deploy to Cloudflare Workers
+      # Includes API authentication credentials for the deployed application
       - name: Build and deploy
         run: npm run deploy
         env:
           CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
           CLOUDFLARE_ACCOUNT_ID: d1287f321cc95882fc773ab71241b51a
+          API_USERNAME: ${{ secrets.API_USERNAME }}
+          API_PASSWORD: ${{ secrets.API_PASSWORD }}
