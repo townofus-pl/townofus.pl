@@ -1,4 +1,3 @@
-import { NextRequest } from 'next/server';
 import { getCloudflareContext } from '@opennextjs/cloudflare';
 import { getPrismaClient } from '@/app/api/_database';
 import { createErrorResponse, createSuccessResponse } from '@/app/api/_utils';
@@ -40,7 +39,7 @@ openApiRegistry.registerPath({
 });
 
 // GET /api/dramaafera/zapisy - Get all zapisy data
-export const GET = withCors(async (request: NextRequest) => {
+export const GET = withCors(async () => {
   // Get Cloudflare context for environment bindings
   const { env } = await getCloudflareContext();
   

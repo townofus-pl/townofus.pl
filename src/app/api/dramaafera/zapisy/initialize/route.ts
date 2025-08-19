@@ -1,11 +1,10 @@
-import { NextRequest } from 'next/server';
 import { getCloudflareContext } from '@opennextjs/cloudflare';
 import { createErrorResponse, createSuccessResponse } from '@/app/api/_utils';
 import { withAuth, withCors } from '@/app/api/_middlewares';
 import { initializeZapisyData } from '../init';
 
 // POST /api/dramaafera/zapisy/initialize - Initialize zapisy data
-export const POST = withCors(withAuth(async (request: NextRequest) => {
+export const POST = withCors(withAuth(async () => {
   // Get Cloudflare context for environment bindings
   const { env } = await getCloudflareContext();
   
