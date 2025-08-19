@@ -6,11 +6,18 @@
         "dev": "next dev --turbopack",
         "build": "next build",
         "lint": "next lint",
-        "prepare": "husky && npm run cf-typegen",
+        "prepare": "husky && npm run cf-typegen && npm run db:generate",
         "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
         "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
         "upload": "opennextjs-cloudflare build && opennextjs-cloudflare upload",
-        "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts"
+        "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts",
+        "db:generate": "prisma generate",
+        "db:migrate:create": "wrangler d1 migrations create townofus-pl",
+        "db:migrate:apply:local": "wrangler d1 migrations apply townofus-pl --local",
+        "db:migrate:apply:remote": "wrangler d1 migrations apply townofus-pl --remote",
+        "db:execute:local": "wrangler d1 execute townofus-pl --local",
+        "db:execute:remote": "wrangler d1 execute townofus-pl --remote",
+        "db:studio:local": "wrangler d1 execute townofus-pl --command '.open' --local"
     },
     "dependencies": {
         "@deemlol/next-icons": "^0.1.9",
@@ -21,7 +28,10 @@
         "lodash.debounce": "^4.0.8",
         "next": "~15.3",
         "react": "^19.1.0",
-        "react-dom": "^19.1.0"
+        "react-dom": "^19.1.0",
+        "swagger-ui-react": "^5.27.1",
+        "zod": "^3.23.8",
+        "@asteasolutions/zod-to-openapi": "^7.1.1"
     },
     "devDependencies": {
         "@eslint/eslintrc": "^3.3.1",
@@ -33,6 +43,7 @@
         "@types/node": "^20.19.9",
         "@types/react": "^19.1.8",
         "@types/react-dom": "^19.1.6",
+        "@types/swagger-ui-react": "^5.18.0",
         "eslint": "^9.32.0",
         "eslint-config-next": "~15.3",
         "husky": "^9.1.7",
@@ -40,7 +51,8 @@
         "prisma": "^6.13.0",
         "tailwindcss": "^3.4.17",
         "typescript": "^5.8.3",
-        "wrangler": "^4.26.0"
+        "wrangler": "^4.26.0",
+        "tsx": "^4.7.0"
     },
     "engines": {
         "node": ">=v22.13.1",

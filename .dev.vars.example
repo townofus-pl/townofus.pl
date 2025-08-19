@@ -1,0 +1,5 @@
+NEXTJS_ENV=development
+
+# Demo API credentials (safe for public repos - not used in production)
+API_USERNAME=demo_user
+API_PASSWORD=demo_pass
