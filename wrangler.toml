@@ -1,6 +1,6 @@
 main = ".open-next/worker.js"
 name = "townofus-pl"
-compatibility_date = "2025-07-21"
+compatibility_date = "2025-07-12"
 compatibility_flags = ["nodejs_compat"]
 account_id = "d1287f321cc95882fc773ab71241b51a"
 

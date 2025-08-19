@@ -21,71 +21,72 @@ export default function SwaggerUIComponent() {
   const [spec, setSpec] = useState<object | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
+  const [credentials, setCredentials] = useState({ username: '', password: '' });
+  const [isAuthConfigured, setIsAuthConfigured] = useState(false);
+
+  const fetchSpec = async (username?: string, password?: string) => {
+    try {
+      setLoading(true);
+      setError(null);
+      
+      const headers: Record<string, string> = {
+        'Accept': 'application/json',
+      };
+      
+      // Only add auth if credentials are provided
+      if (username && password) {
+        const authCredentials = btoa(`${username}:${password}`);
+        headers['Authorization'] = `Basic ${authCredentials}`;
+      }
+      
+      const response = await fetch('/api/schema', {
+        method: 'GET',
+        headers,
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({})) as { message?: string };
+        
+        if (response.status === 401) {
+          setError('Authentication required. Please enter your API credentials below.');
+          setIsAuthConfigured(false);
+        } else if (response.status === 500) {
+          setError(`Server error: ${errorData.message || 'Failed to generate API schema'}`);
+        } else {
+          setError(`Failed to fetch API documentation: ${response.status} ${response.statusText}`);
+        }
+        return;
+      }
+
+      const data = await response.json() as object;
+      setSpec(data);
+      setIsAuthConfigured(true);
+    } catch (err) {
+      setError('Failed to load API documentation. Please check your network connection.');
+      console.error('Error fetching OpenAPI spec:', err);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   useEffect(() => {
-    const fetchSpec = async () => {
-      try {
-        setLoading(true);
-        setError(null);
-        
-        const response = await fetch('/api/schema', {
-          method: 'GET',
-          headers: {
-            'Accept': 'application/json',
-          },
-        });
-
-        if (!response.ok) {
-          const errorData = await response.json().catch(() => ({})) as { message?: string };
-          
-          if (response.status === 401) {
-            setError('Authentication required. Please refresh the page and enter your credentials.');
-          } else if (response.status === 500) {
-            setError(`Server error: ${errorData.message || 'Failed to generate API schema'}`);
-          } else {
-            setError(`Failed to fetch API documentation: ${response.status} ${response.statusText}`);
-          }
-          return;
-        }
-
-        const data = await response.json() as object;
-        setSpec(data);
-      } catch (err) {
-        setError('Failed to load API documentation. Please check your network connection.');
-        console.error('Error fetching OpenAPI spec:', err);
-      } finally {
-        setLoading(false);
-      }
-    };
-
+    // Try to fetch without credentials first (in case auth is disabled)
     fetchSpec();
   }, []);
 
   const handleRetry = () => {
-    setError(null);
-    setLoading(true);
-    
-    // Re-trigger the useEffect by forcing a re-render
-    const fetchSpec = async () => {
-      try {
-        const response = await fetch('/api/schema', {
-          cache: 'no-store' // Force fresh request
-        });
-        
-        if (!response.ok) {
-          throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-        }
-        
-        const data = await response.json() as object;
-        setSpec(data);
-      } catch (err) {
-        setError(err instanceof Error ? err.message : 'Failed to load API documentation');
-      } finally {
-        setLoading(false);
-      }
-    };
-    
-    fetchSpec();
+    if (credentials.username && credentials.password) {
+      fetchSpec(credentials.username, credentials.password);
+    } else {
+      fetchSpec();
+    }
+  };
+
+  const handleAuth = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (credentials.username && credentials.password) {
+      fetchSpec(credentials.username, credentials.password);
+    }
   };
 
   if (loading) {
@@ -104,11 +105,56 @@ export default function SwaggerUIComponent() {
     return (
       <div className="flex items-center justify-center min-h-screen bg-gray-50">
         <div className="text-center max-w-md mx-auto p-6">
-          <div className="text-red-600 text-6xl mb-4">⚠️</div>
+          <div className="text-red-600 text-6xl mb-4">🔐</div>
           <h1 className="text-xl font-semibold text-gray-900 mb-2">
-            Unable to Load Documentation
+            Authentication Required
           </h1>
-          <p className="text-gray-600 mb-6">{error}</p>
+          <p className="text-gray-600 mb-2">{error}</p>
+          <div className="text-sm text-gray-500 mb-6 p-3 bg-gray-100 rounded-lg">
+            <p className="font-medium mb-1">For development:</p>
+            <p>Username: <code className="bg-gray-200 px-1 rounded">demo_user</code></p>
+            <p>Password: <code className="bg-gray-200 px-1 rounded">demo_pass</code></p>
+            <p className="mt-2 text-xs">Check your .dev.vars file for current credentials</p>
+            <button
+              type="button"
+              onClick={() => setCredentials({ username: 'demo_user', password: 'demo_pass' })}
+              className="mt-2 text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded hover:bg-blue-200 transition-colors"
+            >
+              Quick-fill dev credentials
+            </button>
+          </div>
+          
+          {!isAuthConfigured && (
+            <form onSubmit={handleAuth} className="space-y-4 mb-6">
+              <div>
+                <input
+                  type="text"
+                  placeholder="Username"
+                  value={credentials.username}
+                  onChange={(e) => setCredentials(prev => ({ ...prev, username: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+                  required
+                />
+              </div>
+              <div>
+                <input
+                  type="password"
+                  placeholder="Password"
+                  value={credentials.password}
+                  onChange={(e) => setCredentials(prev => ({ ...prev, password: e.target.value }))}
+                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-gray-900"
+                  required
+                />
+              </div>
+              <button
+                type="submit"
+                className="w-full bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
+              >
+                Load Documentation
+              </button>
+            </form>
+          )}
+          
           <div className="space-x-3">
             <button
               onClick={handleRetry}
@@ -173,6 +219,12 @@ export default function SwaggerUIComponent() {
           showExtensions={true}
           showCommonExtensions={true}
           requestInterceptor={(request) => {
+            // Add authentication headers if credentials are available
+            if (credentials.username && credentials.password) {
+              const authCredentials = btoa(`${credentials.username}:${credentials.password}`);
+              request.headers.Authorization = `Basic ${authCredentials}`;
+            }
+            
             // Log requests for debugging (remove in production if needed)
             if (process.env.NODE_ENV === 'development') {
               console.log('API Request:', request.url, request.method);

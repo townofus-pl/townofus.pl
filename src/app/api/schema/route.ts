@@ -30,14 +30,18 @@ async function importRouteHandlers() {
   }
 }
 
-export async function GET() {
+export async function GET(request: Request) {
   try {
     // First, import all route handlers to register their schemas
     await importRouteHandlers();
     
+    // Get the current request URL to detect the port
+    const url = new URL(request.url);
+    const currentPort = url.port;
+    
     // Now import the registry and generate the document
     const { generateOpenApiDocument } = await import('./registry');
-    const openApiDoc = generateOpenApiDocument();
+    const openApiDoc = generateOpenApiDocument(currentPort);
     
     // Return the OpenAPI specification as JSON
     return NextResponse.json(openApiDoc, {

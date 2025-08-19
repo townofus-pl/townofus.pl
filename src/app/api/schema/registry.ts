@@ -25,7 +25,7 @@ export const openApiRegistry = new OpenAPIRegistry();
  * This function generates the complete OpenAPI specification from all
  * registered schemas and route definitions.
  */
-export function generateOpenApiDocument() {
+export function generateOpenApiDocument(currentPort?: string) {
   // Register security schemes with the registry
   openApiRegistry.registerComponent('securitySchemes', 'basicAuth', {
     type: 'http',
@@ -36,6 +36,41 @@ export function generateOpenApiDocument() {
 
 
   const generator = new OpenApiGeneratorV3(openApiRegistry.definitions);
+  
+  // Use dynamic server URL based on environment
+  const isDevelopment = process.env.NODE_ENV === 'development';
+  
+  let serverUrl: string;
+  let serverDescription: string;
+  
+  if (isDevelopment) {
+    // Use current port from request, fallback to common dev ports
+    const port = currentPort || process.env.PORT || '3000';
+    
+    // Skip default ports (80/443) in URLs
+    if (port === '80' || port === '443') {
+      const protocol = port === '443' ? 'https' : 'http';
+      serverUrl = `${protocol}://localhost`;
+    } else {
+      serverUrl = `http://localhost:${port}`;
+    }
+    
+    // Add descriptive text based on common ports
+    if (port === '3000') {
+      serverDescription = 'Development server (npm run dev)';
+    } else if (port === '8787') {
+      serverDescription = 'Preview server (npm run preview)';
+    } else if (port === '80') {
+      serverDescription = 'Development server (HTTP)';
+    } else if (port === '443') {
+      serverDescription = 'Development server (HTTPS)';
+    } else {
+      serverDescription = `Development server (port ${port})`;
+    }
+  } else {
+    serverUrl = 'https://townofus.pl';
+    serverDescription = 'Production server';
+  }
   
   return generator.generateDocument({
     openapi: '3.0.3',
@@ -54,12 +89,8 @@ export function generateOpenApiDocument() {
     },
     servers: [
       {
-        url: 'https://townofus.pl',
-        description: 'Production server',
-      },
-      {
-        url: 'http://localhost:3000',
-        description: 'Development server',
+        url: serverUrl,
+        description: serverDescription,
       },
     ],
     tags: [

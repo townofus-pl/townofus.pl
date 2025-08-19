@@ -72,11 +72,11 @@ export async function GET(request: NextRequest) {
     // Parse and validate query parameters
     const { searchParams } = new URL(request.url);
     const queryParams = {
-      color: searchParams.get('color'),
-      inStock: searchParams.get('inStock'),
-      search: searchParams.get('search'),
-      minPrice: searchParams.get('minPrice'),
-      maxPrice: searchParams.get('maxPrice')
+      color: searchParams.get('color') || undefined,
+      inStock: searchParams.get('inStock') || undefined,
+      search: searchParams.get('search') || undefined,
+      minPrice: searchParams.get('minPrice') || undefined,
+      maxPrice: searchParams.get('maxPrice') || undefined
     };
 
     // Validate query parameters
@@ -92,8 +92,7 @@ export async function GET(request: NextRequest) {
     
     if (color) {
       where.color = {
-        contains: color,
-        mode: 'insensitive'
+        contains: color
       };
     }
     
@@ -103,8 +102,8 @@ export async function GET(request: NextRequest) {
     
     if (search) {
       where.OR = [
-        { name: { contains: search, mode: 'insensitive' } },
-        { description: { contains: search, mode: 'insensitive' } }
+        { name: { contains: search } },
+        { description: { contains: search } }
       ];
     }
 
