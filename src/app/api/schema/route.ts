@@ -63,4 +63,3 @@ export const GET = withCors(withAuth(async (request: NextRequest) => {
     );
   }
 }));
-

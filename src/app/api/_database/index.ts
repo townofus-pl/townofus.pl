@@ -30,7 +30,7 @@ export async function closePrismaClient(): Promise<void> {
 /**
  * Type exports from Prisma - use these instead of manual definitions
  */
-export type { Prisma, Fruit } from '../../../generated/prisma';
+export type { Prisma, Fruit } from '@/generated/prisma';
 
 /**
  * Database query helpers

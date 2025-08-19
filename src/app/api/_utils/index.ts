@@ -54,4 +54,3 @@ export function createMessageResponse(
 
   return NextResponse.json(response, { status });
 }
-
