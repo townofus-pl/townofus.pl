@@ -57,7 +57,7 @@ export async function authenticateApiRequest(request: NextRequest): Promise<Auth
     try {
       // Extract and decode credentials
       const base64Credentials = authHeader.substring(6); // Remove 'Basic ' prefix
-      const credentials = atob(base64Credentials);
+      const credentials = Buffer.from(base64Credentials, 'base64').toString('utf-8');
       const [username, password] = credentials.split(':');
 
       // Validate credentials
