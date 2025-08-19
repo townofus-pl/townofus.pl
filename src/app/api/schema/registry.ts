@@ -33,8 +33,6 @@ export function generateOpenApiDocument(currentPort?: string) {
     description: 'HTTP Basic Authentication using API credentials',
   });
 
-
-
   const generator = new OpenApiGeneratorV3(openApiRegistry.definitions);
   
   // Use dynamic server URL based on environment

@@ -45,13 +45,16 @@ export default function SwaggerUIComponent() {
       });
 
       if (!response.ok) {
-        const errorData = await response.json().catch(() => ({})) as { message?: string };
+        const errorData = await response.json().catch(() => ({}));
+        const errorMessage = typeof errorData === 'object' && errorData && 'message' in errorData && typeof errorData.message === 'string' 
+          ? errorData.message 
+          : 'Failed to generate API schema';
         
         if (response.status === 401) {
           setError('Authentication required. Please enter your API credentials below.');
           setIsAuthConfigured(false);
         } else if (response.status === 500) {
-          setError(`Server error: ${errorData.message || 'Failed to generate API schema'}`);
+          setError(`Server error: ${errorMessage}`);
         } else {
           setError(`Failed to fetch API documentation: ${response.status} ${response.statusText}`);
         }

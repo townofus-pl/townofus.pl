@@ -220,8 +220,6 @@ export function withCors<T extends unknown[]>(
   };
 }
 
-
-
 /**
  * Utility function to create a CORS-enabled response
  */
