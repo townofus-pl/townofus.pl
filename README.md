@@ -32,8 +32,7 @@ Polish Among Us community website built with Next.js 15, TypeScript, and Cloudfl
 
 2. **Configure environment**
    ```bash
-   cp .env.example .env
-   cp dev.vars.example dev.vars
+   cp .dev.vars.example .dev.vars
    ```
 
 3. **Setup database**
@@ -87,6 +86,7 @@ src/app/api/
 
 1. **Create method file** (e.g., `users/post.ts`):
    ```typescript
+   import { withAuth, withCors } from '@/app/api/_middlewares';
    import { openApiRegistry } from '@/app/api/schema/registry';
    
    // Define & register schema
@@ -103,10 +103,10 @@ src/app/api/
      // ... responses
    });
    
-   // Simple handler - auth & CORS handled globally
-   export async function POST(request) {
+   // Handler with route-level auth & CORS protection
+   export const POST = withCors(withAuth(async (request) => {
      // Implementation
-   }
+   }));
    ```
 
 2. **Export in route.ts**:
@@ -119,36 +119,45 @@ src/app/api/
    await import('@/app/api/users/post');
    ```
 
-**That's it!** Global middleware at `/api/middleware.ts` handles:
+**That's it!** Route-level wrappers (`withAuth`, `withCors`) handle:
 - HTTP Basic Auth for all endpoints  
 - CORS headers automatically
-- Request logging in development
+- Cloudflare Workers compatibility
 
 Documentation updates automatically in `/api/docs`.
 
 ## Database Commands
 
 ```bash
-npm run db:generate              # Generate Prisma client
-npm run db:migrate:apply:local   # Apply migrations locally  
-npm run db:migrate:apply:remote  # Apply to production
+npm run db:generate                # Generate Prisma client
+npm run db:migrate:create          # Create new migration
+npm run db:migrate:apply:local     # Apply migrations to local D1
+npm run db:migrate:apply:preview   # Apply migrations to preview D1  
+npm run db:migrate:apply:remote    # Apply migrations to production D1
+npm run db:execute:local           # Execute SQL on local D1
+npm run db:execute:preview         # Execute SQL on preview D1
+npm run db:execute:remote          # Execute SQL on production D1
+npm run db:studio:local            # Open local D1 in SQLite browser
+npm run db:studio:preview          # Open preview D1 in SQLite browser
 ```
 
 ## Deployment
 
 ### Development
 ```bash
-npm run dev        # Local development
-npm run preview    # Preview build
+npm run dev        # Local development (uses local D1)
+npm run preview    # Preview build (uses preview D1 + auto-migrates)
 ```
 
 ### Production
-Automated via GitHub Actions on push to `main`.
+Automated via GitHub Actions on push to `main`:
+1. Applies database migrations to production D1
+2. Builds and deploys to Cloudflare Workers
 
-**Required Secrets:**
-- `CLOUDFLARE_API_TOKEN`
-- `API_USERNAME` 
-- `API_PASSWORD`
+**Required GitHub Secrets:**
+- `CLOUDFLARE_API_TOKEN` - Cloudflare API token with Workers and D1 permissions
+- `API_USERNAME` - Basic auth username for API endpoints
+- `API_PASSWORD` - Basic auth password for API endpoints
 
 ## License
 

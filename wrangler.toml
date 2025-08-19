@@ -19,6 +19,6 @@ API_PASSWORD = "${API_PASSWORD}"
 [[d1_databases]]
 binding = "DB"
 database_name = "townofus-pl"
-database_id = "7d2708a2-98e6-43a1-a2c8-42d603e44459"
+database_id = "b1b51296-d5f7-4dd5-8c56-8a78b75c79a9"
 preview_database_id = "0de6283b-a8fe-4f94-aadb-059e0def3b42"
 migrations_dir = "prisma/migrations"

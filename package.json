@@ -7,17 +7,18 @@
         "build": "next build",
         "lint": "next lint",
         "prepare": "husky && npm run cf-typegen && npm run db:generate",
-        "preview": "opennextjs-cloudflare build && opennextjs-cloudflare preview",
+        "preview": "npm run db:migrate:apply:preview && opennextjs-cloudflare build && opennextjs-cloudflare preview",
         "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
         "upload": "opennextjs-cloudflare build && opennextjs-cloudflare upload",
         "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts",
         "db:generate": "prisma generate",
         "db:migrate:create": "wrangler d1 migrations create townofus-pl",
         "db:migrate:apply:local": "wrangler d1 migrations apply townofus-pl --local",
+        "db:migrate:apply:preview": "wrangler d1 migrations apply townofus-pl --remote --preview",
         "db:migrate:apply:remote": "wrangler d1 migrations apply townofus-pl --remote",
         "db:execute:local": "wrangler d1 execute townofus-pl --local",
-        "db:execute:remote": "wrangler d1 execute townofus-pl --remote",
-        "db:studio:local": "wrangler d1 execute townofus-pl --command '.open' --local"
+        "db:execute:preview": "wrangler d1 execute townofus-pl --remote --preview",
+        "db:execute:remote": "wrangler d1 execute townofus-pl --remote"
     },
     "dependencies": {
         "@deemlol/next-icons": "^0.1.9",
