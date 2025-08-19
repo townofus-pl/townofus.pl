@@ -12,8 +12,9 @@ binding = "ASSETS"
 directory = ".open-next/assets"
 
 # Environment variables for production
-# Note: API credentials are set as secrets via wrangler secret put
 [vars]
+API_USERNAME = "${API_USERNAME}"
+API_PASSWORD = "${API_PASSWORD}"
 
 [[d1_databases]]
 binding = "DB"
