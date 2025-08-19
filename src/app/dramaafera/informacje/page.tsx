@@ -31,7 +31,8 @@ export default function InnePage() {
                                 <li>Za poprawnego Swapa jako Swapper (Wygłosowany Impostor albo Neutral).</li>
                                 <li>Za zabójstwo jako Deputy.</li>
                                 <li>Za sprzątnięcie ciała jako Janitor.</li>
-                                <li>Za wykonane taski. Taski nie liczą się graczom z modyfikatorem Lover oraz graczom którzy nie zaczęli gry jako Crewmate.</li>
+                                <li>Za wykonane taski. Taski liczą się tylko graczom, którzy zaczęli grę jako Crewmate. Zamieszanie wprowadza modyfikator Lover. Jeżeli Crewmate jest w miłości z innym Crewmate&apos;em, to taski SĄ liczone. Jeżeli Crewmate jest w miłości z Impostorem albo Neutralem, to taski NIE SĄ liczone.</li>
+                                <li>Za każdą przeżytą rundę.</li>
                                 <li>Za wygraną grę.</li>
                             </ul>
                         </div>

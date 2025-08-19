@@ -5,6 +5,8 @@ import { RolesList } from "@/app/_components";
 import { Roles } from "../_roles";
 import { Modifiers } from "@/modifiers";
 import { SettingTypes } from "@/constants/settings";
+import { SlotsDisplay } from "./SlotsDisplay";
+import { SpecialSettingsAccordion } from "./SpecialSettingsAccordion";
 
 export function     SettingsDramaAfera() {
     const [fileContent, setFileContent] = useState<string | null>(null);
@@ -26,11 +28,13 @@ export function     SettingsDramaAfera() {
             });
     }, []);
 
-    const { filteredRoles } = useMemo(() => {
+    const { filteredRoles, modSettings, impostorSettings } = useMemo(() => {
         if (!fileContent) {
             return {
                 roles: [],
-                filteredRoles: {}
+                filteredRoles: {},
+                modSettings: null,
+                impostorSettings: null
             };
         }
 
@@ -53,12 +57,35 @@ export function     SettingsDramaAfera() {
             cleanedFileContentMap.set(extractName(key), Number(normalized));
         }
 
-        // Filtrowanie ról: tylko te z szansą > 0
+        // Funkcja do mapowania nazw ról z pliku do nazw w kodzie
+        const getMatchingFileName = (roleName: string): string | null => {
+            // Bezpośrednie dopasowanie
+            if (cleanedFileContentMap.has(roleName)) {
+                return roleName;
+            }
+            
+            // Mapowanie specjalnych przypadków
+            const nameMapping: Record<string, string> = {
+                "Plaguebearer / Pestilence": "Plaguebearer"
+            };
+            
+            if (nameMapping[roleName] && cleanedFileContentMap.has(nameMapping[roleName])) {
+                return nameMapping[roleName];
+            }
+            
+            return null;
+        };
+
+        // Filtrowanie ról: tylko te z szansą > 0 i wyłącz Mod Settings oraz Impostor Settings
         const filteredRoles = Roles
             .filter(
-                (char) =>
-                    cleanedFileContentMap.has(char.name) &&
-                    (cleanedFileContentMap.get(char.name) ?? 0) > 0
+                (char) => {
+                    const fileName = getMatchingFileName(char.name);
+                    return fileName &&
+                        (cleanedFileContentMap.get(fileName) ?? 0) > 0 &&
+                        char.name !== "Mod Settings" &&
+                        char.name !== "Impostor Settings";
+                }
             )
             .reduce((acc, char) => {
                 acc[char.id] = char;
@@ -97,7 +124,8 @@ export function     SettingsDramaAfera() {
                 }
             });
             if (role.settings["Probability Of Appearing"]) {
-                const probability = cleanedFileContentMap.get(role.name);
+                const fileName = getMatchingFileName(role.name);
+                const probability = fileName ? cleanedFileContentMap.get(fileName) : undefined;
                 if (probability !== undefined) {
                     role.settings["Probability Of Appearing"].value = Number.isInteger(probability) ? probability : Number(probability.toFixed(2));
                 }
@@ -105,14 +133,45 @@ export function     SettingsDramaAfera() {
             return role;
         });
 
-        ["Mod Settings", "Impostor Settings"].forEach(roleName => {
-            const role = Roles.find(r => r.name === roleName);
+        // Oddzielne przetwarzanie dla Mod Settings i Impostor Settings
+        const modSettings = Roles.find(r => r.name === "Mod Settings");
+        const impostorSettings = Roles.find(r => r.name === "Impostor Settings");
+        
+        // Przetwórz ustawienia dla specjalnych ról
+        [modSettings, impostorSettings].forEach(role => {
             if (role) {
-                filteredRoles[role.id] = role;
+                Object.keys(role.settings).forEach(key => {
+                    if (fileContentMap.has(key)) {
+                        const value = fileContentMap.get(key);
+                        if (value !== undefined) {
+                            const setting = role.settings[key];
+                            switch (setting.type) {
+                                case SettingTypes.Boolean:
+                                    setting.value = value.toLowerCase() === 'true';
+                                    break;
+                                case SettingTypes.Number:
+                                case SettingTypes.Percentage:
+                                case SettingTypes.Time:
+                                case SettingTypes.Multiplier: {
+                                    const num = Number(value.replace(/,/g, '.'));
+                                    if (!isNaN(num)) {
+                                        setting.value = Number.isInteger(num) ? num : Number(num.toFixed(2));
+                                    } else {
+                                        setting.value = num;
+                                    }
+                                    break;
+                                }
+                                case SettingTypes.Text:
+                                    setting.value = value;
+                                    break;
+                            }
+                        }
+                    }
+                });
             }
         });
 
-        return { roles, filteredRoles };
+        return { roles, filteredRoles, modSettings: modSettings || null, impostorSettings: impostorSettings || null };
     }, [fileContent]);
 
 
@@ -135,11 +194,32 @@ export function     SettingsDramaAfera() {
             const normalized = typeof value === 'string' ? value.replace(/,/g, '.') : value;
             cleanedFileContentMap.set(extractName(key), Number(normalized));
         }
+
+        // Funkcja do mapowania nazw modifierów z pliku do nazw w kodzie
+        const getMatchingModifierName = (modifierName: string): string | null => {
+            // Bezpośrednie dopasowanie
+            if (cleanedFileContentMap.has(modifierName)) {
+                return modifierName;
+            }
+            
+            // Mapowanie specjalnych przypadków (jeśli będą potrzebne w przyszłości)
+            const nameMapping: Record<string, string> = {
+                // Dodaj tutaj mapowania jeśli będą potrzebne
+            };
+            
+            if (nameMapping[modifierName] && cleanedFileContentMap.has(nameMapping[modifierName])) {
+                return nameMapping[modifierName];
+            }
+            
+            return null;
+        };
+
         const filteredModifiers = Modifiers
             .filter(
-                (char) =>
-                    cleanedFileContentMap.has(char.name) &&
-                    (cleanedFileContentMap.get(char.name) ?? 0) > 0
+                (char) => {
+                    const fileName = getMatchingModifierName(char.name);
+                    return fileName && (cleanedFileContentMap.get(fileName) ?? 0) > 0;
+                }
             )
             .reduce((acc, char) => {
                 acc[char.id] = char;
@@ -176,7 +256,8 @@ export function     SettingsDramaAfera() {
                 }
             });
             if (modifier.settings["Probability Of Appearing"]) {
-                const probability = cleanedFileContentMap.get(modifier.name);
+                const fileName = getMatchingModifierName(modifier.name);
+                const probability = fileName ? cleanedFileContentMap.get(fileName) : undefined;
                 if (probability !== undefined) {
                     modifier.settings["Probability Of Appearing"].value = probability;
                 }
@@ -193,9 +274,16 @@ export function     SettingsDramaAfera() {
     }
 
     return (
-        <RolesList
-            roles={Object.values(filteredRoles) || []}
-            modifiers={Object.values(filteredModifiers) || []}
-        />
+        <div>
+            <SlotsDisplay fileContent={fileContent} />
+            <SpecialSettingsAccordion 
+                modSettings={modSettings} 
+                impostorSettings={impostorSettings} 
+            />
+            <RolesList
+                roles={Object.values(filteredRoles) || []}
+                modifiers={Object.values(filteredModifiers) || []}
+            />
+        </div>
     );
 }

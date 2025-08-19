@@ -22,6 +22,11 @@ export const Warden: Role = {
         "Show Fortified Player": {
             value: "Warden",
             type: SettingTypes.Text,
+            description: {
+                0: "Self",
+                1: "Warden",
+                2: "Self+Warden"
+            }
         },
     },
     "abilities": [WardenAbilities.Fortify],

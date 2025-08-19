@@ -97,10 +97,29 @@ export interface UserProfileStats {
     crewmateGames: number;
     neutralGames: number;
     totalTasks: number;
+    maxTasks: number; // Dodane - maksymalna liczba tasków
     correctKills: number;
     incorrectKills: number;
     correctGuesses: number;
     incorrectGuesses: number;
+    // Dodane nowe statystyki
+    correctProsecutes: number;
+    incorrectProsecutes: number;
+    correctDeputyShoots: number;
+    incorrectDeputyShoots: number;
+    correctJailorExecutes: number;
+    incorrectJailorExecutes: number;
+    correctMedicShields: number;
+    incorrectMedicShields: number;
+    correctWardenFortifies: number;
+    incorrectWardenFortifies: number;
+    janitorCleans: number;
+    survivedRounds: number;
+    totalRounds: number;
+    correctAltruistRevives: number;
+    incorrectAltruistRevives: number;
+    correctSwaps: number;
+    incorrectSwaps: number;
 }
 
 // Funkcje konwersji
@@ -116,6 +135,18 @@ export function determineWinner(players: PlayerStats[]): { winner: string; winne
         };
     }
 
+    // Role pasożytnicze, które nigdy nie powinny być głównym zwycięzcą
+    const parasiticRoles = ['guardian angel', 'guardianangel', 'survivor', 'mercenary'];
+    
+    // Przefiltruj zwycięzców, usuwając role pasożytnicze jeśli są inne role
+    const nonParasiticWinners = winners.filter(winner => {
+        const lastRole = winner.roleHistory[winner.roleHistory.length - 1];
+        return !parasiticRoles.includes(lastRole.toLowerCase());
+    });
+    
+    // Użyj niepassożytniczych zwycięzców jeśli są, w przeciwnym razie zachowaj wszystkich
+    const primaryWinners = nonParasiticWinners.length > 0 ? nonParasiticWinners : winners;
+
     // Wszystkie nazwy zwycięzców (niezależnie od drużyny)
     const allWinnerNames = winners.map(w => w.playerName);
     
@@ -128,7 +159,7 @@ export function determineWinner(players: PlayerStats[]): { winner: string; winne
     });
 
     // SPECJALNY PRZYPADEK: Sprawdź czy wszyscy zwycięzcy mają modyfikator "Lover"
-    const allHaveLoverModifier = winners.length > 1 && winners.every(winner => 
+    const allHaveLoverModifier = primaryWinners.length > 1 && primaryWinners.every(winner => 
         winner.modifiers.some((modifier: string) => modifier.toLowerCase() === 'lover')
     );
     
@@ -147,7 +178,7 @@ export function determineWinner(players: PlayerStats[]): { winner: string; winne
     }
 
     // PRIORYTET 1: Sprawdź czy są Impostorzy (najwyższy priorytet)
-    const impostorWinners = winners.filter(w => {
+    const impostorWinners = primaryWinners.filter(w => {
         const lastRole = w.roleHistory[w.roleHistory.length - 1];
         const roleDefinition = Roles.find(role => {
             const normalizedRoleName = role.name.toLowerCase().replace(/\s+/g, '');
@@ -167,7 +198,7 @@ export function determineWinner(players: PlayerStats[]): { winner: string; winne
     }
 
     // PRIORYTET 2: Sprawdź czy są Crewmates (średni priorytet)
-    const crewmateWinners = winners.filter(w => {
+    const crewmateWinners = primaryWinners.filter(w => {
         const lastRole = w.roleHistory[w.roleHistory.length - 1];
         const roleDefinition = Roles.find(role => {
             const normalizedRoleName = role.name.toLowerCase().replace(/\s+/g, '');
@@ -187,8 +218,14 @@ export function determineWinner(players: PlayerStats[]): { winner: string; winne
     }
 
     // PRIORYTET 3: Sprawdź czy są role neutralne (najniższy priorytet)
-    const neutralWinners = winners.filter(w => {
+    const neutralWinners = primaryWinners.filter(w => {
         const lastRole = w.roleHistory[w.roleHistory.length - 1];
+        
+        // Specjalna obsługa dla Pestilence (transformacja Plaguebearer)
+        if (lastRole.toLowerCase() === 'pestilence') {
+            return true; // Pestilence to Neutral
+        }
+        
         const roleDefinition = Roles.find(role => {
             const normalizedRoleName = role.name.toLowerCase().replace(/\s+/g, '');
             const normalizedLastRole = lastRole.toLowerCase().replace(/\s+/g, '');
@@ -620,6 +657,17 @@ export function generatePlayerRankingStats(allGames: UIGameData[]): PlayerRankin
     return rankingStats;
 }
 
+// Interface for role ranking statistics
+export interface RoleRankingStats {
+    name: string;
+    displayName: string;
+    color: string;
+    team: string;
+    gamesPlayed: number;
+    wins: number;
+    winRate: number;
+}
+
 // Dodano: Funkcja do generowania szczegółowych statystyk profilu użytkownika
 export function generateUserProfileStats(allGames: UIGameData[]): UserProfileStats[] {
     const playerStats = new Map<string, { 
@@ -629,14 +677,40 @@ export function generateUserProfileStats(allGames: UIGameData[]): UserProfileSta
         crewmateGames: number; 
         neutralGames: number; 
         totalTasks: number; 
+        maxTasks: number;
         correctKills: number;
         incorrectKills: number;
         correctGuesses: number;
         incorrectGuesses: number;
+        correctProsecutes: number;
+        incorrectProsecutes: number;
+        correctDeputyShoots: number;
+        incorrectDeputyShoots: number;
+        correctJailorExecutes: number;
+        incorrectJailorExecutes: number;
+        correctMedicShields: number;
+        incorrectMedicShields: number;
+        correctWardenFortifies: number;
+        incorrectWardenFortifies: number;
+        janitorCleans: number;
+        survivedRounds: number;
+        totalRounds: number;
+        correctAltruistRevives: number;
+        incorrectAltruistRevives: number;
+        correctSwaps: number;
+        incorrectSwaps: number;
     }>();
     
     // Przeiteruj przez wszystkie gry i zlicz statystyki
     allGames.forEach(game => {
+        // Znajdź maksymalną liczbę rund dla tej gry
+        let maxRoundsInThisGame = 0;
+        game.detailedStats.playersData.forEach(p => {
+            if (p.originalStats?.survivedRounds) {
+                maxRoundsInThisGame = Math.max(maxRoundsInThisGame, p.originalStats.survivedRounds);
+            }
+        });
+
         game.detailedStats.playersData.forEach(player => {
             const playerName = player.nickname;
             
@@ -648,22 +722,70 @@ export function generateUserProfileStats(allGames: UIGameData[]): UserProfileSta
                     crewmateGames: 0, 
                     neutralGames: 0, 
                     totalTasks: 0,
+                    maxTasks: 0,
                     correctKills: 0,
                     incorrectKills: 0,
                     correctGuesses: 0,
-                    incorrectGuesses: 0
+                    incorrectGuesses: 0,
+                    correctProsecutes: 0,
+                    incorrectProsecutes: 0,
+                    correctDeputyShoots: 0,
+                    incorrectDeputyShoots: 0,
+                    correctJailorExecutes: 0,
+                    incorrectJailorExecutes: 0,
+                    correctMedicShields: 0,
+                    incorrectMedicShields: 0,
+                    correctWardenFortifies: 0,
+                    incorrectWardenFortifies: 0,
+                    janitorCleans: 0,
+                    survivedRounds: 0,
+                    totalRounds: 0,
+                    correctAltruistRevives: 0,
+                    incorrectAltruistRevives: 0,
+                    correctSwaps: 0,
+                    incorrectSwaps: 0
                 });
             }
             
             const stats = playerStats.get(playerName)!;
             stats.played += 1;
-            stats.totalTasks += player.tasksCompleted;
             
-            // Agreguj nowe statystyki z oryginalnych danych
+            // Logika tasków: dodaj wykonane taski i maxTasks tylko jeśli gracz wykonał jakieś zadania
+            const completedTasks = player.originalStats.completedTasks || 0;
+            if (completedTasks > 0) {
+                stats.totalTasks += completedTasks;
+                // Dodaj maxTasks z gry jeśli gracz wykonał jakieś zadania
+                if (game.maxTasks) {
+                    stats.maxTasks += game.maxTasks;
+                }
+            }
+            
+            // Logika przeżytych rund: dodaj maksimum z tej gry
+            if (maxRoundsInThisGame > 0) {
+                stats.totalRounds += maxRoundsInThisGame;
+            }
+            
+            // Agreguj wszystkie statystyki z oryginalnych danych
             stats.correctKills += player.originalStats.correctKills || 0;
             stats.incorrectKills += player.originalStats.incorrectKills || 0;
             stats.correctGuesses += player.originalStats.correctGuesses || 0;
             stats.incorrectGuesses += player.originalStats.incorrectGuesses || 0;
+            stats.correctProsecutes += player.originalStats.correctProsecutes || 0;
+            stats.incorrectProsecutes += player.originalStats.incorrectProsecutes || 0;
+            stats.correctDeputyShoots += player.originalStats.correctDeputyShoots || 0;
+            stats.incorrectDeputyShoots += player.originalStats.incorrectDeputyShoots || 0;
+            stats.correctJailorExecutes += player.originalStats.correctJailorExecutes || 0;
+            stats.incorrectJailorExecutes += player.originalStats.incorrectJailorExecutes || 0;
+            stats.correctMedicShields += player.originalStats.correctMedicShields || 0;
+            stats.incorrectMedicShields += player.originalStats.incorrectMedicShields || 0;
+            stats.correctWardenFortifies += player.originalStats.correctWardenFortifies || 0;
+            stats.incorrectWardenFortifies += player.originalStats.incorrectWardenFortifies || 0;
+            stats.janitorCleans += player.originalStats.janitorCleans || 0;
+            stats.survivedRounds += player.originalStats.survivedRounds || 0;
+            stats.correctAltruistRevives += player.originalStats.correctAltruistRevives || 0;
+            stats.incorrectAltruistRevives += player.originalStats.incorrectAltruistRevives || 0;
+            stats.correctSwaps += player.originalStats.correctSwaps || 0;
+            stats.incorrectSwaps += player.originalStats.incorrectSwaps || 0;
             
             if (player.win) {
                 stats.won += 1;
@@ -694,11 +816,83 @@ export function generateUserProfileStats(allGames: UIGameData[]): UserProfileSta
         crewmateGames: stats.crewmateGames,
         neutralGames: stats.neutralGames,
         totalTasks: stats.totalTasks,
+        maxTasks: stats.maxTasks,
         correctKills: stats.correctKills,
         incorrectKills: stats.incorrectKills,
         correctGuesses: stats.correctGuesses,
-        incorrectGuesses: stats.incorrectGuesses
+        incorrectGuesses: stats.incorrectGuesses,
+        correctProsecutes: stats.correctProsecutes,
+        incorrectProsecutes: stats.incorrectProsecutes,
+        correctDeputyShoots: stats.correctDeputyShoots,
+        incorrectDeputyShoots: stats.incorrectDeputyShoots,
+        correctJailorExecutes: stats.correctJailorExecutes,
+        incorrectJailorExecutes: stats.incorrectJailorExecutes,
+        correctMedicShields: stats.correctMedicShields,
+        incorrectMedicShields: stats.incorrectMedicShields,
+        correctWardenFortifies: stats.correctWardenFortifies,
+        incorrectWardenFortifies: stats.incorrectWardenFortifies,
+        janitorCleans: stats.janitorCleans,
+        survivedRounds: stats.survivedRounds,
+        totalRounds: stats.totalRounds,
+        correctAltruistRevives: stats.correctAltruistRevives,
+        incorrectAltruistRevives: stats.incorrectAltruistRevives,
+        correctSwaps: stats.correctSwaps,
+        incorrectSwaps: stats.incorrectSwaps
     }));
     
     return profileStats;
+}
+
+// Funkcja do generowania statystyk rankingu dla wszystkich ról
+export function generateRoleRankingStats(allGames: UIGameData[]): RoleRankingStats[] {
+    const roleStats = new Map<string, { played: number; won: number }>();
+    
+    // Przeiteruj przez wszystkie gry i zlicz statystyki ról
+    allGames.forEach(game => {
+        game.detailedStats.playersData.forEach(player => {
+            // Używaj tylko pierwotnej roli (pierwszej z historii lub podstawowej)
+            const originalRole = player.roleHistory && player.roleHistory.length > 0 
+                ? player.roleHistory[0] 
+                : player.role;
+            const roleName = originalRole || player.role;
+            
+            if (!roleStats.has(roleName)) {
+                roleStats.set(roleName, { played: 0, won: 0 });
+            }
+            
+            const stats = roleStats.get(roleName)!;
+            stats.played += 1;
+            
+            if (player.win) {
+                stats.won += 1;
+            }
+        });
+    });
+    
+    // Konwertuj na tablicę z obliczonym procentem wygranych i dodaj informacje o rolach
+    const rankingStats: RoleRankingStats[] = Array.from(roleStats.entries()).map(([roleName, stats]) => {
+        const roleColor = getRoleColor(roleName);
+        const normalizedRole = normalizeRoleName(roleName);
+        const team = determineTeam([roleName]);
+        
+        return {
+            name: roleName,
+            displayName: normalizedRole,
+            color: roleColor,
+            team: team,
+            gamesPlayed: stats.played,
+            wins: stats.won,
+            winRate: stats.played > 0 ? Math.round((stats.won / stats.played) * 100) : 0
+        };
+    });
+    
+    // Sortuj według win rate (malejąco), a następnie według liczby gier (malejąco)
+    rankingStats.sort((a, b) => {
+        if (b.winRate !== a.winRate) {
+            return b.winRate - a.winRate;
+        }
+        return b.gamesPlayed - a.gamesPlayed;
+    });
+    
+    return rankingStats;
 }

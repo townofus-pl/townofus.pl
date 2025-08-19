@@ -470,7 +470,7 @@ export const gameData: GameData = {
       modifiers: ["Frosty", "Lover", "Mini"],
       win: 0,
       disconnected: 1,
-      initialRolePoints: 2,
+      initialRolePoints: 3,
       correctKills: 0,
       incorrectKills: 0,
       correctProsecutes: 0,
@@ -497,10 +497,10 @@ export const gameData: GameData = {
     {
       playerName: "Olivka",
       roleHistory: ["Survivor"],
-      modifiers: [],
+      modifiers: ["Lover"],
       win: 0,
       disconnected: 0,
-      initialRolePoints: 3,
+      initialRolePoints: 4,
       correctKills: 0,
       incorrectKills: 0,
       correctProsecutes: 0,
@@ -668,7 +668,6 @@ export const gameData: GameData = {
 ,        "QukaVadi (Jailor) - Killed by Mamika (Blackmailer)"
       ],
       votes: {
-        "252": ["DawDu"],
         "Bushej": ["Budyn", "Dziekansqr", "smoqu", "Zieloony", "ziomson", "Malkiz", "Olivka"],
         "DawDu": ["Jakubeq"]
       },

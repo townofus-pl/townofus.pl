@@ -26,3 +26,7 @@ body {
     background-repeat: no-repeat;
     background-attachment: fixed;
 }
+
+.glow-yellow {
+    box-shadow: 0 0 10px #fbbf24, 0 0 20px #fbbf24, 0 0 30px #fbbf24;
+}
