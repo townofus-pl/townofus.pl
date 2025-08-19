@@ -63,7 +63,7 @@
 <color=#B3FFFFFF>Guardian Angel</color>
 50
 <color=#8C6699FF>Mercenary</color>
-50
+0
 <color=#FFE64DFF>Survivor</color>
 50
 <color=#00FF80FF>Doomsayer</color>
@@ -293,11 +293,11 @@ True
 Assassin Can Guess Lovers
 True
 Radiate Colour Range
-0,5
+0,25
 Radiate Max Range
 1
 Sense Duration
-5
+3
 Examine Cooldown
 15
 Show Detective Reports
@@ -319,7 +319,7 @@ Footprint Size
 Footprint Interval
 0,15
 Footprint Duration
-4
+7,5
 Anonymous Footprint
 False
 Footprint Vent Visible
@@ -329,7 +329,7 @@ Watch Cooldown
 Lookout Watches Reset After Each Round
 True
 Maximum Number Of Players That Can Be Watched
-5
+3
 Dead Body Arrow Duration
 0,74999994
 Seer Cooldown
@@ -347,7 +347,7 @@ False
 Snitch Sees Neutral Roles
 False
 Tasks Remaining When Revealed
-1
+3
 Snitch Sees Impostors In Meetings
 True
 Snitch Sees Traitor
@@ -357,11 +357,11 @@ Who Sees Dead Bodies On Admin
 Arrow Update Interval
 2
 Track Cooldown
-20
+15
 Tracker Arrows Reset After Each Round
 True
 Maximum Number Of Tracks
-3
+5
 Min Amount Of Time In Trap To Register
 0
 Trap Cooldown
@@ -401,7 +401,7 @@ False
 Alert Cooldown
 20
 Alert Duration
-10
+7
 Maximum Number Of Alerts
 4
 Number Of Vigilante Kills
@@ -449,7 +449,7 @@ False
 Show Medic Reports
 True
 Time Where Medic Will Have Color Type
-5
+0
 Confess Cooldown
 20
 Initial Bless Cooldown
@@ -465,7 +465,7 @@ True
 Show Fortified Player
 2
 Maximum Number Of Fixes
-6
+7
 Mediate Cooldown
 5
 Reveal Appearance Of Mediate Target
@@ -481,7 +481,7 @@ Maximum Number Of Barricades
 Transport Cooldown
 20
 Maximum Number Of Transports
-4
+5
 Transporter Can Use Vitals
 False
 Amnesiac Gets Arrows Pointing To Dead Bodies
@@ -489,7 +489,7 @@ True
 Time After Death Arrow Appears
 1
 Protect Cooldown
-12,5
+10
 Protect Duration
 15
 Maximum Number Of Protects
@@ -513,15 +513,15 @@ Gold To Bribe
 Vest Cooldown
 15
 Vest Duration
-10
-Maximum Number Of Vests
 5
+Maximum Number Of Vests
+3
 Survivor Scatter Mechanic Enabled
 False
 Survivor Scatter Timer
 30
 Observe Cooldown
-7
+8
 Doomsayer Guesses All Roles At Once
 False
 Doomsayer Can't Observe
@@ -551,25 +551,25 @@ Tasks Remaining When Phantom Can Be Clicked
 Phantom Win Ends Game
 True
 Douse Cooldown
-10
+15
 Ignite Radius
-0,7500001
+1
 Arsonist Can Vent
 True
 Mimic Cooldown
-20
+17,5
 Mimic Duration
 10
 Hack Cooldown
-20
+17,5
 Hack Duration
 10
 Glitch Kill Cooldown
-17,5
+20
 Glitch Can Vent
 True
 Juggernaut Initial Kill Cooldown
-25
+22,5
 Reduced Kill Cooldown Per Kill
 2,5
 Juggernaut Can Vent
@@ -585,7 +585,7 @@ Reap Cooldown
 Soul Collector Can Vent
 True
 Vampire Bite Cooldown
-17,5
+12,5
 Vampires Have Impostor Vision
 False
 Vampires Can Vent
@@ -603,7 +603,7 @@ Rampage Cooldown
 Rampage Duration
 15
 Rampage Kill Cooldown
-2,5
+1,5
 Werewolf Can Vent When Rampaged
 True
 Blind Cooldown
@@ -613,7 +613,7 @@ Blind Duration
 Blind Radius
 1
 Recall Cooldown
-45
+20
 Escapist Can Vent
 True
 Flash Grenade Cooldown
@@ -631,15 +631,15 @@ Morphling Duration
 Morphling Can Vent
 True
 Swoop Cooldown
-25
+20
 Swoop Duration
-5
+7
 Swooper Can Vent
 True
 Ability Cooldown
 20
 Ability Duration
-5
+10
 Sprint Speed
 1,3499999
 Minimum Freeze Speed
@@ -649,43 +649,43 @@ Freeze Radius
 Detonate Delay
 3
 Max Kills In Detonation
-3
+5
 Detonate Radius
-0,2
+0,35000002
 Bomber Can Vent
 True
 All Impostors See Bomb
 True
 Scavenge Duration
-15
+10
 Scavenge Duration Increase Per Kill
 10
 Scavenge Kill Cooldown On Correct Kill
 10
 Kill Cooldown Multiplier On Incorrect Kill
-3
+5
 Minimum People Alive When Traitor Can Spawn
 7
 Traitor Won't Spawn If Any Neutral Killing Is Alive
 False
 Time It Takes To Fully Charge
-20
+17,5
 Time It Takes To Use Full Charge
 2,9999983
 Initial Blackmail Cooldown
-10
+7
 Only Target Sees Blackmail
 False
 Maximum People Alive Where Blackmailed Can Vote
 1
 Hypnotize Cooldown
-17,5
+10
 Mine Cooldown
-17,5
+15
 Drag Cooldown
 25
 Undertaker Drag Speed
-0,49999988
+0,74999994
 Undertaker Can Vent
 True
 Undertaker Can Vent While Dragging
