@@ -18,7 +18,7 @@ export interface CorsOptions {
  * Default CORS configuration
  */
 const DEFAULT_CORS_OPTIONS: CorsOptions = {
-  origin: ['http://localhost:3000', 'http://localhost:3001', 'http://127.0.0.1:3000'],
+  origin: ['http://localhost:3000', 'http://localhost:8787'],
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'HEAD', 'PATCH'],
   allowedHeaders: [
     'Content-Type',
