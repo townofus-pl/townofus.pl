@@ -110,19 +110,21 @@ export default function SwaggerUIComponent() {
             Authentication Required
           </h1>
           <p className="text-gray-600 mb-2">{error}</p>
-          <div className="text-sm text-gray-500 mb-6 p-3 bg-gray-100 rounded-lg">
-            <p className="font-medium mb-1">For development:</p>
-            <p>Username: <code className="bg-gray-200 px-1 rounded">demo_user</code></p>
-            <p>Password: <code className="bg-gray-200 px-1 rounded">demo_pass</code></p>
-            <p className="mt-2 text-xs">Check your .dev.vars file for current credentials</p>
-            <button
-              type="button"
-              onClick={() => setCredentials({ username: 'demo_user', password: 'demo_pass' })}
-              className="mt-2 text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded hover:bg-blue-200 transition-colors"
-            >
-              Quick-fill dev credentials
-            </button>
-          </div>
+          {process.env.NODE_ENV === 'development' && (
+            <div className="text-sm text-gray-500 mb-6 p-3 bg-gray-100 rounded-lg">
+              <p className="font-medium mb-1">For development:</p>
+              <p>Username: <code className="bg-gray-200 px-1 rounded">demo_user</code></p>
+              <p>Password: <code className="bg-gray-200 px-1 rounded">demo_pass</code></p>
+              <p className="mt-2 text-xs">Check your .dev.vars file for current credentials</p>
+              <button
+                type="button"
+                onClick={() => setCredentials({ username: 'demo_user', password: 'demo_pass' })}
+                className="mt-2 text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded hover:bg-blue-200 transition-colors"
+              >
+                Quick-fill dev credentials
+              </button>
+            </div>
+          )}
           
           {!isAuthConfigured && (
             <form onSubmit={handleAuth} className="space-y-4 mb-6">

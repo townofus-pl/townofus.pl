@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server';
 import { getCloudflareContext } from '@opennextjs/cloudflare';
 import { getPrismaClient } from '@/app/api/_database';
 import { createErrorResponse, createSuccessResponse } from '@/app/api/_utils';
+import { withAuth, withCors } from '@/app/api/_middlewares';
 import { openApiRegistry } from '@/app/api/schema/registry';
 import {
   CreateFruitSchema,
@@ -59,7 +60,7 @@ openApiRegistry.registerPath({
 });
 
 // POST /api/fruits - Create a new fruit
-export async function POST(request: NextRequest) {
+export const POST = withCors(withAuth(async (request: NextRequest) => {
   // Get Cloudflare context for environment bindings
   const { env } = await getCloudflareContext();
   
@@ -104,4 +105,4 @@ export async function POST(request: NextRequest) {
     console.error('Error creating fruit:', error);
     return createErrorResponse('Failed to create fruit', 500);
   }
-}
+}));

@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server';
 import { getCloudflareContext } from '@opennextjs/cloudflare';
 import { getPrismaClient } from '@/app/api/_database';
 import { createErrorResponse, createSuccessResponse } from '@/app/api/_utils';
+import { withAuth, withCors } from '@/app/api/_middlewares';
 import { openApiRegistry } from '@/app/api/schema/registry';
 import {
   FruitParamsSchema,
@@ -63,7 +64,7 @@ openApiRegistry.registerPath({
 });
 
 // DELETE /api/fruits/[id] - Delete a specific fruit
-export async function DELETE(request: NextRequest, { params }: RouteParams) {
+export const DELETE = withCors(withAuth(async (request: NextRequest, context: { user: { username: string } }, { params }: RouteParams) => {
   // Get Cloudflare context for environment bindings
   const { env } = await getCloudflareContext();
   
@@ -108,4 +109,4 @@ export async function DELETE(request: NextRequest, { params }: RouteParams) {
     console.error('Error deleting fruit:', error);
     return createErrorResponse('Failed to delete fruit', 500);
   }
-}
+}));

@@ -1,4 +1,5 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
+import { withAuth, withCors } from '@/app/api/_middlewares';
 
 /**
  * Dynamic OpenAPI Schema Generation Endpoint
@@ -30,7 +31,7 @@ async function importRouteHandlers() {
   }
 }
 
-export async function GET(request: Request) {
+export const GET = withCors(withAuth(async (request: NextRequest) => {
   try {
     // First, import all route handlers to register their schemas
     await importRouteHandlers();
@@ -61,5 +62,5 @@ export async function GET(request: Request) {
       { status: 500 }
     );
   }
-}
+}));
 

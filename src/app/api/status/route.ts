@@ -1,5 +1,6 @@
 
 import { createSuccessResponse } from '@/app/api/_utils';
+import { withAuth, withCors } from '@/app/api/_middlewares';
 import { openApiRegistry } from '@/app/api/schema/registry';
 import { z } from 'zod';
 import { extendZodWithOpenApi } from '@asteasolutions/zod-to-openapi';
@@ -53,7 +54,7 @@ openApiRegistry.registerPath({
 });
 
 // GET /api/status - Get API status
-export async function GET() {
+export const GET = withCors(withAuth(async () => {
   const now = new Date();
   const uptime = process.uptime();
 
@@ -63,4 +64,4 @@ export async function GET() {
     uptime: Math.floor(uptime),
     environment: process.env.NODE_ENV || 'unknown'
   });
-}
+}));
