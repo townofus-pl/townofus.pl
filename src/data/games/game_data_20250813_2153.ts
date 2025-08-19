@@ -93,7 +93,7 @@ export const gameData: GameData = {
       incorrectJailorExecutes: 0,
       correctMedicShields: 0,
       incorrectMedicShields: 0,
-      correctWardenFortifies: 0,
+      correctWardenFortifies: 1,
       incorrectWardenFortifies: 0,
       janitorCleans: 0,
       completedTasks: 6,
@@ -102,7 +102,7 @@ export const gameData: GameData = {
       incorrectAltruistRevives: 0,
       correctSwaps: 0,
       incorrectSwaps: 0,
-      totalPoints: 3.0,
+      totalPoints: 4.0,
     },
     {
       playerName: "Jakubeq",
