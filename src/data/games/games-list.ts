@@ -770,63 +770,63 @@ export const availableGames = [
     },
     {
         id: "20250827_1814_01",
-        fileName: "game_data_20250820_1814"
+        fileName: "game_data_20250827_1814"
     },
     {
         id: "20250827_1831_02",
-        fileName: "game_data_20250820_1831"
+        fileName: "game_data_20250827_1831"
     },
     {
         id: "20250827_1848_03",
-        fileName: "game_data_20250820_1848"
+        fileName: "game_data_20250827_1848"
     },
     {
         id: "20250827_1901_04",
-        fileName: "game_data_20250820_1901"
+        fileName: "game_data_20250827_1901"
     },
     {
         id: "20250827_1912_05",
-        fileName: "game_data_20250820_1912"
+        fileName: "game_data_20250827_1912"
     },
     {
         id: "20250827_1919_06",
-        fileName: "game_data_20250820_1919"
+        fileName: "game_data_20250827_1919"
     },
     {
         id: "20250827_1937_07",
-        fileName: "game_data_20250820_1937"
+        fileName: "game_data_20250827_1937"
     },
     {
         id: "20250827_1947_08",
-        fileName: "game_data_20250820_1947"
+        fileName: "game_data_20250827_1947"
     },
     {
         id: "20250827_2006_09",
-        fileName: "game_data_20250820_2006"
+        fileName: "game_data_20250827_2006"
     },
     {
         id: "20250827_2021_10",
-        fileName: "game_data_20250820_2021"
+        fileName: "game_data_20250827_2021"
     },
     {
         id: "20250827_2038_11",
-        fileName: "game_data_20250820_2038"
+        fileName: "game_data_20250827_2038"
     },
     {
         id: "20250827_2103_12",
-        fileName: "game_data_20250820_2103"
+        fileName: "game_data_20250827_2103"
     },
     {
         id: "20250827_2123_13",
-        fileName: "game_data_20250820_2123"
+        fileName: "game_data_20250827_2123"
     },
     {
         id: "20250827_2138_14",
-        fileName: "game_data_20250820_2138"
+        fileName: "game_data_20250827_2138"
     },
     {
         id: "20250827_2156_15",
-        fileName: "game_data_20250820_2156"
+        fileName: "game_data_20250827_2156"
     },
     // Dodaj kolejne gry tutaj w formacie:
     // {
