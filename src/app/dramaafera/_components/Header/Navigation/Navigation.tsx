@@ -12,12 +12,16 @@ const navigationItems: NavigationItemProps[] = [
         label: "Ustawienia"
     },
     {
-        href: "/dramaafera/ranking",
-        label: "Ranking Graczy",
+        href: "/dramaafera/changelog",
+        label: "Changelog",
     },
-        {
+    {
+        href: "/dramaafera/ranking",
+        label: "Ranking",
+    },
+    {
         href: "/dramaafera/role",
-        label: "Ranking Ról",
+        label: "Role",
     },
     {   
         href: "/dramaafera/historia-gier",
@@ -36,7 +40,7 @@ const navigationItems: NavigationItemProps[] = [
     },
     {   
         href: "/dramaafera/skiny",
-        label: "Skiny Drama Afera",
+        label: "Skiny",
 
     },
 ];
