@@ -96,11 +96,11 @@ export default function RoleTable({ roles, reversedGames, detailedGames, date, h
       'Doomsayer': 'doomsayer.png',
       'Scavenger': 'scavenger.png',
       'Soul Collector': 'soul_collector.png',
-      'Mercenary': 'placeholder.png',
+      'Mercenary': 'mercenary.png',
       'Cleric': 'cleric.png',
       'Warden': 'warden.png',
-      'Plumber': 'placeholder.png',
-      'Eclipsal': 'placeholder.png',
+      'Plumber': 'plumber.png',
+      'Eclipsal': 'eclipsal.png',
       'Haunter': 'haunter.png',
       'Werewolf': 'werewolf.png'
     };
