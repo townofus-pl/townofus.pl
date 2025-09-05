@@ -16,7 +16,7 @@ export const Eclipsal: Role = {
     "id": "eclipsal",
 	"color": "#FF0000",
     "team": Teams.Impostor,
-    "icon": "/images/roles/placeholder.png",
+    "icon": "/images/roles/eclipsal.png",
     "description": "Impostor, który może oślepiać innych graczy. Umiejętność to obszarowe oślepienie, które powoduje, że wszyscy gracze w zasięgu stopniowo tracą widoczność. Efekt trwa określony czas. Gdy wizja wraca, następuje to w podobny sposób - od braku widoczności do pełnej wizji. Gracze oślepieni nie widzą też przycisku reportowania.",
     "settings": {
         ...probabilityOfAppearing(0),

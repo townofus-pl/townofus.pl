@@ -19,7 +19,7 @@ export const Plumber: Role = {
     "id": "plumber",
     "color": "#CC6600",
     "team": Teams.Crewmate,
-    "icon": "/images/roles/placeholder.png",
+    "icon": "/images/roles/plumber.png",
     "description": (<>
         <p>Crewmate z 2 umiejętnościami:</p>
         <ul className="list-disc list-inside">

@@ -19,7 +19,7 @@ export const Mercenary: Role = {
     "id": "mercenary",
 	"color": "#8C6699",
     "team": Teams.Neutral,
-    "icon": "/images/roles/placeholder.png",
+    "icon": "/images/roles/mercenary.png",
     "description": (<>
         <p>Neutralna rola z dwiema umiejętnościami.</p>
         <ul className="list-disc list-inside">
