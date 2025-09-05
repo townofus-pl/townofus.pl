@@ -3,14 +3,34 @@
 import { useEffect, useState } from "react";
 import Image from "next/image";
 import { Roles } from "../_roles";
+import { Modifiers } from "@/modifiers";
 import { SettingTypes } from "@/constants/settings";
+import { Teams } from "@/constants/teams";
 
-// Funkcja do znajdowania koloru i ikony roli
+// Funkcja do znajdowania koloru i ikony roli lub modyfikatora
 const getRoleInfo = (roleName: string): { color: string; icon: string | null } => {
+    // Najpierw szukaj w rolach
     const role = Roles.find(r => r.name === roleName);
+    if (role) {
+        return {
+            color: role.color,
+            icon: role.icon
+        };
+    }
+    
+    // Jeśli nie znaleziono w rolach, szukaj w modyfikatorach
+    const modifier = Modifiers.find(m => m.name === roleName);
+    if (modifier) {
+        return {
+            color: modifier.color,
+            icon: modifier.icon
+        };
+    }
+    
+    // Domyślne wartości dla Global Settings
     return {
-        color: role?.color || "#4B5563", // domyślny szary kolor dla Global Settings
-        icon: role?.icon || null // brak ikony dla Global Settings
+        color: "#4B5563",
+        icon: null
     };
 };
 
@@ -154,6 +174,18 @@ export default function ChangelogPage() {
                             }
                         }
 
+                        // Jeśli nie znaleziono w rolach, przeszukaj modyfikatory
+                        if (roleName === 'Global Settings') {
+                            for (const modifier of Modifiers) {
+                                if (modifier.settings[settingName]) {
+                                    settingType = modifier.settings[settingName].type;
+                                    description = modifier.settings[settingName].description;
+                                    roleName = modifier.name;
+                                    break;
+                                }
+                            }
+                        }
+
                         // Formatuj wartości z zaokrąglaniem
                         const processValue = (value: string, type: SettingTypes) => {
                             switch (type) {
@@ -225,8 +257,112 @@ export default function ChangelogPage() {
                             acc[change.roleName].push(change);
                             return acc;
                         }, {} as Record<string, Change[]>)
-                    ).map(([roleName, roleChanges]) => {
+                    )
+                    .sort(([roleNameA], [roleNameB]) => {
+                        // Mod Settings na samej górze
+                        if (roleNameA === 'Mod Settings') return -1;
+                        if (roleNameB === 'Mod Settings') return 1;
+                        
+                        // Impostor Settings na drugiej pozycji
+                        if (roleNameA === 'Impostor Settings') return -1;
+                        if (roleNameB === 'Impostor Settings') return 1;
+                        
+                        // Sprawdź czy to są role czy modyfikatory
+                        const roleA = Roles.find(r => r.name === roleNameA);
+                        const roleB = Roles.find(r => r.name === roleNameB);
+                        const isModifierA = Modifiers.some(m => m.name === roleNameA);
+                        const isModifierB = Modifiers.some(m => m.name === roleNameB);
+                        
+                        // Role przed modyfikatorami
+                        if (roleA && isModifierB) return -1;
+                        if (isModifierA && roleB) return 1;
+                        
+                        // Global Settings na końcu
+                        if (roleNameA === 'Global Settings') return 1;
+                        if (roleNameB === 'Global Settings') return -1;
+                        
+                        // Jeśli oba są rolami, sortuj według drużyn
+                        if (roleA && roleB) {
+                            const teamOrder = {
+                                [Teams.Crewmate]: 1,
+                                [Teams.Neutral]: 2,
+                                [Teams.Impostor]: 3,
+                                [Teams.All]: 4  // dla modyfikatorów, ale tu nie będzie używane
+                            };
+                            
+                            const teamOrderA = teamOrder[roleA.team] || 999;
+                            const teamOrderB = teamOrder[roleB.team] || 999;
+                            
+                            if (teamOrderA !== teamOrderB) {
+                                return teamOrderA - teamOrderB;
+                            }
+                            
+                            // W ramach tej samej drużyny sortuj alfabetycznie
+                            return roleNameA.localeCompare(roleNameB);
+                        }
+                        
+                        // W ramach modyfikatorów sortuj alfabetycznie
+                        return roleNameA.localeCompare(roleNameB);
+                    })
+                    .map(([roleName, roleChanges]) => {
                         const roleInfo = getRoleInfo(roleName);
+                        
+                        // Specjalne ustawienia z dopasowanym stylem do reszty changeloga
+                        if (roleName === 'Mod Settings') {
+                            return (
+                                <div key={roleName} className="bg-zinc-900/50 rounded-xl text-white p-6">
+                                    <div className="flex items-center gap-6">
+                                        <div className="flex-shrink-0 w-[80px] h-[80px] flex items-center justify-center">
+                                            <span className="text-6xl">⚙️</span>
+                                        </div>
+                                        <div className="flex-1">
+                                            <h2 className="font-brook text-4xl mb-4 text-white">
+                                                Mod Settings
+                                            </h2>
+                                            <ul className="space-y-2">
+                                                {roleChanges.map((change, index) => (
+                                                    <li key={index} className="text-xl">
+                                                        <span className="font-semibold">{change.settingName}:</span>{' '}
+                                                        <span className="text-red-600">{change.oldValue}</span>{' '}
+                                                        →{' '}
+                                                        <span className="text-green-600">{change.newValue}</span>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            );
+                        }
+                        
+                        if (roleName === 'Impostor Settings') {
+                            return (
+                                <div key={roleName} className="bg-zinc-900/50 rounded-xl text-white p-6">
+                                    <div className="flex items-center gap-6">
+                                        <div className="flex-shrink-0 w-[80px] h-[80px] flex items-center justify-center">
+                                            <span className="text-6xl">🔪</span>
+                                        </div>
+                                        <div className="flex-1">
+                                            <h2 className="font-brook text-4xl mb-4 text-white">
+                                                Impostor Settings
+                                            </h2>
+                                            <ul className="space-y-2">
+                                                {roleChanges.map((change, index) => (
+                                                    <li key={index} className="text-xl">
+                                                        <span className="font-semibold">{change.settingName}:</span>{' '}
+                                                        <span className="text-red-600">{change.oldValue}</span>{' '}
+                                                        →{' '}
+                                                        <span className="text-green-600">{change.newValue}</span>
+                                                    </li>
+                                                ))}
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            );
+                        }
+                        
+                        // Standardowy styl dla ról i modyfikatorów
                         return (
                             <div key={roleName} className="bg-zinc-900/50 rounded-xl text-white p-6">
                                 <div className="flex items-center gap-6">
@@ -236,7 +372,10 @@ export default function ChangelogPage() {
                                             alt={roleName}
                                             width={80}
                                             height={80}
-                                            className="rounded-lg flex-shrink-0 scale-[1.7]"
+                                            quality={100}
+                                            unoptimized={true}
+                                            className="rounded-lg flex-shrink-0 scale-[1.9]"
+                                            style={{ width: '80px', height: '80px' }}
                                         />
                                     )}
                                     <div className="flex-1">
