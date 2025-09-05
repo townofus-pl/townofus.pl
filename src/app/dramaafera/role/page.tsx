@@ -168,11 +168,11 @@ export default function RolePage() {
             'Doomsayer': 'doomsayer.png',
             'Scavenger': 'scavenger.png',
             'Soul Collector': 'soul_collector.png',
-            'Mercenary': 'placeholder.png', // Brak ikony mercenary
+            'Mercenary': 'mercenary.png', 
             'Cleric': 'cleric.png',
             'Warden': 'warden.png',
-            'Plumber': 'placeholder.png', // Brak ikony plumber
-            'Eclipsal': 'placeholder.png', // Brak ikony eclipsal
+            'Plumber': 'plumber.png',
+            'Eclipsal': 'eclipsal.png',
             'Haunter': 'haunter.png',
             'Werewolf': 'werewolf.png'
         };
