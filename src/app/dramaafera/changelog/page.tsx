@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import Image from "next/image";
 import { Roles } from "../_roles";
 import { SettingTypes } from "@/constants/settings";
 
@@ -14,7 +15,7 @@ const getRoleInfo = (roleName: string): { color: string; icon: string | null } =
 };
 
 // Pomocnicza funkcja do formatowania wartości
-const formatValue = (value: any, type: SettingTypes, description?: Record<number, string>): string => {
+const formatValue = (value: string | number | boolean, type: SettingTypes, description?: Record<number, string>): string => {
     // Najpierw sprawdź czy istnieje opis dla wartości
     if (description) {
         let valueToCheck: number | null = null;
@@ -230,10 +231,12 @@ export default function ChangelogPage() {
                             <div key={roleName} className="bg-zinc-900/50 rounded-xl text-white p-6">
                                 <div className="flex items-center gap-6">
                                     {roleInfo.icon && (
-                                        <img 
+                                        <Image 
                                             src={roleInfo.icon} 
                                             alt={roleName}
-                                            className="w-20 h-20 rounded-lg flex-shrink-0 scale-[1.7]"
+                                            width={80}
+                                            height={80}
+                                            className="rounded-lg flex-shrink-0 scale-[1.7]"
                                         />
                                     )}
                                     <div className="flex-1">
