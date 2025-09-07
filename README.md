@@ -37,7 +37,6 @@ Polish Among Us community website built with Next.js 15, TypeScript, and Cloudfl
 
 3. **Setup database**
    ```bash
-   npm run db:generate
    npm run db:migrate:apply:local
    ```
 
