@@ -11,11 +11,9 @@ route = { pattern = "townofus.pl", custom_domain = true }
 binding = "ASSETS"
 directory = ".open-next/assets"
 
-
-
 [[d1_databases]]
 binding = "DB"
 database_name = "townofus-pl"
-database_id = "b1b51296-d5f7-4dd5-8c56-8a78b75c79a9"
-preview_database_id = "0de6283b-a8fe-4f94-aadb-059e0def3b42"
+database_id = "0edadde7-395f-4e3c-a69d-7d40ece774ad"
+preview_database_id = "44f0d77c-c0b4-43d1-b3a3-7777be86d5d6"
 migrations_dir = "prisma/migrations"
