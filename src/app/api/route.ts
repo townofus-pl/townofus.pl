@@ -1,8 +1,7 @@
-import { NextRequest, NextResponse } from 'next/server';
-import { withAuth, withCors } from '@/app/api/_middlewares';
+import { withCors } from '@/app/api/_middlewares';
+import { createRedirectResponse } from '@/app/api/_utils';
 
-// GET /api - Redirect to API documentation
-export const GET = withCors(withAuth(async (request: NextRequest) => {
-  const url = new URL(request.url);
-  return NextResponse.redirect(new URL('/api/docs', url.origin));
-}));
+// GET /api - API information (no auth required)
+export const GET = withCors(async (request) => {
+  return createRedirectResponse('/api/docs', request);
+});

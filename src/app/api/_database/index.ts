@@ -1,5 +1,6 @@
-import { PrismaClient } from '@/generated/prisma';
+import { PrismaClient } from '../../../generated/prisma';
 import { PrismaD1 } from '@prisma/adapter-d1';
+import type { Prisma } from '../../../generated/prisma';
 
 /**
  * Global Prisma client instance
@@ -12,7 +13,9 @@ let prisma: PrismaClient | null = null;
 export function getPrismaClient(d1Database: D1Database): PrismaClient {
   if (!prisma) {
     const adapter = new PrismaD1(d1Database);
-    prisma = new PrismaClient({ adapter });
+    prisma = new PrismaClient({
+      adapter
+    });
   }
   return prisma;
 }
@@ -30,7 +33,7 @@ export async function closePrismaClient(): Promise<void> {
 /**
  * Type exports from Prisma - use these instead of manual definitions
  */
-export type { Prisma, Fruit } from '@/generated/prisma';
+export type { Prisma };
 
 /**
  * Database query helpers
@@ -57,20 +60,26 @@ export function buildPaginationQuery(options: DatabasePaginationOptions = {}) {
   };
 }
 
-// Search helper for text fields
-export function buildSearchQuery(searchTerm: string, fields: string[]) {
+// Application-layer search helper for case-insensitive filtering
+export function filterBySearch<T extends Record<string, unknown>>(
+  items: T[],
+  searchTerm: string,
+  fields: (keyof T)[]
+): T[] {
   if (!searchTerm.trim()) {
-    return undefined;
+    return items;
   }
 
-  return {
-    OR: fields.map(field => ({
-      [field]: {
-        contains: searchTerm,
-        mode: 'insensitive' as const
+  const lowerSearchTerm = searchTerm.toLowerCase();
+  return items.filter(item =>
+    fields.some(field => {
+      const fieldValue = item[field];
+      if (typeof fieldValue === 'string') {
+        return fieldValue.toLowerCase().includes(lowerSearchTerm);
       }
-    }))
-  };
+      return false;
+    })
+  );
 }
 
 /**

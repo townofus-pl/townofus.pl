@@ -12,18 +12,25 @@ async function importRouteHandlers() {
   try {
     // Import all API method handlers to trigger schema registration
     // This ensures all endpoints and schemas are included in the generated documentation
-    await import('@/app/api/fruits/get');
-    await import('@/app/api/fruits/post');
-    await import('@/app/api/fruits/[id]/get');
-    await import('@/app/api/fruits/[id]/put');
-    await import('@/app/api/fruits/[id]/delete');
-    await import('@/app/api/status/route');
     
-    // Add more method imports here as you create new endpoints
-    // await import('@/app/api/users/get');
-    // await import('@/app/api/users/post');
-    // await import('@/app/api/games/get');
-    // await import('@/app/api/roles/get');
+    // Main API info endpoint
+    await import('@/app/api/route');
+    
+    // Admin Games endpoints
+    await import('@/app/api/admin/games/get');
+    await import('@/app/api/admin/games/post');
+    await import('@/app/api/admin/games/[id]/get');
+    await import('@/app/api/admin/games/[id]/delete');
+    
+    // Admin Players endpoints
+    await import('@/app/api/admin/players/get');
+    await import('@/app/api/admin/players/post');
+    await import('@/app/api/admin/players/[id]/put');
+    await import('@/app/api/admin/players/[id]/delete');
+    await import('@/app/api/admin/players/merge/post');
+    
+    // Utility endpoints
+    await import('@/app/api/status/route');
     
   } catch (error) {
     console.error('Error importing route handlers:', error);
