@@ -21,17 +21,23 @@ datasource db {
 // =============================================================================
 
 model Game {
-    id          Int      @id @default(autoincrement())
+    id              Int      @id @default(autoincrement())
+    gameIdentifier  String   @unique // Format: YYYYMMDD_HHMM for URL access
 
     // Game metadata
-    startTime   DateTime
-    endTime     DateTime
-    map         String
-    maxTasks    Int?
+    startTime       DateTime
+    endTime         DateTime
+    map             String
+    maxTasks        Int?
+
+    // Computed winner information (cached for performance)
+    winnerTeam      String?  // 'Crewmate', 'Impostor', 'Neutral'
+    winCondition    String?  // Description of how the game was won
 
     // Timestamps
-    createdAt   DateTime @default(now())
-    updatedAt   DateTime @updatedAt
+    createdAt       DateTime @default(now())
+    updatedAt       DateTime @updatedAt
+    deletedAt       DateTime? // Soft delete
 
     // Relationships
     gamePlayerStatistics GamePlayerStatistics[]
@@ -39,8 +45,11 @@ model Game {
     meetings            Meeting[]
     playerRankings      PlayerRanking[]
 
+    @@index([gameIdentifier])
     @@index([startTime])
     @@index([createdAt])
+    @@index([deletedAt])
+    @@index([winnerTeam])
     @@map("games")
 }
 
@@ -51,6 +60,7 @@ model Player {
     // Timestamps
     createdAt DateTime @default(now())
     updatedAt DateTime @updatedAt
+    deletedAt DateTime? // Soft delete
 
     // Current ranking reference
     currentRankingId Int? @unique
@@ -68,8 +78,11 @@ model Player {
     currentRanking       PlayerRanking? @relation("CurrentRanking", fields: [currentRankingId], references: [id])
     rankingHistory       PlayerRanking[] @relation("RankingHistory")
 
-    @@index([name])
+    @@index([name], map: "players_name_idx")
     @@index([currentRankingId])
+    @@index([deletedAt])
+    // Case-insensitive name lookup support
+    @@index([name(sort: Asc, ops: raw("COLLATE NOCASE"))], map: "players_name_nocase_idx")
     @@map("players")
 }
 
@@ -170,6 +183,9 @@ model GameEvent {
     playerId    Int? // Main player involved in event
     targetId    Int? // Target player (for kills, etc.)
 
+    // Timestamps
+    deletedAt   DateTime? // Soft delete
+
     // Relationships
     game   Game    @relation(fields: [gameId], references: [id], onDelete: Cascade)
     player Player? @relation("EventPlayer", fields: [playerId], references: [id], onDelete: SetNull)
@@ -180,6 +196,7 @@ model GameEvent {
     @@index([eventType])
     @@index([playerId])
     @@index([targetId])
+    @@index([deletedAt])
     @@map("game_events")
 }
 
@@ -190,6 +207,9 @@ model Meeting {
     deathsSinceLastMeeting    String // JSON array of death descriptions
     wasTie                    Boolean @default(false)
     wasBlessed                Boolean @default(false)
+
+    // Timestamps
+    deletedAt                 DateTime? // Soft delete
 
     // Relationships
     game              Game          @relation(fields: [gameId], references: [id], onDelete: Cascade)
@@ -202,6 +222,7 @@ model Meeting {
     @@unique([gameId, meetingNumber])
     @@index([gameId])
     @@index([meetingNumber])
+    @@index([deletedAt])
     @@map("meetings")
 }
 
@@ -295,6 +316,7 @@ model PlayerRanking {
 
     // Timestamps
     createdAt DateTime @default(now())
+    deletedAt DateTime? // Soft delete
 
     // Relationships
     player         Player  @relation("RankingHistory", fields: [playerId], references: [id], onDelete: Cascade)
@@ -306,5 +328,6 @@ model PlayerRanking {
     @@index([gameId])
     @@index([createdAt])
     @@index([reason])
+    @@index([deletedAt])
     @@map("player_rankings")
 }
