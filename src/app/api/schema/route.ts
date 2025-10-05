@@ -16,18 +16,9 @@ async function importRouteHandlers() {
     // Main API info endpoint
     await import('@/app/api/route');
     
-    // Admin Games endpoints
-    await import('@/app/api/admin/games/get');
-    await import('@/app/api/admin/games/post');
-    await import('@/app/api/admin/games/[id]/get');
-    await import('@/app/api/admin/games/[id]/delete');
-    
-    // Admin Players endpoints
-    await import('@/app/api/admin/players/get');
-    await import('@/app/api/admin/players/post');
-    await import('@/app/api/admin/players/[id]/put');
-    await import('@/app/api/admin/players/[id]/delete');
-    await import('@/app/api/admin/players/merge/post');
+    // Players endpoints
+    await import('@/app/api/players/route');
+    await import('@/app/api/players/[id]/route');
     
     // Utility endpoints
     await import('@/app/api/status/route');

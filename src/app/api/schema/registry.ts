@@ -97,14 +97,6 @@ export function generateOpenApiDocument(currentPort?: string) {
         description: 'System information and health endpoints',
       },
       {
-        name: 'Admin',
-        description: 'Administrative operations requiring authentication',
-      },
-      {
-        name: 'Games',
-        description: 'Among Us game data management and statistics',
-      },
-      {
         name: 'Players',
         description: 'Player management and statistics',
       },

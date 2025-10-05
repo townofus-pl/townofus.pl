@@ -24,7 +24,8 @@
         "db:migrate:apply:remote": "wrangler d1 migrations apply townofus-pl --remote",
         "db:execute:local": "wrangler d1 execute townofus-pl --local",
         "db:execute:preview": "wrangler d1 execute townofus-pl --remote --preview",
-        "db:execute:remote": "wrangler d1 execute townofus-pl --remote"
+        "db:execute:remote": "wrangler d1 execute townofus-pl --remote",
+        "db:studio": "npx d1s"
     },
     "dependencies": {
         "@asteasolutions/zod-to-openapi": "^7.3.4",
