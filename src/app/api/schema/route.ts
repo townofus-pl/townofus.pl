@@ -20,6 +20,13 @@ async function importRouteHandlers() {
     await import('@/app/api/players/route');
     await import('@/app/api/players/[id]/route');
     
+    // Games endpoints
+    await import('@/app/api/games/route');
+    await import('@/app/api/games/[id]/route');
+    await import('@/app/api/games/dates/route');
+    await import('@/app/api/games/stats/route');
+    await import('../games/upload/route');
+    
     // Utility endpoints
     await import('@/app/api/status/route');
     

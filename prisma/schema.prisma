@@ -81,8 +81,6 @@ model Player {
     @@index([name], map: "players_name_idx")
     @@index([currentRankingId])
     @@index([deletedAt])
-    // Case-insensitive name lookup support
-    @@index([name(sort: Asc, ops: raw("COLLATE NOCASE"))], map: "players_name_nocase_idx")
     @@map("players")
 }
 

@@ -158,7 +158,7 @@ export const PlayersQuerySchema = z.object({
     .optional()
     .transform(val => val?.trim() || undefined)
     .openapi({
-      description: 'Search players by name (case-insensitive partial match)',
+      description: 'Search players by name (case-sensitive partial match)',
       example: 'malk'
     }),
   sort: z.enum(['name', 'createdAt', 'updatedAt', 'totalGames', 'winRate', 'totalPoints'])

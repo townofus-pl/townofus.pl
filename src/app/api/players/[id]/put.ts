@@ -47,27 +47,31 @@ export async function PUT(request: NextRequest, authContext: { user: { username:
       return createErrorResponse('Player not found', 404);
     }
 
-    // If the name hasn't changed (case-insensitive), no update needed
-    if (existingPlayer.name.toLowerCase().trim() === name.toLowerCase().trim()) {
+    // If the name hasn't changed, no update needed
+    if (existingPlayer.name.trim() === name.trim()) {
       return createSuccessResponse({
         id: existingPlayer.id,
         name: existingPlayer.name,
+        deletedAt: existingPlayer.deletedAt,
         createdAt: existingPlayer.createdAt,
         updatedAt: existingPlayer.updatedAt,
         currentRankingId: existingPlayer.currentRankingId
       }, 200);
     }
 
-    // Check if another player already has this name (case-insensitive using SQLite COLLATE NOCASE)
-    const duplicatePlayers = await prisma.$queryRaw<{ id: number; name: string }[]>`
-      SELECT id, name FROM players 
-      WHERE name = ${name} COLLATE NOCASE
-      AND id != ${playerId}
-      AND deletedAt IS NULL
-    `;
+    // Check if another player already has this name (case-sensitive)
+    const duplicatePlayer = await prisma.player.findFirst({
+      where: {
+        name: name,
+        id: {
+          not: playerId
+        },
+        ...withoutDeleted
+      }
+    });
 
-    if (duplicatePlayers.length > 0) {
-      return createErrorResponse(`Player name already exists: '${duplicatePlayers[0].name}' (case-insensitive match)`, 409);
+    if (duplicatePlayer) {
+      return createErrorResponse(`Player name already exists: '${duplicatePlayer.name}'`, 409);
     }
 
     // Update the player name

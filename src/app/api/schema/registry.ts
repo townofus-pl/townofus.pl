@@ -100,6 +100,10 @@ export function generateOpenApiDocument(currentPort?: string) {
         name: 'Players',
         description: 'Player management and statistics',
       },
+      {
+        name: 'Games',
+        description: 'Among Us game data management and statistics',
+      },
     ],
   });
 }

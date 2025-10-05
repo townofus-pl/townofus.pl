@@ -3,7 +3,7 @@ import { getCloudflareContext } from '@opennextjs/cloudflare';
 import { getPrismaClient } from '../_database';
 import { CreatePlayerRequestSchema } from '../schema/players';
 import { createSuccessResponse, createErrorResponse } from '../_utils';
-import { formatZodError } from '../schema/common';
+import { formatZodError, withoutDeleted } from '../schema/common';
 
 export async function POST(request: NextRequest) {
   try {
@@ -21,15 +21,16 @@ export async function POST(request: NextRequest) {
 
     const { name } = parseResult.data;
 
-    // Check if player already exists (case-insensitive using SQLite COLLATE NOCASE)
-    const existingPlayers = await prisma.$queryRaw<{ id: number; name: string }[]>`
-      SELECT id, name FROM players 
-      WHERE name = ${name} COLLATE NOCASE
-      AND deletedAt IS NULL
-    `;
+    // Check if player already exists (case-sensitive)
+    const existingPlayer = await prisma.player.findFirst({
+      where: {
+        name: name,
+        ...withoutDeleted
+      }
+    });
 
-    if (existingPlayers.length > 0) {
-      return createErrorResponse(`Player already exists: '${existingPlayers[0].name}' (case-insensitive match)`, 409);
+    if (existingPlayer) {
+      return createErrorResponse(`Player already exists: '${existingPlayer.name}'`, 409);
     }
 
     // Create new player with original casing

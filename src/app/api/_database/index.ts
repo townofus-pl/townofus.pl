@@ -60,27 +60,7 @@ export function buildPaginationQuery(options: DatabasePaginationOptions = {}) {
   };
 }
 
-// Application-layer search helper for case-insensitive filtering
-export function filterBySearch<T extends Record<string, unknown>>(
-  items: T[],
-  searchTerm: string,
-  fields: (keyof T)[]
-): T[] {
-  if (!searchTerm.trim()) {
-    return items;
-  }
 
-  const lowerSearchTerm = searchTerm.toLowerCase();
-  return items.filter(item =>
-    fields.some(field => {
-      const fieldValue = item[field];
-      if (typeof fieldValue === 'string') {
-        return fieldValue.toLowerCase().includes(lowerSearchTerm);
-      }
-      return false;
-    })
-  );
-}
 
 /**
  * Database connection health check
@@ -88,7 +68,11 @@ export function filterBySearch<T extends Record<string, unknown>>(
 export async function checkDatabaseConnection(d1Database: D1Database): Promise<boolean> {
   try {
     const client = getPrismaClient(d1Database);
-    await client.$queryRaw`SELECT 1`;
+    // Simple health check using a standard Prisma query instead of raw SQL
+    await client.player.findFirst({
+      select: { id: true },
+      take: 1
+    });
     return true;
   } catch (error) {
     console.error('Database connection failed:', error);

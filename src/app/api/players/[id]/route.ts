@@ -82,7 +82,7 @@ openApiRegistry.registerPath({
 openApiRegistry.registerPath({
   method: 'put',
   path: '/api/players/{id}',
-  description: 'Update player information with case-insensitive duplicate checking',
+  description: 'Update player information with duplicate checking',
   summary: 'Update player',
   tags: ['Players'],
   security: [{ basicAuth: [] }],
@@ -135,7 +135,7 @@ openApiRegistry.registerPath({
       }
     },
     409: {
-      description: 'Player name already exists (case-insensitive match)',
+      description: 'Player name already exists',
       content: {
         'application/json': {
           schema: ErrorResponseSchema

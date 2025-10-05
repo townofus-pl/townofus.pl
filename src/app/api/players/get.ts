@@ -23,38 +23,15 @@ export async function GET(request: NextRequest) {
     const { limit, offset, search, sort, order, includeStats } = parseResult.data;
 
     // Build where clause for search and soft deletes
-    let where: { deletedAt?: null; id?: { in: number[] } } = {
+    const where: { deletedAt?: null; name?: { contains: string } } = {
       ...withoutDeleted, // Exclude soft-deleted players
     };
 
-    // Add search filter if provided (case-insensitive using SQLite COLLATE NOCASE)
+    // Add search filter if provided (case-sensitive)
     if (search) {
-      // Use raw SQL for case-insensitive search with SQLite COLLATE NOCASE
-      const searchResults = await prisma.$queryRaw<{ id: number }[]>`
-        SELECT id FROM players 
-        WHERE name LIKE '%' || ${search} || '%' COLLATE NOCASE 
-        AND deletedAt IS NULL
-      `;
-
-      const playerIds = searchResults.map(result => result.id);
-
-      if (playerIds.length === 0) {
-        // No matches found, return empty result early
-        return createSuccessResponse({
-          players: [],
-          pagination: {
-            total: 0,
-            limit,
-            offset,
-            hasMore: false
-          }
-        }, 200);
-      }
-
-      where = {
-        id: {
-          in: playerIds
-        }
+      // Add case-sensitive search filter
+      where.name = {
+        contains: search
       };
     }
 

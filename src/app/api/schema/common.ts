@@ -42,14 +42,14 @@ export const GameIdentifierSchema = z.string()
     pattern: '^\\d{8}_\\d{4}$'
   });
 
-// Player name validation with case-insensitive matching support
+// Player name validation with case-sensitive matching
 export const PlayerNameSchema = z.string()
   .min(1, 'Player name cannot be empty')
   .max(50, 'Player name cannot exceed 50 characters')
-  .regex(/^[a-zA-Z0-9\s\-_.]+$/, 'Player name can only contain letters, numbers, spaces, hyphens, underscores, and dots')
-  .transform(name => name.trim()) // Always trim whitespace
+  .regex(/^[a-zA-Z0-9\s\-_.]+$/, 'Player name contains invalid characters')
+  .transform(val => val.trim())
   .openapi({
-    description: 'Player name (case-insensitive, automatically trimmed)',
+    description: 'Player name (case-sensitive, automatically trimmed)',
     example: 'PlayerName123',
     minLength: 1,
     maxLength: 50,
@@ -190,9 +190,9 @@ export const extractGameIdentifierFromFilename = (filename: string): string | nu
   return match ? match[1] : null;
 };
 
-// Case-insensitive string comparison helper
+// String normalization helper (trimming only)
 export const normalizePlayerName = (name: string): string => {
-  return name.trim().toLowerCase();
+  return name.trim();
 };
 
 // Validation error formatter

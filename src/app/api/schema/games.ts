@@ -311,12 +311,9 @@ export const MeetingDataSchema = z.object({
     description: 'Array of death descriptions since last meeting',
     example: ['Malkiz was killed by brubel']
   }),
-  votes: z.array(z.object({
-    voter: z.string(),
-    target: z.string()
-  })).openapi({
-    description: 'Array of vote records',
-    example: [{ voter: 'brubel', target: 'Malkiz' }]
+  votes: z.record(z.array(z.string())).openapi({
+    description: 'Object mapping target player names to arrays of voter names',
+    example: { "Malkiz": ["brubel", "player2"], "skip": ["player3"] }
   }),
   skipVotes: z.array(z.string()).openapi({
     description: 'Array of players who voted to skip',
@@ -395,29 +392,60 @@ export const GamesQuerySchema = z.object({
       example: '0',
       default: '0'
     }),
-  startDate: z.string()
+  date: z.string()
     .optional()
-    .refine(val => !val || !isNaN(Date.parse(val)), {
-      message: 'Start date must be a valid ISO date string'
+    .refine(val => !val || /^\d{8}$/.test(val), {
+      message: 'Date must be in YYYYMMDD format'
     })
     .openapi({
-      description: 'Filter games starting from this date (ISO format)',
+      description: 'Filter games for specific date (YYYYMMDD format)',
+      example: '20250827'
+    }),
+  startDate: z.string()
+    .optional()
+    .refine(val => {
+      if (!val) return true;
+      // Accept both ISO format and YYYYMMDD format
+      return !isNaN(Date.parse(val)) || /^\d{8}$/.test(val);
+    }, {
+      message: 'Start date must be a valid ISO date string or YYYYMMDD format'
+    })
+    .openapi({
+      description: 'Filter games starting from this date (ISO format or YYYYMMDD)',
       example: '2025-01-01T00:00:00Z'
     }),
   endDate: z.string()
     .optional()
-    .refine(val => !val || !isNaN(Date.parse(val)), {
-      message: 'End date must be a valid ISO date string'
+    .refine(val => {
+      if (!val) return true;
+      // Accept both ISO format and YYYYMMDD format
+      return !isNaN(Date.parse(val)) || /^\d{8}$/.test(val);
+    }, {
+      message: 'End date must be a valid ISO date string or YYYYMMDD format'
     })
     .openapi({
-      description: 'Filter games up to this date (ISO format)',
+      description: 'Filter games up to this date (ISO format or YYYYMMDD)',
       example: '2025-12-31T23:59:59Z'
+    }),
+  player: z.string()
+    .optional()
+    .transform(val => val?.trim() || undefined)
+    .openapi({
+      description: 'Filter games by player name (case-sensitive partial match)',
+      example: 'Malkiz'
+    }),
+  winnerTeam: z.enum(['Crewmate', 'Impostor', 'Neutral'])
+    .optional()
+    .openapi({
+      description: 'Filter games by winning team',
+      example: 'Crewmate',
+      enum: ['Crewmate', 'Impostor', 'Neutral']
     }),
   map: z.string()
     .optional()
     .transform(val => val?.trim() || undefined)
     .openapi({
-      description: 'Filter games by map name (case-insensitive partial match)',
+      description: 'Filter games by map name (case-sensitive partial match)',
       example: 'polus'
     }),
   sort: z.enum(['startTime', 'endTime', 'map', 'playerCount', 'duration', 'createdAt'])
@@ -437,6 +465,13 @@ export const GamesQuerySchema = z.object({
       example: 'desc',
       default: 'desc',
       enum: ['asc', 'desc']
+    }),
+  includePlayers: z.string()
+    .optional()
+    .transform(val => val === 'true')
+    .openapi({
+      description: 'Include detailed player statistics in response',
+      example: 'true'
     })
 });
 
