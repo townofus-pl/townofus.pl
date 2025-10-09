@@ -1446,7 +1446,7 @@ export async function getUserProfileStats(playerName: string): Promise<UserProfi
     let crewmateGames = 0;
     let neutralGames = 0;
     let totalTasks = 0;
-    let maxTasks = 0;
+    const maxTasks = 0;
     let correctKills = 0;
     let incorrectKills = 0;
     let correctGuesses = 0;

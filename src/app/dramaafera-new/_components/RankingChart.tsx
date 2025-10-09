@@ -9,7 +9,7 @@ type CurveType = 'linear' | 'smooth' | 'step' | 'cardinal' | 'monotone';
 // Komponent wykresu rankingu
 export function RankingChart({ 
     data, 
-    playerName, 
+    playerName: _playerName, 
     curveType = 'cardinal',
     smoothness = 1
 }: { 
@@ -18,9 +18,9 @@ export function RankingChart({
     curveType?: CurveType; // typ krzywej: 'linear', 'smooth', 'step', 'cardinal', 'monotone'
     smoothness?: number; // parametr gładkości (tylko dla 'smooth' i 'cardinal')
 }) {
-    if (data.length === 0) return null;
-
     const [hoveredPoint, setHoveredPoint] = useState<{ index: number; point: RankingHistoryPoint; mouseX: number; mouseY: number } | null>(null);
+
+    if (data.length === 0) return null;
 
     const margin = { top: 10, right: 10, bottom: 10, left: 10 };
     const width = 300; // Będziemy używać viewBox dla responsywności
@@ -61,7 +61,6 @@ export function RankingChart({
                 // Krzywa schodkowa (step function)
                 let stepPath = `M ${points[0].x} ${points[0].y}`;
                 for (let i = 1; i < points.length; i++) {
-                    const prev = points[i - 1];
                     const curr = points[i];
                     stepPath += ` H ${curr.x} V ${curr.y}`;
                 }
@@ -232,7 +231,7 @@ export function RankingChart({
                     />
 
                     {/* Pionowe linie siatki */}
-                    {xAxisPoints.map((point, pointIndex) => {
+                    {xAxisPoints.map((point, _pointIndex) => {
                         const originalIndex = allData.findIndex(d => d.date.getTime() === point.date.getTime());
                         return (
                             <line

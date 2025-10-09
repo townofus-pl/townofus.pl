@@ -114,7 +114,7 @@ export function RankingChart({ data, playerName }: { data: RankingHistoryPoint[]
                     />
 
                     {/* Pionowe linie siatki */}
-                    {xAxisPoints.map((point, pointIndex) => {
+                    {xAxisPoints.map((point, _pointIndex) => {
                         const originalIndex = data.findIndex(d => d.date.getTime() === point.date.getTime());
                         return (
                             <line
