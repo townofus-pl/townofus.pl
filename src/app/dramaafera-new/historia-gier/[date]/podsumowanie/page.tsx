@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
 import Image from "next/image";
 import { useParams } from "next/navigation";
@@ -102,14 +102,14 @@ export default function WeeklySummaryPage() {
     // Kroki animacji: 0=intro, 1=tytuł, 2=3.miejsce, 3=2.miejsce, 4=1.miejsce, 5=pozostałe miejsca
     const maxSteps = weeklyStats.length > 0 ? (weeklyStats.length > 3 ? 5 : 4) : 1;
 
-    const handleClick = () => {
+    const handleClick = useCallback(() => {
         if (currentStep < maxSteps) {
             setCurrentStep(currentStep + 1);
         } else {
             // Reset animacji
             setCurrentStep(0);
         }
-    };
+    }, [currentStep, maxSteps]);
 
     const togglePresentationFullscreen = () => {
         if (!isPresentationFullscreen) {
@@ -156,7 +156,7 @@ export default function WeeklySummaryPage() {
             document.body.style.overflow = '';
             document.documentElement.style.overflow = '';
         };
-    }, [isPresentationFullscreen]);
+    }, [isPresentationFullscreen, handleClick]);
 
     // Formatowanie daty
     const formatDate = (dateStr: string) => {
