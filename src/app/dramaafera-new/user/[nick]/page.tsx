@@ -1,7 +1,9 @@
 import Link from "next/link";
 import Image from "next/image";
-import { getGamesList, getPlayerStats } from "../../_services/gameDataService";
+import type { Metadata } from "next";
+import { getUserProfileStats, getPlayersList, getPlayerRankingHistory, type UserProfileStats, type RankingHistoryPoint } from "../../_services/gameDataService";
 import { notFound } from "next/navigation";
+import { RankingChart } from "../../_components/RankingChart";
 
 // Funkcja pomocnicza do generowania ścieżki avatara
 function getPlayerAvatarPath(playerName: string): string {
@@ -37,28 +39,56 @@ export async function generateStaticParams() {
     return [];
 }
 
+export async function generateMetadata({ params }: UserProfileProps): Promise<Metadata> {
+    const { nick } = await params;
+    const playerName = decodeURIComponent(nick.replace(/-/g, ' '));
+    
+    return {
+        title: `${playerName} - Profil gracza | Drama Afera`,
+        description: `Statystyki gracza ${playerName} w Among Us Drama Afera. Historia rankingu, zagranych gier i szczegółowe statystyki.`,
+    };
+}
+
 export default async function UserProfilePage({ params }: UserProfileProps) {
     const { nick } = await params;
     
-    // Get all games to find player names
-    const games = await getGamesList();
-    const allPlayerNames: string[] = [];
-    games.forEach(game => {
-        game.allPlayerNames.forEach(playerName => {
-            if (!allPlayerNames.includes(playerName)) {
-                allPlayerNames.push(playerName);
-            }
-        });
-    });
+    // Pobierz listę wszystkich graczy z bazy danych
+    const allPlayerNames = await getPlayersList();
+    
+    if (allPlayerNames.length === 0) {
+        notFound();
+    }
 
     const playerNick = convertUrlSlugToNick(nick, allPlayerNames);
 
-    // Get player statistics from database
-    const playerStats = await getPlayerStats(playerNick);
+    // Pobierz statystyki dla konkretnego gracza z bazy danych
+    const playerStats = await getUserProfileStats(playerNick);
 
     if (!playerStats) {
         notFound();
     }
+
+    // Pobierz historię rankingu gracza
+    const rankingHistory = await getPlayerRankingHistory(playerNick);
+
+    // Oblicz winratio (już jest obliczone w generateUserProfileStats)
+    const winRatio = playerStats.winRate;
+
+    // Oblicz sumę poprawnych i niepoprawnych zagrań
+    const totalCorrectPlays = playerStats.correctKills + playerStats.correctGuesses + 
+                             playerStats.correctMedicShields + playerStats.correctJailorExecutes +
+                             playerStats.correctDeputyShoots + playerStats.correctProsecutes +
+                             playerStats.correctWardenFortifies + playerStats.correctAltruistRevives +
+                             playerStats.correctSwaps;
+
+    const totalIncorrectPlays = playerStats.incorrectKills + playerStats.incorrectGuesses + 
+                               playerStats.incorrectMedicShields + playerStats.incorrectJailorExecutes +
+                               playerStats.incorrectDeputyShoots + playerStats.incorrectProsecutes +
+                               playerStats.incorrectWardenFortifies + playerStats.incorrectAltruistRevives +
+                               playerStats.incorrectSwaps;
+
+    const totalPlays = totalCorrectPlays + totalIncorrectPlays;
+    const correctnessRatio = totalPlays > 0 ? Math.round((totalCorrectPlays / totalPlays) * 100) : 0;
 
     return (
         <div className="min-h-screen bg-zinc-900/50 rounded-xl text-white">
@@ -96,49 +126,71 @@ export default async function UserProfilePage({ params }: UserProfileProps) {
 
                         {/* Informacje o graczu */}
                         <div className="flex-1 text-center md:text-left">
-                            <h2 className="text-5xl font-bold text-white mb-6">
+                            <h2 className="text-5xl font-bold mb-4 text-white">
                                 {playerNick}
                             </h2>
                             
-                            {/* Podstawowe statystyki */}
-                            <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                                 {/* Liczba zagranych gier */}
                                 <div className="bg-zinc-800/50 rounded-lg p-4 border border-zinc-700/50">
                                     <div className="text-3xl font-bold text-blue-400 mb-1">
-                                        {playerStats.totalGames}
+                                        {playerStats.gamesPlayed}
                                     </div>
                                     <div className="text-sm text-zinc-400 uppercase tracking-wide">
                                         Zagranych gier
                                     </div>
                                 </div>
 
-                                {/* Liczba zwycięstw */}
+                                {/* Liczba wygranych gier */}
                                 <div className="bg-zinc-800/50 rounded-lg p-4 border border-zinc-700/50">
                                     <div className="text-3xl font-bold text-green-400 mb-1">
                                         {playerStats.wins}
                                     </div>
                                     <div className="text-sm text-zinc-400 uppercase tracking-wide">
-                                        Zwycięstw
+                                        Wygranych gier
                                     </div>
                                 </div>
 
                                 {/* Win ratio */}
                                 <div className="bg-zinc-800/50 rounded-lg p-4 border border-zinc-700/50">
                                     <div className="text-3xl font-bold text-purple-400 mb-1">
-                                        {Math.round(playerStats.winRate)}%
+                                        {winRatio}%
                                     </div>
                                     <div className="text-sm text-zinc-400 uppercase tracking-wide">
                                         Współczynnik wygranych
                                     </div>
                                 </div>
+                            </div>
 
-                                {/* Łączne punkty */}
+                            {/* Dodatkowy rząd ze statystykami poprawności */}
+                            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+                                {/* Poprawne zagrania */}
                                 <div className="bg-zinc-800/50 rounded-lg p-4 border border-zinc-700/50">
-                                    <div className="text-3xl font-bold text-yellow-400 mb-1">
-                                        {Math.round(playerStats.totalPoints)}
+                                    <div className="text-2xl font-bold text-green-400 mb-1">
+                                        {totalCorrectPlays}
                                     </div>
                                     <div className="text-sm text-zinc-400 uppercase tracking-wide">
-                                        Łączne punkty
+                                        Poprawnych zagrań
+                                    </div>
+                                </div>
+
+                                {/* Niepoprawne zagrania */}
+                                <div className="bg-zinc-800/50 rounded-lg p-4 border border-zinc-700/50">
+                                    <div className="text-2xl font-bold text-red-400 mb-1">
+                                        {totalIncorrectPlays}
+                                    </div>
+                                    <div className="text-sm text-zinc-400 uppercase tracking-wide">
+                                        Niepoprawnych zagrań
+                                    </div>
+                                </div>
+
+                                {/* Współczynnik poprawności */}
+                                <div className="bg-zinc-800/50 rounded-lg p-4 border border-zinc-700/50">
+                                    <div className="text-2xl font-bold text-yellow-400 mb-1">
+                                        {correctnessRatio}%
+                                    </div>
+                                    <div className="text-sm text-zinc-400 uppercase tracking-wide">
+                                        Współczynnik poprawności
                                     </div>
                                 </div>
                             </div>
@@ -146,139 +198,282 @@ export default async function UserProfilePage({ params }: UserProfileProps) {
                     </div>
                 </div>
 
-                {/* Statystyki zespołowe */}
-                <div className="bg-zinc-900/50 backdrop-blur-md rounded-xl border border-zinc-700/50 p-6 mb-6">
-                    <h3 className="text-2xl font-bold mb-4 text-center">Statystyki zespołowe</h3>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                        {/* Crewmate */}
-                        <div className="bg-cyan-900/20 rounded-lg p-6 border border-cyan-700/50">
-                            <h4 className="text-xl font-bold text-cyan-300 mb-3 text-center">Crewmate</h4>
-                            <div className="space-y-2">
-                                <div className="flex justify-between">
-                                    <span className="text-gray-300">Gry:</span>
-                                    <span className="text-cyan-300 font-semibold">{playerStats.teamStats.crewmate.games}</span>
+                {/* Historia rankingu */}
+                {rankingHistory.length > 0 && (
+                    <div className="bg-zinc-900/50 backdrop-blur-md rounded-xl border border-zinc-700/50 p-6 mb-6">
+                        <h3 className="text-2xl font-bold mb-6 text-center">Historia rankingu</h3>
+                        
+                        <div className="w-full h-80 rounded-lg p-2 md:p-4 overflow-hidden">
+                            <RankingChart data={rankingHistory} playerName={playerNick} />
+                        </div>
+                        
+                        {/* Podsumowanie rankingu */}
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+                            <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
+                                <div className="text-xl font-bold text-blue-400">
+                                    {rankingHistory[rankingHistory.length - 1]?.score.toFixed(1) || '0'}
                                 </div>
-                                <div className="flex justify-between">
-                                    <span className="text-gray-300">Wygrane:</span>
-                                    <span className="text-green-300 font-semibold">{playerStats.teamStats.crewmate.wins}</span>
-                                </div>
-                                <div className="flex justify-between">
-                                    <span className="text-gray-300">Win Rate:</span>
-                                    <span className="text-purple-300 font-semibold">
-                                        {playerStats.teamStats.crewmate.games > 0 
-                                            ? Math.round((playerStats.teamStats.crewmate.wins / playerStats.teamStats.crewmate.games) * 100)
-                                            : 0}%
-                                    </span>
+                                <div className="text-sm text-zinc-400">
+                                    Obecny ranking
                                 </div>
                             </div>
-                        </div>
-
-                        {/* Impostor */}
-                        <div className="bg-red-900/20 rounded-lg p-6 border border-red-700/50">
-                            <h4 className="text-xl font-bold text-red-300 mb-3 text-center">Impostor</h4>
-                            <div className="space-y-2">
-                                <div className="flex justify-between">
-                                    <span className="text-gray-300">Gry:</span>
-                                    <span className="text-red-300 font-semibold">{playerStats.teamStats.impostor.games}</span>
+                            
+                            <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
+                                <div className="text-xl font-bold text-green-400">
+                                    {Math.max(...rankingHistory.map(r => r.score)).toFixed(1)}
                                 </div>
-                                <div className="flex justify-between">
-                                    <span className="text-gray-300">Wygrane:</span>
-                                    <span className="text-green-300 font-semibold">{playerStats.teamStats.impostor.wins}</span>
-                                </div>
-                                <div className="flex justify-between">
-                                    <span className="text-gray-300">Win Rate:</span>
-                                    <span className="text-purple-300 font-semibold">
-                                        {playerStats.teamStats.impostor.games > 0 
-                                            ? Math.round((playerStats.teamStats.impostor.wins / playerStats.teamStats.impostor.games) * 100)
-                                            : 0}%
-                                    </span>
+                                <div className="text-sm text-zinc-400">
+                                    Najwyższy ranking
                                 </div>
                             </div>
-                        </div>
-
-                        {/* Neutral */}
-                        <div className="bg-gray-900/20 rounded-lg p-6 border border-gray-700/50">
-                            <h4 className="text-xl font-bold text-gray-300 mb-3 text-center">Neutral</h4>
-                            <div className="space-y-2">
-                                <div className="flex justify-between">
-                                    <span className="text-gray-300">Gry:</span>
-                                    <span className="text-gray-300 font-semibold">{playerStats.teamStats.neutral.games}</span>
+                            
+                            <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
+                                <div className="text-xl font-bold text-red-400">
+                                    {Math.min(...rankingHistory.map(r => r.score)).toFixed(1)}
                                 </div>
-                                <div className="flex justify-between">
-                                    <span className="text-gray-300">Wygrane:</span>
-                                    <span className="text-green-300 font-semibold">{playerStats.teamStats.neutral.wins}</span>
-                                </div>
-                                <div className="flex justify-between">
-                                    <span className="text-gray-300">Win Rate:</span>
-                                    <span className="text-purple-300 font-semibold">
-                                        {playerStats.teamStats.neutral.games > 0 
-                                            ? Math.round((playerStats.teamStats.neutral.wins / playerStats.teamStats.neutral.games) * 100)
-                                            : 0}%
-                                    </span>
+                                <div className="text-sm text-zinc-400">
+                                    Najniższy ranking
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
+                )}
 
-                {/* Ulubione role i dane */}
-                <div className="bg-zinc-900/50 backdrop-blur-md rounded-xl border border-zinc-700/50 p-6 mb-6">
-                    <h3 className="text-2xl font-bold mb-4 text-center">Preferencje gracza</h3>
+                {/* Dodatkowe statystyki */}
+                <div className="bg-zinc-900/50 backdrop-blur-md rounded-xl border border-zinc-700/50 p-6">
+                    <h3 className="text-2xl font-bold mb-4 text-center">Szczegółowe statystyki</h3>
                     
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="text-center p-6 bg-zinc-800/30 rounded-lg">
-                            <h4 className="text-lg font-semibold text-yellow-400 mb-2">Ulubiona rola</h4>
-                            <div className="text-2xl font-bold text-white">
-                                {playerStats.favoriteRole}
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
+                            <div className="text-xl font-bold text-red-400">
+                                {playerStats.impostorGames}
+                            </div>
+                            <div className="text-sm text-zinc-400">
+                                Gier jako Impostor
                             </div>
                         </div>
                         
-                        <div className="text-center p-6 bg-zinc-800/30 rounded-lg">
-                            <h4 className="text-lg font-semibold text-blue-400 mb-2">Ulubiony zespół</h4>
-                            <div className="text-2xl font-bold text-white">
-                                {playerStats.favoriteTeam}
+                        <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
+                            <div className="text-xl font-bold text-cyan-400">
+                                {playerStats.crewmateGames}
+                            </div>
+                            <div className="text-sm text-zinc-400">
+                                Gier jako Crewmate
                             </div>
                         </div>
-                    </div>
-                </div>
-
-                {/* Role i modyfikatory */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                    {/* Role */}
-                    <div className="bg-zinc-900/50 backdrop-blur-md rounded-xl border border-zinc-700/50 p-6">
-                        <h3 className="text-xl font-bold mb-4 text-center">Role zagrane</h3>
-                        <div className="space-y-2 max-h-64 overflow-y-auto">
-                            {Object.entries(playerStats.roles)
-                                .sort(([,a], [,b]) => b - a)
-                                .map(([role, count]) => (
-                                    <div key={role} className="flex justify-between items-center p-2 bg-zinc-800/30 rounded">
-                                        <span className="text-gray-300">{role}</span>
-                                        <span className="text-blue-300 font-semibold">{count}</span>
-                                    </div>
-                                ))}
+                        
+                        <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
+                            <div className="text-xl font-bold text-yellow-400">
+                                {playerStats.neutralGames}
+                            </div>
+                            <div className="text-sm text-zinc-400">
+                                Gier jako Neutral
+                            </div>
                         </div>
-                    </div>
+                        
+                        <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
+                            <div className="text-xl font-bold text-pink-400">
+                                {playerStats.maxTasks > 0 ? `${playerStats.totalTasks}/${playerStats.maxTasks}` : playerStats.totalTasks}
+                            </div>
+                            <div className="text-sm text-zinc-400">
+                                Wykonanych tasków
+                            </div>
+                        </div>
 
-                    {/* Modyfikatory */}
-                    <div className="bg-zinc-900/50 backdrop-blur-md rounded-xl border border-zinc-700/50 p-6">
-                        <h3 className="text-xl font-bold mb-4 text-center">Modyfikatory</h3>
-                        <div className="space-y-2 max-h-64 overflow-y-auto">
-                            {Object.entries(playerStats.modifiers).length > 0 ? 
-                                Object.entries(playerStats.modifiers)
-                                    .sort(([,a], [,b]) => b - a)
-                                    .map(([modifier, count]) => (
-                                        <div key={modifier} className="flex justify-between items-center p-2 bg-zinc-800/30 rounded">
-                                            <span className="text-gray-300">{modifier}</span>
-                                            <span className="text-purple-300 font-semibold">{count}</span>
-                                        </div>
-                                    ))
-                                : (
-                                    <div className="text-center text-gray-400 py-4">
-                                        Brak modyfikatorów
-                                    </div>
-                                )
-                            }
+                        {/* Statystyki zabójstw */}
+                        <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
+                            <div className="text-xl font-bold text-green-400">
+                                {playerStats.correctKills}
+                            </div>
+                            <div className="text-sm text-zinc-400">
+                                Correct kills
+                            </div>
+                        </div>
+
+                        <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
+                            <div className="text-xl font-bold text-red-400">
+                                {playerStats.incorrectKills}
+                            </div>
+                            <div className="text-sm text-zinc-400">
+                                Incorrect kills
+                            </div>
+                        </div>
+
+                        {/* Statystyki zgadywań */}
+                        <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
+                            <div className="text-xl font-bold text-green-400">
+                                {playerStats.correctGuesses}
+                            </div>
+                            <div className="text-sm text-zinc-400">
+                                Correct guesses
+                            </div>
+                        </div>
+
+                        <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
+                            <div className="text-xl font-bold text-red-400">
+                                {playerStats.incorrectGuesses}
+                            </div>
+                            <div className="text-sm text-zinc-400">
+                                Incorrect guesses
+                            </div>
+                        </div>
+
+                        {/* Statystyki tarcz medyka */}
+                        <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
+                            <div className="text-xl font-bold text-green-400">
+                                {playerStats.correctMedicShields}
+                            </div>
+                            <div className="text-sm text-zinc-400">
+                                Correct shields
+                            </div>
+                        </div>
+
+                        <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
+                            <div className="text-xl font-bold text-red-400">
+                                {playerStats.incorrectMedicShields}
+                            </div>
+                            <div className="text-sm text-zinc-400">
+                                Incorrect shields
+                            </div>
+                        </div>
+
+                        {/* Statystyki Jailor Executes */}
+                        <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
+                            <div className="text-xl font-bold text-green-400">
+                                {playerStats.correctJailorExecutes}
+                            </div>
+                            <div className="text-sm text-zinc-400">
+                                Correct executions
+                            </div>
+                        </div>
+
+                        <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
+                            <div className="text-xl font-bold text-red-400">
+                                {playerStats.incorrectJailorExecutes}
+                            </div>
+                            <div className="text-sm text-zinc-400">
+                                Incorrect executions
+                            </div>
+                        </div>
+
+                        {/* Statystyki Deputy Shoots */}
+                        <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
+                            <div className="text-xl font-bold text-green-400">
+                                {playerStats.correctDeputyShoots}
+                            </div>
+                            <div className="text-sm text-zinc-400">
+                                Correct Deputy shoots
+                            </div>
+                        </div>
+
+                        <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
+                            <div className="text-xl font-bold text-red-400">
+                                {playerStats.incorrectDeputyShoots}
+                            </div>
+                            <div className="text-sm text-zinc-400">
+                                Incorrect Deputy shoots
+                            </div>
+                        </div>
+
+                        {/* Statystyki Prosecutes */}
+                        <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
+                            <div className="text-xl font-bold text-green-400">
+                                {playerStats.correctProsecutes}
+                            </div>
+                            <div className="text-sm text-zinc-400">
+                                Correct Prosecutes
+                            </div>
+                        </div>
+
+                        <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
+                            <div className="text-xl font-bold text-red-400">
+                                {playerStats.incorrectProsecutes}
+                            </div>
+                            <div className="text-sm text-zinc-400">
+                                Incorrect Prosecutes
+                            </div>
+                        </div>
+
+                        {/* Statystyki Warden Fortifies */}
+                        <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
+                            <div className="text-xl font-bold text-green-400">
+                                {playerStats.correctWardenFortifies}
+                            </div>
+                            <div className="text-sm text-zinc-400">
+                                Correct Warden fortifies
+                            </div>
+                        </div>
+
+                        <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
+                            <div className="text-xl font-bold text-red-400">
+                                {playerStats.incorrectWardenFortifies}
+                            </div>
+                            <div className="text-sm text-zinc-400">
+                                Incorrect Warden fortifies
+                            </div>
+                        </div>
+
+                        {/* Statystyki Altruist Revives */}
+                        <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
+                            <div className="text-xl font-bold text-green-400">
+                                {playerStats.correctAltruistRevives}
+                            </div>
+                            <div className="text-sm text-zinc-400">
+                                Correct Altruist revives
+                            </div>
+                        </div>
+
+                        <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
+                            <div className="text-xl font-bold text-red-400">
+                                {playerStats.incorrectAltruistRevives}
+                            </div>
+                            <div className="text-sm text-zinc-400">
+                                Incorrect Altruist revives
+                            </div>
+                        </div>
+
+                        {/* Statystyki Swaps */}
+                        <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
+                            <div className="text-xl font-bold text-green-400">
+                                {playerStats.correctSwaps}
+                            </div>
+                            <div className="text-sm text-zinc-400">
+                                Correct swaps
+                            </div>
+                        </div>
+
+                        <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
+                            <div className="text-xl font-bold text-red-400">
+                                {playerStats.incorrectSwaps}
+                            </div>
+                            <div className="text-sm text-zinc-400">
+                                Incorrect swaps
+                            </div>
+                        </div>
+
+                        {/* Janitor Cleans */}
+                        <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
+                            <div className="text-xl font-bold text-purple-400">
+                                {playerStats.janitorCleans}
+                            </div>
+                            <div className="text-sm text-zinc-400">
+                                Janitor cleans
+                            </div>
+                        </div>
+
+                        {/* Statystyki przetrwanych rund */}
+                        <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
+                            <div className="text-xl font-bold text-cyan-400">
+                                {playerStats.survivedRounds}/{playerStats.totalRounds}
+                            </div>
+                            <div className="text-sm text-zinc-400">
+                                Przeżytych rund
+                            </div>
+                            {playerStats.totalRounds > 0 && (
+                                <div className="text-xs text-zinc-500 mt-1">
+                                    {Math.round((playerStats.survivedRounds / playerStats.totalRounds) * 100)}% przeżywalności
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>

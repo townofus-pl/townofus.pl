@@ -4,6 +4,19 @@ import { getGameData, formatDisplayDate, getRoleColor, formatPlayerStatsWithColo
 import { TeamColors } from "@/constants/teams";
 import { notFound } from "next/navigation";
 
+// Helper function to convert database role names to display names
+function convertRoleNameForDisplay(roleName: string): string {
+  const roleNameMapping: Record<string, string> = {
+    'SoulCollector': 'Soul Collector',
+    'Soul Collector': 'Soul Collector', // Already has space
+    'GuardianAngel': 'Guardian Angel',
+    'Guardian Angel': 'Guardian Angel', // Already has space
+    // Keep Plaguebearer and Pestilence as separate roles - they should show as is
+  };
+  
+  return roleNameMapping[roleName] || roleName;
+}
+
 // Funkcja pomocnicza do generowania ścieżki avatara
 function getPlayerAvatarPath(playerName: string): string {
     // Każdy gracz ma swój avatar na podstawie nicku
@@ -36,18 +49,19 @@ function renderRoleHistory(roleHistory: string[] | undefined) {
     if (!roleHistory || roleHistory.length <= 1) {
         // Jeśli tylko jedna rola lub brak historii, wyświetl normalnie
         const role = roleHistory?.[roleHistory.length - 1] || 'Unknown';
-        const roleColor = getRoleColor(role);
+        const displayRoleName = convertRoleNameForDisplay(role);
+        const roleColor = getRoleColor(displayRoleName);
         return (
-            <Link href={`/dramaafera-new/role/${convertRoleToUrlSlug(role)}`}>
-                <span
+            <Link href={`/dramaafera-new/role/${convertRoleToUrlSlug(displayRoleName)}`}>
+                <span 
                     className="px-3 py-1 rounded-lg text-base font-semibold hover:opacity-80 transition-opacity cursor-pointer inline-flex items-center h-8"
-                    style={{
-                        backgroundColor: `${roleColor}20`,
+                    style={{ 
+                        backgroundColor: `${roleColor}20`, 
                         color: roleColor,
                         border: `1px solid ${roleColor}40`
                     }}
                 >
-                    {role}
+                    {displayRoleName}
                 </span>
             </Link>
         );
@@ -57,19 +71,20 @@ function renderRoleHistory(roleHistory: string[] | undefined) {
     return (
         <div className="flex items-center gap-1">
             {roleHistory.map((role, roleIndex) => {
-                const roleColor = getRoleColor(role);
+                const displayRoleName = convertRoleNameForDisplay(role);
+                const roleColor = getRoleColor(displayRoleName);
                 return (
                     <span key={roleIndex} className="flex items-center">
-                        <Link href={`/dramaafera-new/role/${convertRoleToUrlSlug(role)}`}>
-                            <span
+                        <Link href={`/dramaafera-new/role/${convertRoleToUrlSlug(displayRoleName)}`}>
+                            <span 
                                 className="px-3 py-1 rounded-lg text-base font-semibold hover:opacity-80 transition-opacity cursor-pointer inline-flex items-center h-8"
-                                style={{
-                                    backgroundColor: `${roleColor}20`,
+                                style={{ 
+                                    backgroundColor: `${roleColor}20`, 
                                     color: roleColor,
                                     border: `1px solid ${roleColor}40`
                                 }}
                             >
-                                {role}
+                                {displayRoleName}
                             </span>
                         </Link>
                         {roleIndex < roleHistory.length - 1 && (
@@ -85,7 +100,6 @@ function renderRoleHistory(roleHistory: string[] | undefined) {
 
 export default async function GamePage({ params }: GamePageProps) {
     const {date, gameId} = await params;
-
     const gameData = await getGameData(gameId);
 
     if (!gameData) {
@@ -98,7 +112,7 @@ export default async function GamePage({ params }: GamePageProps) {
         <div className="min-h-screen rounded-xl bg-zinc-900/50 text-white">
             <div className="container mx-auto px-4 py-8">
                 <div className="mb-8">
-                    <Link
+                    <Link 
                         href={`/dramaafera-new/historia-gier/${date}`}
                         className="text-blue-400 hover:text-blue-300 transition-colors mb-4 inline-block"
                     >
@@ -116,7 +130,7 @@ export default async function GamePage({ params }: GamePageProps) {
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                     <div className={`rounded-lg p-6 border text-center`}
                          style={{
-                             backgroundColor: gameData.winnerColor ? `${gameData.winnerColor}20` :
+                             backgroundColor: gameData.winnerColor ? `${gameData.winnerColor}20` : 
                                  gameData.winner === 'Crewmate' ? `${TeamColors.Crewmate}20` :
                                  gameData.winner === 'Impostor' ? `${TeamColors.Impostor}20` : `${TeamColors.Neutral}20`,
                              borderColor: gameData.winnerColor ? `${gameData.winnerColor}50` :
@@ -178,7 +192,7 @@ export default async function GamePage({ params }: GamePageProps) {
                                             gameData.winner === 'Impostor' ? TeamColors.Impostor : TeamColors.Neutral
                                     }}
                                 />
-                                <span
+                                <span 
                                     className="text-lg font-semibold"
                                     style={{
                                         color: gameData.winnerColors[nickname] ? gameData.winnerColors[nickname] :
@@ -209,23 +223,23 @@ export default async function GamePage({ params }: GamePageProps) {
                                             height={48}
                                             className="rounded-full border-2"
                                             style={{
-                                                borderColor:
+                                                borderColor: 
                                                     player.team === 'Crewmate' ? TeamColors.Crewmate :
                                                     player.team === 'Impostor' ? TeamColors.Impostor :
                                                     TeamColors.Neutral
                                             }}
                                         />
                                         <div className="flex items-center space-x-3">
-                                            <Link
+                                            <Link 
                                                 href={`/dramaafera-new/user/${convertNickToUrlSlug(player.nickname)}`}
                                                 className="text-xl font-bold text-white hover:text-orange-300 transition-colors"
                                             >
                                                 {player.nickname}
                                             </Link>
-                                            <span
+                                            <span 
                                                 className="text-lg"
                                                 style={{
-                                                    color:
+                                                    color: 
                                                         player.team === 'Crewmate' ? TeamColors.Crewmate :
                                                         player.team === 'Impostor' ? TeamColors.Impostor :
                                                         TeamColors.Neutral
@@ -238,13 +252,13 @@ export default async function GamePage({ params }: GamePageProps) {
                                             )}
                                         </div>
                                     </div>
-
+                                    
                                     {/* Rola i modyfikatory */}
                                     <div className="flex flex-wrap items-center gap-2">
                                         {renderRoleHistory(player.roleHistory)}
-
+                                        
                                         {player.modifiers.length > 0 && player.modifiers.map((modifier, modIndex) => (
-                                            <span
+                                            <span 
                                                 key={modIndex}
                                                 className="px-3 py-1 rounded-lg text-base font-semibold hover:opacity-80 transition-opacity inline-flex items-center h-8"
                                                 style={{
@@ -257,13 +271,13 @@ export default async function GamePage({ params }: GamePageProps) {
                                             </span>
                                         ))}
                                     </div>
-
+                                    
                                     {/* Statystyki jako tekst */}
                                     <div className="text-base leading-relaxed flex flex-wrap items-center gap-1">
                                         {formatPlayerStatsWithColors(player, gameData.maxTasks).length > 0 ? (
                                             formatPlayerStatsWithColors(player, gameData.maxTasks).map((stat, statIndex) => (
                                                 <span key={statIndex}>
-                                                    <span
+                                                    <span 
                                                         style={{ color: stat.color || '#D1D5DB' }}
                                                         className="font-medium"
                                                     >
@@ -317,15 +331,15 @@ export default async function GamePage({ params }: GamePageProps) {
                 {/* Dane spotkań */}
                 <div className="mb-8">
                     <h2 className="text-3xl font-bold mb-4">🗳️ Spotkania i Głosowania</h2>
-                    <div className="space-y-6">
-                        {gameData.detailedStats.meetings.map((meeting, meetingIndex) => (
-                            <div key={meetingIndex} className="bg-gray-800/50 rounded-lg p-6 border border-gray-700/50">
+                    <div className="space-y-4">
+                        {gameData.detailedStats.meetings.map((meeting, index) => (
+                            <div key={index} className="bg-gray-800/50 rounded-lg p-6 border border-gray-700/50">
                                 <h3 className="text-xl font-bold mb-4 text-blue-400">
                                     Spotkanie #{meeting.meetingNumber}
                                     {meeting.wasTie && <span className="text-yellow-400 ml-2">(Tie)</span>}
                                     {meeting.wasBlessed && <span className="text-purple-400 ml-2">(Blessed)</span>}
                                 </h3>
-
+                                
                                 {meeting.deathsSinceLastMeeting.length > 0 && (
                                     <div className="mb-4">
                                         <h4 className="font-semibold text-red-400 mb-2">Zgony od ostatniego spotkania:</h4>
@@ -373,10 +387,10 @@ export default async function GamePage({ params }: GamePageProps) {
                                                         />
                                                         <span className="text-lg font-semibold text-green-300">{target}</span>
                                                     </div>
-
+                                                    
                                                     {/* Strzałka */}
                                                     <span className="text-gray-400">←</span>
-
+                                                    
                                                     {/* Małe avatary głosujących */}
                                                     <div className="flex space-x-1">
                                                         {voters.map((voter, index) => (
@@ -395,14 +409,14 @@ export default async function GamePage({ params }: GamePageProps) {
                                                             </div>
                                                         ))}
                                                     </div>
-
+                                                    
                                                     {/* Liczba głosów */}
                                                     <span className="text-sm text-gray-400 ml-auto">
                                                         ({voters.length} głos{voters.length === 1 ? '' : voters.length < 5 ? 'y' : 'ów'})
                                                     </span>
                                                 </div>
                                             ))}
-
+                                            
                                             {/* Pominięcia na dole sekcji głosowań */}
                                             {meeting.skipVotes.length > 0 && (
                                                 <div className="flex items-center space-x-3 p-3 bg-gray-700/30 rounded-lg">
@@ -413,10 +427,10 @@ export default async function GamePage({ params }: GamePageProps) {
                                                         </div>
                                                         <span className="text-lg font-semibold text-yellow-300">Skip</span>
                                                     </div>
-
+                                                    
                                                     {/* Strzałka */}
                                                     <span className="text-gray-400">←</span>
-
+                                                    
                                                     {/* Małe avatary głosujących na skip */}
                                                     <div className="flex space-x-1">
                                                         {meeting.skipVotes.map((voter, index) => (
@@ -435,14 +449,14 @@ export default async function GamePage({ params }: GamePageProps) {
                                                             </div>
                                                         ))}
                                                     </div>
-
+                                                    
                                                     {/* Liczba głosów */}
                                                     <span className="text-sm text-gray-400 ml-auto">
                                                         ({meeting.skipVotes.length} głos{meeting.skipVotes.length === 1 ? '' : meeting.skipVotes.length < 5 ? 'y' : 'ów'})
                                                     </span>
                                                 </div>
                                             )}
-
+                                            
                                             {/* Brak głosu na dole sekcji głosowań */}
                                             {meeting.noVotes.length > 0 && (
                                                 <div className="flex items-center space-x-3 p-3 bg-gray-700/30 rounded-lg">
@@ -450,8 +464,8 @@ export default async function GamePage({ params }: GamePageProps) {
                                                     <div className="flex items-center space-x-2">
                                                         <span className="text-lg font-semibold text-gray-400">Brak głosu:</span>
                                                     </div>
-
-
+                                                    
+                                                    
                                                     {/* Małe avatary graczy którzy nie głosowali */}
                                                     <div className="flex space-x-1">
                                                         {meeting.noVotes.map((voter, index) => (
@@ -470,7 +484,7 @@ export default async function GamePage({ params }: GamePageProps) {
                                                             </div>
                                                         ))}
                                                     </div>
-
+                                                    
                                                     {/* Liczba graczy */}
                                                     <span className="text-sm text-gray-400 ml-auto">
                                                         ({meeting.noVotes.length} {meeting.noVotes.length === 1 ? 'gracz' : meeting.noVotes.length < 5 ? 'graczy' : 'graczy'})
@@ -479,7 +493,7 @@ export default async function GamePage({ params }: GamePageProps) {
                                             )}
                                         </div>
                                     </div>
-
+                                    
                                     <div>
                                         {meeting.blackmailedPlayers && meeting.blackmailedPlayers.length > 0 && (
                                             <div className="mb-2">
@@ -530,7 +544,7 @@ export default async function GamePage({ params }: GamePageProps) {
                 </div>
 
                 <div className="text-center">
-                    <Link
+                    <Link 
                         href={`/dramaafera-new/historia-gier/${date}`}
                         className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-3 rounded-lg transition-colors font-semibold inline-block"
                     >

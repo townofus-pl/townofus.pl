@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { getGamesListByDate, formatDisplayDate } from "../../_services/gameDataService";
+import { getGamesListByDate, formatDisplayDate, getGameDatesList } from "../../_services/gameDataService";
 import { TeamColors } from "@/constants/teams";
 import { notFound } from "next/navigation";
 
@@ -9,7 +9,10 @@ function getPlayerAvatarPath(playerName: string): string {
     return `/images/avatars/${playerName}.png`;
 }
 
-
+// Funkcja pomocnicza do generowania chronologicznego numeru partii (odwrócona numeracja)
+function getChronologicalGameNumber(index: number, totalGames: number): string {
+    return `${totalGames - index}.`;
+}
 
 interface DatePageProps {
     params: Promise<{
@@ -54,7 +57,7 @@ export default async function DateGamesPage({ params }: DatePageProps) {
                 </div>
 
                 <div className="space-y-4">
-                    {games.map((game) => (
+                    {games.map((game, index) => (
                         <Link 
                             key={game.id}
                             href={`/dramaafera-new/historia-gier/${date}/${game.id}`}
@@ -62,15 +65,14 @@ export default async function DateGamesPage({ params }: DatePageProps) {
                         >
                             <div className="bg-zinc-900/50 rounded-xl p-6 border border-gray-700/50 hover:border-gray-600/50 hover:bg-zinc-900/70 transition-all duration-200 cursor-pointer">
                                 <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
-                                    <div className="flex-1">
-                                        <div className="flex items-center space-x-4 mb-3">
-                                            <span className="text-2xl font-bold text-blue-400">{game.gameNumber}. partia</span>
-                                            <span className="text-gray-400">{game.date}</span>
-                                            <span className="bg-gray-700 px-2 py-1 rounded text-sm">{game.duration}</span>
-                                            <span className="bg-blue-600/30 text-blue-300 px-2 py-1 rounded text-sm">
-                                                {game.players} graczy
-                                            </span>
-                                        </div>
+                                    <div className="flex-1">                        <div className="flex items-center space-x-4 mb-3">
+                            <span className="text-2xl font-bold text-blue-400">{getChronologicalGameNumber(index, games.length)} partia</span>
+                            <span className="text-gray-400">{game.date}</span>
+                            <span className="bg-gray-700 px-2 py-1 rounded text-sm">{game.duration}</span>
+                            <span className="bg-blue-600/30 text-blue-300 px-2 py-1 rounded text-sm">
+                                {game.players} graczy
+                            </span>
+                        </div>
                                         
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                             <div>
@@ -108,10 +110,10 @@ export default async function DateGamesPage({ params }: DatePageProps) {
                                                 key={index}
                                                 className="flex items-center space-x-2 px-2 py-1 rounded text-sm border font-medium"
                                                 style={{
-                                                    backgroundColor: game.winnerColors[index] ? `${game.winnerColors[index]}20` :
+                                                    backgroundColor: game.winnerColors[nickname] ? `${game.winnerColors[nickname]}20` :
                                                         game.winner === 'Crewmate' ? `${TeamColors.Crewmate}20` :
                                                         game.winner === 'Impostor' ? `${TeamColors.Impostor}20` : `${TeamColors.Neutral}20`,
-                                                    borderColor: game.winnerColors[index] ? `${game.winnerColors[index]}50` :
+                                                    borderColor: game.winnerColors[nickname] ? `${game.winnerColors[nickname]}50` :
                                                         game.winner === 'Crewmate' ? `${TeamColors.Crewmate}50` :
                                                         game.winner === 'Impostor' ? `${TeamColors.Impostor}50` : `${TeamColors.Neutral}50`
                                                 }}
@@ -123,14 +125,14 @@ export default async function DateGamesPage({ params }: DatePageProps) {
                                                     height={24}
                                                     className="rounded-full border"
                                                     style={{
-                                                        borderColor: game.winnerColors[index] ? game.winnerColors[index] :
+                                                        borderColor: game.winnerColors[nickname] ? game.winnerColors[nickname] :
                                                             game.winner === 'Crewmate' ? TeamColors.Crewmate :
                                                             game.winner === 'Impostor' ? TeamColors.Impostor : TeamColors.Neutral
                                                     }}
                                                 />
                                                 <span
                                                     style={{
-                                                        color: game.winnerColors[index] ? game.winnerColors[index] :
+                                                        color: game.winnerColors[nickname] ? game.winnerColors[nickname] :
                                                             game.winner === 'Crewmate' ? TeamColors.Crewmate :
                                                             game.winner === 'Impostor' ? TeamColors.Impostor : TeamColors.Neutral
                                                     }}

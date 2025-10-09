@@ -2,6 +2,8 @@ import { PrismaClient } from '../../../generated/prisma';
 import { PrismaD1 } from '@prisma/adapter-d1';
 import type { Prisma } from '../../../generated/prisma';
 
+
+
 /**
  * Global Prisma client instance
  */
@@ -10,7 +12,7 @@ let prisma: PrismaClient | null = null;
 /**
  * Get or create Prisma client with D1 adapter
  */
-export function getPrismaClient(d1Database: D1Database): PrismaClient {
+export function getPrismaClient(d1Database: any): PrismaClient {
   if (!prisma) {
     const adapter = new PrismaD1(d1Database);
     prisma = new PrismaClient({
@@ -65,7 +67,7 @@ export function buildPaginationQuery(options: DatabasePaginationOptions = {}) {
 /**
  * Database connection health check
  */
-export async function checkDatabaseConnection(d1Database: D1Database): Promise<boolean> {
+export async function checkDatabaseConnection(d1Database: any): Promise<boolean> {
   try {
     const client = getPrismaClient(d1Database);
     // Simple health check using a standard Prisma query instead of raw SQL
@@ -84,7 +86,7 @@ export async function checkDatabaseConnection(d1Database: D1Database): Promise<b
  * Database transaction helper
  */
 export async function withTransaction<T>(
-  d1Database: D1Database,
+  d1Database: any,
   callback: (prisma: PrismaClient) => Promise<T>
 ): Promise<T> {
   const client = getPrismaClient(d1Database);

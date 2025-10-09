@@ -1,6 +1,7 @@
 import { getPrismaClient } from '../../_database';
 import { withoutDeleted } from '../../schema/common';
 import type { GameData } from '../../schema/games';
+import { calculateRankingForGame } from '../../_utils/rankingCalculator';
 
 export interface CreateGameResult {
   gameId: number;
@@ -8,6 +9,8 @@ export interface CreateGameResult {
   playersCreated: number;
   eventsCreated: number;
   meetingsCreated: number;
+  rankingCalculated?: boolean;
+  rankingError?: string;
 }
 
 export async function createGameFromData(
@@ -292,12 +295,29 @@ export async function createGameFromData(
       }
     }
 
+    // Automatically calculate ranking after game creation
+    let rankingCalculated = false;
+    let rankingError: string | undefined;
+
+    try {
+      console.log(`🎯 Auto-calculating ranking for game ${game.id}`);
+      await calculateRankingForGame(prisma, game.id);
+      rankingCalculated = true;
+      console.log(`✅ Ranking calculated successfully for game ${game.gameIdentifier}`);
+    } catch (rankingErr) {
+      console.warn(`⚠️ Failed to calculate ranking for game ${game.gameIdentifier}:`, rankingErr);
+      rankingError = rankingErr instanceof Error ? rankingErr.message : 'Unknown ranking error';
+      // Don't throw the error - game creation should succeed even if ranking fails
+    }
+
     return {
       gameId: game.id,
       gameIdentifier: game.gameIdentifier,
       playersCreated: players.length,
       eventsCreated: gameEvents.length,
-      meetingsCreated: meetings.length
+      meetingsCreated: meetings.length,
+      rankingCalculated,
+      rankingError
     };
 
   } catch (error) {

@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="pl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Test Weekly Summary</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #1a1a1a;
+            color: white;
+            padding: 20px;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        .link {
+            display: inline-block;
+            background: #f59e0b;
+            color: white;
+            padding: 12px 24px;
+            text-decoration: none;
+            border-radius: 8px;
+            margin: 10px;
+            font-size: 18px;
+            transition: background-color 0.2s;
+        }
+        .link:hover {
+            background: #d97706;
+        }
+        pre {
+            background: #2a2a2a;
+            padding: 15px;
+            border-radius: 8px;
+            overflow-x: auto;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🎮 Test Strony Podsumowania Tygodnia</h1>
+        
+        <h2>🔗 Linki do testowania:</h2>
+        
+        <div>
+            <a href="/dramaafera-new/historia-gier/20240101/podsumowanie" class="link">
+                📊 Podsumowanie - 1 stycznia 2024
+            </a>
+            <br>
+            
+            <a href="/dramaafera-new/historia-gier/20241001/podsumowanie" class="link">
+                📊 Podsumowanie - 1 października 2024
+            </a>
+            <br>
+            
+            <a href="/dramaafera-new/historia-gier/20241009/podsumowanie" class="link">
+                📊 Podsumowanie - Dzisiaj (9 października 2024)
+            </a>
+        </div>
+        
+        <h2>🧪 Test API (skopiuj link do przeglądarki):</h2>
+        <pre>/api/dramaafera-new/weekly-stats/20241009</pre>
+        
+        <h2>📋 Jak używać:</h2>
+        <ol>
+            <li><strong>Kliknij na dowolny link powyżej</strong> - przeniesie Cię do animowanej strony podsumowania</li>
+            <li><strong>Pełny ekran</strong> - kliknij przycisk "🗖 Pełny ekran" w prawym górnym rogu</li>
+            <li><strong>Animacja</strong> - kliknij gdziekolwiek na stronie aby przechodzić przez etapy:</li>
+            <ul>
+                <li>Krok 1: Pojawia się 3. miejsce</li>
+                <li>Krok 2: Pojawia się 2. miejsce</li>
+                <li>Krok 3: Pojawia się 1. miejsce z koroną 👑</li>
+                <li>Dalsze kroki: Pozostałe miejsca</li>
+                <li>Ostatni klik: Reset animacji</li>
+            </ul>
+        </ol>
+        
+        <h2>🎯 Funkcjonalności:</h2>
+        <ul>
+            <li>✅ <strong>Podium ze złotymi kolorami</strong> - klasyczne 1., 2., 3. miejsce</li>
+            <li>✅ <strong>Avatary graczy</strong> - automatyczne załadowanie z /images/avatars/</li>
+            <li>✅ <strong>Fallback na placeholder</strong> - jeśli avatar nie istnieje</li>
+            <li>✅ <strong>Win Rate i statystyki</strong> - procent wygranych gier</li>
+            <li>✅ <strong>Animacje płynne</strong> - smooth transitions i delays</li>
+            <li>✅ <strong>Pełny ekran</strong> - tryb prezentacji</li>
+            <li>✅ <strong>Responsywny design</strong> - działa na mobile i desktop</li>
+            <li>✅ <strong>API z prawdziwymi danymi</strong> - integracja z bazą danych</li>
+            <li>✅ <strong>Mock data</strong> - gdy brak gier w bazie (dla demonstracji)</li>
+        </ul>
+        
+        <h2>🎨 Design:</h2>
+        <ul>
+            <li>🌅 <strong>Gradient tło</strong> - zinc-900 → amber-900</li>
+            <li>🏆 <strong>Złote kolory</strong> - amber-400/500/600 dla podium</li>
+            <li>👑 <strong>Korona dla zwycięzcy</strong> - emoji korony nad 1. miejscem</li>
+            <li>📱 <strong>Font Brook</strong> - niestandardowa czcionka dla nagłówków</li>
+            <li>✨ <strong>Cienie i świecenie</strong> - drop-shadow i box-shadow</li>
+        </ul>
+        
+        <div style="margin-top: 40px; padding: 20px; background: #2a2a2a; border-radius: 12px; border-left: 4px solid #f59e0b;">
+            <h3>💡 Wskazówka:</h3>
+            <p>Ta strona działa najlepiej w pełnym ekranie. Idealnie nadaje się do prezentacji wyników tygodniowych podczas streamów lub wydarzeń społecznościowych!</p>
+        </div>
+    </div>
+</body>
+</html>

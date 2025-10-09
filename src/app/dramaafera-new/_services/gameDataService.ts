@@ -5,6 +5,13 @@ import { Roles } from '@/roles';
 import { Modifiers } from '@/modifiers';
 import { Teams } from '@/constants/teams';
 import type { Prisma } from '../../api/_database';
+import type { GamePlayerStatistics, PlayerRole, PlayerModifier } from '@/generated/prisma';
+
+// Type for game statistics with included relationships
+type GamePlayerStatisticsWithRelations = GamePlayerStatistics & {
+  roleHistory: PlayerRole[];
+  modifiers: PlayerModifier[];
+};
 
 // Types that match the existing UI expectations
 export interface GameSummary {
@@ -162,6 +169,40 @@ export interface UIGameData {
   };
 }
 
+// Interface for user profile statistics
+export interface UserProfileStats {
+    name: string;
+    gamesPlayed: number;
+    wins: number;
+    winRate: number;
+    impostorGames: number;
+    crewmateGames: number;
+    neutralGames: number;
+    totalTasks: number;
+    maxTasks: number;
+    correctKills: number;
+    incorrectKills: number;
+    correctGuesses: number;
+    incorrectGuesses: number;
+    correctProsecutes: number;
+    incorrectProsecutes: number;
+    correctDeputyShoots: number;
+    incorrectDeputyShoots: number;
+    correctJailorExecutes: number;
+    incorrectJailorExecutes: number;
+    correctMedicShields: number;
+    incorrectMedicShields: number;
+    correctWardenFortifies: number;
+    incorrectWardenFortifies: number;
+    janitorCleans: number;
+    survivedRounds: number;
+    totalRounds: number;
+    correctAltruistRevives: number;
+    incorrectAltruistRevives: number;
+    correctSwaps: number;
+    incorrectSwaps: number;
+}
+
 // Type alias for backward compatibility
 export type DetailedGameData = UIGameData;
 
@@ -195,6 +236,117 @@ function getTeamColor(team: string): string {
   }
 }
 
+// Helper function to convert database role names to display names
+function convertRoleNameForDisplay(roleName: string): string {
+  // Map database role names to display names - handle both formats
+  const roleNameMapping: Record<string, string> = {
+    'SoulCollector': 'Soul Collector',
+    'Soul Collector': 'Soul Collector', // Already has space
+    'GuardianAngel': 'Guardian Angel', 
+    'Guardian Angel': 'Guardian Angel', // Already has space
+    // Keep Plaguebearer and Pestilence as separate roles - they should show as is
+  };
+  
+  return roleNameMapping[roleName] || roleName;
+}
+
+// Dynamic winner calculation from database data (like old system)
+function calculateWinnerFromStats(gameStats: any[]): { winner: string; winnerColor: string; winCondition: string } {
+  const winners = gameStats.filter(stat => stat.win);
+  
+  if (winners.length === 0) {
+    return {
+      winner: 'Unknown',
+      winnerColor: '#808080',
+      winCondition: 'No winner'
+    };
+  }
+
+  // Check for Lovers special case first
+  const allHaveLoverModifier = winners.length > 1 && winners.every(stat => 
+    stat.modifiers && stat.modifiers.some((mod: any) => mod.modifierName.toLowerCase() === 'lover')
+  );
+  
+  if (allHaveLoverModifier) {
+    return {
+      winner: 'Lovers',
+      winnerColor: '#FF69B4',
+      winCondition: 'Lovers won'
+    };
+  }
+
+  // PRIORITY 1: Check for Impostors (highest priority)
+  const impostorWinners = winners.filter(stat => {
+    if (!stat.roleHistory || stat.roleHistory.length === 0) return false;
+    const roleHistory = stat.roleHistory.sort((a: any, b: any) => a.order - b.order);
+    const finalRole = roleHistory[roleHistory.length - 1]?.roleName || '';
+    return determineTeam(finalRole) === Teams.Impostor;
+  });
+  
+  if (impostorWinners.length > 0) {
+    return {
+      winner: 'Impostor',
+      winnerColor: getTeamColor('Impostor'),
+      winCondition: 'Impostor won'
+    };
+  }
+
+  // PRIORITY 2: Check for Crewmates (medium priority)
+  const crewmateWinners = winners.filter(stat => {
+    if (!stat.roleHistory || stat.roleHistory.length === 0) return false;
+    const roleHistory = stat.roleHistory.sort((a: any, b: any) => a.order - b.order);
+    const finalRole = roleHistory[roleHistory.length - 1]?.roleName || '';
+    return determineTeam(finalRole) === Teams.Crewmate;
+  });
+  
+  if (crewmateWinners.length > 0) {
+    return {
+      winner: 'Crewmate',
+      winnerColor: getTeamColor('Crewmate'),
+      winCondition: 'Crewmate won'
+    };
+  }
+
+  // PRIORITY 3: Check for Neutrals (lowest priority)
+  const neutralWinners = winners.filter(stat => {
+    if (!stat.roleHistory || stat.roleHistory.length === 0) return false;
+    const roleHistory = stat.roleHistory.sort((a: any, b: any) => a.order - b.order);
+    const finalRole = roleHistory[roleHistory.length - 1]?.roleName || '';
+    return determineTeam(finalRole) === Teams.Neutral;
+  });
+  
+  if (neutralWinners.length > 0) {
+    // For neutrals, use the specific role name (like Vampire, Jester, etc.)
+    const firstNeutral = neutralWinners[0];
+    if (!firstNeutral.roleHistory || firstNeutral.roleHistory.length === 0) {
+      return {
+        winner: 'Neutral',
+        winnerColor: getTeamColor('Neutral'),
+        winCondition: 'Neutral won'
+      };
+    }
+    const roleHistory = firstNeutral.roleHistory.sort((a: any, b: any) => a.order - b.order);
+    const finalRole = roleHistory[roleHistory.length - 1]?.roleName || 'Neutral';
+    
+    // Convert database role names to display names
+    const displayRoleName = convertRoleNameForDisplay(finalRole);
+    const roleColor = getRoleColor(displayRoleName);
+    
+    return {
+      winner: displayRoleName,
+      winnerColor: roleColor,
+      winCondition: `${displayRoleName} won`
+    };
+  }
+
+  // Fallback
+  return {
+    winner: 'Unknown',
+    winnerColor: '#808080',
+    winCondition: 'Unknown winner'
+  };
+}
+
 // Helper function to format date for display
 export function formatDisplayDate(dateString: string): string {
   // Format: 20250702 -> "2 lipca 2025"
@@ -226,10 +378,22 @@ export function getRoleColor(roleName: string): string {
     return "#FF0000"; // Kolor drużyny Impostor
   }
 
+  // Specjalne przypadki dla pojedynczych form ról złożonych - własne kolory
+  if (roleName.toLowerCase() === 'plaguebearer') {
+    return "#E6FFB3"; // Kolor z definicji Plaguebearer / Pestilence
+  }
+  if (roleName.toLowerCase() === 'pestilence') {
+    return "#E6FFB3"; // Ten sam kolor co Plaguebearer (ta sama rola w różnych fazach)
+  }
+
+  // Convert database role names to display names before lookup
+  const displayRoleName = convertRoleNameForDisplay(roleName);
+
   // Znajdź rolę w definicjach
   const role = Roles.find(r => 
-    r.name.toLowerCase() === roleName.toLowerCase() || 
-    r.id.toLowerCase() === roleName.toLowerCase()
+    r.name.toLowerCase() === displayRoleName.toLowerCase() || 
+    r.id.toLowerCase() === roleName.toLowerCase() ||
+    r.name.toLowerCase() === roleName.toLowerCase()
   );
   
   if (role) {
@@ -281,12 +445,21 @@ export function normalizeRoleName(roleName: string): string {
 
 // Helper function to determine team from role
 export function determineTeam(roleName: string | string[]): string {
-  // Handle array input (for compatibility with existing code)
-  const roleToCheck = Array.isArray(roleName) ? roleName[0] : roleName;
+  // Handle array input - use last role (final role) like old system
+  const roleToCheck = Array.isArray(roleName) ? roleName[roleName.length - 1] : roleName;
+  
+  // Specjalne przypadki dla pojedynczych form ról złożonych
+  if (roleToCheck.toLowerCase() === 'plaguebearer' || roleToCheck.toLowerCase() === 'pestilence') {
+    return Teams.Neutral; // Plaguebearer/Pestilence to Neutral
+  }
+  
+  // Convert database role names to proper display names before lookup
+  const displayRoleName = convertRoleNameForDisplay(roleToCheck);
   
   const role = Roles.find(r => 
-    r.name.toLowerCase() === roleToCheck.toLowerCase() || 
-    r.id.toLowerCase() === roleToCheck.toLowerCase()
+    r.name.toLowerCase() === displayRoleName.toLowerCase() || 
+    r.id.toLowerCase() === roleToCheck.toLowerCase() ||
+    r.name.toLowerCase() === roleToCheck.toLowerCase()
   );
   
   if (role) {
@@ -310,36 +483,34 @@ export function determineTeam(roleName: string | string[]): string {
 export function formatPlayerStatsWithColors(player: UIPlayerData, maxTasks?: number): Array<{ text: string; color?: string }> {
   const statParts: Array<{ text: string; color?: string }> = [];
   
-  // Mapowanie nazw statystyk na polskie nazwy z kolorami
+  // Mapowanie nazw statystyk na angielskie nazwy z kolorami (identyczne z /dramaafera/)
   const statLabels: Record<string, { label: string; color?: string }> = {
-    'correctKills': { label: 'Poprawne zabójstwa', color: '#22C55E' }, // zielony
-    'incorrectKills': { label: 'Niepoprawne zabójstwa', color: '#EF4444' }, // czerwony
-    'correctProsecutes': { label: 'Poprawne oskarżenia', color: '#22C55E' },
-    'incorrectProsecutes': { label: 'Niepoprawne oskarżenia', color: '#EF4444' },
-    'correctGuesses': { label: 'Poprawne zgadnięcia', color: '#22C55E' },
-    'incorrectGuesses': { label: 'Niepoprawne zgadnięcia', color: '#EF4444' },
-    'correctDeputyShoots': { label: 'Poprawne strzały deputata', color: '#22C55E' },
-    'incorrectDeputyShoots': { label: 'Niepoprawne strzały deputata', color: '#EF4444' },
-    'correctJailorExecutes': { label: 'Poprawne egzekucje więźniarza', color: '#22C55E' },
-    'incorrectJailorExecutes': { label: 'Niepoprawne egzekucje więźniarza', color: '#EF4444' },
-    'correctMedicShields': { label: 'Poprawne tarcze medyka', color: '#22C55E' },
-    'incorrectMedicShields': { label: 'Niepoprawne tarcze medyka', color: '#EF4444' },
-    'correctWardenFortifies': { label: 'Poprawne umocnienia strażnika', color: '#22C55E' },
-    'incorrectWardenFortifies': { label: 'Niepoprawne umocnienia strażnika', color: '#EF4444' },
-    'janitorCleans': { label: 'Sprzątanie woźnego', color: '#6366F1' },
-    'completedTasks': { label: 'Ukończone zadania', color: '#10B981' },
-    'survivedRounds': { label: 'Przeżyte rundy', color: '#F59E0B' },
-    'correctAltruistRevives': { label: 'Poprawne wskrzeszenia altruisty', color: '#22C55E' },
-    'incorrectAltruistRevives': { label: 'Niepoprawne wskrzeszenia altruisty', color: '#EF4444' },
-    'correctSwaps': { label: 'Poprawne zamiany', color: '#22C55E' },
-    'incorrectSwaps': { label: 'Niepoprawne zamiany', color: '#EF4444' },
-    'totalPoints': { label: 'Łączne punkty', color: '#F59E0B' }
+    'correctKills': { label: 'Correct Kills', color: '#22C55E' }, // zielony
+    'incorrectKills': { label: 'Incorrect Kills', color: '#EF4444' }, // czerwony
+    'correctProsecutes': { label: 'Correct Prosecutes', color: '#22C55E' },
+    'incorrectProsecutes': { label: 'Incorrect Prosecutes', color: '#EF4444' },
+    'correctGuesses': { label: 'Correct Guesses', color: '#22C55E' },
+    'incorrectGuesses': { label: 'Incorrect Guesses', color: '#EF4444' },
+    'correctDeputyShoots': { label: 'Correct Deputy Shoots', color: '#22C55E' },
+    'incorrectDeputyShoots': { label: 'Incorrect Deputy Shoots', color: '#EF4444' },
+    'correctJailorExecutes': { label: 'Correct Jailor Executes', color: '#22C55E' },
+    'incorrectJailorExecutes': { label: 'Incorrect Jailor Executes', color: '#EF4444' },
+    'correctMedicShields': { label: 'Correct Medic Shields', color: '#22C55E' },
+    'incorrectMedicShields': { label: 'Incorrect Medic Shields', color: '#EF4444' },
+    'correctWardenFortifies': { label: 'Correct Warden Fortifies', color: '#22C55E' },
+    'incorrectWardenFortifies': { label: 'Incorrect Warden Fortifies', color: '#EF4444' },
+    'janitorCleans': { label: 'Janitor Cleans' },
+    'correctAltruistRevives': { label: 'Correct Altruist Revives', color: '#22C55E' },
+    'incorrectAltruistRevives': { label: 'Incorrect Altruist Revives', color: '#EF4444' },
+    'correctSwaps': { label: 'Correct Swaps', color: '#22C55E' },
+    'incorrectSwaps': { label: 'Incorrect Swaps', color: '#EF4444' }
   };
 
-  // Dodaj statystyki tylko jeśli mają wartość większą niż 0
-  Object.entries(statLabels).forEach(([key, config]) => {
-    const value = player[key as keyof UIPlayerData] as number;
-    if (typeof value === 'number' && value > 0) {
+  // Iteruj przez wszystkie statystyki i dodaj te które nie są zerem (identycznie z /dramaafera/)
+  const stats = player.originalStats;
+  Object.entries(stats).forEach(([key, value]) => {
+    if (typeof value === 'number' && value > 0 && statLabels[key]) {
+      const config = statLabels[key];
       statParts.push({
         text: `${config.label}: ${value}`,
         color: config.color
@@ -347,13 +518,35 @@ export function formatPlayerStatsWithColors(player: UIPlayerData, maxTasks?: num
     }
   });
 
-  // Dodaj procent ukończonych zadań jeśli dostępne
-  if (player.completedTasks && maxTasks && maxTasks > 0) {
-    const percentage = Math.round((player.completedTasks / maxTasks) * 100);
+  // Obsługa completed tasks - nie wyświetlaj jeśli 0 zrobionych (identycznie z /dramaafera/)
+  if (stats.completedTasks > 0) {
+    const tasksText = maxTasks !== undefined 
+      ? `Completed Tasks: ${stats.completedTasks}/${maxTasks}`
+      : `Completed Tasks: ${stats.completedTasks}`;
     statParts.push({
-      text: `Zadania: ${player.completedTasks}/${maxTasks} (${percentage}%)`,
-      color: percentage >= 80 ? '#22C55E' : percentage >= 50 ? '#F59E0B' : '#EF4444'
+      text: tasksText,
+      color: undefined // Bez specjalnego koloru
     });
+  }
+
+  // Dodaj nowe statystyki (identycznie z /dramaafera/)
+  if (stats.survivedRounds !== undefined && stats.survivedRounds >= 0) {
+    statParts.push({
+      text: `Survived Rounds: ${stats.survivedRounds}`,
+      color: '#06B6D4' // cyjan
+    });
+  }
+
+  if (stats.disconnected === 1) {
+    statParts.push({
+      text: '🔌 Disconnected',
+      color: '#EF4444' // czerwony
+    });
+  }
+
+  // Dodaj specjalne informacje (identycznie z /dramaafera/)
+  if (stats.win > 0) {
+    statParts.push({ text: '🏆 Winner', color: '#FFD700' }); // złoty
   }
 
   return statParts;
@@ -391,9 +584,15 @@ export async function getGamesList(): Promise<GameSummary[]> {
     // Determine winner colors based on roles
     const winnerColors: Record<string, string> = {};
     winners.forEach(winner => {
-      const primaryRole = winner.roleHistory.find(role => role.order === 0)?.roleName || '';
-      winnerColors[winner.player.name] = getRoleColor(primaryRole);
+      // Use the last role in history (like old system)
+      const roleHistory = winner.roleHistory.sort((a, b) => a.order - b.order);
+      const finalRole = roleHistory[roleHistory.length - 1]?.roleName || '';
+      const displayRoleName = convertRoleNameForDisplay(finalRole);
+      winnerColors[winner.player.name] = getRoleColor(displayRoleName);
     });
+
+    // Calculate winner dynamically like old system
+    const winnerInfo = calculateWinnerFromStats(game.gamePlayerStatistics);
 
     return {
       id: game.gameIdentifier,
@@ -401,9 +600,9 @@ export async function getGamesList(): Promise<GameSummary[]> {
       gameNumber: 0, // Will be computed after all games are fetched
       duration: formatDuration(game.startTime, game.endTime),
       players: game.gamePlayerStatistics.length,
-      winner: game.winnerTeam || 'Unknown',
-      winnerColor: getTeamColor(game.winnerTeam || ''),
-      winCondition: game.winCondition || 'Unknown',
+      winner: winnerInfo.winner,
+      winnerColor: winnerInfo.winnerColor,
+      winCondition: winnerInfo.winCondition,
       map: game.map || 'Unknown',
       winnerNames,
       winnerColors,
@@ -442,7 +641,7 @@ export async function getGamesListByDate(date: string): Promise<GameSummary[]> {
   const allGames = await getGamesList();
   return allGames
     .filter(game => extractDateFromGameId(game.id) === date)
-    .sort((a, b) => b.id.localeCompare(a.id));
+    .sort((a, b) => b.id.localeCompare(a.id)); // Sort descending for display (newest first)
 }
 
 // Fetch list of dates with games
@@ -545,21 +744,32 @@ export async function getGameData(gameId: string): Promise<UIGameData | null> {
   const winnerNames = winners.map(winner => winner.player.name);
   const winnerColors: Record<string, string> = {};
   winners.forEach(winner => {
-    const primaryRole = winner.roleHistory.find(role => role.order === 0)?.roleName || '';
-    winnerColors[winner.player.name] = getRoleColor(primaryRole);
+    // Use the last role in history (like old system)
+    const roleHistory = winner.roleHistory.sort((a, b) => a.order - b.order);
+    const finalRole = roleHistory[roleHistory.length - 1]?.roleName || '';
+    const displayRoleName = convertRoleNameForDisplay(finalRole);
+    winnerColors[winner.player.name] = getRoleColor(displayRoleName);
   });
 
   // Build player stats for detailed UI
   const playersData: UIPlayerData[] = game.gamePlayerStatistics.map(stat => {
     const roleHistory = stat.roleHistory.map(role => role.roleName);
     const primaryRole = roleHistory[0] || 'Unknown';
-    const modifiers = stat.modifiers.map(modifier => modifier.modifierName);
-    const team = determineTeam(primaryRole);
+    // Use final role for color (like old system)
+    const finalRole = roleHistory[roleHistory.length - 1] || 'Unknown';
+    const displayRoleName = convertRoleNameForDisplay(finalRole);
+    
+    // Handle both formats: string array (old format) and object array (database format)
+    const modifiers = stat.modifiers.map(modifier => 
+      typeof modifier === 'string' ? modifier : modifier.modifierName
+    ).filter(mod => mod && mod.trim() !== ''); // Remove empty strings
+    
+    const team = determineTeam(roleHistory);
 
     return {
       nickname: stat.player.name,
       role: primaryRole,
-      roleColor: getRoleColor(primaryRole),
+      roleColor: getRoleColor(displayRoleName),
       roleHistory,
       modifiers,
       modifierColors: modifiers.map(mod => getModifierColor(mod)),
@@ -596,7 +806,9 @@ export async function getGameData(gameId: string): Promise<UIGameData | null> {
       originalStats: {
         playerName: stat.player.name,
         roleHistory: stat.roleHistory.map(role => role.roleName),
-        modifiers: stat.modifiers.map(modifier => modifier.modifierName),
+        modifiers: stat.modifiers.map(modifier => 
+          typeof modifier === 'string' ? modifier : modifier.modifierName
+        ).filter(mod => mod && mod.trim() !== ''),
         win: stat.win ? 1 : 0,
         disconnected: stat.disconnected ? 1 : 0,
         initialRolePoints: stat.initialRolePoints || 0,
@@ -672,9 +884,7 @@ export async function getGameData(gameId: string): Promise<UIGameData | null> {
     endTime: game.endTime.toISOString(),
     duration: formatDuration(game.startTime, game.endTime),
     map: game.map || 'Unknown',
-    winner: game.winnerTeam || 'Unknown',
-    winnerColor: getTeamColor(game.winnerTeam || ''),
-    winCondition: game.winCondition || 'Unknown',
+    ...calculateWinnerFromStats(game.gamePlayerStatistics),
     winnerNames,
     winnerColors,
     players: game.gamePlayerStatistics.length,
@@ -875,8 +1085,13 @@ export async function getAllGamesData(): Promise<UIGameData[]> {
 
     const playersData: UIPlayerData[] = (game.gamePlayerStatistics || []).map((stat: GamePlayerStatWithIncludes) => {
       const primaryRole = stat.roleHistory?.find((role: { order: number; roleName: string }) => role.order === 0)?.roleName || 'Unknown';
-      const roleColor = getRoleColor(primaryRole);
-      const team = determineTeam(primaryRole);
+      // Use final role for color (like old system)
+      const roleHistorySorted = (stat.roleHistory || []).sort((a, b) => a.order - b.order);
+      const finalRole = roleHistorySorted[roleHistorySorted.length - 1]?.roleName || 'Unknown';
+      const roleHistoryNames = roleHistorySorted.map(role => role.roleName);
+      const displayRoleName = convertRoleNameForDisplay(finalRole);
+      const roleColor = getRoleColor(displayRoleName);
+      const team = determineTeam(roleHistoryNames);
       const modifierNames = (stat.modifiers || []).map((mod: { modifierName: string }) => mod.modifierName);
       const modifierColors = modifierNames.map(getModifierColor);
 
@@ -962,24 +1177,45 @@ export async function getAllGamesData(): Promise<UIGameData[]> {
     let winnerColor = '#808080';
     
     if (winners.length > 0) {
-      // Determine winning team
-      const winnerTeams = winners.map(w => w.team);
-      const teamCounts = winnerTeams.reduce((acc, team) => {
-        acc[team] = (acc[team] || 0) + 1;
-        return acc;
-      }, {} as Record<string, number>);
+      // Use same logic as old system with team priorities
       
-      const dominantTeam = Object.entries(teamCounts).sort(([,a], [,b]) => b - a)[0]?.[0];
+      // Check for Lovers special case first
+      const allHaveLoverModifier = winners.length > 1 && winners.every(w => 
+        w.modifiers.some(mod => mod.toLowerCase() === 'lover')
+      );
       
-      if (dominantTeam === 'Impostor') {
-        winner = 'Impostor';
-        winnerColor = getTeamColor(Teams.Impostor);
-      } else if (dominantTeam === 'Neutral') {
-        winner = 'Neutral';
-        winnerColor = getTeamColor(Teams.Neutral);
+      if (allHaveLoverModifier) {
+        winner = 'Lovers';
+        winnerColor = '#FF69B4';
       } else {
-        winner = 'Crewmate';
-        winnerColor = getTeamColor(Teams.Crewmate);
+        // PRIORITY 1: Check for Impostors (highest priority)
+        const impostorWinners = winners.filter(w => w.team === 'Impostor');
+        
+        if (impostorWinners.length > 0) {
+          winner = 'Impostor';
+          winnerColor = getTeamColor(Teams.Impostor);
+        } else {
+          // PRIORITY 2: Check for Crewmates (medium priority)
+          const crewmateWinners = winners.filter(w => w.team === 'Crewmate');
+          
+          if (crewmateWinners.length > 0) {
+            winner = 'Crewmate';
+            winnerColor = getTeamColor(Teams.Crewmate);
+          } else {
+            // PRIORITY 3: Check for Neutrals (lowest priority)
+            const neutralWinners = winners.filter(w => w.team === 'Neutral');
+            
+            if (neutralWinners.length > 0) {
+              // For neutrals, use the specific role name (like Vampire, Jester, etc.)
+              const firstNeutral = neutralWinners[0];
+              const finalRole = firstNeutral.roleHistory && firstNeutral.roleHistory.length > 0 
+                ? firstNeutral.roleHistory[firstNeutral.roleHistory.length - 1]
+                : firstNeutral.role;
+              winner = finalRole || 'Neutral';
+              winnerColor = firstNeutral.roleColor;
+            }
+          }
+        }
       }
     }
 
@@ -1109,7 +1345,8 @@ export async function generateRoleRankingStats(): Promise<RoleRankingStats[]> {
     const averagePoints = data.gamesPlayed > 0 ? Math.round(data.totalPoints / data.gamesPlayed) : 0;
 
     // Get role color and team
-    const roleColor = getRoleColor(roleName);
+    const displayRoleName = convertRoleNameForDisplay(roleName);
+    const roleColor = getRoleColor(displayRoleName);
     const roleTeam = determineTeam(roleName);
     const teamName = roleTeam === Teams.Impostor ? 'Impostor' : 
                     roleTeam === Teams.Neutral ? 'Neutral' : 'Crewmate';
@@ -1147,4 +1384,227 @@ export async function generateRoleRankingStats(): Promise<RoleRankingStats[]> {
   roleRankingStats.sort((a, b) => b.gamesPlayed - a.gamesPlayed);
 
   return roleRankingStats;
+}
+
+// Get list of all players from database
+export async function getPlayersList(): Promise<string[]> {
+  const prisma = await getDatabaseClient();
+  
+  if (!prisma) {
+    return [];
+  }
+
+  try {
+    const players = await prisma.player.findMany({
+      where: withoutDeleted,
+      select: {
+        name: true
+      },
+      distinct: ['name']
+    });
+
+    return players.map(p => p.name);
+  } catch (error) {
+    console.error('Error fetching players list:', error);
+    return [];
+  }
+}
+
+// Get user profile statistics from database
+export async function getUserProfileStats(playerName: string): Promise<UserProfileStats | null> {
+  const prisma = await getDatabaseClient();
+  
+  if (!prisma) {
+    return null;
+  }
+
+  try {
+    const player = await prisma.player.findFirst({
+      where: {
+        name: playerName,
+        ...withoutDeleted
+      },
+      include: {
+        gamePlayerStatistics: {
+          include: {
+            roleHistory: {
+              orderBy: { order: 'asc' }
+            },
+            modifiers: true
+          }
+        }
+      }
+    });
+
+    if (!player || player.gamePlayerStatistics.length === 0) {
+      return null;
+    }
+
+    let gamesPlayed = 0;
+    let wins = 0;
+    let impostorGames = 0;
+    let crewmateGames = 0;
+    let neutralGames = 0;
+    let totalTasks = 0;
+    let maxTasks = 0;
+    let correctKills = 0;
+    let incorrectKills = 0;
+    let correctGuesses = 0;
+    let incorrectGuesses = 0;
+    let correctProsecutes = 0;
+    let incorrectProsecutes = 0;
+    let correctDeputyShoots = 0;
+    let incorrectDeputyShoots = 0;
+    let correctJailorExecutes = 0;
+    let incorrectJailorExecutes = 0;
+    let correctMedicShields = 0;
+    let incorrectMedicShields = 0;
+    let correctWardenFortifies = 0;
+    let incorrectWardenFortifies = 0;
+    let janitorCleans = 0;
+    let survivedRounds = 0;
+    let totalRounds = 0;
+    let correctAltruistRevives = 0;
+    let incorrectAltruistRevives = 0;
+    let correctSwaps = 0;
+    let incorrectSwaps = 0;
+
+    player.gamePlayerStatistics.forEach((stat: GamePlayerStatisticsWithRelations) => {
+      gamesPlayed++;
+      
+      if (stat.win) wins++;
+
+      // Determine team based on primary role
+      const primaryRole = stat.roleHistory.find((role: PlayerRole) => role.order === 0)?.roleName || '';
+      const teamName = determineTeam(primaryRole);
+      
+      if (teamName === Teams.Impostor) impostorGames++;
+      else if (teamName === Teams.Neutral) neutralGames++;
+      else crewmateGames++;
+
+      // Aggregate statistics
+      totalTasks += stat.completedTasks || 0;
+      correctKills += stat.correctKills || 0;
+      incorrectKills += stat.incorrectKills || 0;
+      correctGuesses += stat.correctGuesses || 0;
+      incorrectGuesses += stat.incorrectGuesses || 0;
+      correctProsecutes += stat.correctProsecutes || 0;
+      incorrectProsecutes += stat.incorrectProsecutes || 0;
+      correctDeputyShoots += stat.correctDeputyShoots || 0;
+      incorrectDeputyShoots += stat.incorrectDeputyShoots || 0;
+      correctJailorExecutes += stat.correctJailorExecutes || 0;
+      incorrectJailorExecutes += stat.incorrectJailorExecutes || 0;
+      correctMedicShields += stat.correctMedicShields || 0;
+      incorrectMedicShields += stat.incorrectMedicShields || 0;
+      correctWardenFortifies += stat.correctWardenFortifies || 0;
+      incorrectWardenFortifies += stat.incorrectWardenFortifies || 0;
+      janitorCleans += stat.janitorCleans || 0;
+      survivedRounds += stat.survivedRounds || 0;
+      correctAltruistRevives += stat.correctAltruistRevives || 0;
+      incorrectAltruistRevives += stat.incorrectAltruistRevives || 0;
+      correctSwaps += stat.correctSwaps || 0;
+      incorrectSwaps += stat.incorrectSwaps || 0;
+      
+      // Count total rounds (approximate from all games)
+      totalRounds += (stat.survivedRounds || 0) + (stat.win ? 0 : 1);
+    });
+
+    const winRate = gamesPlayed > 0 ? Math.round((wins / gamesPlayed) * 100) : 0;
+
+    return {
+      name: playerName,
+      gamesPlayed,
+      wins,
+      winRate,
+      impostorGames,
+      crewmateGames,
+      neutralGames,
+      totalTasks,
+      maxTasks, // Will be calculated from game data if needed
+      correctKills,
+      incorrectKills,
+      correctGuesses,
+      incorrectGuesses,
+      correctProsecutes,
+      incorrectProsecutes,
+      correctDeputyShoots,
+      incorrectDeputyShoots,
+      correctJailorExecutes,
+      incorrectJailorExecutes,
+      correctMedicShields,
+      incorrectMedicShields,
+      correctWardenFortifies,
+      incorrectWardenFortifies,
+      janitorCleans,
+      survivedRounds,
+      totalRounds,
+      correctAltruistRevives,
+      incorrectAltruistRevives,
+      correctSwaps,
+      incorrectSwaps
+    };
+  } catch (error) {
+    console.error('Error fetching user profile stats:', error);
+    return null;
+  }
+}
+
+// Interface for ranking history point
+export interface RankingHistoryPoint {
+  date: Date;
+  score: number;
+  reason?: string;
+  gameId?: number;
+  gameIdentifier?: string;
+}
+
+// Get player ranking history from database
+export async function getPlayerRankingHistory(playerName: string): Promise<RankingHistoryPoint[]> {
+  const prisma = await getDatabaseClient();
+  
+  if (!prisma) {
+    return [];
+  }
+
+  try {
+    const player = await prisma.player.findFirst({
+      where: {
+        name: playerName,
+        ...withoutDeleted
+      }
+    });
+
+    if (!player) {
+      return [];
+    }
+
+    const rankings = await prisma.playerRanking.findMany({
+      where: {
+        playerId: player.id,
+        ...withoutDeleted
+      },
+      include: {
+        game: {
+          select: {
+            gameIdentifier: true
+          }
+        }
+      },
+      orderBy: {
+        createdAt: 'asc'
+      }
+    });
+
+    return rankings.map(ranking => ({
+      date: ranking.createdAt,
+      score: ranking.score,
+      reason: ranking.reason || undefined,
+      gameId: ranking.gameId || undefined,
+      gameIdentifier: ranking.game?.gameIdentifier || undefined
+    }));
+
+  } catch (error) {
+    console.error('Error fetching player ranking history:', error);
+    return [];
+  }
 }
