@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import type { Metadata } from "next";
-import { getUserProfileStats, getPlayersList, getPlayerRankingHistory, type UserProfileStats, type RankingHistoryPoint } from "../../_services/gameDataService";
+import { getUserProfileStats, getPlayersList, getPlayerRankingHistory } from "../../_services/gameDataService";
 import { notFound } from "next/navigation";
 import { RankingChart } from "../../_components/RankingChart";
 

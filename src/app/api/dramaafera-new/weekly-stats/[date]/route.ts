@@ -1,5 +1,4 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { withAuth } from '../../../_middlewares/auth';
 import { withCors } from '../../../_middlewares/cors';
 import { z } from 'zod';
 import { getPrismaClient } from '../../../_database';

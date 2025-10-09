@@ -44,19 +44,6 @@ function getRankTitle(points: number): string {
     return "CWEL";
 }
 
-// Funkcja do wyznaczania koloru rangi
-function getRankColor(points: number): string {
-    if (points >= 2222) return "text-purple-400";
-    if (points >= 2200) return "text-red-400";
-    if (points >= 2175) return "text-orange-400";
-    if (points >= 2125) return "text-yellow-400";
-    if (points >= 2075) return "text-green-400";
-    if (points >= 2025) return "text-blue-400";
-    if (points >= 1975) return "text-cyan-400";
-    if (points >= 1925) return "text-indigo-400";
-    if (points >= 1850) return "text-gray-400";
-    return "text-red-600";
-}
 
 // Funkcja pomocnicza do generowania ścieżki avatara
 function getPlayerAvatarPath(playerName: string): string {

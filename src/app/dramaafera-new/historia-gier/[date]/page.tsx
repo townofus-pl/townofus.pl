@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { getGamesListByDate, formatDisplayDate, getGameDatesList } from "../../_services/gameDataService";
+import { getGamesListByDate, formatDisplayDate } from "../../_services/gameDataService";
 import { TeamColors } from "@/constants/teams";
 import { notFound } from "next/navigation";
 
