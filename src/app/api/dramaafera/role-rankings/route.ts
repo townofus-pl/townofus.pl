@@ -1,6 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getAllGamesData } from '@/app/dramaafera/_services/gameDataService';
 
+// Type for game with players data  
+interface GameWithPlayersData {
+  detailedStats: {
+    playersData: Array<{
+      role: string;
+      win: boolean;
+      won?: boolean;
+      team?: string;
+      roleColor?: string;
+      roleDisplayName?: string;
+      roleImage?: string;
+    }>;
+  };
+}
+
 interface RoleRankingData {
     role: string;
     displayName: string;
@@ -13,7 +28,7 @@ interface RoleRankingData {
 }
 
 // Funkcja do generowania statystyk ról z bazy danych
-function generateRoleRankingStats(games: any[]): RoleRankingData[] {
+function generateRoleRankingStats(games: GameWithPlayersData[]): RoleRankingData[] {
     const roleStats: Map<string, {
         wins: number;
         total: number;
@@ -25,7 +40,7 @@ function generateRoleRankingStats(games: any[]): RoleRankingData[] {
 
     // Zliczanie statystyk dla każdej roli
     games.forEach(game => {
-        game.players.forEach((player: any) => {
+        game.detailedStats.playersData.forEach((player) => {
             const role = player.role;
             if (!role) return;
 
@@ -43,7 +58,7 @@ function generateRoleRankingStats(games: any[]): RoleRankingData[] {
             const stats = roleStats.get(role)!;
             stats.total++;
             
-            if (player.won) {
+            if (player.win) {
                 stats.wins++;
             }
         });

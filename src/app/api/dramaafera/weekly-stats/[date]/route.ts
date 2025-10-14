@@ -19,7 +19,7 @@ interface WeeklyPlayerStats {
     totalPoints: number;
 }
 
-async function getWeeklyStats(dateStr: string, d1Database: any): Promise<WeeklyPlayerStats[]> {
+async function getWeeklyStats(dateStr: string, d1Database: D1Database): Promise<WeeklyPlayerStats[]> {
     const prisma = getPrismaClient(d1Database);
     
     // Parsowanie daty

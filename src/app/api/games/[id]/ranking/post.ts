@@ -20,7 +20,7 @@ export async function POST(
 
     // Get Cloudflare context for D1 database
     const { env } = await getCloudflareContext();
-    const prisma = getPrismaClient(env.DB as any);
+    const prisma = getPrismaClient(env.DB);
 
     // Check if game exists
     const game = await prisma.game.findUnique({

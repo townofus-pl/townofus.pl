@@ -1,5 +1,6 @@
-import type { PrismaClient } from '@prisma/client';
+// Types for better type safety
 import { withoutDeleted } from '../schema/common';
+import type { PrismaClient, Player, GamePlayerStatistics, PlayerRanking } from '../../../generated/prisma';
 
 // Stałe systemu rankingowego
 const RANKING_CONSTANTS = {
@@ -31,7 +32,7 @@ interface RankingCalculationResult {
  * Oblicza ranking dla wszystkich graczy po danej grze
  */
 export async function calculateRankingForGame(
-  prisma: any, // PrismaClient type
+  prisma: PrismaClient,
   gameId: number
 ): Promise<RankingCalculationResult> {
   
@@ -94,12 +95,12 @@ export async function calculateRankingForGame(
     console.log(`👥 Found ${allPlayers.length} total players in system`);
 
     // 5. Przygotuj dane graczy - obecnych i nieobecnych
-    const presentPlayerIds = new Set(game.gamePlayerStatistics.map((gps: any) => gps.playerId));
+    const presentPlayerIds = new Set(game.gamePlayerStatistics.map((gps: GamePlayerStatistics) => gps.playerId));
     
-    const playersData: PlayerGameData[] = allPlayers.map((player: any) => {
+    const playersData: PlayerGameData[] = allPlayers.map((player: Player & { currentRanking?: PlayerRanking | null }) => {
       const isPresent = presentPlayerIds.has(player.id);
       const gameStats = isPresent 
-        ? game.gamePlayerStatistics.find((gps: any) => gps.playerId === player.id)
+        ? game.gamePlayerStatistics.find((gps: GamePlayerStatistics) => gps.playerId === player.id)
         : null;
       
       return {

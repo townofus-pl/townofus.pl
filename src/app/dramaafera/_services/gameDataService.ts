@@ -250,8 +250,20 @@ function convertRoleNameForDisplay(roleName: string): string {
   return roleNameMapping[roleName] || roleName;
 }
 
+// Type for game statistics with minimal required properties
+interface GameStatWithWin {
+  win: boolean;
+  modifiers?: Array<{
+    modifierName: string;
+  }>;
+  roleHistory: Array<{
+    roleName: string;
+    order: number;
+  }>;
+}
+
 // Dynamic winner calculation from database data (like old system)
-function calculateWinnerFromStats(gameStats: any[]): { winner: string; winnerColor: string; winCondition: string } {
+function calculateWinnerFromStats(gameStats: GameStatWithWin[]): { winner: string; winnerColor: string; winCondition: string } {
   const winners = gameStats.filter(stat => stat.win);
   
   if (winners.length === 0) {
@@ -264,7 +276,7 @@ function calculateWinnerFromStats(gameStats: any[]): { winner: string; winnerCol
 
   // Check for Lovers special case first
   const allHaveLoverModifier = winners.length > 1 && winners.every(stat => 
-    stat.modifiers && stat.modifiers.some((mod: any) => mod.modifierName.toLowerCase() === 'lover')
+    stat.modifiers && stat.modifiers.some((mod) => mod.modifierName.toLowerCase() === 'lover')
   );
   
   if (allHaveLoverModifier) {
@@ -278,7 +290,7 @@ function calculateWinnerFromStats(gameStats: any[]): { winner: string; winnerCol
   // PRIORITY 1: Check for Impostors (highest priority)
   const impostorWinners = winners.filter(stat => {
     if (!stat.roleHistory || stat.roleHistory.length === 0) return false;
-    const roleHistory = stat.roleHistory.sort((a: any, b: any) => a.order - b.order);
+    const roleHistory = stat.roleHistory.sort((a, b) => a.order - b.order);
     const finalRole = roleHistory[roleHistory.length - 1]?.roleName || '';
     return determineTeam(finalRole) === Teams.Impostor;
   });
@@ -294,7 +306,7 @@ function calculateWinnerFromStats(gameStats: any[]): { winner: string; winnerCol
   // PRIORITY 2: Check for Crewmates (medium priority)
   const crewmateWinners = winners.filter(stat => {
     if (!stat.roleHistory || stat.roleHistory.length === 0) return false;
-    const roleHistory = stat.roleHistory.sort((a: any, b: any) => a.order - b.order);
+    const roleHistory = stat.roleHistory.sort((a, b) => a.order - b.order);
     const finalRole = roleHistory[roleHistory.length - 1]?.roleName || '';
     return determineTeam(finalRole) === Teams.Crewmate;
   });
@@ -310,7 +322,7 @@ function calculateWinnerFromStats(gameStats: any[]): { winner: string; winnerCol
   // PRIORITY 3: Check for Neutrals (lowest priority)
   const neutralWinners = winners.filter(stat => {
     if (!stat.roleHistory || stat.roleHistory.length === 0) return false;
-    const roleHistory = stat.roleHistory.sort((a: any, b: any) => a.order - b.order);
+    const roleHistory = stat.roleHistory.sort((a, b) => a.order - b.order);
     const finalRole = roleHistory[roleHistory.length - 1]?.roleName || '';
     return determineTeam(finalRole) === Teams.Neutral;
   });
@@ -325,7 +337,7 @@ function calculateWinnerFromStats(gameStats: any[]): { winner: string; winnerCol
         winCondition: 'Neutral won'
       };
     }
-    const roleHistory = firstNeutral.roleHistory.sort((a: any, b: any) => a.order - b.order);
+    const roleHistory = firstNeutral.roleHistory.sort((a, b) => a.order - b.order);
     const finalRole = roleHistory[roleHistory.length - 1]?.roleName || 'Neutral';
     
     // Convert database role names to display names

@@ -1,6 +1,6 @@
 import { z } from 'zod';
 import { extendZodWithOpenApi } from '@asteasolutions/zod-to-openapi';
-import { withAuth, withCors } from '../../_middlewares';
+import { withCors } from '../../_middlewares/cors';
 import { GET as getHandler } from './get';
 import { openApiRegistry } from '../../schema/registry';
 import { ErrorResponseSchema } from '../../schema/base';
