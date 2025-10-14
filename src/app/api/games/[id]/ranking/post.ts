@@ -8,11 +8,11 @@ import { calculateRankingForGame } from '../../../_utils';
 
 export async function POST(
   request: NextRequest, 
-  authContext: { user: { username: string } },
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
   try {
-    const gameId = parseInt(params.id);
+    const resolvedParams = await params;
+    const gameId = parseInt(resolvedParams.id);
     
     if (isNaN(gameId)) {
       return createErrorResponse('Invalid game ID', 400);
