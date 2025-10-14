@@ -1,31 +1,23 @@
-"use client";
 
-import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
+import { getGameDatesList } from "@/data/games";
 
 // Typy dla danych gier i grupy dat
 type GameSummary = {
-    id: number;
-    gameIdentifier: string;
+    id: string;
     allPlayerNames?: string[];
+    // inne pola jeśli potrzebne
 };
 type DateGroup = {
     date: string;
     displayDate: string;
     totalGames: number;
     games: GameSummary[];
-    allPlayerNames?: string[];
 };
 
 // Funkcja pomocnicza do zbierania unikalnych nicków graczy z danej daty
 function getUniquePlayersFromDate(dateGroup: DateGroup): string[] {
-    // Używamy allPlayerNames jeśli jest dostępne (zostało obliczone przez API)
-    if (dateGroup.allPlayerNames) {
-        return dateGroup.allPlayerNames;
-    }
-    
-    // Fallback - zbieramy z indywidualnych gier
     const allPlayers = new Set<string>();
     dateGroup.games.forEach((game) => {
         game.allPlayerNames?.forEach((playerName: string) => {
@@ -40,56 +32,8 @@ function getPlayerAvatarPath(playerName: string): string {
     return `/images/avatars/${playerName}.png`;
 }
 
-export default function HistoriaGierPage() {
-    const [dates, setDates] = useState<DateGroup[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-
-    useEffect(() => {
-        const fetchDates = async () => {
-            try {
-                setLoading(true);
-                const response = await fetch('/api/games/dates?includePlayers=true');
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-                }
-                
-                const responseData = await response.json() as { data: { dates: DateGroup[] } };
-                setDates(responseData.data.dates);
-            } catch (err) {
-                console.error('Error fetching dates:', err);
-                setError(err instanceof Error ? err.message : 'Błąd pobierania danych');
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchDates();
-    }, []);
-
-    if (loading) {
-        return (
-            <div className="min-h-screen rounded-xl bg-zinc-900/50 text-white flex items-center justify-center">
-                <div className="text-center">
-                    <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-400 mx-auto mb-4"></div>
-                    <p className="text-xl text-gray-300">Ładowanie historii gier...</p>
-                </div>
-            </div>
-        );
-    }
-
-    if (error) {
-        return (
-            <div className="min-h-screen rounded-xl bg-zinc-900/50 text-white flex items-center justify-center">
-                <div className="text-center">
-                    <div className="text-6xl mb-4">⚠️</div>
-                    <h1 className="text-2xl font-bold text-red-400 mb-4">Błąd ładowania</h1>
-                    <p className="text-gray-300">{error}</p>
-                </div>
-            </div>
-        );
-    }
+export default async function HistoriaGierPage() {
+    const dates = await getGameDatesList();
 
     return (
         <div className="min-h-screen rounded-xl bg-zinc-900/50 text-white">
@@ -110,7 +54,7 @@ export default function HistoriaGierPage() {
                     {dates.map((dateGroup) => (
                         <Link 
                             key={dateGroup.date}
-                            href={`/dramaafera/historia-gier/${dateGroup.date}`}
+                            href={`/dramaafera-old/historia-gier/${dateGroup.date}`}
                             className="block"
                         >
                             <div className="bg-zinc-900/50 rounded-xl p-6 border border-gray-700/50 hover:border-gray-600/50 hover:bg-zinc-900/70 transition-all duration-200 cursor-pointer">
@@ -149,11 +93,10 @@ export default function HistoriaGierPage() {
                                         </div>
                                     </div>
                                     
-                                    <div className="mt-4 lg:mt-0 flex flex-col gap-2">
+                                    <div className="mt-4 lg:mt-0">
                                         <span className="text-blue-400 text-sm hover:text-blue-300 transition-colors">
                                             Kliknij aby zobaczyć gry →
                                         </span>
-
                                     </div>
                                 </div>
                             </div>

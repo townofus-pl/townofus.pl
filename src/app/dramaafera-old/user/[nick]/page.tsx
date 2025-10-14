@@ -1,9 +1,8 @@
 import Link from "next/link";
 import Image from "next/image";
-import type { Metadata } from "next";
-import { getUserProfileStats, getPlayersList, getPlayerRankingHistory } from "../../_services/gameDataService";
+import { getAllGamesData } from "@/data/games";
+import { generateUserProfileStats } from "@/data/games/converter";
 import { notFound } from "next/navigation";
-import { RankingChart } from "../../_components/RankingChart";
 
 // Funkcja pomocnicza do generowania ścieżki avatara
 function getPlayerAvatarPath(playerName: string): string {
@@ -34,42 +33,47 @@ interface UserProfileProps {
 }
 
 export async function generateStaticParams() {
-    // Return empty array during build time as Cloudflare context is not available
-    // This will be populated at runtime
-    return [];
+    const games = await getAllGamesData();
+    const allPlayerNames = new Set<string>();
+    
+    games.forEach(game => {
+        game.detailedStats.playersData.forEach(player => {
+            allPlayerNames.add(player.nickname);
+        });
+    });
+    
+    return Array.from(allPlayerNames).map(nick => ({
+        nick: convertNickToUrlSlug(nick),
+    }));
 }
 
-export async function generateMetadata({ params }: UserProfileProps): Promise<Metadata> {
-    const { nick } = await params;
-    const playerName = decodeURIComponent(nick.replace(/-/g, ' '));
-    
-    return {
-        title: `${playerName} - Profil gracza | Drama Afera`,
-        description: `Statystyki gracza ${playerName} w Among Us Drama Afera. Historia rankingu, zagranych gier i szczegółowe statystyki.`,
-    };
-}
 
 export default async function UserProfilePage({ params }: UserProfileProps) {
+    // Pobierz wszystkie gry
     const { nick } = await params;
-    
-    // Pobierz listę wszystkich graczy z bazy danych
-    const allPlayerNames = await getPlayersList();
-    
-    if (allPlayerNames.length === 0) {
-        notFound();
-    }
+    const games = await getAllGamesData();
+
+    // Pobierz listę wszystkich nicków
+    const allPlayerNames: string[] = [];
+    games.forEach(game => {
+        game.detailedStats.playersData.forEach(player => {
+            if (!allPlayerNames.includes(player.nickname)) {
+                allPlayerNames.push(player.nickname);
+            }
+        });
+    });
 
     const playerNick = convertUrlSlugToNick(nick, allPlayerNames);
 
-    // Pobierz statystyki dla konkretnego gracza z bazy danych
-    const playerStats = await getUserProfileStats(playerNick);
+    // Wygeneruj statystyki dla wszystkich graczy
+    const allStats = generateUserProfileStats(games);
+
+    // Znajdź statystyki dla konkretnego gracza
+    const playerStats = allStats.find(stats => stats.name === playerNick);
 
     if (!playerStats) {
         notFound();
     }
-
-    // Pobierz historię rankingu gracza
-    const rankingHistory = await getPlayerRankingHistory(playerNick);
 
     // Oblicz winratio (już jest obliczone w generateUserProfileStats)
     const winRatio = playerStats.winRate;
@@ -96,7 +100,7 @@ export default async function UserProfilePage({ params }: UserProfileProps) {
             <div className="bg-zinc-900/50 backdrop-blur-md rounded-t-xl border-b border-zinc-700/50 p-6">
                 <div className="max-w-4xl mx-auto">
                     <Link 
-                        href="/dramaafera/ranking"
+                        href="/dramaafera-old/ranking"
                         className="text-white hover:text-gray-300 transition-colors mb-4 inline-flex items-center gap-2"
                     >
                         ← Powrót do rankingu
@@ -197,47 +201,6 @@ export default async function UserProfilePage({ params }: UserProfileProps) {
                         </div>
                     </div>
                 </div>
-
-                {/* Historia rankingu */}
-                {rankingHistory.length > 0 && (
-                    <div className="bg-zinc-900/50 backdrop-blur-md rounded-xl border border-zinc-700/50 p-6 mb-6">
-                        <h3 className="text-2xl font-bold mb-6 text-center">Historia rankingu</h3>
-                        
-                        <div className="w-full h-80 rounded-lg p-2 md:p-4 overflow-hidden">
-                            <RankingChart data={rankingHistory} playerName={playerNick} />
-                        </div>
-                        
-                        {/* Podsumowanie rankingu */}
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
-                            <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
-                                <div className="text-xl font-bold text-blue-400">
-                                    {rankingHistory[rankingHistory.length - 1]?.score.toFixed(1) || '0'}
-                                </div>
-                                <div className="text-sm text-zinc-400">
-                                    Obecny ranking
-                                </div>
-                            </div>
-                            
-                            <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
-                                <div className="text-xl font-bold text-green-400">
-                                    {Math.max(...rankingHistory.map(r => r.score)).toFixed(1)}
-                                </div>
-                                <div className="text-sm text-zinc-400">
-                                    Najwyższy ranking
-                                </div>
-                            </div>
-                            
-                            <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
-                                <div className="text-xl font-bold text-red-400">
-                                    {Math.min(...rankingHistory.map(r => r.score)).toFixed(1)}
-                                </div>
-                                <div className="text-sm text-zinc-400">
-                                    Najniższy ranking
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                )}
 
                 {/* Dodatkowe statystyki */}
                 <div className="bg-zinc-900/50 backdrop-blur-md rounded-xl border border-zinc-700/50 p-6">

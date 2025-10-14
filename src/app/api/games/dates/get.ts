@@ -4,7 +4,7 @@ import { getPrismaClient } from '../../_database';
 import { createSuccessResponse, createErrorResponse } from '../../_utils';
 import { withoutDeleted } from '../../schema/common';
 
-export async function GET(request: NextRequest, _authContext: { user: { username: string } }) {
+export async function GET(request: NextRequest) {
   try {
     // Get Cloudflare context for D1 database
     const { env } = await getCloudflareContext();

@@ -7,8 +7,8 @@ import { ErrorResponseSchema } from '../../schema/base';
 
 extendZodWithOpenApi(z);
 
-// Apply middleware to handlers
-export const GET = withCors(withAuth(getHandler));
+// Apply middleware to handlers  
+export const GET = withCors(getHandler);
 
 // Date group schema
 const DateGroupSchema = z.object({

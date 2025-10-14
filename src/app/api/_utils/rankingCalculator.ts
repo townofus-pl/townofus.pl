@@ -1,3 +1,4 @@
+import type { PrismaClient } from '@prisma/client';
 import { withoutDeleted } from '../schema/common';
 
 // Stałe systemu rankingowego

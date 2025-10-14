@@ -8,39 +8,39 @@ import {NavigationLabel} from "./NavigationLabel";
 
 const navigationItems: NavigationItemProps[] = [
     {
-        href: "/dramaafera",
+        href: "/dramaafera-old",
         label: "Ustawienia"
     },
     {
-        href: "/dramaafera/changelog",
+        href: "/dramaafera-old/changelog",
         label: "Changelog",
     },
     {
-        href: "/dramaafera/ranking",
+        href: "/dramaafera-old/ranking",
         label: "Ranking",
     },
     {
-        href: "/dramaafera/role",
+        href: "/dramaafera-old/role",
         label: "Role",
     },
     {   
-        href: "/dramaafera/historia-gier",
+        href: "/dramaafera-old/historia-gier",
         label: "Historia Gier",
 
     },
     {   
-        href: "/dramaafera/playlista",
+        href: "/dramaafera-old/playlista",
         label: "Playlista",
 
     },
     {   
-        href: "/dramaafera/informacje",
+        href: "/dramaafera-old/informacje",
         label: "Informacje",
 
     },
     {   
-        href: "/dramaafera/do_pobrania",
-        label: "Do Pobrania",
+        href: "/dramaafera-old/skiny",
+        label: "Skiny",
 
     },
 ];

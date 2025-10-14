@@ -1,21 +1,9 @@
 import Link from "next/link";
 import Image from "next/image";
-import { getGameData, formatDisplayDate, getRoleColor, formatPlayerStatsWithColors } from "../../../_services/gameDataService";
+import { getGameData, getGameDatesList, formatDisplayDate } from "@/data/games";
+import { formatPlayerStatsWithColors, getRoleColor } from "@/data/games/converter";
 import { TeamColors } from "@/constants/teams";
 import { notFound } from "next/navigation";
-
-// Helper function to convert database role names to display names
-function convertRoleNameForDisplay(roleName: string): string {
-  const roleNameMapping: Record<string, string> = {
-    'SoulCollector': 'Soul Collector',
-    'Soul Collector': 'Soul Collector', // Already has space
-    'GuardianAngel': 'Guardian Angel',
-    'Guardian Angel': 'Guardian Angel', // Already has space
-    // Keep Plaguebearer and Pestilence as separate roles - they should show as is
-  };
-  
-  return roleNameMapping[roleName] || roleName;
-}
 
 // Funkcja pomocnicza do generowania ścieżki avatara
 function getPlayerAvatarPath(playerName: string): string {
@@ -40,19 +28,28 @@ interface GamePageProps {
 }
 
 export async function generateStaticParams() {
-    // Return empty array during build time as Cloudflare context is not available
-    // This will be populated at runtime
-    return [];
+    const dates = await getGameDatesList();
+    const params: { date: string; gameId: string }[] = [];
+    
+    dates.forEach(dateGroup => {
+        dateGroup.games.forEach(game => {
+            params.push({
+                date: dateGroup.date,
+                gameId: game.id
+            });
+        });
+    });
+    
+    return params;
 }
 
 function renderRoleHistory(roleHistory: string[] | undefined) {
     if (!roleHistory || roleHistory.length <= 1) {
         // Jeśli tylko jedna rola lub brak historii, wyświetl normalnie
         const role = roleHistory?.[roleHistory.length - 1] || 'Unknown';
-        const displayRoleName = convertRoleNameForDisplay(role);
-        const roleColor = getRoleColor(displayRoleName);
+        const roleColor = getRoleColor(role);
         return (
-            <Link href={`/dramaafera/role/${convertRoleToUrlSlug(displayRoleName)}`}>
+            <Link href={`/dramaafera-old/role/${convertRoleToUrlSlug(role)}`}>
                 <span 
                     className="px-3 py-1 rounded-lg text-base font-semibold hover:opacity-80 transition-opacity cursor-pointer inline-flex items-center h-8"
                     style={{ 
@@ -61,7 +58,7 @@ function renderRoleHistory(roleHistory: string[] | undefined) {
                         border: `1px solid ${roleColor}40`
                     }}
                 >
-                    {displayRoleName}
+                    {role}
                 </span>
             </Link>
         );
@@ -71,11 +68,10 @@ function renderRoleHistory(roleHistory: string[] | undefined) {
     return (
         <div className="flex items-center gap-1">
             {roleHistory.map((role, roleIndex) => {
-                const displayRoleName = convertRoleNameForDisplay(role);
-                const roleColor = getRoleColor(displayRoleName);
+                const roleColor = getRoleColor(role);
                 return (
                     <span key={roleIndex} className="flex items-center">
-                        <Link href={`/dramaafera/role/${convertRoleToUrlSlug(displayRoleName)}`}>
+                        <Link href={`/dramaafera-old/role/${convertRoleToUrlSlug(role)}`}>
                             <span 
                                 className="px-3 py-1 rounded-lg text-base font-semibold hover:opacity-80 transition-opacity cursor-pointer inline-flex items-center h-8"
                                 style={{ 
@@ -84,7 +80,7 @@ function renderRoleHistory(roleHistory: string[] | undefined) {
                                     border: `1px solid ${roleColor}40`
                                 }}
                             >
-                                {displayRoleName}
+                                {role}
                             </span>
                         </Link>
                         {roleIndex < roleHistory.length - 1 && (
@@ -113,7 +109,7 @@ export default async function GamePage({ params }: GamePageProps) {
             <div className="container mx-auto px-4 py-8">
                 <div className="mb-8">
                     <Link 
-                        href={`/dramaafera/historia-gier/${date}`}
+                        href={`/dramaafera-old/historia-gier/${date}`}
                         className="text-blue-400 hover:text-blue-300 transition-colors mb-4 inline-block"
                     >
                         ← Powrót do {displayDate}
@@ -231,7 +227,7 @@ export default async function GamePage({ params }: GamePageProps) {
                                         />
                                         <div className="flex items-center space-x-3">
                                             <Link 
-                                                href={`/dramaafera/user/${convertNickToUrlSlug(player.nickname)}`}
+                                                href={`/dramaafera-old/user/${convertNickToUrlSlug(player.nickname)}`}
                                                 className="text-xl font-bold text-white hover:text-orange-300 transition-colors"
                                             >
                                                 {player.nickname}
