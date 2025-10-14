@@ -8,6 +8,7 @@ import { calculateRankingForGame } from '../../../_utils';
 
 export async function POST(
   request: NextRequest, 
+  authContext: { user: { username: string } },
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
