@@ -299,7 +299,7 @@ Radiate Max Range
 Sense Duration
 3
 Examine Cooldown
-15
+10
 Show Detective Reports
 True
 Time Where Detective Will Have Role
@@ -331,7 +331,7 @@ True
 Maximum Number Of Players That Can Be Watched
 3
 Dead Body Arrow Duration
-0,74999994
+1
 Seer Cooldown
 12,5
 Crewmate Killing Roles Are Red
@@ -421,7 +421,7 @@ True
 Jail Cooldown
 15
 Maximum Number Of Executes
-1
+2
 Campaign Cooldown
 20
 Prosecutor Dies When They Exile A Crewmate
@@ -465,7 +465,7 @@ True
 Show Fortified Player
 2
 Maximum Number Of Fixes
-7
+10
 Mediate Cooldown
 5
 Reveal Appearance Of Mediate Target
@@ -551,17 +551,17 @@ Tasks Remaining When Phantom Can Be Clicked
 Phantom Win Ends Game
 True
 Douse Cooldown
-15
+20
 Ignite Radius
-1
+0,79999995
 Arsonist Can Vent
 True
 Mimic Cooldown
-17,5
+20
 Mimic Duration
-10
+8
 Hack Cooldown
-17,5
+20
 Hack Duration
 10
 Glitch Kill Cooldown
@@ -581,7 +581,7 @@ Pestilence Kill Cooldown
 Pestilence Can Vent
 True
 Reap Cooldown
-15
+12,5
 Soul Collector Can Vent
 True
 Vampire Bite Cooldown
@@ -601,19 +601,19 @@ False
 Rampage Cooldown
 15
 Rampage Duration
-15
+12,5
 Rampage Kill Cooldown
-1,5
+2,5
 Werewolf Can Vent When Rampaged
 True
 Blind Cooldown
-15
+10
 Blind Duration
 10
 Blind Radius
 1
 Recall Cooldown
-20
+15
 Escapist Can Vent
 True
 Flash Grenade Cooldown
@@ -625,33 +625,33 @@ Flash Radius
 Grenadier Can Vent
 True
 Morphling Cooldown
-10
+12,5
 Morphling Duration
-15
+10
 Morphling Can Vent
 True
 Swoop Cooldown
-20
+15
 Swoop Duration
-7
+10
 Swooper Can Vent
 True
 Ability Cooldown
-20
+15
 Ability Duration
 10
 Sprint Speed
-1,3499999
+1,4999998
 Minimum Freeze Speed
 0,50000006
 Freeze Radius
-0,5
+0,75
 Detonate Delay
 3
 Max Kills In Detonation
-5
+3
 Detonate Radius
-0,35000002
+0,25
 Bomber Can Vent
 True
 All Impostors See Bomb
@@ -681,11 +681,11 @@ Maximum People Alive Where Blackmailed Can Vote
 Hypnotize Cooldown
 10
 Mine Cooldown
-15
+32,5
 Drag Cooldown
-25
+20
 Undertaker Drag Speed
-0,74999994
+1
 Undertaker Can Vent
 True
 Undertaker Can Vent While Dragging
