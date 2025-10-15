@@ -288,7 +288,22 @@ export async function GET(request: NextRequest, _authContext: { user: { username
     console.error('Error fetching games:', error);
 
     if (error instanceof Error) {
-      return createErrorResponse('Failed to fetch games: ' + error.message + ' (' + error.stack || 'Unknown stack' + ')', 500);
+      // recursively get full message from error and cause
+        const createErrorMessage = (err: Error): string => {
+          let errorMessage = err.message + ' (' + err.stack || 'Unknown stack trace' + ')';
+          if (!err.cause){
+              return errorMessage;
+          }
+          if (err.cause instanceof Error) {
+            errorMessage += ` | ${createErrorMessage(err.cause)})`;
+          } else {
+            errorMessage += ` | ${err.cause.toString()})`;
+          }
+
+          return errorMessage;
+      };
+
+      return createErrorResponse('Failed to fetch games: ' + createErrorMessage(error), 500);
     }
 
     return createErrorResponse('Internal server error', 500);
