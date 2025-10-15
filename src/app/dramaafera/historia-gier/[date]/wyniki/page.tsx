@@ -1,12 +1,13 @@
-// Dodaj wymagany eksport generateStaticParams dla Next.js SSG
-export async function generateStaticParams() {
-  const dates = await getGameDatesList();
-  return dates.map(dateGroup => ({ date: dateGroup.date }));
-}
-import { getGameDatesList, getGamesListByDate, getGameData } from '@/data/games';
-import { normalizeRoleName, getRoleColor, determineTeam, UIGameData, UIPlayerData } from '@/data/games/converter';
+import { getGamesListByDate, getGameData, normalizeRoleName, getRoleColor, determineTeam, UIGameData, UIPlayerData } from '../../../_services/gameDataService';
 import PlayerTable from '@/app/_components/PlayerTable';
 import RoleTable from '@/app/_components/RoleTable';
+
+// Dodaj wymagany eksport generateStaticParams dla Next.js SSG
+export async function generateStaticParams() {
+  // Return empty array during build time as Cloudflare context is not available
+  // This will be populated at runtime
+  return [];
+}
 
 interface PlayerDayStats {
   name: string;
@@ -148,7 +149,7 @@ export default async function WynikiDniaPage({ params }: { params: Promise<{ dat
       <PlayerTable 
         players={players}
         reversedGames={reversedGames}
-        detailedGames={detailedGames}
+        detailedGames={detailedGames as (UIGameData | null)[]}
         date={date}
         hideZeroStats={true}
       />
@@ -158,7 +159,7 @@ export default async function WynikiDniaPage({ params }: { params: Promise<{ dat
       <RoleTable 
         roles={roles}
         reversedGames={reversedGames}
-        detailedGames={detailedGames}
+        detailedGames={detailedGames as (UIGameData | null)[]}
         date={date}
         hideZeroStats={true}
       />

@@ -37,7 +37,6 @@ Polish Among Us community website built with Next.js 15, TypeScript, and Cloudfl
 
 3. **Setup database**
    ```bash
-   npm run db:generate
    npm run db:migrate:apply:local
    ```
 
@@ -45,6 +44,57 @@ Polish Among Us community website built with Next.js 15, TypeScript, and Cloudfl
    ```bash
    npm run dev
    ```
+
+## Database Migrations
+
+This project uses **Wrangler CLI + Prisma migrate diff** approach for D1 migrations.
+
+### Creating New Migrations
+
+1. **Update Prisma schema** in `prisma/schema.prisma`
+2. **Create migration file**:
+   ```bash
+   npm run db:migrate:create feature_name
+   ```
+3. **Generate SQL from schema changes**:
+   ```bash
+   npm run db:migrate:diff -- --output prisma/migrations/0002_feature_name.sql
+   ```
+4. **Apply locally**:
+   ```bash
+   npm run db:migrate:apply:local
+   ```
+5. **Regenerate Prisma client**:
+   ```bash
+   npm run db:generate
+   ```
+
+### Database Commands
+
+```bash
+npm run db:generate                # Generate Prisma client
+npm run db:migrate:create <name>   # Create new migration file
+npm run db:migrate:diff            # Generate SQL from schema changes
+npm run db:migrate:apply:local     # Apply migrations to local D1
+npm run db:migrate:apply:preview   # Apply migrations to preview D1
+npm run db:migrate:apply:remote    # Apply migrations to production D1
+npm run db:execute:local           # Execute SQL on local D1
+npm run db:execute:preview         # Execute SQL on preview D1
+npm run db:execute:remote          # Execute SQL on production D1
+```
+
+### Database Inspection
+
+```bash
+# View all tables
+wrangler d1 execute townofus-pl --local --command "SELECT name FROM sqlite_master WHERE type='table';"
+
+# Interactive SQL shell
+wrangler d1 execute townofus-pl --local
+
+# Check migration status
+wrangler d1 migrations list townofus-pl --local
+```
 
 ## API Documentation
 
@@ -88,13 +138,13 @@ src/app/api/
    ```typescript
    import { withAuth, withCors } from '@/app/api/_middlewares';
    import { openApiRegistry } from '@/app/api/schema/registry';
-   
+
    // Define & register schema
    const CreateUserSchema = z.object({
      username: z.string().min(1)
    });
    openApiRegistry.register('CreateUser', CreateUserSchema);
-   
+
    // Register endpoint
    openApiRegistry.registerPath({
      method: 'post',
@@ -102,7 +152,7 @@ src/app/api/
      summary: 'Create user',
      // ... responses
    });
-   
+
    // Handler with route-level auth & CORS protection
    export const POST = withCors(withAuth(async (request) => {
      // Implementation
@@ -120,26 +170,13 @@ src/app/api/
    ```
 
 **That's it!** Route-level wrappers (`withAuth`, `withCors`) handle:
-- HTTP Basic Auth for all endpoints  
+- HTTP Basic Auth for all endpoints
 - CORS headers automatically
 - Cloudflare Workers compatibility
 
 Documentation updates automatically in `/api/docs`.
 
-## Database Commands
 
-```bash
-npm run db:generate                # Generate Prisma client
-npm run db:migrate:create          # Create new migration
-npm run db:migrate:apply:local     # Apply migrations to local D1
-npm run db:migrate:apply:preview   # Apply migrations to preview D1  
-npm run db:migrate:apply:remote    # Apply migrations to production D1
-npm run db:execute:local           # Execute SQL on local D1
-npm run db:execute:preview         # Execute SQL on preview D1
-npm run db:execute:remote          # Execute SQL on production D1
-npm run db:studio:local            # Open local D1 in SQLite browser
-npm run db:studio:preview          # Open preview D1 in SQLite browser
-```
 
 ## Deployment
 

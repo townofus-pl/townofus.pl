@@ -22,8 +22,8 @@ export async function authenticateApiRequest(request: NextRequest): Promise<Auth
     const { env } = await getCloudflareContext();
     
     // Get credentials from environment
-    const validUsername = env?.API_USERNAME || process.env.API_USERNAME;
-    const validPassword = env?.API_PASSWORD || process.env.API_PASSWORD;
+    const validUsername = (env as unknown as Record<string, string>)?.API_USERNAME || process.env.API_USERNAME;
+    const validPassword = (env as unknown as Record<string, string>)?.API_PASSWORD || process.env.API_PASSWORD;
 
     if (!validUsername || !validPassword) {
       console.error('API authentication not configured - missing API_USERNAME or API_PASSWORD');

@@ -39,8 +39,8 @@ const navigationItems: NavigationItemProps[] = [
 
     },
     {   
-        href: "/dramaafera/skiny",
-        label: "Skiny",
+        href: "/dramaafera/do_pobrania",
+        label: "Do Pobrania",
 
     },
 ];

@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { getGamesListByDate, formatDisplayDate, getGameDatesList } from "@/data/games";
+import { getGamesListByDate, formatDisplayDate } from "../../_services/gameDataService";
 import { TeamColors } from "@/constants/teams";
 import { notFound } from "next/navigation";
 
@@ -9,21 +9,9 @@ function getPlayerAvatarPath(playerName: string): string {
     return `/images/avatars/${playerName}.png`;
 }
 
-// Funkcja pomocnicza do wyciągania numeru partii z ID gry
-function getGameNumber(gameId: string): string {
-    // Format ID: "20250702_2156_14" -> zwraca "14."
-    const parts = gameId.split('_');
-    let number;
-    if (parts.length >= 3) {
-        number = parts[2];
-    } else {
-        // Fallback - ostatnia część po ostatnim podkreślniku
-        number = gameId.split('_').pop() || gameId;
-    }
-    
-    // Usuń zera z przodu i dodaj kropkę
-    const cleanNumber = parseInt(number, 10).toString();
-    return `${cleanNumber}.`;
+// Funkcja pomocnicza do generowania chronologicznego numeru partii (odwrócona numeracja)
+function getChronologicalGameNumber(index: number, totalGames: number): string {
+    return `${totalGames - index}.`;
 }
 
 interface DatePageProps {
@@ -33,10 +21,9 @@ interface DatePageProps {
 }
 
 export async function generateStaticParams() {
-    const dates = await getGameDatesList();
-    return dates.map((dateGroup) => ({
-        date: dateGroup.date,
-    }));
+    // Return empty array during build time as Cloudflare context is not available
+    // This will be populated at runtime
+    return [];
 }
 
 export default async function DateGamesPage({ params }: DatePageProps) {
@@ -70,7 +57,7 @@ export default async function DateGamesPage({ params }: DatePageProps) {
                 </div>
 
                 <div className="space-y-4">
-                    {games.map((game) => (
+                    {games.map((game, index) => (
                         <Link 
                             key={game.id}
                             href={`/dramaafera/historia-gier/${date}/${game.id}`}
@@ -79,7 +66,7 @@ export default async function DateGamesPage({ params }: DatePageProps) {
                             <div className="bg-zinc-900/50 rounded-xl p-6 border border-gray-700/50 hover:border-gray-600/50 hover:bg-zinc-900/70 transition-all duration-200 cursor-pointer">
                                 <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
                                     <div className="flex-1">                        <div className="flex items-center space-x-4 mb-3">
-                            <span className="text-2xl font-bold text-blue-400">{getGameNumber(game.id)} partia</span>
+                            <span className="text-2xl font-bold text-blue-400">{getChronologicalGameNumber(index, games.length)} partia</span>
                             <span className="text-gray-400">{game.date}</span>
                             <span className="bg-gray-700 px-2 py-1 rounded text-sm">{game.duration}</span>
                             <span className="bg-blue-600/30 text-blue-300 px-2 py-1 rounded text-sm">

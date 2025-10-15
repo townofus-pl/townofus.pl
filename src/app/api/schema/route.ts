@@ -12,18 +12,23 @@ async function importRouteHandlers() {
   try {
     // Import all API method handlers to trigger schema registration
     // This ensures all endpoints and schemas are included in the generated documentation
-    await import('@/app/api/fruits/get');
-    await import('@/app/api/fruits/post');
-    await import('@/app/api/fruits/[id]/get');
-    await import('@/app/api/fruits/[id]/put');
-    await import('@/app/api/fruits/[id]/delete');
-    await import('@/app/api/status/route');
     
-    // Add more method imports here as you create new endpoints
-    // await import('@/app/api/users/get');
-    // await import('@/app/api/users/post');
-    // await import('@/app/api/games/get');
-    // await import('@/app/api/roles/get');
+    // Main API info endpoint
+    await import('@/app/api/route');
+    
+    // Players endpoints
+    await import('@/app/api/players/route');
+    await import('@/app/api/players/[id]/route');
+    
+    // Games endpoints
+    await import('@/app/api/games/route');
+    await import('@/app/api/games/[id]/route');
+    await import('@/app/api/games/dates/route');
+    await import('@/app/api/games/stats/route');
+    await import('../games/upload/route');
+    
+    // Utility endpoints
+    await import('@/app/api/status/route');
     
   } catch (error) {
     console.error('Error importing route handlers:', error);

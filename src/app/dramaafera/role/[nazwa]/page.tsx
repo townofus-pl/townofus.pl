@@ -1,10 +1,9 @@
 import Link from "next/link";
 import Image from "next/image";
-import { getAllGamesData } from "@/data/games";
-import { getRoleColor } from "@/data/games/converter";
 import { notFound } from "next/navigation";
 import { RoleImage } from "../_components/RoleImage";
-import type { PlayerStats } from "@/data/games/converter";
+import { getAllGamesData, getRoleColor } from "../../_services/gameDataService";
+import type { UIGameData, UIPlayerData } from "../../_services/gameDataService";
 
 // Funkcja pomocnicza do konwersji nazwy roli na format URL-friendly
 function convertRoleToUrlSlug(role: string): string {
@@ -91,22 +90,7 @@ function isKillerRole(roleName: string): boolean {
     return killerRoles.includes(roleName);
 }
 
-// Typy dla gracza i gry
-type UIGamePlayer = {
-    nickname: string;
-    win: boolean;
-    role?: string;
-    roleHistory?: string[];
-    originalStats?: PlayerStats;
-};
-type UIGameData = {
-    id: string;
-    winner?: string;
-    maxTasks?: number;
-    detailedStats: {
-        playersData: UIGamePlayer[];
-    };
-};
+// Typy będą importowane z gameDataService
 
 // Funkcja do generowania statystyk roli
 function generateRoleStats(allGames: UIGameData[], targetRole: string): RoleStats {
@@ -155,7 +139,7 @@ function generateRoleStats(allGames: UIGameData[], targetRole: string): RoleStat
             }
         });
 
-        game.detailedStats.playersData.forEach((player: UIGamePlayer) => {
+        game.detailedStats.playersData.forEach((player: UIPlayerData) => {
             // Sprawdź wystąpienia roli w całej historii (dla totalAppearances)
             const hasRoleInHistory = player.role === targetRole ||
                 (player.roleHistory && player.roleHistory.includes(targetRole));
@@ -187,64 +171,62 @@ function generateRoleStats(allGames: UIGameData[], targetRole: string): RoleStat
                     current.wins++;
                 }
 
-                // Agreguj wszystkie dostępne statystyki z originalStats
-                if (player.originalStats) {
-                    // Statystyki zabójstw
-                    const kills = player.originalStats.correctKills || 0;
-                    const incorrectKill = player.originalStats.incorrectKills || 0;
-                    current.correctKills += kills;
-                    current.incorrectKills += incorrectKill;
-                    totalCorrectKills += kills;
-                    totalIncorrectKills += incorrectKill;
+                // Agreguj wszystkie dostępne statystyki bezpośrednio z UIPlayerData
+                // Statystyki zabójstw
+                const kills = player.correctKills || 0;
+                const incorrectKill = player.incorrectKills || 0;
+                current.correctKills += kills;
+                current.incorrectKills += incorrectKill;
+                totalCorrectKills += kills;
+                totalIncorrectKills += incorrectKill;
 
-                    // Statystyki tasków
-                    const completedTasks = player.originalStats.completedTasks || 0;
-                    totalTasks += completedTasks;
-                    // Dodaj maxTasks z gry jeśli gracz wykonał jakieś zadania (podobnie jak w converter.ts)
-                    if (completedTasks > 0 && game.maxTasks) {
-                        maxTasks += game.maxTasks;
-                    }
-
-                    // Statystyki zgadywań
-                    correctGuesses += player.originalStats.correctGuesses || 0;
-                    incorrectGuesses += player.originalStats.incorrectGuesses || 0;
-
-                    // Statystyki Prosecute
-                    correctProsecutes += player.originalStats.correctProsecutes || 0;
-                    incorrectProsecutes += player.originalStats.incorrectProsecutes || 0;
-
-                    // Statystyki Deputy
-                    correctDeputyShoots += player.originalStats.correctDeputyShoots || 0;
-                    incorrectDeputyShoots += player.originalStats.incorrectDeputyShoots || 0;
-
-                    // Statystyki Jailor
-                    correctJailorExecutes += player.originalStats.correctJailorExecutes || 0;
-                    incorrectJailorExecutes += player.originalStats.incorrectJailorExecutes || 0;
-
-                    // Statystyki Medic
-                    correctMedicShields += player.originalStats.correctMedicShields || 0;
-                    incorrectMedicShields += player.originalStats.incorrectMedicShields || 0;
-
-                    // Statystyki Warden
-                    correctWardenFortifies += player.originalStats.correctWardenFortifies || 0;
-                    incorrectWardenFortifies += player.originalStats.incorrectWardenFortifies || 0;
-
-                    // Statystyki Janitor
-                    janitorCleans += player.originalStats.janitorCleans || 0;
-
-                    // Statystyki przetrwania
-                    survivedRounds += player.originalStats.survivedRounds || 0;
-                    // totalRounds - obliczamy jako sumę maksymalnych rund dla każdej gry gdzie gracz miał tę rolę
-                    totalRounds += maxRoundsInThisGame;
-
-                    // Statystyki Altruist
-                    correctAltruistRevives += player.originalStats.correctAltruistRevives || 0;
-                    incorrectAltruistRevives += player.originalStats.incorrectAltruistRevives || 0;
-
-                    // Statystyki Swapper
-                    correctSwaps += player.originalStats.correctSwaps || 0;
-                    incorrectSwaps += player.originalStats.incorrectSwaps || 0;
+                // Statystyki tasków
+                const completedTasks = player.completedTasks || 0;
+                totalTasks += completedTasks;
+                // Dodaj maxTasks z gry jeśli gracz wykonał jakieś zadania
+                if (completedTasks > 0 && game.maxTasks) {
+                    maxTasks += game.maxTasks;
                 }
+
+                // Statystyki zgadywań
+                correctGuesses += player.correctGuesses || 0;
+                incorrectGuesses += player.incorrectGuesses || 0;
+
+                // Statystyki Prosecute
+                correctProsecutes += player.correctProsecutes || 0;
+                incorrectProsecutes += player.incorrectProsecutes || 0;
+
+                // Statystyki Deputy
+                correctDeputyShoots += player.correctDeputyShoots || 0;
+                incorrectDeputyShoots += player.incorrectDeputyShoots || 0;
+
+                // Statystyki Jailor
+                correctJailorExecutes += player.correctJailorExecutes || 0;
+                incorrectJailorExecutes += player.incorrectJailorExecutes || 0;
+
+                // Statystyki Medic
+                correctMedicShields += player.correctMedicShields || 0;
+                incorrectMedicShields += player.incorrectMedicShields || 0;
+
+                // Statystyki Warden
+                correctWardenFortifies += player.correctWardenFortifies || 0;
+                incorrectWardenFortifies += player.incorrectWardenFortifies || 0;
+
+                // Statystyki Janitor
+                janitorCleans += player.janitorCleans || 0;
+
+                // Statystyki przetrwania
+                survivedRounds += player.survivedRounds || 0;
+                // totalRounds - obliczamy jako sumę maksymalnych rund dla każdej gry gdzie gracz miał tę rolę
+                totalRounds += maxRoundsInThisGame;
+
+                // Statystyki Altruist
+                correctAltruistRevives += player.correctAltruistRevives || 0;
+                incorrectAltruistRevives += player.incorrectAltruistRevives || 0;
+
+                // Statystyki Swapper
+                correctSwaps += player.correctSwaps || 0;
+                incorrectSwaps += player.incorrectSwaps || 0;
 
                 playerStats.set(player.nickname, current);
             }
@@ -353,7 +335,7 @@ export async function generateStaticParams() {
 export default async function RoleStatsPage({ params }: RolePageProps) {
     const {nazwa} = await params;
     
-    // Pobierz wszystkie gry
+    // Pobierz wszystkie gry z bazy danych
     const games = await getAllGamesData();
     
     // Pobierz listę wszystkich ról

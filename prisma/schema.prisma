@@ -2,9 +2,13 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-    provider        = "prisma-client-js"
-    output          = "../src/generated/prisma"
-    previewFeatures = ["driverAdapters"]
+    provider = "prisma-client-js"
+    output   = "../src/generated/prisma"
+}
+
+generator zod {
+    provider = "prisma-zod-generator"
+    output   = "../src/generated/zod"
 }
 
 datasource db {
@@ -12,16 +16,316 @@ datasource db {
     url      = env("DATABASE_URL")
 }
 
-// Demo table for API endpoints
-model Fruit {
-    id          Int      @id @default(autoincrement())
-    name        String
-    color       String
-    price       Float
-    description String?
-    inStock     Boolean  @default(true) @map("in_stock")
-    createdAt   DateTime @default(now()) @map("created_at")
-    updatedAt   DateTime @updatedAt @map("updated_at")
+// =============================================================================
+// CORE GAME TABLES
+// =============================================================================
 
-    @@map("fruits")
+model Game {
+    id              Int      @id @default(autoincrement())
+    gameIdentifier  String   @unique // Format: YYYYMMDD_HHMM for URL access
+
+    // Game metadata
+    startTime       DateTime
+    endTime         DateTime
+    map             String
+    maxTasks        Int?
+
+    // Computed winner information (cached for performance)
+    winnerTeam      String?  // 'Crewmate', 'Impostor', 'Neutral'
+    winCondition    String?  // Description of how the game was won
+
+    // Timestamps
+    createdAt       DateTime @default(now())
+    updatedAt       DateTime @updatedAt
+    deletedAt       DateTime? // Soft delete
+
+    // Relationships
+    gamePlayerStatistics GamePlayerStatistics[]
+    gameEvents          GameEvent[]
+    meetings            Meeting[]
+    playerRankings      PlayerRanking[]
+
+    @@index([gameIdentifier])
+    @@index([startTime])
+    @@index([createdAt])
+    @@index([deletedAt])
+    @@index([winnerTeam])
+    @@map("games")
+}
+
+model Player {
+    id        Int      @id @default(autoincrement())
+    name      String   @unique
+
+    // Timestamps
+    createdAt DateTime @default(now())
+    updatedAt DateTime @updatedAt
+    deletedAt DateTime? // Soft delete
+
+    // Current ranking reference
+    currentRankingId Int? @unique
+
+    // Relationships
+    gamePlayerStatistics GamePlayerStatistics[]
+    gameEvents           GameEvent[] @relation("EventPlayer")
+    targetEvents         GameEvent[] @relation("EventTarget")
+    meetingVotesFor      MeetingVote[] @relation("VoteTarget")
+    meetingVotesBy       MeetingVote[] @relation("VoteVoter")
+    skipVotes            MeetingSkipVote[] @relation("SkipVotes")
+    noVotes              MeetingNoVote[] @relation("NoVotes")
+    blackmailedIn        MeetingBlackmailedPlayer[] @relation("BlackmailedIn")
+    jailedIn             MeetingJailedPlayer[] @relation("JailedIn")
+    currentRanking       PlayerRanking? @relation("CurrentRanking", fields: [currentRankingId], references: [id])
+    rankingHistory       PlayerRanking[] @relation("RankingHistory")
+
+    @@index([name], map: "players_name_idx")
+    @@index([currentRankingId])
+    @@index([deletedAt])
+    @@map("players")
+}
+
+model GamePlayerStatistics {
+    id       Int @id @default(autoincrement())
+    gameId   Int
+    playerId Int
+
+    // Player statistics (from PlayerStats interface)
+    win                         Boolean @default(false)
+    disconnected               Boolean @default(false)
+    initialRolePoints          Int     @default(0)
+    correctKills               Int     @default(0)
+    incorrectKills             Int     @default(0)
+    correctProsecutes          Int     @default(0)
+    incorrectProsecutes        Int     @default(0)
+    correctGuesses             Int     @default(0)
+    incorrectGuesses           Int     @default(0)
+    correctDeputyShoots        Int     @default(0)
+    incorrectDeputyShoots      Int     @default(0)
+    correctJailorExecutes      Int     @default(0)
+    incorrectJailorExecutes    Int     @default(0)
+    correctMedicShields        Int     @default(0)
+    incorrectMedicShields      Int     @default(0)
+    correctWardenFortifies     Int     @default(0)
+    incorrectWardenFortifies   Int     @default(0)
+    janitorCleans              Int     @default(0)
+    completedTasks             Int     @default(0)
+    survivedRounds             Int     @default(0)
+    correctAltruistRevives     Int     @default(0)
+    incorrectAltruistRevives   Int     @default(0)
+    correctSwaps               Int     @default(0)
+    incorrectSwaps             Int     @default(0)
+    totalPoints                Float   @default(0)
+
+    // Relationships
+    game         Game           @relation(fields: [gameId], references: [id], onDelete: Cascade)
+    player       Player         @relation(fields: [playerId], references: [id], onDelete: Cascade)
+    roleHistory  PlayerRole[]
+    modifiers    PlayerModifier[]
+
+    @@unique([gameId, playerId])
+    @@index([gameId])
+    @@index([playerId])
+    @@index([win])
+    @@index([disconnected])
+    @@index([totalPoints])
+    @@index([correctKills])
+    @@index([correctGuesses])
+    @@index([completedTasks])
+    @@index([survivedRounds])
+    @@index([gameId, win])
+    @@index([playerId, win])
+    @@map("game_player_statistics")
+}
+
+model PlayerRole {
+    id                      Int @id @default(autoincrement())
+    gamePlayerStatisticsId  Int
+    roleName                String
+    order                   Int    // Position in role history (0 = first/initial role)
+
+    // Relationships
+    gamePlayerStatistics GamePlayerStatistics @relation(fields: [gamePlayerStatisticsId], references: [id], onDelete: Cascade)
+
+    @@index([gamePlayerStatisticsId])
+    @@index([roleName])
+    @@index([roleName, order])
+    @@index([order])
+    @@map("player_roles")
+}
+
+model PlayerModifier {
+    id                      Int @id @default(autoincrement())
+    gamePlayerStatisticsId  Int
+    modifierName            String
+
+    // Relationships
+    gamePlayerStatistics GamePlayerStatistics @relation(fields: [gamePlayerStatisticsId], references: [id], onDelete: Cascade)
+
+    @@index([gamePlayerStatisticsId])
+    @@index([modifierName])
+    @@map("player_modifiers")
+}
+
+// =============================================================================
+// GAME EVENTS AND MEETINGS
+// =============================================================================
+
+model GameEvent {
+    id          Int     @id @default(autoincrement())
+    gameId      Int
+    timestamp   String  // Format: "HH:MM:SS"
+    description String
+
+    // Event categorization (derived from converter.ts)
+    eventType   String? // 'kill', 'meeting', 'vote', 'task', 'sabotage', 'fix', 'vent', 'other'
+    playerId    Int? // Main player involved in event
+    targetId    Int? // Target player (for kills, etc.)
+
+    // Timestamps
+    deletedAt   DateTime? // Soft delete
+
+    // Relationships
+    game   Game    @relation(fields: [gameId], references: [id], onDelete: Cascade)
+    player Player? @relation("EventPlayer", fields: [playerId], references: [id], onDelete: SetNull)
+    target Player? @relation("EventTarget", fields: [targetId], references: [id], onDelete: SetNull)
+
+    @@index([gameId])
+    @@index([timestamp])
+    @@index([eventType])
+    @@index([playerId])
+    @@index([targetId])
+    @@index([deletedAt])
+    @@map("game_events")
+}
+
+model Meeting {
+    id                        Int @id @default(autoincrement())
+    gameId                    Int
+    meetingNumber             Int
+    deathsSinceLastMeeting    String // JSON array of death descriptions
+    wasTie                    Boolean @default(false)
+    wasBlessed                Boolean @default(false)
+
+    // Timestamps
+    deletedAt                 DateTime? // Soft delete
+
+    // Relationships
+    game              Game          @relation(fields: [gameId], references: [id], onDelete: Cascade)
+    meetingVotes      MeetingVote[]
+    skipVotes         MeetingSkipVote[]
+    noVotes           MeetingNoVote[]
+    blackmailedPlayers MeetingBlackmailedPlayer[]
+    jailedPlayers     MeetingJailedPlayer[]
+
+    @@unique([gameId, meetingNumber])
+    @@index([gameId])
+    @@index([meetingNumber])
+    @@index([deletedAt])
+    @@map("meetings")
+}
+
+model MeetingSkipVote {
+    id        Int @id @default(autoincrement())
+    meetingId Int
+    playerId  Int
+
+    // Relationships
+    meeting Meeting @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+    player  Player  @relation("SkipVotes", fields: [playerId], references: [id], onDelete: Cascade)
+
+    @@unique([meetingId, playerId])
+    @@index([meetingId])
+    @@index([playerId])
+    @@map("meeting_skip_votes")
+}
+
+model MeetingNoVote {
+    id        Int @id @default(autoincrement())
+    meetingId Int
+    playerId  Int
+
+    // Relationships
+    meeting Meeting @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+    player  Player  @relation("NoVotes", fields: [playerId], references: [id], onDelete: Cascade)
+
+    @@unique([meetingId, playerId])
+    @@index([meetingId])
+    @@index([playerId])
+    @@map("meeting_no_votes")
+}
+
+model MeetingBlackmailedPlayer {
+    id        Int @id @default(autoincrement())
+    meetingId Int
+    playerId  Int
+
+    // Relationships
+    meeting Meeting @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+    player  Player  @relation("BlackmailedIn", fields: [playerId], references: [id], onDelete: Cascade)
+
+    @@unique([meetingId, playerId])
+    @@index([meetingId])
+    @@index([playerId])
+    @@map("meeting_blackmailed_players")
+}
+
+model MeetingJailedPlayer {
+    id        Int @id @default(autoincrement())
+    meetingId Int
+    playerId  Int
+
+    // Relationships
+    meeting Meeting @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+    player  Player  @relation("JailedIn", fields: [playerId], references: [id], onDelete: Cascade)
+
+    @@unique([meetingId, playerId])
+    @@index([meetingId])
+    @@index([playerId])
+    @@map("meeting_jailed_players")
+}
+
+model MeetingVote {
+    id        Int @id @default(autoincrement())
+    meetingId Int
+    targetId  Int // Who was voted for
+    voterId   Int // Who cast the vote
+
+    // Relationships
+    meeting Meeting @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+    target  Player  @relation("VoteTarget", fields: [targetId], references: [id], onDelete: Cascade)
+    voter   Player  @relation("VoteVoter", fields: [voterId], references: [id], onDelete: Cascade)
+
+    @@index([meetingId])
+    @@index([targetId])
+    @@index([voterId])
+    @@map("meeting_votes")
+}
+
+// =============================================================================
+// PLAYER RANKING SYSTEM
+// =============================================================================
+
+model PlayerRanking {
+    id       Int     @id @default(autoincrement())
+    playerId Int
+    gameId   Int? // Optional - null for base values, penalties, rewards
+    score    Float   // Ranking points
+    reason   String? // Optional description: "base_value", "game_result", "penalty", "reward"
+
+    // Timestamps
+    createdAt DateTime @default(now())
+    deletedAt DateTime? // Soft delete
+
+    // Relationships
+    player         Player  @relation("RankingHistory", fields: [playerId], references: [id], onDelete: Cascade)
+    game           Game?   @relation(fields: [gameId], references: [id], onDelete: Cascade)
+    currentForPlayer Player? @relation("CurrentRanking")
+
+    @@index([playerId, createdAt])
+    @@index([score])
+    @@index([gameId])
+    @@index([createdAt])
+    @@index([reason])
+    @@index([deletedAt])
+    @@map("player_rankings")
 }

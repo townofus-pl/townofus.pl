@@ -93,8 +93,16 @@ export function generateOpenApiDocument(currentPort?: string) {
     ],
     tags: [
       {
-        name: 'Fruits',
-        description: 'Fruit management operations',
+        name: 'System',
+        description: 'System information and health endpoints',
+      },
+      {
+        name: 'Players',
+        description: 'Player management and statistics',
+      },
+      {
+        name: 'Games',
+        description: 'Among Us game data management and statistics',
       },
     ],
   });

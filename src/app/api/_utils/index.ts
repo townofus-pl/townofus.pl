@@ -1,4 +1,7 @@
-import { NextResponse } from 'next/server';
+import { NextRequest, NextResponse } from 'next/server';
+
+// Re-export ranking calculator
+export { calculateRankingForGame } from './rankingCalculator';
 
 /**
  * Standard API response structure
@@ -53,4 +56,20 @@ export function createMessageResponse(
   };
 
   return NextResponse.json(response, { status });
+}
+
+/**
+ * Create a redirect response
+ */
+export function createRedirectResponse(
+  url: string,
+  request?: NextRequest,
+  status: number = 302
+): NextResponse {
+  // Handle relative URLs by constructing absolute URL
+  if (url.startsWith('/')) {
+    const baseUrl = request ? new URL(request.url).origin : 'http://localhost:3000';
+    return NextResponse.redirect(new URL(url, baseUrl), status);
+  }
+  return NextResponse.redirect(url, status);
 }

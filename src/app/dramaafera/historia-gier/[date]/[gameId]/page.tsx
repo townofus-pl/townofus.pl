@@ -1,9 +1,21 @@
 import Link from "next/link";
 import Image from "next/image";
-import { getGameData, getGameDatesList, formatDisplayDate } from "@/data/games";
-import { formatPlayerStatsWithColors, getRoleColor } from "@/data/games/converter";
+import { getGameData, formatDisplayDate, getRoleColor, formatPlayerStatsWithColors } from "../../../_services/gameDataService";
 import { TeamColors } from "@/constants/teams";
 import { notFound } from "next/navigation";
+
+// Helper function to convert database role names to display names
+function convertRoleNameForDisplay(roleName: string): string {
+  const roleNameMapping: Record<string, string> = {
+    'SoulCollector': 'Soul Collector',
+    'Soul Collector': 'Soul Collector', // Already has space
+    'GuardianAngel': 'Guardian Angel',
+    'Guardian Angel': 'Guardian Angel', // Already has space
+    // Keep Plaguebearer and Pestilence as separate roles - they should show as is
+  };
+  
+  return roleNameMapping[roleName] || roleName;
+}
 
 // Funkcja pomocnicza do generowania ścieżki avatara
 function getPlayerAvatarPath(playerName: string): string {
@@ -28,28 +40,19 @@ interface GamePageProps {
 }
 
 export async function generateStaticParams() {
-    const dates = await getGameDatesList();
-    const params: { date: string; gameId: string }[] = [];
-    
-    dates.forEach(dateGroup => {
-        dateGroup.games.forEach(game => {
-            params.push({
-                date: dateGroup.date,
-                gameId: game.id
-            });
-        });
-    });
-    
-    return params;
+    // Return empty array during build time as Cloudflare context is not available
+    // This will be populated at runtime
+    return [];
 }
 
 function renderRoleHistory(roleHistory: string[] | undefined) {
     if (!roleHistory || roleHistory.length <= 1) {
         // Jeśli tylko jedna rola lub brak historii, wyświetl normalnie
         const role = roleHistory?.[roleHistory.length - 1] || 'Unknown';
-        const roleColor = getRoleColor(role);
+        const displayRoleName = convertRoleNameForDisplay(role);
+        const roleColor = getRoleColor(displayRoleName);
         return (
-            <Link href={`/dramaafera/role/${convertRoleToUrlSlug(role)}`}>
+            <Link href={`/dramaafera/role/${convertRoleToUrlSlug(displayRoleName)}`}>
                 <span 
                     className="px-3 py-1 rounded-lg text-base font-semibold hover:opacity-80 transition-opacity cursor-pointer inline-flex items-center h-8"
                     style={{ 
@@ -58,7 +61,7 @@ function renderRoleHistory(roleHistory: string[] | undefined) {
                         border: `1px solid ${roleColor}40`
                     }}
                 >
-                    {role}
+                    {displayRoleName}
                 </span>
             </Link>
         );
@@ -68,10 +71,11 @@ function renderRoleHistory(roleHistory: string[] | undefined) {
     return (
         <div className="flex items-center gap-1">
             {roleHistory.map((role, roleIndex) => {
-                const roleColor = getRoleColor(role);
+                const displayRoleName = convertRoleNameForDisplay(role);
+                const roleColor = getRoleColor(displayRoleName);
                 return (
                     <span key={roleIndex} className="flex items-center">
-                        <Link href={`/dramaafera/role/${convertRoleToUrlSlug(role)}`}>
+                        <Link href={`/dramaafera/role/${convertRoleToUrlSlug(displayRoleName)}`}>
                             <span 
                                 className="px-3 py-1 rounded-lg text-base font-semibold hover:opacity-80 transition-opacity cursor-pointer inline-flex items-center h-8"
                                 style={{ 
@@ -80,7 +84,7 @@ function renderRoleHistory(roleHistory: string[] | undefined) {
                                     border: `1px solid ${roleColor}40`
                                 }}
                             >
-                                {role}
+                                {displayRoleName}
                             </span>
                         </Link>
                         {roleIndex < roleHistory.length - 1 && (

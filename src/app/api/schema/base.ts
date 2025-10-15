@@ -1,5 +1,7 @@
 import { z } from 'zod';
 import { extendZodWithOpenApi } from '@asteasolutions/zod-to-openapi';
+import { openApiRegistry } from './registry';
+
 // Extend Zod with OpenAPI
 extendZodWithOpenApi(z);
 /**
@@ -54,32 +56,7 @@ export const TimestampSchema = z.object({
     example: '2024-01-15T10:30:00Z'
   })
 });
-export const ColorSchema = z.string()
-  .min(1)
-  .max(50)
-  .regex(/^[a-zA-Z\s-]+$/, 'Color must contain only letters, spaces, and hyphens')
-  .openapi({
-    description: 'Color name',
-    example: 'red',
-    pattern: '^[a-zA-Z\\s-]+$'
-  });
-export const PriceSchema = z.number()
-  .positive('Price must be positive')
-  .max(999999.99, 'Price too high')
-  .openapi({
-    description: 'Price in USD',
-    example: 2.99,
-    minimum: 0.01,
-    maximum: 999999.99
-  });
-export const DescriptionSchema = z.string()
-  .max(1000, 'Description too long')
-  .optional()
-  .openapi({
-    description: 'Optional description text',
-    example: 'A detailed description of the item',
-    maxLength: 1000
-  });
+
 /**
  * Type helpers
  */
@@ -87,3 +64,11 @@ export type BaseResponse = z.infer<typeof BaseResponseSchema>;
 export type ErrorResponse = z.infer<typeof ErrorResponseSchema>;
 export type IdParam = z.infer<typeof IdParamSchema>;
 export type Timestamp = z.infer<typeof TimestampSchema>;
+
+/**
+ * Register all base schemas with OpenAPI registry
+ */
+openApiRegistry.register('BaseResponse', BaseResponseSchema);
+openApiRegistry.register('ErrorResponse', ErrorResponseSchema);
+openApiRegistry.register('IdParam', IdParamSchema);
+openApiRegistry.register('Timestamp', TimestampSchema);
