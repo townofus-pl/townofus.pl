@@ -20,18 +20,18 @@ export async function GET(request: NextRequest, _authContext: { user: { username
       return createErrorResponse('Invalid query parameters: ' + JSON.stringify(formatZodError(parseResult.error)), 400);
     }
 
-    const { 
-      limit, 
-      offset, 
+    const {
+      limit,
+      offset,
       date,
-      startDate, 
-      endDate, 
+      startDate,
+      endDate,
       player,
       winnerTeam,
-      map, 
-      sort, 
+      map,
+      sort,
       order,
-      includePlayers 
+      includePlayers
     } = parseResult.data;
 
     // Build where clause
@@ -45,10 +45,10 @@ export async function GET(request: NextRequest, _authContext: { user: { username
       const year = parseInt(date.substring(0, 4));
       const month = parseInt(date.substring(4, 6)) - 1; // JS months are 0-indexed
       const day = parseInt(date.substring(6, 8));
-      
+
       const startOfDay = new Date(year, month, day, 0, 0, 0);
       const endOfDay = new Date(year, month, day, 23, 59, 59);
-      
+
       where.startTime = {
         gte: startOfDay,
         lte: endOfDay
@@ -67,13 +67,13 @@ export async function GET(request: NextRequest, _authContext: { user: { username
           // ISO format
           startDateTime = new Date(startDate);
         }
-        
+
         where.startTime = {
           ...where.startTime as object,
           gte: startDateTime
         };
       }
-      
+
       if (endDate) {
         let endDateTime: Date;
         if (/^\d{8}$/.test(endDate)) {
@@ -86,7 +86,7 @@ export async function GET(request: NextRequest, _authContext: { user: { username
           // ISO format
           endDateTime = new Date(endDate);
         }
-        
+
         where.startTime = {
           ...where.startTime as object,
           lte: endDateTime
@@ -219,10 +219,10 @@ export async function GET(request: NextRequest, _authContext: { user: { username
 
       // Add player details if requested
       if (includePlayers && game.gamePlayerStatistics && Array.isArray(game.gamePlayerStatistics)) {
-        const validStats = game.gamePlayerStatistics.filter(stat => 
+        const validStats = game.gamePlayerStatistics.filter(stat =>
           stat && typeof stat === 'object' && 'playerId' in stat && 'win' in stat
         );
-        
+
         gameResponse.playerStats = validStats.map(stat => {
           const playerStat = stat as {
             playerId: number;
@@ -239,7 +239,7 @@ export async function GET(request: NextRequest, _authContext: { user: { username
             roleHistory?: Array<{ roleName: string }>;
             modifiers?: Array<{ modifierName: string }>;
           };
-          
+
           return {
             playerId: playerStat.playerId,
             playerName: playerStat.player?.name || 'Unknown',
@@ -259,7 +259,7 @@ export async function GET(request: NextRequest, _authContext: { user: { username
 
         // Extract winner information
         const winners = validStats.filter(stat => (stat as { win: boolean }).win);
-        gameResponse.winnerNames = winners.map(w => 
+        gameResponse.winnerNames = winners.map(w =>
           (w as { player?: { name: string } }).player?.name || 'Unknown'
         );
         gameResponse.winnerCount = winners.length;
@@ -288,7 +288,7 @@ export async function GET(request: NextRequest, _authContext: { user: { username
     console.error('Error fetching games:', error);
 
     if (error instanceof Error) {
-      return createErrorResponse('Failed to fetch games: ' + error.message, 500);
+      return createErrorResponse('Failed to fetch games: ' + error.message + ' (' + error.stack || 'Unknown stack' + ')', 500);
     }
 
     return createErrorResponse('Internal server error', 500);
