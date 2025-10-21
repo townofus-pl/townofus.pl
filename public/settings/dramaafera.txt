@@ -303,9 +303,9 @@ Examine Cooldown
 Show Detective Reports
 True
 Time Where Detective Will Have Role
-5
+2,5
 Time Where Detective Will Have Faction
-10
+7,5
 Tasks Remaining When Haunter Can Be Clicked
 5
 Tasks Remaining When Alert Is Sent
@@ -329,7 +329,7 @@ Watch Cooldown
 Lookout Watches Reset After Each Round
 True
 Maximum Number Of Players That Can Be Watched
-3
+1
 Dead Body Arrow Duration
 0
 Seer Cooldown
@@ -393,13 +393,13 @@ True
 Sheriff Kills Neutral Killing Roles
 True
 Sheriff Kill Cooldown
-20
+22,5
 Sheriff Can Report Who They've Killed
 True
 Can Be Killed On Alert
 False
 Alert Cooldown
-20
+17,5
 Alert Duration
 10
 Maximum Number Of Alerts
@@ -419,7 +419,7 @@ True
 Vigilante Can Guess Lovers
 True
 Jail Cooldown
-20
+10
 Maximum Number Of Executes
 5
 Campaign Cooldown
@@ -431,7 +431,7 @@ True
 Altruist Revive Duration
 1
 Revive Uses
-3
+2
 Revive Radius
 0,5
 Barrier Cooldown
@@ -449,7 +449,7 @@ False
 Show Medic Reports
 True
 Time Where Medic Will Have Color Type
-20
+22,5
 Confess Cooldown
 20
 Initial Bless Cooldown
@@ -465,7 +465,7 @@ True
 Show Fortified Player
 2
 Maximum Number Of Fixes
-5
+4
 Mediate Cooldown
 5
 Reveal Appearance Of Mediate Target
@@ -477,11 +477,11 @@ Who Is Revealed With Mediate
 Flush Cooldown
 20
 Maximum Number Of Barricades
-5
+4
 Transport Cooldown
 20
 Maximum Number Of Transports
-5
+4
 Transporter Can Use Vitals
 False
 Amnesiac Gets Arrows Pointing To Dead Bodies
@@ -489,7 +489,7 @@ True
 Time After Death Arrow Appears
 0
 Protect Cooldown
-20
+25
 Protect Duration
 15
 Maximum Number Of Protects
@@ -511,17 +511,17 @@ Maximum Number Of Guards
 Gold To Bribe
 1
 Vest Cooldown
-20
+17,5
 Vest Duration
 10
 Maximum Number Of Vests
-5
+6
 Survivor Scatter Mechanic Enabled
 False
 Survivor Scatter Timer
 30
 Observe Cooldown
-20
+13
 Doomsayer Guesses All Roles At Once
 False
 Doomsayer Can't Observe
@@ -537,7 +537,7 @@ Executioner Win
 Jester Can Button
 True
 Jester Can Hide In Vents
-False
+True
 Jester Has Impostor Vision
 False
 Jester Scatter Mechanic Enabled
@@ -565,11 +565,11 @@ Hack Cooldown
 Hack Duration
 10
 Glitch Kill Cooldown
-20
+15
 Glitch Can Vent
 True
 Juggernaut Initial Kill Cooldown
-20
+17,5
 Reduced Kill Cooldown Per Kill
 2,5
 Juggernaut Can Vent
@@ -581,11 +581,11 @@ Pestilence Kill Cooldown
 Pestilence Can Vent
 True
 Reap Cooldown
-20
+12,5
 Soul Collector Can Vent
 True
 Vampire Bite Cooldown
-20
+12,5
 Vampires Have Impostor Vision
 False
 Vampires Can Vent
@@ -599,15 +599,15 @@ False
 Can Convert Neutral Evil Roles
 False
 Rampage Cooldown
-20
+17,5
 Rampage Duration
-10
+12,5
 Rampage Kill Cooldown
-2
+1,5
 Werewolf Can Vent When Rampaged
 True
 Blind Cooldown
-20
+17,5
 Blind Duration
 10
 Blind Radius
@@ -625,13 +625,13 @@ Flash Radius
 Grenadier Can Vent
 True
 Morphling Cooldown
-20
+25
 Morphling Duration
 10
 Morphling Can Vent
 True
 Swoop Cooldown
-20
+17,5
 Swoop Duration
 10
 Swooper Can Vent
@@ -671,9 +671,9 @@ False
 Time It Takes To Fully Charge
 20
 Time It Takes To Use Full Charge
-1,9999993
+2,4999988
 Initial Blackmail Cooldown
-10
+12
 Only Target Sees Blackmail
 False
 Maximum People Alive Where Blackmailed Can Vote
