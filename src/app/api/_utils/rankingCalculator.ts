@@ -139,7 +139,7 @@ export async function calculateRankingForGame(
       
       const expectedPoints = sumP * (Rs_i / sumR);
       const bonusPoints = PEN * absentCount * Rs_i / sumR;
-      const ratingChange = W * (P_i - expectedPoints + bonusPoints);
+      const ratingChange = W * (P_i - expectedPoints) + bonusPoints;
       
       const newRating = Rs_i + ratingChange;
       
