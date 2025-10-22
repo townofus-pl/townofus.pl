@@ -1,6 +1,6 @@
 // Types for better type safety
 import { withoutDeleted } from '../schema/common';
-import type { PrismaClient, Player, GamePlayerStatistics, PlayerRanking } from '../../../generated/prisma';
+import type { PrismaClient, Player, GamePlayerStatistics, PlayerRanking } from '@prisma/client';
 
 // Stałe systemu rankingowego
 const RANKING_CONSTANTS = {

@@ -5,7 +5,7 @@ import { Roles } from '@/roles';
 import { Modifiers } from '@/modifiers';
 import { Teams } from '@/constants/teams';
 import type { Prisma } from '../../api/_database';
-import type { GamePlayerStatistics, PlayerRole, PlayerModifier } from '@/generated/prisma';
+import type { GamePlayerStatistics, PlayerRole, PlayerModifier } from '@prisma/client';
 
 // Type for game statistics with included relationships
 type GamePlayerStatisticsWithRelations = GamePlayerStatistics & {

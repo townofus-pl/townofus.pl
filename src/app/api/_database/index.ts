@@ -1,6 +1,6 @@
-import { PrismaClient } from '../../../generated/prisma';
+import { PrismaClient } from '@prisma/client';
 import { PrismaD1 } from '@prisma/adapter-d1';
-import type { Prisma } from '../../../generated/prisma';
+import type { Prisma } from '@prisma/client';
 
 
 
