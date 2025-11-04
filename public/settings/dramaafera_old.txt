@@ -553,7 +553,7 @@ True
 Douse Cooldown
 15
 Ignite Radius
-1,0000001
+1
 Arsonist Can Vent
 True
 Mimic Cooldown
@@ -726,3 +726,4 @@ Kill Cooldown Bonus
 10
 Increased Kill Cooldown When 2+ Imps
 False
+
