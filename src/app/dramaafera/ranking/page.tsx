@@ -32,6 +32,7 @@ interface RankingApiResponse {
 
 // Funkcja do wyznaczania rangi na podstawie punktów rankingowych
 function getRankTitle(points: number): string {
+    if (points >= 2500) return "PIERDOLONA LEGENDA";
     if (points >= 2222) return "CELESTIAL OVERLORD";
     if (points >= 2200) return "GRANDMASTER";
     if (points >= 2175) return "MASTER";
