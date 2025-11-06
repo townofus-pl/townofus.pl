@@ -3,7 +3,6 @@ import Image from "next/image";
 import type { Metadata } from "next";
 import { getUserProfileStats, getPlayersList, getPlayerRankingHistory, getPlayerTopGames, getPlayerVotingStats, getPlayerStars } from "../../_services/gameDataService";
 import { notFound } from "next/navigation";
-import { RankingChart } from "../../_components/RankingChart";
 import CollapsibleSection from "./CollapsibleSection";
 import TopGamesDisplay from "./TopGamesDisplay";
 import VotingStatsDisplay from "./VotingStatsDisplay";
