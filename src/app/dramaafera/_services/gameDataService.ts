@@ -1598,7 +1598,8 @@ export async function getPlayerRankingHistory(playerName: string): Promise<Ranki
       include: {
         game: {
           select: {
-            gameIdentifier: true
+            gameIdentifier: true,
+            startTime: true
           }
         }
       },
@@ -1608,7 +1609,7 @@ export async function getPlayerRankingHistory(playerName: string): Promise<Ranki
     });
 
     return rankings.map(ranking => ({
-      date: ranking.createdAt,
+      date: ranking.game?.startTime || ranking.createdAt, // Użyj daty gry, jeśli dostępna
       score: ranking.score,
       reason: ranking.reason || undefined,
       gameId: ranking.gameId || undefined,
@@ -1618,5 +1619,455 @@ export async function getPlayerRankingHistory(playerName: string): Promise<Ranki
   } catch (error) {
     console.error('Error fetching player ranking history:', error);
     return [];
+  }
+}
+
+// Interface for player's top games
+export interface PlayerTopGame {
+  gameIdentifier: string;
+  date: Date;
+  map: string;
+  duration: string;
+  role: string;
+  roleColor: string;
+  team: string;
+  win: boolean;
+  totalPoints: number;
+}
+
+// Get player's best games
+export async function getPlayerTopGames(playerName: string, limit: number = 3): Promise<{ best: PlayerTopGame[] }> {
+  const prisma = await getDatabaseClient();
+  
+  if (!prisma) {
+    return { best: [] };
+  }
+
+  try {
+    const player = await prisma.player.findFirst({
+      where: {
+        name: playerName,
+        ...withoutDeleted
+      }
+    });
+
+    if (!player) {
+      return { best: [] };
+    }
+
+    // Pobierz wszystkie gry gracza ze szczegółami
+    const playerGames = await prisma.gamePlayerStatistics.findMany({
+      where: {
+        playerId: player.id,
+        game: withoutDeleted
+      },
+      include: {
+        game: {
+          select: {
+            gameIdentifier: true,
+            startTime: true,
+            endTime: true,
+            map: true
+          }
+        },
+        roleHistory: {
+          orderBy: { order: 'asc' },
+          take: 1 // Tylko pierwsza rola
+        }
+      },
+      orderBy: {
+        totalPoints: 'desc'
+      }
+    });
+
+    // Funkcja pomocnicza do mapowania gry
+    const mapGame = (stat: typeof playerGames[0]): PlayerTopGame => {
+      const roleName = stat.roleHistory[0]?.roleName || 'Unknown';
+      const displayRoleName = convertRoleNameForDisplay(roleName);
+      const roleColor = getRoleColor(displayRoleName);
+      const team = determineTeam(roleName);
+
+      return {
+        gameIdentifier: stat.game.gameIdentifier,
+        date: stat.game.startTime,
+        map: stat.game.map,
+        duration: formatDuration(stat.game.startTime, stat.game.endTime),
+        role: displayRoleName,
+        roleColor,
+        team,
+        win: stat.win,
+        totalPoints: stat.totalPoints
+      };
+    };
+
+    // Najlepsze gry (największe punkty)
+    const best = playerGames.slice(0, limit).map(mapGame);
+
+    return { best };
+
+  } catch (error) {
+    console.error('Error fetching player top games:', error);
+    return { best: [] };
+  }
+}
+
+// Interface for voting statistics
+export interface VotingStatistics {
+  // Podstawowe statystyki
+  totalVotesCast: number;        // Ile razy gracz głosował na kogokolwiek
+  totalVotesReceived: number;    // Ile razy inni głosowali na tego gracza
+  timesVotedOut: number;         // Ile razy został wyrzucony przez głosowanie
+  
+  // Skip rate
+  totalMeetings: number;         // Łączna liczba spotkań
+  skipVotes: number;             // Ile razy skipował
+  skipRate: number;              // Procent skipów
+  
+  // Bandwagon factor
+  bandwagonFactor: number;       // Jak często głosuje z większością (0-100%)
+  
+  // Ranking ofiar
+  votingTargets: Array<{
+    playerName: string;
+    voteCount: number;
+    percentage: number;
+  }>;
+  
+  // Ranking prześladowców
+  votedByPlayers: Array<{
+    playerName: string;
+    voteCount: number;
+    percentage: number;
+  }>;
+}
+
+/**
+ * Pobierz statystyki głosowań gracza
+ */
+export async function getPlayerVotingStats(
+  nick: string
+): Promise<VotingStatistics> {
+  const prisma = await getDatabaseClient();
+  
+  if (!prisma) {
+    return {
+      totalVotesCast: 0,
+      totalVotesReceived: 0,
+      timesVotedOut: 0,
+      totalMeetings: 0,
+      skipVotes: 0,
+      skipRate: 0,
+      bandwagonFactor: 0,
+      votingTargets: [],
+      votedByPlayers: []
+    };
+  }
+
+  try {
+    const player = await prisma.player.findFirst({
+      where: {
+        name: nick,
+        ...withoutDeleted
+      }
+    });
+
+    if (!player) {
+      return {
+        totalVotesCast: 0,
+        totalVotesReceived: 0,
+        timesVotedOut: 0,
+        totalMeetings: 0,
+        skipVotes: 0,
+        skipRate: 0,
+        bandwagonFactor: 0,
+        votingTargets: [],
+        votedByPlayers: []
+      };
+    }
+
+    // Pobierz wszystkie gry gracza
+    const playerGames = await prisma.gamePlayerStatistics.findMany({
+      where: {
+        playerId: player.id,
+        game: withoutDeleted
+      },
+      select: {
+        gameId: true
+      }
+    });
+
+    const gameIds = playerGames.map(g => g.gameId);
+
+    // Głosy oddane przez gracza
+    const votesCast = await prisma.meetingVote.findMany({
+      where: {
+        voterId: player.id,
+        meeting: {
+          gameId: { in: gameIds },
+          deletedAt: null
+        }
+      },
+      include: {
+        target: true,
+        meeting: true
+      }
+    });
+
+    // Głosy otrzymane przez gracza
+    const votesReceived = await prisma.meetingVote.findMany({
+      where: {
+        targetId: player.id,
+        meeting: {
+          gameId: { in: gameIds },
+          deletedAt: null
+        }
+      },
+      include: {
+        voter: true,
+        meeting: true
+      }
+    });
+
+    // Skipy gracza
+    const skipVotesData = await prisma.meetingSkipVote.findMany({
+      where: {
+        playerId: player.id,
+        meeting: {
+          gameId: { in: gameIds },
+          deletedAt: null
+        }
+      }
+    });
+
+    // Wszystkie spotkania w grach gracza
+    const allMeetings = await prisma.meeting.findMany({
+      where: {
+        gameId: { in: gameIds },
+        deletedAt: null
+      },
+      include: {
+        meetingVotes: true
+      }
+    });
+
+    // Liczba spotkań, w których gracz brał udział (nie był martwy)
+    // Założenie: jeśli gracz nie głosował i nie skipował, prawdopodobnie był martwy
+    const meetingsParticipated = new Set<number>();
+    votesCast.forEach(v => meetingsParticipated.add(v.meetingId));
+    skipVotesData.forEach(s => meetingsParticipated.add(s.meetingId));
+    
+    const totalMeetings = meetingsParticipated.size;
+    const skipVotes = skipVotesData.length;
+    const skipRate = totalMeetings > 0 ? (skipVotes / totalMeetings) * 100 : 0;
+
+    // Oblicz ile razy został wygłosowany
+    // Gracz został wygłosowany jeśli dostał najwięcej głosów i nie było tie
+    let timesVotedOut = 0;
+    allMeetings.forEach(meeting => {
+      if (meeting.wasTie) return; // Jeśli był tie, nikt nie został wygłosowany
+      
+      const voteCounts = new Map<number, number>();
+      meeting.meetingVotes.forEach((vote: { targetId: number }) => {
+        voteCounts.set(vote.targetId, (voteCounts.get(vote.targetId) || 0) + 1);
+      });
+      
+      if (voteCounts.size === 0) return; // Nikt nie głosował
+      
+      const maxVotes = Math.max(...voteCounts.values());
+      const playersWithMaxVotes = Array.from(voteCounts.entries())
+        .filter(([_, count]) => count === maxVotes)
+        .map(([playerId, _]) => playerId);
+      
+      // Jeśli tylko jeden gracz dostał najwięcej głosów i to był nasz gracz
+      if (playersWithMaxVotes.length === 1 && playersWithMaxVotes[0] === player.id) {
+        timesVotedOut++;
+      }
+    });
+
+    // Oblicz Bandwagon Factor
+    // Dla każdego głosu sprawdź, czy gracz głosował na osobę, która dostała najwięcej głosów
+    let bandwagonVotes = 0;
+    const meetingVoteCounts = new Map<number, Map<number, number>>();
+    
+    // Pogrupuj głosy po spotkaniach
+    allMeetings.forEach(meeting => {
+      const voteCounts = new Map<number, number>();
+      meeting.meetingVotes.forEach((vote: { targetId: number }) => {
+        voteCounts.set(vote.targetId, (voteCounts.get(vote.targetId) || 0) + 1);
+      });
+      meetingVoteCounts.set(meeting.id, voteCounts);
+    });
+
+    // Sprawdź czy głosy gracza były zgodne z większością
+    votesCast.forEach(vote => {
+      const voteCounts = meetingVoteCounts.get(vote.meetingId);
+      if (!voteCounts) return;
+      
+      const maxVotes = Math.max(...voteCounts.values());
+      const voteCountForTarget = voteCounts.get(vote.targetId) || 0;
+      
+      if (voteCountForTarget === maxVotes && maxVotes > 0) {
+        bandwagonVotes++;
+      }
+    });
+
+    const bandwagonFactor = votesCast.length > 0 
+      ? (bandwagonVotes / votesCast.length) * 100 
+      : 0;
+
+    // Ranking ofiar (na kogo gracz głosuje)
+    const targetCounts = new Map<string, number>();
+    votesCast.forEach(vote => {
+      const name = vote.target.name;
+      targetCounts.set(name, (targetCounts.get(name) || 0) + 1);
+    });
+
+    const votingTargets = Array.from(targetCounts.entries())
+      .map(([playerName, voteCount]) => ({
+        playerName,
+        voteCount,
+        percentage: (voteCount / votesCast.length) * 100
+      }))
+      .sort((a, b) => b.voteCount - a.voteCount);
+
+    // Ranking prześladowców (kto głosuje na gracza)
+    const voterCounts = new Map<string, number>();
+    votesReceived.forEach(vote => {
+      const name = vote.voter.name;
+      voterCounts.set(name, (voterCounts.get(name) || 0) + 1);
+    });
+
+    const votedByPlayers = Array.from(voterCounts.entries())
+      .map(([playerName, voteCount]) => ({
+        playerName,
+        voteCount,
+        percentage: (voteCount / votesReceived.length) * 100
+      }))
+      .sort((a, b) => b.voteCount - a.voteCount);
+
+    return {
+      totalVotesCast: votesCast.length,
+      totalVotesReceived: votesReceived.length,
+      timesVotedOut,
+      totalMeetings,
+      skipVotes,
+      skipRate: Math.round(skipRate * 10) / 10,
+      bandwagonFactor: Math.round(bandwagonFactor * 10) / 10,
+      votingTargets,
+      votedByPlayers
+    };
+
+  } catch (error) {
+    console.error('Error fetching player voting stats:', error);
+    return {
+      totalVotesCast: 0,
+      totalVotesReceived: 0,
+      timesVotedOut: 0,
+      totalMeetings: 0,
+      skipVotes: 0,
+      skipRate: 0,
+      bandwagonFactor: 0,
+      votingTargets: [],
+      votedByPlayers: []
+    };
+  }
+}
+
+/**
+ * Pobierz liczbę gwiazdek gracza (dni, w których miał najwięcej punktów)
+ * Gwiazdka z ostatniej sesji pojawia się dopiero po pojawieniu się gry z nowej daty
+ */
+export async function getPlayerStars(nick: string): Promise<number> {
+  const prisma = await getDatabaseClient();
+  
+  if (!prisma) {
+    return 0;
+  }
+
+  try {
+    const player = await prisma.player.findFirst({
+      where: {
+        name: nick,
+        ...withoutDeleted
+      }
+    });
+
+    if (!player) {
+      return 0;
+    }
+
+    // Pobierz wszystkie gry pogrupowane po dacie
+    const allGames = await prisma.game.findMany({
+      where: {
+        deletedAt: null
+      },
+      select: {
+        id: true,
+        startTime: true,
+        gamePlayerStatistics: {
+          select: {
+            playerId: true,
+            totalPoints: true
+          }
+        }
+      },
+      orderBy: {
+        startTime: 'asc'
+      }
+    });
+
+    // Pogrupuj gry po dacie (YYYY-MM-DD)
+    const gamesByDate = new Map<string, typeof allGames>();
+    allGames.forEach(game => {
+      const dateKey = game.startTime.toISOString().split('T')[0];
+      if (!gamesByDate.has(dateKey)) {
+        gamesByDate.set(dateKey, []);
+      }
+      gamesByDate.get(dateKey)!.push(game);
+    });
+
+    // Pobierz wszystkie unikalne daty i posortuj
+    const allDates = Array.from(gamesByDate.keys()).sort();
+    
+    // Jeśli jest tylko jedna data lub brak dat, zwróć 0
+    if (allDates.length <= 1) {
+      return 0;
+    }
+
+    // Sprawdź każdą datę oprócz ostatniej (najnowszej)
+    let stars = 0;
+    for (let i = 0; i < allDates.length - 1; i++) {
+      const dateKey = allDates[i];
+      const gamesOnDate = gamesByDate.get(dateKey)!;
+      
+      // Oblicz sumę punktów dla każdego gracza w tym dniu
+      const playerPoints = new Map<number, number>();
+      
+      gamesOnDate.forEach(game => {
+        game.gamePlayerStatistics.forEach(stat => {
+          const currentPoints = playerPoints.get(stat.playerId) || 0;
+          playerPoints.set(stat.playerId, currentPoints + stat.totalPoints);
+        });
+      });
+
+      // Znajdź maksymalną liczbę punktów
+      if (playerPoints.size === 0) continue;
+      
+      const maxPoints = Math.max(...playerPoints.values());
+      const playersWithMaxPoints = Array.from(playerPoints.entries())
+        .filter(([_, points]) => points === maxPoints)
+        .map(([playerId, _]) => playerId);
+
+      // Jeśli nasz gracz ma najwięcej punktów (i jest sam z tym wynikiem)
+      if (playersWithMaxPoints.length === 1 && playersWithMaxPoints[0] === player.id) {
+        stars++;
+      }
+    }
+
+    return stars;
+
+  } catch (error) {
+    console.error('Error fetching player stars:', error);
+    return 0;
   }
 }
