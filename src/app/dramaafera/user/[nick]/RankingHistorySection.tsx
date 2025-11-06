@@ -102,7 +102,7 @@ export function RankingHistorySection({ rankingHistory, playerName }: RankingHis
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
           <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
             <div className="text-xl font-bold text-blue-400">
-              {filteredData[filteredData.length - 1]?.score.toFixed(1) || '0'}
+              {Math.round(filteredData[filteredData.length - 1]?.score) || '0'}
             </div>
             <div className="text-sm text-zinc-400">
               {dateFrom || dateTo ? 'Ranking na koniec zakresu' : 'Obecny ranking'}
@@ -111,7 +111,7 @@ export function RankingHistorySection({ rankingHistory, playerName }: RankingHis
           
           <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
             <div className="text-xl font-bold text-green-400">
-              {Math.max(...filteredData.map(r => r.score)).toFixed(1)}
+              {Math.round(Math.max(...filteredData.map(r => r.score)))}
             </div>
             <div className="text-sm text-zinc-400">
               Najwyższy ranking
@@ -120,7 +120,7 @@ export function RankingHistorySection({ rankingHistory, playerName }: RankingHis
           
           <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
             <div className="text-xl font-bold text-red-400">
-              {Math.min(...filteredData.map(r => r.score)).toFixed(1)}
+              {Math.round(Math.min(...filteredData.map(r => r.score)))}
             </div>
             <div className="text-sm text-zinc-400">
               Najniższy ranking
