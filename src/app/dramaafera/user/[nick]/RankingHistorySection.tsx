@@ -17,7 +17,7 @@ export function RankingHistorySection({ rankingHistory, playerName }: RankingHis
   const filteredData = useMemo(() => {
     if (!dateFrom && !dateTo) return rankingHistory;
 
-    return rankingHistory.filter(point => {
+    const filtered = rankingHistory.filter(point => {
       const pointDate = new Date(point.date);
       const from = dateFrom ? new Date(dateFrom) : null;
       const to = dateTo ? new Date(dateTo) : null;
@@ -26,6 +26,22 @@ export function RankingHistorySection({ rankingHistory, playerName }: RankingHis
       if (to && pointDate > to) return false;
       return true;
     });
+
+    // Jeśli filtrujemy i mamy punkty, dodaj ostatni punkt sprzed zakresu jako kontekst
+    if (filtered.length > 0 && (dateFrom || dateTo)) {
+      const firstFilteredDate = filtered[0].date.getTime();
+      
+      // Znajdź ostatni punkt przed zakresem
+      const pointBefore = rankingHistory
+        .filter(p => p.date.getTime() < firstFilteredDate)
+        .sort((a, b) => b.date.getTime() - a.date.getTime())[0];
+      
+      if (pointBefore) {
+        return [pointBefore, ...filtered];
+      }
+    }
+
+    return filtered;
   }, [rankingHistory, dateFrom, dateTo]);
 
   // Oblicz zakresy dat dla placeholderów
@@ -94,7 +110,11 @@ export function RankingHistorySection({ rankingHistory, playerName }: RankingHis
       )}
       
       <div className="w-full h-80 rounded-lg p-2 md:p-4 overflow-hidden">
-        <RankingChart data={filteredData} playerName={playerName} />
+        <RankingChart 
+          data={filteredData} 
+          playerName={playerName} 
+          includeStartingPoint={!dateFrom && !dateTo} 
+        />
       </div>
       
       {/* Podsumowanie rankingu */}

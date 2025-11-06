@@ -11,12 +11,14 @@ export function RankingChart({
     data, 
     playerName: _playerName, 
     curveType = 'cardinal',
-    smoothness = 1
+    smoothness = 1,
+    includeStartingPoint = true
 }: { 
     data: RankingHistoryPoint[]; 
     playerName?: string; 
     curveType?: CurveType; // typ krzywej: 'linear', 'smooth', 'step', 'cardinal', 'monotone'
     smoothness?: number; // parametr gładkości (tylko dla 'smooth' i 'cardinal')
+    includeStartingPoint?: boolean; // czy dodawać punkt startowy 2000
 }) {
     const [hoveredPoint, setHoveredPoint] = useState<{ index: number; point: RankingHistoryPoint; mouseX: number; mouseY: number } | null>(null);
 
@@ -28,16 +30,18 @@ export function RankingChart({
     const chartWidth = width - margin.left - margin.right;
     const chartHeight = height - margin.top - margin.bottom;
 
-    // Przygotowanie danych - dodajemy punkt startowy 2000
-    const startingPoint: RankingHistoryPoint = {
-        score: 2000,
-        date: new Date(Math.min(...data.map(d => d.date.getTime())) - 24 * 60 * 60 * 1000), // dzień przed pierwszym punktem
-        reason: "Punkt startowy"
-    };
+    // Przygotowanie danych - opcjonalnie dodajemy punkt startowy 2000
+    const allData = includeStartingPoint ? (() => {
+        const startingPoint: RankingHistoryPoint = {
+            score: 2000,
+            date: new Date(Math.min(...data.map(d => d.date.getTime())) - 24 * 60 * 60 * 1000), // dzień przed pierwszym punktem
+            reason: "Punkt startowy"
+        };
+        return [startingPoint, ...data];
+    })() : data;
     
-    const allData = [startingPoint, ...data];
-    const minScore = Math.min(2000, Math.min(...data.map(d => d.score)));
-    const maxScore = Math.max(2000, Math.max(...data.map(d => d.score)));
+    const minScore = Math.min(includeStartingPoint ? 2000 : Infinity, Math.min(...data.map(d => d.score)));
+    const maxScore = Math.max(includeStartingPoint ? 2000 : -Infinity, Math.max(...data.map(d => d.score)));
     const scoreRange = maxScore - minScore || 1;
 
     // Funkcje skalowania - X bazuje na równomiernym rozmieszczeniu punktów
