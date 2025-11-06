@@ -1,9 +1,13 @@
 import Link from "next/link";
 import Image from "next/image";
 import type { Metadata } from "next";
-import { getUserProfileStats, getPlayersList, getPlayerRankingHistory } from "../../_services/gameDataService";
+import { getUserProfileStats, getPlayersList, getPlayerRankingHistory, getPlayerTopGames, getPlayerVotingStats, getPlayerStars } from "../../_services/gameDataService";
 import { notFound } from "next/navigation";
 import { RankingChart } from "../../_components/RankingChart";
+import CollapsibleSection from "./CollapsibleSection";
+import TopGamesDisplay from "./TopGamesDisplay";
+import VotingStatsDisplay from "./VotingStatsDisplay";
+import RankingHistorySection from "./RankingHistorySection";
 
 // Funkcja pomocnicza do generowania ścieżki avatara
 function getPlayerAvatarPath(playerName: string): string {
@@ -70,6 +74,15 @@ export default async function UserProfilePage({ params }: UserProfileProps) {
 
     // Pobierz historię rankingu gracza
     const rankingHistory = await getPlayerRankingHistory(playerNick);
+    
+    // Pobierz najlepsze gry gracza
+    const { best: bestGames } = await getPlayerTopGames(playerNick, 3);
+    
+    // Pobierz statystyki głosowań gracza
+    const votingStats = await getPlayerVotingStats(playerNick);
+    
+    // Pobierz liczbę gwiazdek gracza
+    const playerStars = await getPlayerStars(playerNick);
 
     // Oblicz winratio (już jest obliczone w generateUserProfileStats)
     const winRatio = playerStats.winRate;
@@ -112,7 +125,7 @@ export default async function UserProfilePage({ params }: UserProfileProps) {
                 <div className="bg-zinc-900/50 backdrop-blur-md rounded-xl border border-zinc-700/50 p-8 mb-6">
                     <div className="flex flex-col md:flex-row items-center gap-8">
                         {/* Avatar */}
-                        <div className="flex-shrink-0">
+                        <div className="flex-shrink-0 flex flex-col items-center justify-center">
                             <div className="relative">
                                 <Image
                                     src={getPlayerAvatarPath(playerNick)}
@@ -122,6 +135,14 @@ export default async function UserProfilePage({ params }: UserProfileProps) {
                                     className="rounded-full border-4 border-white/50"
                                 />
                             </div>
+                            {/* Gwiazdki pod avatarem */}
+                            {playerStars > 0 && (
+                                <div className="mt-3 flex items-center gap-1">
+                                    {Array.from({ length: playerStars }).map((_, i) => (
+                                        <span key={i} className="text-yellow-400 text-2xl">⭐</span>
+                                    ))}
+                                </div>
+                            )}
                         </div>
 
                         {/* Informacje o graczu */}
@@ -198,50 +219,9 @@ export default async function UserProfilePage({ params }: UserProfileProps) {
                     </div>
                 </div>
 
-                {/* Historia rankingu */}
-                {rankingHistory.length > 0 && (
-                    <div className="bg-zinc-900/50 backdrop-blur-md rounded-xl border border-zinc-700/50 p-6 mb-6">
-                        <h3 className="text-2xl font-bold mb-6 text-center">Historia rankingu</h3>
-                        
-                        <div className="w-full h-80 rounded-lg p-2 md:p-4 overflow-hidden">
-                            <RankingChart data={rankingHistory} playerName={playerNick} />
-                        </div>
-                        
-                        {/* Podsumowanie rankingu */}
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
-                            <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
-                                <div className="text-xl font-bold text-blue-400">
-                                    {rankingHistory[rankingHistory.length - 1]?.score.toFixed(1) || '0'}
-                                </div>
-                                <div className="text-sm text-zinc-400">
-                                    Obecny ranking
-                                </div>
-                            </div>
-                            
-                            <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
-                                <div className="text-xl font-bold text-green-400">
-                                    {Math.max(...rankingHistory.map(r => r.score)).toFixed(1)}
-                                </div>
-                                <div className="text-sm text-zinc-400">
-                                    Najwyższy ranking
-                                </div>
-                            </div>
-                            
-                            <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
-                                <div className="text-xl font-bold text-red-400">
-                                    {Math.min(...rankingHistory.map(r => r.score)).toFixed(1)}
-                                </div>
-                                <div className="text-sm text-zinc-400">
-                                    Najniższy ranking
-                                </div>
-                            </div>
-                        </div>
-                    </div>
-                )}
-
+                
                 {/* Dodatkowe statystyki */}
-                <div className="bg-zinc-900/50 backdrop-blur-md rounded-xl border border-zinc-700/50 p-6">
-                    <h3 className="text-2xl font-bold mb-4 text-center">Szczegółowe statystyki</h3>
+                <CollapsibleSection title="Szczegółowe statystyki" defaultOpen={false} icon="📊">
                     
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
@@ -476,7 +456,26 @@ export default async function UserProfilePage({ params }: UserProfileProps) {
                             )}
                         </div>
                     </div>
-                </div>
+                </CollapsibleSection>
+
+                {/* Historia rankingu */}
+                {rankingHistory.length > 0 && (
+                    <CollapsibleSection title="Historia rankingu" defaultOpen={false} icon="📈">
+                        <RankingHistorySection rankingHistory={rankingHistory} playerName={playerNick} />
+                    </CollapsibleSection>
+                )}
+                
+                {/* Statystyki głosowań */}
+                <CollapsibleSection title="Statystyki głosowań" defaultOpen={false} icon="🗳️">
+                    <VotingStatsDisplay votingStats={votingStats} />
+                </CollapsibleSection>
+                
+                {/* Najlepsze występy */}
+                {bestGames.length > 0 && (
+                    <CollapsibleSection title="Najlepsze występy" defaultOpen={false} icon="🏆">
+                        <TopGamesDisplay bestGames={bestGames} />
+                    </CollapsibleSection>
+                )}
             </div>
         </div>
     );
