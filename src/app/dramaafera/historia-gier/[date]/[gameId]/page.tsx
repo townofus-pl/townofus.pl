@@ -41,58 +41,6 @@ export async function generateStaticParams() {
     return [];
 }
 
-function renderRoleHistory(roleHistory: string[] | undefined) {
-    if (!roleHistory || roleHistory.length <= 1) {
-        // Jeśli tylko jedna rola lub brak historii, wyświetl normalnie
-        const role = roleHistory?.[roleHistory.length - 1] || 'Unknown';
-        const displayRoleName = convertRoleNameForDisplay(role);
-        const roleColor = getRoleColor(displayRoleName);
-        return (
-            <Link href={`/dramaafera/role/${convertRoleToUrlSlug(displayRoleName)}`}>
-                <span 
-                    className="px-3 py-1 rounded-lg text-base font-semibold hover:opacity-80 transition-opacity cursor-pointer inline-flex items-center h-8"
-                    style={{ 
-                        backgroundColor: `${roleColor}20`, 
-                        color: roleColor,
-                        border: `1px solid ${roleColor}40`
-                    }}
-                >
-                    {displayRoleName}
-                </span>
-            </Link>
-        );
-    }
-
-    // Jeśli jest historia ról, wyświetl wszystkie z separatorami - każda rola ze swoim kolorem
-    return (
-        <div className="flex items-center gap-1">
-            {roleHistory.map((role, roleIndex) => {
-                const displayRoleName = convertRoleNameForDisplay(role);
-                const roleColor = getRoleColor(displayRoleName);
-                return (
-                    <span key={roleIndex} className="flex items-center">
-                        <Link href={`/dramaafera/role/${convertRoleToUrlSlug(displayRoleName)}`}>
-                            <span 
-                                className="px-3 py-1 rounded-lg text-base font-semibold hover:opacity-80 transition-opacity cursor-pointer inline-flex items-center h-8"
-                                style={{ 
-                                    backgroundColor: `${roleColor}20`, 
-                                    color: roleColor,
-                                    border: `1px solid ${roleColor}40`
-                                }}
-                            >
-                                {displayRoleName}
-                            </span>
-                        </Link>
-                        {roleIndex < roleHistory.length - 1 && (
-                            <span className="mx-2 text-white font-bold text-lg">{'>'}</span>
-                        )}
-                    </span>
-                );
-            })}
-        </div>
-    );
-}
-
 
 export default async function GamePage({ params }: GamePageProps) {
     const {date, gameId} = await params;
