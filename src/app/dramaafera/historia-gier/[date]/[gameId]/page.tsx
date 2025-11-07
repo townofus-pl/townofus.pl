@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { getGameData, formatDisplayDate, getRoleColor, formatPlayerStatsWithColors } from "../../../_services/gameDataService";
+import { getGameData, formatDisplayDate, getRoleColor } from "../../../_services/gameDataService";
 import { TeamColors } from "@/constants/teams";
 import { notFound } from "next/navigation";
 import { PlayerStatsSection } from "./PlayerStatsSection";
@@ -22,11 +22,6 @@ function convertRoleNameForDisplay(roleName: string): string {
 function getPlayerAvatarPath(playerName: string): string {
     // Każdy gracz ma swój avatar na podstawie nicku
     return `/images/avatars/${playerName}.png`;
-}
-
-// Funkcja pomocnicza do konwersji nicku na format URL-friendly
-function convertNickToUrlSlug(nick: string): string {
-    return nick.replace(/\s+/g, '-').toLowerCase();
 }
 
 // Funkcja pomocnicza do konwersji nazwy roli na format URL-friendly
