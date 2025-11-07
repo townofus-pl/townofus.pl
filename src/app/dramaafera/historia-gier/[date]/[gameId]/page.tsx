@@ -1,38 +1,14 @@
 import Link from "next/link";
 import Image from "next/image";
-import { getGameData, formatDisplayDate, getRoleColor, formatPlayerStatsWithColors } from "../../../_services/gameDataService";
+import { getGameData, formatDisplayDate } from "../../../_services/gameDataService";
 import { TeamColors } from "@/constants/teams";
 import { notFound } from "next/navigation";
-
-// Helper function to convert database role names to display names
-function convertRoleNameForDisplay(roleName: string): string {
-  const roleNameMapping: Record<string, string> = {
-    'SoulCollector': 'Soul Collector',
-    'Soul Collector': 'Soul Collector', // Already has space
-    'GuardianAngel': 'Guardian Angel',
-    'Guardian Angel': 'Guardian Angel', // Already has space
-    // Keep Plaguebearer and Pestilence as separate roles - they should show as is
-  };
-  
-  return roleNameMapping[roleName] || roleName;
-}
+import { PlayerStatsSection } from "./PlayerStatsSection";
 
 // Funkcja pomocnicza do generowania ścieżki avatara
 function getPlayerAvatarPath(playerName: string): string {
     // Każdy gracz ma swój avatar na podstawie nicku
     return `/images/avatars/${playerName}.png`;
-}
-
-// Funkcja pomocnicza do konwersji nicku na format URL-friendly
-function convertNickToUrlSlug(nick: string): string {
-    return nick.replace(/\s+/g, '-').toLowerCase();
-}
-
-// Funkcja pomocnicza do konwersji nazwy roli na format URL-friendly
-function convertRoleToUrlSlug(role: string): string {
-    return role.toLowerCase()
-        .replace(/\s+/g, '-')
-        .replace(/[^\w\-]/g, '');
 }
 
 interface GamePageProps {
@@ -43,58 +19,6 @@ export async function generateStaticParams() {
     // Return empty array during build time as Cloudflare context is not available
     // This will be populated at runtime
     return [];
-}
-
-function renderRoleHistory(roleHistory: string[] | undefined) {
-    if (!roleHistory || roleHistory.length <= 1) {
-        // Jeśli tylko jedna rola lub brak historii, wyświetl normalnie
-        const role = roleHistory?.[roleHistory.length - 1] || 'Unknown';
-        const displayRoleName = convertRoleNameForDisplay(role);
-        const roleColor = getRoleColor(displayRoleName);
-        return (
-            <Link href={`/dramaafera/role/${convertRoleToUrlSlug(displayRoleName)}`}>
-                <span 
-                    className="px-3 py-1 rounded-lg text-base font-semibold hover:opacity-80 transition-opacity cursor-pointer inline-flex items-center h-8"
-                    style={{ 
-                        backgroundColor: `${roleColor}20`, 
-                        color: roleColor,
-                        border: `1px solid ${roleColor}40`
-                    }}
-                >
-                    {displayRoleName}
-                </span>
-            </Link>
-        );
-    }
-
-    // Jeśli jest historia ról, wyświetl wszystkie z separatorami - każda rola ze swoim kolorem
-    return (
-        <div className="flex items-center gap-1">
-            {roleHistory.map((role, roleIndex) => {
-                const displayRoleName = convertRoleNameForDisplay(role);
-                const roleColor = getRoleColor(displayRoleName);
-                return (
-                    <span key={roleIndex} className="flex items-center">
-                        <Link href={`/dramaafera/role/${convertRoleToUrlSlug(displayRoleName)}`}>
-                            <span 
-                                className="px-3 py-1 rounded-lg text-base font-semibold hover:opacity-80 transition-opacity cursor-pointer inline-flex items-center h-8"
-                                style={{ 
-                                    backgroundColor: `${roleColor}20`, 
-                                    color: roleColor,
-                                    border: `1px solid ${roleColor}40`
-                                }}
-                            >
-                                {displayRoleName}
-                            </span>
-                        </Link>
-                        {roleIndex < roleHistory.length - 1 && (
-                            <span className="mx-2 text-white font-bold text-lg">{'>'}</span>
-                        )}
-                    </span>
-                );
-            })}
-        </div>
-    );
 }
 
 
@@ -208,95 +132,10 @@ export default async function GamePage({ params }: GamePageProps) {
                 </div>
 
                 {/* Statystyki graczy */}
-                <div className="mb-8">
-                    <h2 className="text-3xl font-bold mb-4">📊 Statystyki Graczy</h2>
-                    <div className="space-y-4">
-                        {gameData.detailedStats.playersData.map((player, index) => (
-                            <div key={index} className="bg-gray-800/50 rounded-lg p-4 border border-gray-700/50">
-                                <div className="flex flex-col space-y-3">
-                                    {/* Nazwa gracza */}
-                                    <div className="flex items-center space-x-3">
-                                        <Image
-                                            src={getPlayerAvatarPath(player.nickname)}
-                                            alt={`Avatar ${player.nickname}`}
-                                            width={48}
-                                            height={48}
-                                            className="rounded-full border-2"
-                                            style={{
-                                                borderColor: 
-                                                    player.team === 'Crewmate' ? TeamColors.Crewmate :
-                                                    player.team === 'Impostor' ? TeamColors.Impostor :
-                                                    TeamColors.Neutral
-                                            }}
-                                        />
-                                        <div className="flex items-center space-x-3">
-                                            <Link 
-                                                href={`/dramaafera/user/${convertNickToUrlSlug(player.nickname)}`}
-                                                className="text-xl font-bold text-white hover:text-orange-300 transition-colors"
-                                            >
-                                                {player.nickname}
-                                            </Link>
-                                            <span 
-                                                className="text-lg"
-                                                style={{
-                                                    color: 
-                                                        player.team === 'Crewmate' ? TeamColors.Crewmate :
-                                                        player.team === 'Impostor' ? TeamColors.Impostor :
-                                                        TeamColors.Neutral
-                                                }}
-                                            >
-                                                ({player.team})
-                                            </span>
-                                            {player.win && (
-                                                <span className="text-yellow-400 text-lg">🏆</span>
-                                            )}
-                                        </div>
-                                    </div>
-                                    
-                                    {/* Rola i modyfikatory */}
-                                    <div className="flex flex-wrap items-center gap-2">
-                                        {renderRoleHistory(player.roleHistory)}
-                                        
-                                        {player.modifiers.length > 0 && player.modifiers.map((modifier, modIndex) => (
-                                            <span 
-                                                key={modIndex}
-                                                className="px-3 py-1 rounded-lg text-base font-semibold hover:opacity-80 transition-opacity inline-flex items-center h-8"
-                                                style={{
-                                                    backgroundColor: `${player.modifierColors[modIndex] || '#6B7280'}30`,
-                                                    color: player.modifierColors[modIndex] || '#9CA3AF',
-                                                    border: `1px solid ${player.modifierColors[modIndex] || '#6B7280'}40`
-                                                }}
-                                            >
-                                                {modifier}
-                                            </span>
-                                        ))}
-                                    </div>
-                                    
-                                    {/* Statystyki jako tekst */}
-                                    <div className="text-base leading-relaxed flex flex-wrap items-center gap-1">
-                                        {formatPlayerStatsWithColors(player, gameData.maxTasks).length > 0 ? (
-                                            formatPlayerStatsWithColors(player, gameData.maxTasks).map((stat, statIndex) => (
-                                                <span key={statIndex}>
-                                                    <span 
-                                                        style={{ color: stat.color || '#D1D5DB' }}
-                                                        className="font-medium"
-                                                    >
-                                                        {stat.text}
-                                                    </span>
-                                                    {statIndex < formatPlayerStatsWithColors(player, gameData.maxTasks).length - 1 && (
-                                                        <span className="text-gray-400 mx-1">•</span>
-                                                    )}
-                                                </span>
-                                            ))
-                                        ) : (
-                                            <span className="text-gray-400">No additional statistics</span>
-                                        )}
-                                    </div>
-                                </div>
-                            </div>
-                        ))}
-                    </div>
-                </div>
+                <PlayerStatsSection 
+                    playersData={gameData.detailedStats.playersData} 
+                    maxTasks={gameData.maxTasks || 0}
+                />
 
                 {/* Timeline wydarzeń */}
                 <div className="mb-8">

@@ -33,15 +33,15 @@ interface RankingApiResponse {
 // Funkcja do wyznaczania rangi na podstawie punktów rankingowych
 function getRankTitle(points: number): string {
     if (points >= 2500) return "PIERDOLONA LEGENDA";
-    if (points >= 2222) return "CELESTIAL OVERLORD";
-    if (points >= 2200) return "GRANDMASTER";
-    if (points >= 2175) return "MASTER";
-    if (points >= 2125) return "VIRTUOSO";
-    if (points >= 2075) return "THE SPECIALIST";
-    if (points >= 2025) return "THE CAPTAIN";
+    if (points >= 2400) return "CELESTIAL OVERLORD";
+    if (points >= 2300) return "GRANDMASTER";
+    if (points >= 2200) return "MASTER";
+    if (points >= 2150) return "VIRTUOSO";
+    if (points >= 2100) return "THE SPECIALIST";
+    if (points >= 2050) return "THE CAPTAIN";
     if (points >= 1975) return "THE CREWMATE";
-    if (points >= 1925) return "THE CADET";
-    if (points >= 1850) return "THE PISSLOW";
+    if (points >= 1875) return "THE CADET";
+    if (points >= 1750) return "THE PISSLOW";
     return "CWEL";
 }
 
