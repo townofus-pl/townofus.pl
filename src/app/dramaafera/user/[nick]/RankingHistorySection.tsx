@@ -109,7 +109,7 @@ export function RankingHistorySection({ rankingHistory, playerName }: RankingHis
         </div>
       )}
       
-      <div className="w-full h-80 rounded-lg p-2 md:p-4 overflow-hidden">
+      <div className="w-full h-80 rounded-lg p-2 md:p-4 overflow-visible">
         <RankingChart 
           data={filteredData} 
           playerName={playerName} 
