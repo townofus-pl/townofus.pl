@@ -1,34 +1,14 @@
 import Link from "next/link";
 import Image from "next/image";
-import { getGameData, formatDisplayDate, getRoleColor } from "../../../_services/gameDataService";
+import { getGameData, formatDisplayDate } from "../../../_services/gameDataService";
 import { TeamColors } from "@/constants/teams";
 import { notFound } from "next/navigation";
 import { PlayerStatsSection } from "./PlayerStatsSection";
-
-// Helper function to convert database role names to display names
-function convertRoleNameForDisplay(roleName: string): string {
-  const roleNameMapping: Record<string, string> = {
-    'SoulCollector': 'Soul Collector',
-    'Soul Collector': 'Soul Collector', // Already has space
-    'GuardianAngel': 'Guardian Angel',
-    'Guardian Angel': 'Guardian Angel', // Already has space
-    // Keep Plaguebearer and Pestilence as separate roles - they should show as is
-  };
-  
-  return roleNameMapping[roleName] || roleName;
-}
 
 // Funkcja pomocnicza do generowania ścieżki avatara
 function getPlayerAvatarPath(playerName: string): string {
     // Każdy gracz ma swój avatar na podstawie nicku
     return `/images/avatars/${playerName}.png`;
-}
-
-// Funkcja pomocnicza do konwersji nazwy roli na format URL-friendly
-function convertRoleToUrlSlug(role: string): string {
-    return role.toLowerCase()
-        .replace(/\s+/g, '-')
-        .replace(/[^\w\-]/g, '');
 }
 
 interface GamePageProps {
