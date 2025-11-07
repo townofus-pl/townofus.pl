@@ -137,7 +137,7 @@ async function getWeeklyStats(dateStr: string, d1Database: D1Database): Promise<
         player.position = index + 1;
     });
     
-    return weeklyStats.slice(0, 10); // Top 10 graczy
+    return weeklyStats; // Zwróć wszystkich graczy (bez limitu)
 }
 
 async function handler(request: NextRequest, context: { params: Promise<{ date: string }> }) {
