@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useMemo } from "react";
 import { createPortal } from "react-dom";
 import Image from "next/image";
 import { useParams } from "next/navigation";
@@ -43,6 +43,37 @@ interface EmperorPoll {
     votes: EmperorPollVote[];
 }
 
+// Typy dla sigm tygodnia
+interface SigmaPlayer {
+    nickname: string;
+    rankBefore: number;
+    rankAfter: number;
+    ratingBefore: number;
+    ratingAfter: number;
+    change: number;
+    ratingChange: number;
+}
+
+interface RankingHistoryPoint {
+    date: Date;
+    rating: number;
+    position: number;
+}
+
+interface EmperorHistoryEntry {
+    nickname: string;
+    count: number;
+    dates: string[];
+    isLatest: boolean;
+}
+
+interface PlayerRankingAfterSession {
+    nickname: string;
+    rating: number;
+    position: number;
+    ratingChange: number;
+}
+
 export default function WeeklySummaryPage() {
     const params = useParams();
     const date = params?.date as string;
@@ -52,6 +83,12 @@ export default function WeeklySummaryPage() {
     const [isPresentationFullscreen, setIsPresentationFullscreen] = useState(false);
     const [weeklyStats, setWeeklyStats] = useState<WeeklyPlayerStats[]>([]);
     const [emperorPoll, setEmperorPoll] = useState<EmperorPoll | null>(null);
+    const [topSigmas, setTopSigmas] = useState<SigmaPlayer[]>([]);
+    const [sigmaRankingHistory, setSigmaRankingHistory] = useState<Map<string, RankingHistoryPoint[]>>(new Map());
+    const [topCwele, setTopCwele] = useState<SigmaPlayer[]>([]);
+    const [cwelRankingHistory, setCwelRankingHistory] = useState<Map<string, RankingHistoryPoint[]>>(new Map());
+    const [emperorHistory, setEmperorHistory] = useState<EmperorHistoryEntry[]>([]);
+    const [rankingAfterSession, setRankingAfterSession] = useState<PlayerRankingAfterSession[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [isTransitioning, setIsTransitioning] = useState(false);
@@ -61,7 +98,7 @@ export default function WeeklySummaryPage() {
     const remainingPlayersCount = Math.max(0, weeklyStats.length - 3);
     
     // Definicja slajdów i ich kroków
-    const slides = [
+    const slides = useMemo(() => [
         {
             id: 'intro',
             name: 'Intro',
@@ -81,8 +118,28 @@ export default function WeeklySummaryPage() {
             id: 'podium',
             name: 'Podium',
             steps: 4 // Krok 0: pusty, Krok 1: 3. miejsce, Krok 2: 2. miejsce, Krok 3: 1. miejsce
-        }
-    ];
+        },
+        ...(topSigmas.length >= 3 ? [{
+            id: 'sigmas',
+            name: 'Największe Sigmy',
+            steps: 4 // Krok 0: tytuł, Krok 1: 3. sigma, Krok 2: 2. sigma, Krok 3: 1. sigma
+        }] : []),
+        ...(topCwele.length >= 3 ? [{
+            id: 'cwele',
+            name: 'Największe Cwele',
+            steps: 4 // Krok 0: tytuł, Krok 1: 3. cwel, Krok 2: 2. cwel, Krok 3: 1. cwel
+        }] : []),
+        ...(emperorHistory.length > 0 ? [{
+            id: 'emperor-history',
+            name: 'Lista de Emperadores',
+            steps: 2 // Krok 0: tytuł, Krok 1: cała lista
+        }] : []),
+        ...(rankingAfterSession.length > 0 ? [{
+            id: 'final-ranking',
+            name: 'Ranking po sesji',
+            steps: 2 // Krok 0: tytuł, Krok 1: cała tabela z animacją
+        }] : [])
+    ], [emperorPoll, remainingPlayersCount, topSigmas.length, topCwele.length, emperorHistory.length, rankingAfterSession.length]);
 
     // Oblicz całkowitą liczbę slajdów
     const totalSlides = slides.length;
@@ -137,14 +194,27 @@ export default function WeeklySummaryPage() {
                 setShowConfetti(true);
                 setTimeout(() => setShowConfetti(false), 5000); // Confetti przez 5 sekund
             }
-            setCurrentStep(currentStep + 1);
+            
+            // Fade transition między sigmami, cwelami i emperor-history (każdy krok od kroku 0)
+            if ((currentSlideConfig.id === 'sigmas' || currentSlideConfig.id === 'cwele' || currentSlideConfig.id === 'emperor-history') && currentStep >= 0) {
+                setIsTransitioning(true);
+                setTimeout(() => {
+                    setCurrentStep(currentStep + 1);
+                    setTimeout(() => setIsTransitioning(false), 100);
+                }, 500);
+            } else {
+                setCurrentStep(currentStep + 1);
+            }
         } 
         // Jeśli to ostatni krok w slajdzie, przejdź do następnego slajdu
         else if (currentSlide < totalSlides - 1) {
             const nextSlideConfig = slides[currentSlide + 1];
             
-            // Fade transition przy przejściu z 'intro' lub 'remaining' do następnego slajdu
+            // Fade transition przy przejściu z 'intro', 'remaining', 'sigmas', 'cwele', lub 'emperor-history' do następnego slajdu
             if (currentSlideConfig.id === 'intro' || 
+                currentSlideConfig.id === 'sigmas' ||
+                currentSlideConfig.id === 'cwele' ||
+                currentSlideConfig.id === 'emperor-history' ||
                 (currentSlideConfig.id === 'remaining' && nextSlideConfig.id === 'podium')) {
                 setIsTransitioning(true);
                 setTimeout(() => {
@@ -190,6 +260,109 @@ export default function WeeklySummaryPage() {
                 } catch (pollErr) {
                     // Ankieta opcjonalna - brak pliku nie jest błędem
                     console.log('No emperor poll found for this date');
+                }
+                
+                // Pobierz największe sigmy tygodnia (opcjonalne)
+                try {
+                    const sigmasResponse = await fetch(`/api/dramaafera/top-sigmas/${date}`);
+                    if (sigmasResponse.ok) {
+                        const sigmasData: any = await sigmasResponse.json();
+                        if (sigmasData.success && sigmasData.data) {
+                            const topThree: SigmaPlayer[] = sigmasData.data.slice(0, 3);
+                            setTopSigmas(topThree);
+                            
+                            // Pobierz historię rankingu dla każdej sigmy
+                            const historyMap = new Map<string, RankingHistoryPoint[]>();
+                            for (const sigma of topThree) {
+                                try {
+                                    const historyResponse = await fetch(`/api/dramaafera/ranking-history/${sigma.nickname}`);
+                                    if (historyResponse.ok) {
+                                        const historyData: any = await historyResponse.json();
+                                        if (historyData.success && historyData.data) {
+                                            historyMap.set(sigma.nickname, historyData.data.map((point: any) => ({
+                                                date: new Date(point.date),
+                                                rating: point.rating,
+                                                position: point.position
+                                            })));
+                                        }
+                                    }
+                                } catch (histErr) {
+                                    console.log(`No ranking history for ${sigma.nickname}`);
+                                }
+                            }
+                            setSigmaRankingHistory(historyMap);
+                        }
+                    }
+                } catch (sigmaErr) {
+                    // Sigmy opcjonalne - brak danych nie jest błędem
+                    console.log('No sigmas data found for this date');
+                }
+                
+                // Pobierz dane o cwelich (gracze z największym spadkiem)
+                try {
+                    const cweleResponse = await fetch(`/api/dramaafera/top-sigmas/${date}`);
+                    if (cweleResponse.ok) {
+                        const cweleData: any = await cweleResponse.json();
+                        
+                        if (cweleData.success && cweleData.data) {
+                            // Weź 3 ostatnich (największe spadki - najbardziej ujemne ratingChange)
+                            const bottomPlayers: SigmaPlayer[] = cweleData.data.slice(-3).reverse();
+                            setTopCwele(bottomPlayers);
+                            
+                            // Pobierz historię rankingu dla każdego cwela
+                            const historyMap = new Map<string, RankingHistoryPoint[]>();
+                            for (const cwel of bottomPlayers) {
+                                try {
+                                    const historyResponse = await fetch(`/api/dramaafera/ranking-history/${cwel.nickname}`);
+                                    if (historyResponse.ok) {
+                                        const historyData: any = await historyResponse.json();
+                                        if (historyData.success && historyData.data) {
+                                            historyMap.set(cwel.nickname, historyData.data.map((point: any) => ({
+                                                date: new Date(point.date),
+                                                rating: point.rating,
+                                                position: point.position
+                                            })));
+                                        }
+                                    }
+                                } catch (histErr) {
+                                    console.log(`No ranking history for ${cwel.nickname}`);
+                                }
+                            }
+                            setCwelRankingHistory(historyMap);
+                        }
+                    }
+                } catch (cwelErr) {
+                    // Cwele opcjonalne - brak danych nie jest błędem
+                    console.log('No cwele data found for this date');
+                }
+                
+                // Pobierz historię Emperorów
+                try {
+                    const emperorHistoryResponse = await fetch('/api/dramaafera/emperor-history');
+                    if (emperorHistoryResponse.ok) {
+                        const emperorHistoryData: any = await emperorHistoryResponse.json();
+                        if (emperorHistoryData.success && emperorHistoryData.data) {
+                            setEmperorHistory(emperorHistoryData.data);
+                        }
+                    }
+                } catch (emperorHistErr) {
+                    console.log('No emperor history found');
+                }
+                
+                // Pobierz ranking po sesji
+                try {
+                    const rankingResponse = await fetch(`/api/dramaafera/ranking-after-session/${date}`);
+                    console.log('Ranking response status:', rankingResponse.status);
+                    if (rankingResponse.ok) {
+                        const rankingData: any = await rankingResponse.json();
+                        console.log('Ranking data:', rankingData);
+                        if (rankingData.success && rankingData.data) {
+                            console.log('Setting ranking, count:', rankingData.data.length);
+                            setRankingAfterSession(rankingData.data);
+                        }
+                    }
+                } catch (rankingErr) {
+                    console.log('Ranking error:', rankingErr);
                 }
                 
             } catch (err) {
@@ -376,6 +549,26 @@ export default function WeeklySummaryPage() {
                         opacity: 0;
                     }
                 }
+                
+                @keyframes glow {
+                    0% {
+                        text-shadow: 0 0 20px rgba(239, 68, 68, 0.8), 0 0 40px rgba(239, 68, 68, 0.6), 0 0 60px rgba(239, 68, 68, 0.4);
+                    }
+                    100% {
+                        text-shadow: 0 0 30px rgba(239, 68, 68, 1), 0 0 60px rgba(239, 68, 68, 0.8), 0 0 90px rgba(239, 68, 68, 0.6);
+                    }
+                }
+                
+                @keyframes slideInLeft {
+                    from {
+                        opacity: 0;
+                        transform: translateX(-50px);
+                    }
+                    to {
+                        opacity: 1;
+                        transform: translateX(0);
+                    }
+                }
             `}</style>
         </>
     );
@@ -473,6 +666,18 @@ export default function WeeklySummaryPage() {
                         {renderPodiumSlide(isFullscreen)}
                     </div>
                 )}
+
+                {/* SLAJD: Największe Sigmy */}
+                {slides[currentSlide]?.id === 'sigmas' && renderSigmasSlide(isFullscreen)}
+
+                {/* SLAJD: Największe Cwele */}
+                {slides[currentSlide]?.id === 'cwele' && renderCweleSlide(isFullscreen)}
+
+                {/* SLAJD: Historia Emperorów */}
+                {slides[currentSlide]?.id === 'emperor-history' && renderEmperorHistorySlide(isFullscreen)}
+
+                {/* SLAJD: Ranking po sesji */}
+                {slides[currentSlide]?.id === 'final-ranking' && renderFinalRankingSlide(isFullscreen)}
             </>
         );
     }
@@ -890,7 +1095,13 @@ export default function WeeklySummaryPage() {
                                         animation: 'fadeIn 1s ease-out 0.5s forwards'
                                     }}
                                 >
-                                    <div className={`font-bold text-red-500 ${isFullscreen ? 'text-5xl' : 'text-2xl'} mb-2 tracking-wider`}>
+                                    <div 
+                                        className={`font-bold text-red-500 ${isFullscreen ? 'text-7xl' : 'text-4xl'} mb-2 tracking-wider`}
+                                        style={{
+                                            textShadow: '0 0 20px rgba(239, 68, 68, 0.8), 0 0 40px rgba(239, 68, 68, 0.6), 0 0 60px rgba(239, 68, 68, 0.4)',
+                                            animation: 'glow 2s ease-in-out infinite alternate'
+                                        }}
+                                    >
                                         EMPEROR
                                     </div>
                                     <div className={`font-bold text-amber-400 ${isFullscreen ? 'text-4xl' : 'text-2xl'} mb-1`}>
@@ -1165,6 +1376,933 @@ export default function WeeklySummaryPage() {
                         }
                     }
                 `}</style>
+            </div>
+        );
+    }
+
+    // SLAJD: Największe Sigmy Tygodnia
+    function renderSigmasSlide(isFullscreen: boolean) {
+        if (topSigmas.length < 3) return null;
+
+        // Krok 0: Tytuł
+        if (currentStep === 0) {
+            return (
+                <div 
+                    className="relative w-full h-full flex items-center justify-center"
+                    style={{
+                        opacity: isTransitioning ? 0 : 1,
+                        transition: 'opacity 0.5s ease-out'
+                    }}
+                >
+                    <h1 
+                        className={`font-bold text-amber-400 text-center ${isFullscreen ? 'text-7xl' : 'text-5xl'}`}
+                        style={{
+                            textShadow: '0 0 40px rgba(251, 191, 36, 0.7)'
+                        }}
+                    >
+                        NAJWIĘKSZE SIGMY<br />TYGODNIA
+                    </h1>
+                </div>
+            );
+        }
+
+        // Kroki 1-3: Pokazywanie sigm (3. -> 2. -> 1.)
+        const sigmaIndex = 3 - currentStep; // 2, 1, 0 dla kroków 1, 2, 3
+        const sigma = topSigmas[sigmaIndex];
+        const rankingHistory = sigmaRankingHistory.get(sigma.nickname) || [];
+
+        return (
+            <div 
+                className="relative w-full h-full flex items-center justify-center px-8"
+                style={{
+                    opacity: isTransitioning ? 0 : 1,
+                    transition: 'opacity 0.5s ease-out'
+                }}
+            >
+                <div className="w-full max-w-7xl flex gap-8 items-center">
+                    {/* Lewa strona - Avatar i statystyki */}
+                    <div className="flex-shrink-0" style={{ width: isFullscreen ? '400px' : '300px' }}>
+                        <div className="text-center">
+                            {/* Pozycja */}
+                            <div className={`font-bold text-amber-400 mb-4 ${isFullscreen ? 'text-5xl' : 'text-3xl'}`}>
+                                #{sigmaIndex + 1} SIGMA
+                            </div>
+
+                            {/* Avatar */}
+                            <div 
+                                className="relative mx-auto rounded-lg overflow-hidden border-4 border-amber-400 shadow-2xl mb-6"
+                                style={{ 
+                                    width: isFullscreen ? '300px' : '200px', 
+                                    height: isFullscreen ? '300px' : '200px'
+                                }}
+                            >
+                                <Image
+                                    src={`/images/avatars/${sigma.nickname}.png`}
+                                    alt={sigma.nickname}
+                                    fill
+                                    className="object-cover"
+                                    onError={(e) => {
+                                        const target = e.target as HTMLImageElement;
+                                        target.src = '/images/avatars/placeholder.png';
+                                    }}
+                                />
+                            </div>
+
+                            {/* Nick */}
+                            <div className={`font-bold text-white mb-6 ${isFullscreen ? 'text-4xl' : 'text-2xl'}`}>
+                                {sigma.nickname}
+                            </div>
+
+                            {/* Statystyki wzrostu */}
+                            <div className={`text-amber-300 ${isFullscreen ? 'text-2xl' : 'text-lg'}`}>
+                                <div className="mb-3">
+                                    <div className="text-gray-400 text-sm mb-1">Pozycja w rankingu</div>
+                                    <span className="font-bold text-red-500">#{sigma.rankBefore}</span> 
+                                    <span className="mx-2">→</span> 
+                                    <span className="font-bold text-green-500">#{sigma.rankAfter}</span>
+                                </div>
+                                <div>
+                                    <div className="text-gray-400 text-sm mb-1">Rating</div>
+                                    <span className="font-bold">{Math.round(sigma.ratingBefore)}</span> 
+                                    <span className="mx-2">→</span> 
+                                    <span className="font-bold text-green-400">{Math.round(sigma.ratingAfter)}</span>
+                                    <div className="text-green-400 font-bold mt-1">
+                                        +{Math.round(sigma.ratingChange)}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Prawa strona - Wykres */}
+                    <div className="flex-grow">
+                        <h2 className={`font-bold text-amber-400 text-center mb-6 ${isFullscreen ? 'text-3xl' : 'text-xl'}`}>
+                            Historia Rankingu
+                        </h2>
+                        
+                        {rankingHistory.length > 0 ? (
+                            <div className="bg-zinc-900/80 rounded-lg p-6">
+                                {renderRankingChart(rankingHistory, isFullscreen, date)}
+                            </div>
+                        ) : (
+                            <div className={`text-center text-amber-300 ${isFullscreen ? 'text-xl' : 'text-lg'}`}>
+                                Brak danych historycznych
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    // Funkcja renderująca wykres rankingu
+    function renderRankingChart(data: RankingHistoryPoint[], isFullscreen: boolean, weekDate: string) {
+        if (data.length === 0) return null;
+
+        // Parsuj datę tygodnia (format YYYYMMDD)
+        const year = parseInt(weekDate.substring(0, 4));
+        const month = parseInt(weekDate.substring(4, 6)) - 1; // miesiące są 0-indeksowane
+        const day = parseInt(weekDate.substring(6, 8));
+        const weekStartDate = new Date(year, month, day);
+        const weekEndDate = new Date(weekStartDate);
+        weekEndDate.setDate(weekEndDate.getDate() + 7); // +7 dni na koniec tygodnia
+
+        // Filtruj dane: weź ostatni punkt przed tygodniem + wszystkie punkty z tygodnia
+        const sortedData = [...data].sort((a, b) => a.date.getTime() - b.date.getTime());
+        
+        // Znajdź ostatni punkt przed początkiem tygodnia
+        const pointsBeforeWeek = sortedData.filter(p => p.date < weekStartDate);
+        const lastPointBefore = pointsBeforeWeek.length > 0 ? pointsBeforeWeek[pointsBeforeWeek.length - 1] : null;
+        
+        // Punkty z tygodnia
+        const pointsInWeek = sortedData.filter(p => p.date >= weekStartDate && p.date < weekEndDate);
+        
+        // Połącz: punkt sprzed tygodnia (jeśli istnieje) + punkty z tygodnia
+        const filteredData = lastPointBefore ? [lastPointBefore, ...pointsInWeek] : pointsInWeek;
+        
+        if (filteredData.length === 0) return null;
+
+        const margin = { top: 20, right: 30, bottom: 40, left: 60 };
+        const width = 800;
+        const height = 400;
+        const chartWidth = width - margin.left - margin.right;
+        const chartHeight = height - margin.top - margin.bottom;
+
+        // Przygotowanie danych
+        const minScore = Math.min(...filteredData.map(d => d.rating));
+        const maxScore = Math.max(...filteredData.map(d => d.rating));
+        const scoreRange = maxScore - minScore || 1;
+        const scorePadding = scoreRange * 0.1; // 10% padding
+
+        // Funkcje skalowania
+        const scaleX = (index: number) => (index / (filteredData.length - 1)) * chartWidth;
+        const scaleY = (score: number) => 
+            chartHeight - ((score - (minScore - scorePadding)) / (scoreRange + 2 * scorePadding)) * chartHeight;
+
+        // Generowanie linii wykresu
+        const pathData = filteredData
+            .map((point, index) => {
+                const x = scaleX(index);
+                const y = scaleY(point.rating);
+                return index === 0 ? `M ${x} ${y}` : `L ${x} ${y}`;
+            })
+            .join(' ');
+
+        // Formatowanie dat dla osi X
+        const formatDate = (date: Date) => {
+            return new Intl.DateTimeFormat('pl-PL', {
+                day: '2-digit',
+                month: '2-digit'
+            }).format(date);
+        };
+
+        // Punkty na osi X (pierwsze, ostatnie i co kilka punktów)
+        const xAxisPoints = filteredData.filter((_, index) => 
+            index === 0 || 
+            index === filteredData.length - 1 || 
+            index % Math.ceil(filteredData.length / 8) === 0
+        );
+
+        return (
+            <svg 
+                viewBox={`0 0 ${width} ${height}`}
+                className="w-full h-auto"
+                style={{ maxHeight: isFullscreen ? '500px' : '300px' }}
+            >
+                <g transform={`translate(${margin.left}, ${margin.top})`}>
+                    {/* Linie siatki poziome */}
+                    {[0, 0.25, 0.5, 0.75, 1].map(ratio => {
+                        const score = (maxScore + scorePadding) - (ratio * (scoreRange + 2 * scorePadding));
+                        return (
+                            <g key={ratio}>
+                                <line
+                                    x1={0}
+                                    y1={chartHeight * ratio}
+                                    x2={chartWidth}
+                                    y2={chartHeight * ratio}
+                                    stroke="rgb(80, 80, 80)"
+                                    strokeWidth={1}
+                                    strokeDasharray="4 4"
+                                />
+                                <text
+                                    x={-10}
+                                    y={chartHeight * ratio + 5}
+                                    fill="rgb(161, 161, 170)"
+                                    fontSize={isFullscreen ? "14" : "12"}
+                                    textAnchor="end"
+                                >
+                                    {Math.round(score)}
+                                </text>
+                            </g>
+                        );
+                    })}
+
+                    {/* Oś X */}
+                    <line
+                        x1={0}
+                        y1={chartHeight}
+                        x2={chartWidth}
+                        y2={chartHeight}
+                        stroke="rgb(156, 163, 175)"
+                        strokeWidth={2}
+                    />
+
+                    {/* Oś Y */}
+                    <line
+                        x1={0}
+                        y1={0}
+                        x2={0}
+                        y2={chartHeight}
+                        stroke="rgb(156, 163, 175)"
+                        strokeWidth={2}
+                    />
+
+                    {/* Etykiety osi X */}
+                    {xAxisPoints.map((point) => {
+                        const originalIndex = filteredData.findIndex(d => d.date.getTime() === point.date.getTime());
+                        return (
+                            <text
+                                key={point.date.getTime()}
+                                x={scaleX(originalIndex)}
+                                y={chartHeight + 20}
+                                fill="rgb(161, 161, 170)"
+                                fontSize={isFullscreen ? "12" : "10"}
+                                textAnchor="middle"
+                            >
+                                {formatDate(point.date)}
+                            </text>
+                        );
+                    })}
+
+                    {/* Linia wykresu */}
+                    <path
+                        d={pathData}
+                        fill="none"
+                        stroke="#fbbf24"
+                        strokeWidth={3}
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                    />
+
+                    {/* Gradient pod wykresem */}
+                    <defs>
+                        <linearGradient id="areaGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" stopColor="#fbbf24" stopOpacity="0.3" />
+                            <stop offset="100%" stopColor="#fbbf24" stopOpacity="0" />
+                        </linearGradient>
+                    </defs>
+
+                    {/* Wypełnienie pod wykresem */}
+                    <path
+                        d={`${pathData} L ${scaleX(filteredData.length - 1)} ${chartHeight} L 0 ${chartHeight} Z`}
+                        fill="url(#areaGradient)"
+                    />
+
+                    {/* Punkty na wykresie */}
+                    {filteredData.map((point, index) => {
+                        const x = scaleX(index);
+                        const y = scaleY(point.rating);
+                        const isFirst = index === 0;
+                        const isLast = index === filteredData.length - 1;
+                        
+                        return (
+                            <g key={index}>
+                                <circle
+                                    cx={x}
+                                    cy={y}
+                                    r={isFirst || isLast ? 6 : 4}
+                                    fill="#fbbf24"
+                                    stroke="#fff"
+                                    strokeWidth={2}
+                                />
+                                {(isFirst || isLast) && (
+                                    <text
+                                        x={x}
+                                        y={y - 15}
+                                        fill="#fbbf24"
+                                        fontSize={isFullscreen ? "16" : "14"}
+                                        fontWeight="bold"
+                                        textAnchor="middle"
+                                    >
+                                        {Math.round(point.rating)}
+                                    </text>
+                                )}
+                            </g>
+                        );
+                    })}
+                </g>
+            </svg>
+        );
+    }
+
+    // Funkcja renderująca slajd "Największe Cwele Tygodnia"
+    function renderCweleSlide(isFullscreen: boolean) {
+        if (topCwele.length < 3) return null;
+
+        // Krok 0: Tytuł
+        if (currentStep === 0) {
+            return (
+                <div 
+                    className="relative w-full h-full flex items-center justify-center"
+                    style={{
+                        opacity: isTransitioning ? 0 : 1,
+                        transition: 'opacity 0.5s ease-out'
+                    }}
+                >
+                    <h1 
+                        className={`font-bold text-red-400 text-center ${isFullscreen ? 'text-7xl' : 'text-5xl'}`}
+                        style={{
+                            textShadow: '0 0 40px rgba(239, 68, 68, 0.7)'
+                        }}
+                    >
+                        NAJWIĘKSZE CWELE<br />TYGODNIA
+                    </h1>
+                </div>
+            );
+        }
+
+        // Kroki 1-3: Pokazywanie cweli (3. -> 2. -> 1.)
+        const cwelIndex = 3 - currentStep; // 2, 1, 0 dla kroków 1, 2, 3
+        const cwel = topCwele[cwelIndex];
+        const rankingHistory = cwelRankingHistory.get(cwel.nickname) || [];
+
+        return (
+            <div 
+                className="relative w-full h-full flex items-center justify-center px-8"
+                style={{
+                    opacity: isTransitioning ? 0 : 1,
+                    transition: 'opacity 0.5s ease-out'
+                }}
+            >
+                <div className="w-full max-w-7xl flex gap-8 items-center">
+                    {/* Lewa strona - Avatar i statystyki */}
+                    <div className="flex-shrink-0" style={{ width: isFullscreen ? '400px' : '300px' }}>
+                        <div className="text-center">
+                            {/* Pozycja */}
+                            <div className={`font-bold text-red-400 mb-4 ${isFullscreen ? 'text-5xl' : 'text-3xl'}`}>
+                                #{cwelIndex + 1} CWEL
+                            </div>
+
+                            {/* Avatar */}
+                            <div 
+                                className="relative mx-auto rounded-lg overflow-hidden border-4 border-red-400 shadow-2xl mb-6"
+                                style={{ 
+                                    width: isFullscreen ? '300px' : '200px', 
+                                    height: isFullscreen ? '300px' : '200px'
+                                }}
+                            >
+                                <Image
+                                    src={`/images/avatars/${cwel.nickname}.png`}
+                                    alt={cwel.nickname}
+                                    fill
+                                    className="object-cover"
+                                    onError={(e) => {
+                                        const target = e.target as HTMLImageElement;
+                                        target.src = '/images/avatars/placeholder.png';
+                                    }}
+                                />
+                            </div>
+
+                            {/* Nick */}
+                            <div className={`font-bold text-white mb-6 ${isFullscreen ? 'text-4xl' : 'text-2xl'}`}>
+                                {cwel.nickname}
+                            </div>
+
+                            {/* Statystyki spadku */}
+                            <div className={`text-red-300 ${isFullscreen ? 'text-2xl' : 'text-lg'}`}>
+                                <div className="mb-3">
+                                    <div className="text-gray-400 text-sm mb-1">Pozycja w rankingu</div>
+                                    <span className="font-bold text-green-500">#{cwel.rankBefore}</span> 
+                                    <span className="mx-2">→</span> 
+                                    <span className="font-bold text-red-500">#{cwel.rankAfter}</span>
+                                </div>
+                                <div>
+                                    <div className="text-gray-400 text-sm mb-1">Rating</div>
+                                    <span className="font-bold">{Math.round(cwel.ratingBefore)}</span> 
+                                    <span className="mx-2">→</span> 
+                                    <span className="font-bold text-red-400">{Math.round(cwel.ratingAfter)}</span>
+                                    <div className="text-red-400 font-bold mt-1">
+                                        {Math.round(cwel.ratingChange)}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Prawa strona - Wykres */}
+                    <div className="flex-grow">
+                        <h2 className={`font-bold text-red-400 text-center mb-6 ${isFullscreen ? 'text-3xl' : 'text-xl'}`}>
+                            Historia Rankingu
+                        </h2>
+                        
+                        {rankingHistory.length > 0 ? (
+                            <div className="bg-zinc-900/80 rounded-lg p-6">
+                                {renderCwelRankingChart(rankingHistory, isFullscreen, date)}
+                            </div>
+                        ) : (
+                            <div className={`text-center text-red-300 ${isFullscreen ? 'text-xl' : 'text-lg'}`}>
+                                Brak danych historycznych
+                            </div>
+                        )}
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
+    // Funkcja renderująca wykres rankingu dla cweli (kolor czerwony)
+    function renderCwelRankingChart(data: RankingHistoryPoint[], isFullscreen: boolean, weekDate: string) {
+        if (data.length === 0) return null;
+
+        // Parsuj datę tygodnia (format YYYYMMDD)
+        const year = parseInt(weekDate.substring(0, 4));
+        const month = parseInt(weekDate.substring(4, 6)) - 1; // miesiące są 0-indeksowane
+        const day = parseInt(weekDate.substring(6, 8));
+        const weekStartDate = new Date(year, month, day);
+        const weekEndDate = new Date(weekStartDate);
+        weekEndDate.setDate(weekEndDate.getDate() + 7); // +7 dni na koniec tygodnia
+
+        // Filtruj dane: weź ostatni punkt przed tygodniem + wszystkie punkty z tygodnia
+        const sortedData = [...data].sort((a, b) => a.date.getTime() - b.date.getTime());
+        
+        // Znajdź ostatni punkt przed początkiem tygodnia
+        const pointsBeforeWeek = sortedData.filter(p => p.date < weekStartDate);
+        const lastPointBefore = pointsBeforeWeek.length > 0 ? pointsBeforeWeek[pointsBeforeWeek.length - 1] : null;
+        
+        // Punkty z tygodnia
+        const pointsInWeek = sortedData.filter(p => p.date >= weekStartDate && p.date < weekEndDate);
+        
+        // Połącz: punkt sprzed tygodnia (jeśli istnieje) + punkty z tygodnia
+        const filteredData = lastPointBefore ? [lastPointBefore, ...pointsInWeek] : pointsInWeek;
+        
+        if (filteredData.length === 0) return null;
+
+        const margin = { top: 20, right: 30, bottom: 40, left: 60 };
+        const width = 800;
+        const height = 400;
+        const chartWidth = width - margin.left - margin.right;
+        const chartHeight = height - margin.top - margin.bottom;
+
+        // Przygotowanie danych
+        const minScore = Math.min(...filteredData.map(d => d.rating));
+        const maxScore = Math.max(...filteredData.map(d => d.rating));
+        const scoreRange = maxScore - minScore || 1;
+        const scorePadding = scoreRange * 0.1; // 10% padding
+
+        // Funkcje skalowania
+        const scaleX = (index: number) => (index / (filteredData.length - 1)) * chartWidth;
+        const scaleY = (score: number) => 
+            chartHeight - ((score - (minScore - scorePadding)) / (scoreRange + 2 * scorePadding)) * chartHeight;
+
+        // Generowanie linii wykresu
+        const pathData = filteredData
+            .map((point, index) => {
+                const x = scaleX(index);
+                const y = scaleY(point.rating);
+                return index === 0 ? `M ${x} ${y}` : `L ${x} ${y}`;
+            })
+            .join(' ');
+
+        // Formatowanie dat dla osi X
+        const formatDate = (date: Date) => {
+            return new Intl.DateTimeFormat('pl-PL', {
+                day: '2-digit',
+                month: '2-digit'
+            }).format(date);
+        };
+
+        // Punkty na osi X (pierwsze, ostatnie i co kilka punktów)
+        const xAxisPoints = filteredData.filter((_, index) => 
+            index === 0 || 
+            index === filteredData.length - 1 || 
+            index % Math.ceil(filteredData.length / 8) === 0
+        );
+
+        // Poziome linie pomocnicze (gridlines)
+        const yAxisTicks = 5;
+        const yAxisValues = Array.from({ length: yAxisTicks }, (_, i) => 
+            minScore - scorePadding + (i * (scoreRange + 2 * scorePadding) / (yAxisTicks - 1))
+        );
+
+        return (
+            <svg width={width} height={height}>
+                <g transform={`translate(${margin.left}, ${margin.top})`}>
+                    {/* Poziome linie pomocnicze */}
+                    {yAxisValues.map((score, index) => {
+                        const ratio = 1 - (score - (minScore - scorePadding)) / (scoreRange + 2 * scorePadding);
+                        return (
+                            <g key={index}>
+                                <line
+                                    x1={0}
+                                    y1={chartHeight * ratio}
+                                    x2={chartWidth}
+                                    y2={chartHeight * ratio}
+                                    stroke="rgb(82, 82, 91)"
+                                    strokeWidth={1}
+                                    strokeDasharray="4 4"
+                                />
+                                <text
+                                    x={-10}
+                                    y={chartHeight * ratio + 5}
+                                    fill="rgb(161, 161, 170)"
+                                    fontSize={isFullscreen ? "14" : "12"}
+                                    textAnchor="end"
+                                >
+                                    {Math.round(score)}
+                                </text>
+                            </g>
+                        );
+                    })}
+
+                    {/* Oś X */}
+                    <line
+                        x1={0}
+                        y1={chartHeight}
+                        x2={chartWidth}
+                        y2={chartHeight}
+                        stroke="rgb(156, 163, 175)"
+                        strokeWidth={2}
+                    />
+
+                    {/* Oś Y */}
+                    <line
+                        x1={0}
+                        y1={0}
+                        x2={0}
+                        y2={chartHeight}
+                        stroke="rgb(156, 163, 175)"
+                        strokeWidth={2}
+                    />
+
+                    {/* Etykiety osi X */}
+                    {xAxisPoints.map((point) => {
+                        const originalIndex = filteredData.findIndex(d => d.date.getTime() === point.date.getTime());
+                        return (
+                            <text
+                                key={point.date.getTime()}
+                                x={scaleX(originalIndex)}
+                                y={chartHeight + 20}
+                                fill="rgb(161, 161, 170)"
+                                fontSize={isFullscreen ? "12" : "10"}
+                                textAnchor="middle"
+                            >
+                                {formatDate(point.date)}
+                            </text>
+                        );
+                    })}
+
+                    {/* Linia wykresu - kolor czerwony dla cweli */}
+                    <path
+                        d={pathData}
+                        fill="none"
+                        stroke="#ef4444"
+                        strokeWidth={3}
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                    />
+
+                    {/* Gradient pod wykresem - czerwony */}
+                    <defs>
+                        <linearGradient id="cwelAreaGradient" x1="0%" y1="0%" x2="0%" y2="100%">
+                            <stop offset="0%" stopColor="#ef4444" stopOpacity="0.3" />
+                            <stop offset="100%" stopColor="#ef4444" stopOpacity="0" />
+                        </linearGradient>
+                    </defs>
+
+                    {/* Wypełnienie pod wykresem */}
+                    <path
+                        d={`${pathData} L ${scaleX(filteredData.length - 1)} ${chartHeight} L 0 ${chartHeight} Z`}
+                        fill="url(#cwelAreaGradient)"
+                    />
+
+                    {/* Punkty na wykresie */}
+                    {filteredData.map((point, index) => {
+                        const x = scaleX(index);
+                        const y = scaleY(point.rating);
+                        const isFirst = index === 0;
+                        const isLast = index === filteredData.length - 1;
+                        
+                        return (
+                            <g key={index}>
+                                <circle
+                                    cx={x}
+                                    cy={y}
+                                    r={isFirst || isLast ? 6 : 4}
+                                    fill="#ef4444"
+                                    stroke="#fff"
+                                    strokeWidth={2}
+                                />
+                                {(isFirst || isLast) && (
+                                    <text
+                                        x={x}
+                                        y={y - 15}
+                                        fill="#ef4444"
+                                        fontSize={isFullscreen ? "16" : "14"}
+                                        fontWeight="bold"
+                                        textAnchor="middle"
+                                    >
+                                        {Math.round(point.rating)}
+                                    </text>
+                                )}
+                            </g>
+                        );
+                    })}
+                </g>
+            </svg>
+        );
+    }
+
+    // Funkcja renderująca slajd "Lista de Emperadores"
+    function renderEmperorHistorySlide(isFullscreen: boolean) {
+        if (emperorHistory.length === 0) return null;
+
+        // Krok 0: Tytuł
+        if (currentStep === 0) {
+            return (
+                <div 
+                    className="relative w-full h-full flex items-center justify-center"
+                    style={{
+                        opacity: isTransitioning ? 0 : 1,
+                        transition: 'opacity 0.5s ease-out'
+                    }}
+                >
+                    <h1 
+                        className={`font-bold text-red-400 text-center ${isFullscreen ? 'text-7xl' : 'text-5xl'}`}
+                        style={{
+                            textShadow: '0 0 40px rgba(239, 68, 68, 0.7)'
+                        }}
+                    >
+                        LISTA DE<br />EMPERADORES
+                    </h1>
+                </div>
+            );
+        }
+
+        // Krok 1: Pokazanie całej listy
+        return (
+            <div 
+                className="relative w-full h-full flex flex-col items-center justify-center px-8"
+                style={{
+                    opacity: isTransitioning ? 0 : 1,
+                    transition: 'opacity 0.5s ease-out'
+                }}
+            >
+                {/* Tytuł na górze */}
+                <h1 
+                    className={`font-bold text-red-400 mb-8 ${isFullscreen ? 'text-6xl' : 'text-4xl'}`}
+                    style={{
+                        textShadow: '0 0 40px rgba(239, 68, 68, 0.7)'
+                    }}
+                >
+                    LISTA DE EMPERADORES
+                </h1>
+
+                {/* Lista emperorów */}
+                <div 
+                    className="w-full max-w-4xl flex flex-col gap-4"
+                    style={{ maxHeight: '60vh', overflowY: 'auto' }}
+                >
+                    {emperorHistory.map((emperor) => {
+                        return (
+                            <div
+                                key={emperor.nickname}
+                                className={`flex items-center bg-gradient-to-r from-zinc-800/90 to-zinc-900/90 backdrop-blur-sm rounded-lg shadow-2xl border-2 ${
+                                    emperor.isLatest ? 'border-amber-400' : 'border-red-400/50'
+                                } p-6`}
+                            >
+                                {/* Avatar */}
+                                <div 
+                                    className="relative rounded-lg overflow-hidden border-2 border-red-400 shadow-xl mr-6 flex-shrink-0"
+                                    style={{ 
+                                        width: isFullscreen ? '100px' : '80px', 
+                                        height: isFullscreen ? '100px' : '80px'
+                                    }}
+                                >
+                                    <Image
+                                        src={`/images/avatars/${emperor.nickname}.png`}
+                                        alt={emperor.nickname}
+                                        fill
+                                        className="object-cover"
+                                        onError={(e) => {
+                                            const target = e.target as HTMLImageElement;
+                                            target.src = '/images/avatars/placeholder.png';
+                                        }}
+                                    />
+                                </div>
+
+                                {/* Nick */}
+                                <div className={`font-bold text-white ${isFullscreen ? 'text-3xl' : 'text-2xl'} flex-grow`}>
+                                    {emperor.nickname}
+                                </div>
+
+                                {/* Gwiazdki */}
+                                <div className="flex gap-2 items-center">
+                                    {Array.from({ length: emperor.count }).map((_, starIndex) => {
+                                        // Ostatnia gwiazdka jest "nowa" jeśli to najnowszy emperor
+                                        const isNewStar = emperor.isLatest && starIndex === emperor.count - 1;
+                                        
+                                        return (
+                                            <div
+                                                key={starIndex}
+                                                className={`${isFullscreen ? 'text-5xl' : 'text-4xl'} transition-all duration-300 ${
+                                                    isNewStar ? 'animate-[pulse_1s_ease-in-out_infinite] text-amber-400' : 'text-amber-500'
+                                                }`}
+                                                style={{
+                                                    filter: isNewStar ? 'drop-shadow(0 0 10px rgba(251, 191, 36, 0.8))' : 'none'
+                                                }}
+                                            >
+                                                ⭐
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        );
+                    })}
+                </div>
+            </div>
+        );
+    }
+
+    // Funkcja do określenia tieru na podstawie ratingu
+    function getRankTier(rating: number): { name: string; color: string; range: string } {
+        if (rating >= 2400) return { name: 'CELESTIAL OVERLORD', color: 'rgb(147, 112, 219)', range: '2400+' };
+        if (rating >= 2300) return { name: 'GRANDMASTER', color: 'rgb(255, 215, 0)', range: '2300-2400' };
+        if (rating >= 2200) return { name: 'MASTER', color: 'rgb(220, 220, 220)', range: '2200-2300' };
+        if (rating >= 2150) return { name: 'VIRTUOSO', color: 'rgb(0, 0, 0)', range: '2150-2200' };
+        if (rating >= 2100) return { name: 'THE SPECIALIST', color: 'rgb(0, 0, 0)', range: '2100-2150' };
+        if (rating >= 2050) return { name: 'THE CAPTAIN', color: 'rgb(0, 0, 0)', range: '2050-2100' };
+        if (rating >= 1975) return { name: 'THE CREWMATE', color: 'rgb(0, 0, 0)', range: '1975-2050' };
+        if (rating >= 1875) return { name: 'THE CADET', color: 'rgb(0, 0, 0)', range: '1875-1975' };
+        if (rating >= 1750) return { name: 'THE PISSLOW', color: 'rgb(0, 0, 0)', range: '1750-1875' };
+        return { name: 'CWEL', color: 'rgb(0, 0, 0)', range: '<1750' };
+    }
+
+    // Funkcja renderująca slajd z rankingiem po sesji
+    function renderFinalRankingSlide(isFullscreen: boolean) {
+        if (rankingAfterSession.length === 0) return null;
+
+        // Krok 0: Tytuł
+        if (currentStep === 0) {
+            return (
+                <div className="relative w-full h-full flex items-center justify-center">
+                    <h1 
+                        className={`font-bold text-amber-400 text-center ${isFullscreen ? 'text-7xl' : 'text-5xl'}`}
+                        style={{
+                            textShadow: '0 0 40px rgba(251, 191, 36, 0.7)'
+                        }}
+                    >
+                        AMONG US RANKING AFERA<br />PO {formatDate(date)}
+                    </h1>
+                </div>
+            );
+        }
+
+        // Krok 1: Pokazywanie całej tabeli (wszyscy gracze)
+        const allPlayers = rankingAfterSession;
+
+        // Definicja wszystkich tierów w kolejności
+        const allTiers = [
+            { name: 'CELESTIAL OVERLORD', color: 'rgb(147, 112, 219)', range: '2400+', minRating: 2400 },
+            { name: 'GRANDMASTER', color: 'rgb(255, 215, 0)', range: '2300-2400', minRating: 2300 },
+            { name: 'MASTER', color: 'rgb(220, 220, 220)', range: '2200-2300', minRating: 2200 },
+            { name: 'VIRTUOSO', color: 'rgb(0, 0, 0)', range: '2150-2200', minRating: 2150 },
+            { name: 'THE SPECIALIST', color: 'rgb(0, 0, 0)', range: '2100-2150', minRating: 2100 },
+            { name: 'THE CAPTAIN', color: 'rgb(0, 0, 0)', range: '2050-2100', minRating: 2050 },
+            { name: 'THE CREWMATE', color: 'rgb(0, 0, 0)', range: '1975-2050', minRating: 1975 },
+            { name: 'THE CADET', color: 'rgb(0, 0, 0)', range: '1875-1975', minRating: 1875 },
+            { name: 'THE PISSLOW', color: 'rgb(0, 0, 0)', range: '1750-1875', minRating: 1750 },
+            { name: 'CWEL', color: 'rgb(0, 0, 0)', range: '<1750', minRating: 0 },
+        ];
+
+        // Grupuj graczy po tierach
+        const tierGroups = new Map<string, PlayerRankingAfterSession[]>();
+        
+        // Inicjalizuj wszystkie tiery pustymi tablicami
+        allTiers.forEach(tier => {
+            const tierKey = `${tier.name}|${tier.color}|${tier.range}`;
+            tierGroups.set(tierKey, []);
+        });
+
+        // Przypisz graczy do tierów
+        allPlayers.forEach(player => {
+            const tier = getRankTier(player.rating);
+            const tierKey = `${tier.name}|${tier.color}|${tier.range}`;
+            tierGroups.get(tierKey)!.push(player);
+        });
+
+        // Emperor - gracz z największą liczbą DAP w tym tygodniu
+        let emperor: PlayerRankingAfterSession | undefined;
+        if (weeklyStats.length > 0) {
+            // Znajdź gracza z największym totalPoints
+            const topDapPlayer = [...weeklyStats].sort((a, b) => b.totalPoints - a.totalPoints)[0];
+            // Znajdź jego dane w rankingAfterSession
+            emperor = allPlayers.find(p => p.nickname === topDapPlayer.nickname);
+        }
+
+        return (
+            <div className="relative w-full h-full flex flex-col px-80 py-6" style={{ overflow: 'hidden' }}>
+                {/* Nagłówek */}
+                <div 
+                    className={`text-center mt-10 mb-6 ${isFullscreen ? 'text-6xl' : 'text-5xl'} font-bold text-amber-400`}
+                    style={{ textShadow: '0 0 40px rgba(251, 191, 36, 0.9), 0 0 80px rgba(251, 191, 36, 0.6)' }}
+                >
+                    AMONG US RANKING AFERA PO {formatDate(date)}
+                </div>
+
+                {/* Tabela */}
+                <div className="flex-1 overflow-y-auto flex items-center justify-center">
+                    <table className="border-collapse" style={{ border: '3px solid rgb(251, 191, 36)' }}>
+                        <thead>
+                            <tr style={{ backgroundColor: 'rgba(217, 119, 6, 0.3)', borderBottom: '3px solid rgb(251, 191, 36)' }}>
+                                <th className={`py-3 px-4 text-amber-300 font-bold ${isFullscreen ? 'text-3xl' : 'text-2xl'}`} style={{ borderRight: '3px solid rgb(251, 191, 36)' }}>
+                                    #
+                                </th>
+                                <th className={`py-3 px-16 text-amber-300 font-bold ${isFullscreen ? 'text-3xl' : 'text-2xl'}`} style={{ borderRight: '3px solid rgb(251, 191, 36)' }}>
+                                    TIER
+                                </th>
+                                <th className={`py-3 px-4 text-amber-300 font-bold ${isFullscreen ? 'text-3xl' : 'text-2xl'}`}>
+                                    GRACZE
+                                </th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {(() => {
+                                let rowIndex = 0;
+                                return (
+                                    <>
+                                        {/* Emperor row */}
+                                        {emperor && (
+                                            <tr 
+                                                className="animate-[fadeIn_0.3s_ease-in]"
+                                                style={{ 
+                                                    backgroundColor: 'rgb(239, 68, 68)',
+                                                    animationDelay: `${rowIndex++ * 0.05}s`,
+                                                    borderBottom: '2px dotted rgba(200, 200, 200, 0.5)'
+                                                }}
+                                            >
+                                                <td className={`py-3 px-4 text-center text-white font-bold ${isFullscreen ? 'text-3xl' : 'text-2xl'}`} style={{ borderRight: '2px dotted rgba(200, 200, 200, 0.5)' }}>
+                                                    👑
+                                                </td>
+                                                <td className={`py-3 px-4 text-center text-white font-bold ${isFullscreen ? 'text-3xl' : 'text-2xl'}`} style={{ borderRight: '2px dotted rgba(200, 200, 200, 0.5)' }}>
+                                                    THE EMPEROR
+                                                </td>
+                                                <td className={`py-3 px-4 text-center text-white font-bold ${isFullscreen ? 'text-3xl' : 'text-lg'}`}>
+                                                    {emperor.nickname}
+                                                </td>
+                                            </tr>
+                                        )}
+
+                                        {/* Tier rows */}
+                                        {Array.from(tierGroups.entries()).map(([tierKey, players]) => {
+                                            const [tierName, tierColor, tierRange] = tierKey.split('|');
+                                            // Czarny tekst dla MASTER i GRANDMASTER, biały dla pozostałych
+                                            const textColor = (tierName === 'MASTER' || tierName === 'GRANDMASTER') ? 'text-black' : 'text-white';
+
+                                            return (
+                                                <tr 
+                                                    key={tierKey}
+                                                    className="animate-[fadeIn_0.3s_ease-in]"
+                                                    style={{ 
+                                                        backgroundColor: tierColor,
+                                                        animationDelay: `${rowIndex++ * 0.05}s`,
+                                                        borderBottom: '2px dotted rgba(200, 200, 200, 0.5)'
+                                                    }}
+                                                >
+                                                    <td className={`py-3 px-4 text-center ${textColor} font-bold ${isFullscreen ? 'text-3xl' : 'text-2xl'}`} style={{ borderRight: '2px dotted rgba(200, 200, 200, 0.5)' }}>
+                                                        {tierRange}
+                                                    </td>
+                                                    <td className={`py-3 px-16 text-center ${textColor} ${isFullscreen ? 'text-xl' : 'text-lg'}`} style={{ whiteSpace: 'nowrap', borderRight: '2px dotted rgba(200, 200, 200, 0.5)' }}>
+                                                        {tierName}
+                                                    </td>
+                                                    <td className={`py-3 px-4 text-center ${textColor} ${isFullscreen ? 'text-lg' : 'text-base'}`}>
+                                                        {players.length > 0 ? (
+                                                            players.map((player, idx) => (
+                                                                <span key={player.nickname}>
+                                                                    {idx > 0 && ', '}
+                                                                    {player.nickname}&nbsp;
+                                                                    <span 
+                                                                        style={{
+                                                                            color: player.ratingChange > 0 ? '#22c55e' : player.ratingChange < 0 ? '#ef4444' : 'inherit'
+                                                                        }}
+                                                                    >
+                                                                        ({Math.round(player.rating)})
+                                                                    </span>
+                                                                </span>
+                                                            ))
+                                                        ) : (
+                                                            <span className="text-gray-500 italic">—</span>
+                                                        )}
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })}
+                                    </>
+                                );
+                            })()}
+                        </tbody>
+                    </table>
+                </div>
             </div>
         );
     }
