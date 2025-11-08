@@ -257,7 +257,7 @@ export default function WeeklySummaryPage() {
                         const pollData: EmperorPoll = await pollResponse.json();
                         setEmperorPoll(pollData);
                     }
-                } catch (pollErr) {
+                } catch {
                     // Ankieta opcjonalna - brak pliku nie jest błędem
                     console.log('No emperor poll found for this date');
                 }
@@ -266,7 +266,7 @@ export default function WeeklySummaryPage() {
                 try {
                     const sigmasResponse = await fetch(`/api/dramaafera/top-sigmas/${date}`);
                     if (sigmasResponse.ok) {
-                        const sigmasData: any = await sigmasResponse.json();
+                        const sigmasData = await sigmasResponse.json() as { success: boolean; data?: SigmaPlayer[] };
                         if (sigmasData.success && sigmasData.data) {
                             const topThree: SigmaPlayer[] = sigmasData.data.slice(0, 3);
                             setTopSigmas(topThree);
@@ -277,23 +277,23 @@ export default function WeeklySummaryPage() {
                                 try {
                                     const historyResponse = await fetch(`/api/dramaafera/ranking-history/${sigma.nickname}`);
                                     if (historyResponse.ok) {
-                                        const historyData: any = await historyResponse.json();
+                                        const historyData = await historyResponse.json() as { success: boolean; data?: { date: string; rating: number; position: number }[] };
                                         if (historyData.success && historyData.data) {
-                                            historyMap.set(sigma.nickname, historyData.data.map((point: any) => ({
+                                            historyMap.set(sigma.nickname, historyData.data.map((point) => ({
                                                 date: new Date(point.date),
                                                 rating: point.rating,
                                                 position: point.position
                                             })));
                                         }
                                     }
-                                } catch (histErr) {
+                                } catch {
                                     console.log(`No ranking history for ${sigma.nickname}`);
                                 }
                             }
                             setSigmaRankingHistory(historyMap);
                         }
                     }
-                } catch (sigmaErr) {
+                } catch {
                     // Sigmy opcjonalne - brak danych nie jest błędem
                     console.log('No sigmas data found for this date');
                 }
@@ -302,7 +302,7 @@ export default function WeeklySummaryPage() {
                 try {
                     const cweleResponse = await fetch(`/api/dramaafera/top-sigmas/${date}`);
                     if (cweleResponse.ok) {
-                        const cweleData: any = await cweleResponse.json();
+                        const cweleData = await cweleResponse.json() as { success: boolean; data?: SigmaPlayer[] };
                         
                         if (cweleData.success && cweleData.data) {
                             // Weź 3 ostatnich (największe spadki - najbardziej ujemne ratingChange)
@@ -315,23 +315,23 @@ export default function WeeklySummaryPage() {
                                 try {
                                     const historyResponse = await fetch(`/api/dramaafera/ranking-history/${cwel.nickname}`);
                                     if (historyResponse.ok) {
-                                        const historyData: any = await historyResponse.json();
+                                        const historyData = await historyResponse.json() as { success: boolean; data?: { date: string; rating: number; position: number }[] };
                                         if (historyData.success && historyData.data) {
-                                            historyMap.set(cwel.nickname, historyData.data.map((point: any) => ({
+                                            historyMap.set(cwel.nickname, historyData.data.map((point) => ({
                                                 date: new Date(point.date),
                                                 rating: point.rating,
                                                 position: point.position
                                             })));
                                         }
                                     }
-                                } catch (histErr) {
+                                } catch {
                                     console.log(`No ranking history for ${cwel.nickname}`);
                                 }
                             }
                             setCwelRankingHistory(historyMap);
                         }
                     }
-                } catch (cwelErr) {
+                } catch {
                     // Cwele opcjonalne - brak danych nie jest błędem
                     console.log('No cwele data found for this date');
                 }
@@ -340,12 +340,12 @@ export default function WeeklySummaryPage() {
                 try {
                     const emperorHistoryResponse = await fetch('/api/dramaafera/emperor-history');
                     if (emperorHistoryResponse.ok) {
-                        const emperorHistoryData: any = await emperorHistoryResponse.json();
+                        const emperorHistoryData = await emperorHistoryResponse.json() as { success: boolean; data?: EmperorHistoryEntry[] };
                         if (emperorHistoryData.success && emperorHistoryData.data) {
                             setEmperorHistory(emperorHistoryData.data);
                         }
                     }
-                } catch (emperorHistErr) {
+                } catch {
                     console.log('No emperor history found');
                 }
                 
@@ -354,7 +354,7 @@ export default function WeeklySummaryPage() {
                     const rankingResponse = await fetch(`/api/dramaafera/ranking-after-session/${date}`);
                     console.log('Ranking response status:', rankingResponse.status);
                     if (rankingResponse.ok) {
-                        const rankingData: any = await rankingResponse.json();
+                        const rankingData = await rankingResponse.json() as { success: boolean; data?: PlayerRankingAfterSession[] };
                         console.log('Ranking data:', rankingData);
                         if (rankingData.success && rankingData.data) {
                             console.log('Setting ranking, count:', rankingData.data.length);
@@ -1194,7 +1194,6 @@ export default function WeeklySummaryPage() {
 
         // Liczba graczy do pokazania (currentStep, bo krok 0 to napis)
         const visibleCount = currentStep;
-        const visiblePlayers = playersToReveal.slice(0, visibleCount);
 
         // Automatyczne skalowanie do wysokości ekranu
         const maxPlayers = playersToReveal.length;

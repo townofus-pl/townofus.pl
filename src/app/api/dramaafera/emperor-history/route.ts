@@ -13,7 +13,7 @@ interface EmperorEntry {
     isLatest: boolean;
 }
 
-export async function GET(request: NextRequest) {
+export async function GET(_request: NextRequest) {
     try {
         // Pobierz Cloudflare context i Prisma client
         const { env } = await getCloudflareContext();
