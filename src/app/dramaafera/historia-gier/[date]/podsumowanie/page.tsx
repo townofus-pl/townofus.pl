@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo } from "react";
+import { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { createPortal } from "react-dom";
 import Image from "next/image";
 import { useParams } from "next/navigation";
@@ -93,6 +93,9 @@ export default function WeeklySummaryPage() {
     const [error, setError] = useState<string | null>(null);
     const [isTransitioning, setIsTransitioning] = useState(false);
     const [showConfetti, setShowConfetti] = useState(false);
+    const [introBlackOverlay, setIntroBlackOverlay] = useState(true);
+    const [backgroundMusic, setBackgroundMusic] = useState<HTMLAudioElement | null>(null);
+    const backgroundMusicRef = useRef<HTMLAudioElement | null>(null); // Ref zamiast state - nie triggeruje re-render
 
     // Oblicz liczbę graczy do odkrycia (od ostatniego do 4. miejsca)
     const remainingPlayersCount = Math.max(0, weeklyStats.length - 3);
@@ -187,6 +190,61 @@ export default function WeeklySummaryPage() {
     const handleNext = useCallback(() => {
         const currentSlideConfig = slides[currentSlide];
         
+        // Specjalna obsługa pierwszego slajdu intro - usuń czarną warstwę i uruchom muzykę
+        if (currentSlideConfig.id === 'intro' && currentStep === 0 && introBlackOverlay) {
+            setIntroBlackOverlay(false);
+            
+            // Uruchom muzykę w tle - używamy Ref zamiast state żeby uniknąć cleanup
+            // Muzyka uruchamia się PO kliknięciu, więc przeglądarka już nie blokuje autoplay
+            if (!backgroundMusicRef.current) {
+                console.log('🎵 Tworzę nowy obiekt Audio...');
+                const audio = new Audio('/sounds/among us DRAMA AFERA.mp3');
+                audio.loop = true;
+                audio.volume = 1.0; // Pełna głośność
+                
+                console.log('🎵 Audio stworzone:', audio.src);
+                console.log('🎵 Volume ustawione na:', audio.volume);
+                console.log('🎵 Loop ustawiony na:', audio.loop);
+                
+                // Dodaj event listenery dla debugowania
+                audio.addEventListener('loadstart', () => console.log('🔄 Audio: loadstart'));
+                audio.addEventListener('loadedmetadata', () => console.log('📊 Audio: loadedmetadata'));
+                audio.addEventListener('canplay', () => console.log('✅ Audio: canplay'));
+                audio.addEventListener('playing', () => console.log('▶️ Audio: playing'));
+                audio.addEventListener('pause', () => {
+                    console.log('⏸️ Audio: pause');
+                    console.trace('⏸️ PAUSE WYWOŁANE - STACK TRACE:');
+                });
+                audio.addEventListener('ended', () => console.log('🛑 Audio: ended'));
+                audio.addEventListener('error', (e) => console.error('❌ Audio error:', e));
+                
+                // Zapisz audio NAJPIERW, potem play
+                backgroundMusicRef.current = audio;
+                
+                // Opóźniamy play() o 100ms żeby przeglądarka nie myślała że to autoplay
+                console.log('🎵 Wywołuję audio.play() za 100ms...');
+                setTimeout(() => {
+                    audio.play()
+                        .then(() => {
+                            console.log('✅ audio.play() Promise RESOLVED - muzyka powinna grać!');
+                            console.log('🎵 Aktualny czas:', audio.currentTime);
+                            console.log('🎵 Czy paused?:', audio.paused);
+                            console.log('🎵 Volume:', audio.volume);
+                        })
+                        .catch(err => {
+                            console.error('❌ audio.play() Promise REJECTED:', err);
+                            console.error('❌ Błąd:', err.message);
+                        });
+                }, 100);
+                // NIE USTAWIAMY STATE - tylko Ref! State triggeruje re-render i cleanup
+                console.log('🎵 Audio zapisane w Ref (BEZ setState)');
+            } else {
+                console.log('⚠️ Audio już istnieje w Ref!');
+            }
+            
+            return;
+        }
+        
         // Jeśli są jeszcze kroki w bieżącym slajdzie
         if (currentStep < currentSlideConfig.steps - 1) {
             // Sprawdź czy to odkrycie 1. miejsca na podium (step 2->3)
@@ -210,6 +268,39 @@ export default function WeeklySummaryPage() {
         else if (currentSlide < totalSlides - 1) {
             const nextSlideConfig = slides[currentSlide + 1];
             
+            console.log('🔍 DEBUG: currentSlide=', currentSlide, 'currentSlideId=', currentSlideConfig.id, 'hasAudio=', !!backgroundMusicRef.current);
+            
+            // Ścisz muzykę po przejściu z intro (teraz już audio istnieje!) - płynne przejście
+            if (currentSlideConfig.id === 'intro' && backgroundMusicRef.current) {
+                console.log('🔉 PRZED ściszeniem - volume:', backgroundMusicRef.current.volume);
+                
+                const audio = backgroundMusicRef.current;
+                const startVolume = audio.volume;
+                const targetVolume = 0.07; // 7% głośności
+                const fadeDuration = 1000; // 1 sekunda
+                const fadeSteps = 50; // 50 kroków
+                const stepDuration = fadeDuration / fadeSteps;
+                const volumeStep = (startVolume - targetVolume) / fadeSteps;
+                
+                let currentStep = 0;
+                const fadeInterval = setInterval(() => {
+                    currentStep++;
+                    const newVolume = startVolume - (volumeStep * currentStep);
+                    
+                    if (currentStep >= fadeSteps || newVolume <= targetVolume) {
+                        audio.volume = targetVolume;
+                        clearInterval(fadeInterval);
+                        console.log('🔉 PO ściszeniu - volume:', audio.volume);
+                    } else {
+                        audio.volume = newVolume;
+                    }
+                }, stepDuration);
+            } else if (currentSlideConfig.id === 'intro') {
+                console.log('⚠️ Intro ale brak audio w Ref!');
+            } else {
+                console.log('⚠️ Nie intro, pomijam ściszenie. SlideId:', currentSlideConfig.id);
+            }
+            
             // Fade transition przy przejściu z 'intro', 'remaining', 'sigmas', 'cwele', lub 'emperor-history' do następnego slajdu
             if (currentSlideConfig.id === 'intro' || 
                 currentSlideConfig.id === 'sigmas' ||
@@ -217,11 +308,15 @@ export default function WeeklySummaryPage() {
                 currentSlideConfig.id === 'emperor-history' ||
                 (currentSlideConfig.id === 'remaining' && nextSlideConfig.id === 'podium')) {
                 setIsTransitioning(true);
+                
+                // Specjalne opóźnienie dla przejścia z intro - 1 sekunda zamiast 0.5s
+                const transitionDelay = currentSlideConfig.id === 'intro' ? 1000 : 500;
+                
                 setTimeout(() => {
                     setCurrentSlide(currentSlide + 1);
                     setCurrentStep(0);
                     setTimeout(() => setIsTransitioning(false), 100);
-                }, 500); // Fade out trwa 500ms, potem zmiana slajdu
+                }, transitionDelay);
             } else {
                 setCurrentSlide(currentSlide + 1);
                 setCurrentStep(0);
@@ -229,10 +324,21 @@ export default function WeeklySummaryPage() {
         }
         // Jeśli to ostatni slajd i ostatni krok, zresetuj
         else {
+            console.log('🔴 RESET PREZENTACJI - zatrzymuję muzykę');
             setCurrentSlide(0);
             setCurrentStep(0);
+            setIntroBlackOverlay(true); // Przywróć czarną warstwę dla restartu
+            
+            // Zatrzymaj muzykę i zresetuj
+            if (backgroundMusicRef.current) {
+                backgroundMusicRef.current.pause();
+                backgroundMusicRef.current.currentTime = 0;
+                backgroundMusicRef.current = null;
+                // NIE USTAWIAMY STATE
+            }
         }
-    }, [currentSlide, currentStep, slides, totalSlides]);
+    }, [currentSlide, currentStep, slides, totalSlides, introBlackOverlay]);
+    // backgroundMusic usunięte z dependencies - używamy tylko Ref!
 
     // Pobieranie danych tygodniowych i ankiety
     useEffect(() => {
@@ -399,15 +505,44 @@ export default function WeeklySummaryPage() {
     useEffect(() => {
         const handleFullscreenChange = () => {
             const isFullscreenNow = !!document.fullscreenElement;
+            
+            console.log('🖥️ Fullscreen change:', { isFullscreenNow, hasAudio: !!backgroundMusicRef.current });
+            
+            // NIE PAUSUJ AUDIO PODCZAS WEJŚCIA DO FULLSCREEN!
+            // Muzyka ma grać cały czas - tylko przy WYJŚCIU zatrzymujemy
+            
             setIsPresentationFullscreen(isFullscreenNow);
             
             // Dodaj/usuń klasę CSS dla body żeby ukryć inne elementy
             if (isFullscreenNow) {
                 document.body.style.overflow = 'hidden';
                 document.documentElement.style.overflow = 'hidden';
+                console.log('✅ Wejście w fullscreen - muzyka gra dalej');
             } else {
                 document.body.style.overflow = '';
                 document.documentElement.style.overflow = '';
+                
+                // Zatrzymaj muzykę TYLKO przy wyjściu z pełnego ekranu
+                console.log('🔴 WYJŚCIE Z FULLSCREEN - zatrzymuję muzykę');
+                console.log('🔴 Audio exists?', !!backgroundMusicRef.current);
+                if (backgroundMusicRef.current) {
+                    console.log('🔴 Audio paused przed:', backgroundMusicRef.current.paused);
+                    console.log('🔴 Audio currentTime przed:', backgroundMusicRef.current.currentTime);
+                    
+                    try {
+                        backgroundMusicRef.current.pause();
+                        console.log('🔴 pause() wywołane!');
+                    } catch (e) {
+                        console.error('🔴 Błąd przy pause():', e);
+                    }
+                    
+                    backgroundMusicRef.current.currentTime = 0;
+                    backgroundMusicRef.current = null;
+                    console.log('🔴 Audio wyczyszczone!');
+                    // NIE USTAWIAMY STATE - już niepotrzebny
+                } else {
+                    console.log('🔴 Audio Ref jest null - muzyka już zatrzymana?');
+                }
             }
         };
 
@@ -429,8 +564,24 @@ export default function WeeklySummaryPage() {
             // Cleanup - przywróć normalny overflow
             document.body.style.overflow = '';
             document.documentElement.style.overflow = '';
+            
+            // NIE CZYŚCIMY AUDIO TUTAJ - tylko przy unmount całego komponentu
+            // Audio jest czyszczone przy wyjściu z fullscreen w handleFullscreenChange
         };
     }, [isPresentationFullscreen, handleNext]);
+    // backgroundMusic usunięte z dependencies - używamy Ref w cleanup
+
+    // useEffect do cleanup przy unmount komponentu
+    useEffect(() => {
+        return () => {
+            console.log('🧹 UNMOUNT KOMPONENTU - cleanup audio');
+            if (backgroundMusicRef.current) {
+                backgroundMusicRef.current.pause();
+                backgroundMusicRef.current.currentTime = 0;
+                backgroundMusicRef.current = null;
+            }
+        };
+    }, []); // Puste dependencies - cleanup tylko przy unmount
 
     // Formatowanie daty
     const formatDate = (dateStr: string) => {
@@ -516,7 +667,7 @@ export default function WeeklySummaryPage() {
             {/* Pełnoekranowa prezentacja - renderowana przez Portal */}
             {isPresentationFullscreen && typeof document !== 'undefined' && createPortal(
                 <div 
-                    className="fixed inset-0 w-screen h-screen bg-gradient-to-br from-zinc-900 via-zinc-800 to-amber-900 text-white overflow-hidden cursor-pointer select-none"
+                    className="fixed inset-0 w-screen h-screen bg-black text-white overflow-hidden cursor-pointer select-none"
                     onClick={handleClick}
                     style={{ 
                         position: 'fixed',
@@ -577,10 +728,10 @@ export default function WeeklySummaryPage() {
     function renderPresentationContent(isFullscreen: boolean) {
         return (
             <>
-                {/* YouTube video - zawsze obecne w tle od slajdu 1 wzwyż */}
+                {/* YouTube video - odtwarzanie z wyciszonym dźwiękiem (tylko obraz) */}
                 <div className={`absolute inset-0 overflow-hidden transition-opacity duration-1000 ${currentSlide >= 1 ? 'opacity-100' : 'opacity-0'}`}>
                     <iframe
-                        src="https://www.youtube-nocookie.com/embed/6BFhVrifW-0?autoplay=1&mute=1&loop=1&controls=0&showinfo=0&rel=0&iv_load_policy=3&modestbranding=1&playsinline=1&start=0&playlist=6BFhVrifW-0&enablejsapi=1"
+                        src="https://www.youtube-nocookie.com/embed/6BFhVrifW-0?autoplay=1&mute=1&loop=1&controls=0&showinfo=0&rel=0&iv_load_policy=3&modestbranding=1&playsinline=1&start=0&playlist=6BFhVrifW-0&volume=0"
                         className="absolute inset-0"
                         style={{
                             width: '100vw',
@@ -594,7 +745,7 @@ export default function WeeklySummaryPage() {
                             border: 'none'
                         }}
                         frameBorder="0"
-                        allow="autoplay; encrypted-media"
+                        allow=""
                         allowFullScreen
                     />
                     {/* Overlay dla lepszej czytelności tekstu */}
@@ -625,29 +776,54 @@ export default function WeeklySummaryPage() {
                     </div>
                 )}
 
-                {/* SLAJD 0: Intro */}
-                {currentSlide === 0 && (
+                {/* SLAJD 0: Intro z czarną warstwą na górze */}
+                {slides[currentSlide]?.id === 'intro' && (
+                    <>
+                        <div 
+                            className="absolute inset-0"
+                            style={{
+                                opacity: isTransitioning ? 0 : 1,
+                                transition: 'opacity 1s ease-out', // 1 sekunda fade out dla intro
+                                zIndex: isTransitioning ? 20 : 10 // Intro na górze podczas fade out
+                            }}
+                        >
+                            {renderIntroSlide(isFullscreen)}
+                        </div>
+                        
+                        {/* Czarna warstwa na samej górze - znika po pierwszym kliknięciu */}
+                        <div 
+                            className="absolute inset-0 bg-black"
+                            style={{
+                                opacity: introBlackOverlay ? 1 : 0,
+                                transition: 'opacity 0.5s ease-out',
+                                zIndex: 100,
+                                pointerEvents: introBlackOverlay ? 'auto' : 'none'
+                            }}
+                        />
+                    </>
+                )}
+
+                {/* SLAJD: Ankieta Emperor (jeśli istnieje) - natychmiast widoczny pod intro */}
+                {(slides[currentSlide]?.id === 'emperor-poll' || (isTransitioning && slides[currentSlide]?.id === 'intro' && slides[currentSlide + 1]?.id === 'emperor-poll')) && (
                     <div 
                         className="absolute inset-0"
                         style={{
-                            opacity: isTransitioning ? 0 : 1,
-                            transition: 'opacity 0.5s ease-out'
+                            opacity: 1,
+                            zIndex: 5
                         }}
                     >
-                        {renderIntroSlide(isFullscreen)}
+                        {renderEmperorPollSlide(isFullscreen)}
                     </div>
                 )}
 
-                {/* SLAJD: Ankieta Emperor (jeśli istnieje) */}
-                {slides[currentSlide]?.id === 'emperor-poll' && renderEmperorPollSlide(isFullscreen)}
-
-                {/* SLAJD: Pozostali gracze (jeśli istnieją) */}
-                {slides[currentSlide]?.id === 'remaining' && (
+                {/* SLAJD: Pozostali gracze (jeśli istnieją) - natychmiast widoczny pod intro */}
+                {(slides[currentSlide]?.id === 'remaining' || (isTransitioning && slides[currentSlide]?.id === 'intro' && slides[currentSlide + 1]?.id === 'remaining')) && (
                     <div 
                         className="absolute inset-0"
                         style={{
-                            opacity: isTransitioning ? 0 : 1,
-                            transition: 'opacity 0.5s ease-out'
+                            opacity: slides[currentSlide]?.id === 'remaining' ? (isTransitioning ? 0 : 1) : 1,
+                            transition: slides[currentSlide]?.id === 'remaining' && isTransitioning ? 'opacity 0.5s ease-out' : 'none',
+                            zIndex: 5
                         }}
                     >
                         {renderRemainingPlayersSlide(isFullscreen)}
@@ -710,7 +886,7 @@ export default function WeeklySummaryPage() {
         return (
             <div className="relative flex flex-col items-center justify-center h-full overflow-hidden">
                 {/* Animowane tło z avatarami - tylko graczy z tego tygodnia */}
-                <div className="absolute inset-0 opacity-50 overflow-hidden">
+                <div className="absolute inset-0 overflow-hidden">
                     <div className="flex h-full animate-scroll-left filter sepia hue-rotate-[315deg] saturate-[2] brightness-75">
                         {/* Powtarzane sekcje avatarów dla płynnego zapętlenia */}
                         {[...Array(6)].map((_, setIndex) => (
