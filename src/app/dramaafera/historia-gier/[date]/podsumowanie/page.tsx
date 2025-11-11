@@ -106,7 +106,7 @@ export default function WeeklySummaryPage() {
         250, // US
         225, // DRA
         180, // MA
-        160, // A
+        190, // A
         190  // FE
     ], []);
 
