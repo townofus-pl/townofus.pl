@@ -2,8 +2,6 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getCloudflareContext } from '@opennextjs/cloudflare';
 import { getPrismaClient } from '../../_database';
 
-export const runtime = 'edge';
-
 const withoutDeleted = { deletedAt: null } as const;
 
 interface EmperorEntry {
