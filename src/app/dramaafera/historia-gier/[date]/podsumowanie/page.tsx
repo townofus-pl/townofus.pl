@@ -96,6 +96,20 @@ export default function WeeklySummaryPage() {
     const [introBlackOverlay, setIntroBlackOverlay] = useState(true);
     const [backgroundMusic, setBackgroundMusic] = useState<HTMLAudioElement | null>(null);
     const backgroundMusicRef = useRef<HTMLAudioElement | null>(null); // Ref zamiast state - nie triggeruje re-render
+    const [introInitialDelayPassed, setIntroInitialDelayPassed] = useState(false); // Czy minęło początkowe opóźnienie intro
+
+    // Konfiguracja automatycznej sekwencji intro
+    const INTRO_INITIAL_DELAY = 760; // ms - opóźnienie przed pierwszym tekstem po zniknięciu czarnego ekranu
+    // Czasy trwania dla każdego kroku (A, B, C, D, E, F, G) w ms
+    const INTRO_STEP_DURATIONS = [
+        240, // A
+        230, // MONG
+        250, // US
+        225, // DRA
+        180, // MA
+        160, // A
+        190  // FE
+    ];
 
     // Oblicz liczbę graczy do odkrycia (od ostatniego do 4. miejsca)
     const remainingPlayersCount = Math.max(0, weeklyStats.length - 3);
@@ -105,7 +119,7 @@ export default function WeeklySummaryPage() {
         {
             id: 'intro',
             name: 'Intro',
-            steps: 1 // Jeden krok - pokazanie intro
+            steps: 8 // 7 tekstów (A-G) + finalne intro (logo)
         },
         ...(emperorPoll ? [{
             id: 'emperor-poll',
@@ -186,12 +200,43 @@ export default function WeeklySummaryPage() {
         }
     }, [weeklyStats]);
 
+    // Automatyczne przełączanie kroków w slajdzie intro (kroki 0-6 to teksty A-G, krok 7 to finalne intro)
+    useEffect(() => {
+        const currentSlideConfig = slides[currentSlide];
+        
+        // Tylko dla slajdu intro i tylko gdy nie ma czarnego overlay
+        if (currentSlideConfig?.id === 'intro' && !introBlackOverlay && isPresentationFullscreen) {
+            // Krok 0: Początkowe opóźnienie (pusty czarny ekran)
+            if (currentStep === 0 && !introInitialDelayPassed) {
+                const initialTimer = setTimeout(() => {
+                    setIntroInitialDelayPassed(true);
+                }, INTRO_INITIAL_DELAY);
+                
+                return () => clearTimeout(initialTimer);
+            }
+            
+            // Krok 0-6: Automatyczne przełączanie tekstów (A-G) - tylko gdy minęło początkowe opóźnienie
+            if (currentStep < 7 && introInitialDelayPassed) {
+                // Czas wyświetlania dla danego tekstu
+                const delay = INTRO_STEP_DURATIONS[currentStep];
+                
+                const timer = setTimeout(() => {
+                    setCurrentStep(currentStep + 1);
+                }, delay);
+                
+                return () => clearTimeout(timer);
+            }
+            // Krok 7: Finalne intro - czeka na kliknięcie użytkownika
+        }
+    }, [currentSlide, currentStep, introBlackOverlay, isPresentationFullscreen, introInitialDelayPassed, slides]);
+
     // Funkcja do przejścia do kolejnego kroku/slajdu
     const handleNext = useCallback(() => {
         const currentSlideConfig = slides[currentSlide];
         
         // Specjalna obsługa pierwszego slajdu intro - usuń czarną warstwę i uruchom muzykę
-        if (currentSlideConfig.id === 'intro' && currentStep === 0 && introBlackOverlay) {
+        // UWAGA: Kroki 0-6 są automatyczne, nie reagują na kliknięcie
+        if (currentSlideConfig.id === 'intro' && introBlackOverlay) {
             setIntroBlackOverlay(false);
             
             // Uruchom muzykę w tle - używamy Ref zamiast state żeby uniknąć cleanup
@@ -328,6 +373,7 @@ export default function WeeklySummaryPage() {
             setCurrentSlide(0);
             setCurrentStep(0);
             setIntroBlackOverlay(true); // Przywróć czarną warstwę dla restartu
+            setIntroInitialDelayPassed(false); // Zresetuj stan początkowego opóźnienia
             
             // Zatrzymaj muzykę i zresetuj
             if (backgroundMusicRef.current) {
@@ -728,8 +774,8 @@ export default function WeeklySummaryPage() {
     function renderPresentationContent(isFullscreen: boolean) {
         return (
             <>
-                {/* YouTube video - odtwarzanie z wyciszonym dźwiękiem (tylko obraz) */}
-                <div className={`absolute inset-0 overflow-hidden transition-opacity duration-1000 ${currentSlide >= 1 ? 'opacity-100' : 'opacity-0'}`}>
+                {/* YouTube video - odtwarzanie z wyciszonym dźwiękiem (tylko obraz) - ładowane od początku */}
+                <div className="absolute inset-0 overflow-hidden">
                     <iframe
                         src="https://www.youtube-nocookie.com/embed/6BFhVrifW-0?autoplay=1&mute=1&loop=1&controls=0&showinfo=0&rel=0&iv_load_policy=3&modestbranding=1&playsinline=1&start=0&playlist=6BFhVrifW-0&volume=0"
                         className="absolute inset-0"
@@ -812,7 +858,8 @@ export default function WeeklySummaryPage() {
                             zIndex: 5
                         }}
                     >
-                        {renderEmperorPollSlide(isFullscreen)}
+                        {/* Podczas fadeoutu intro pokazujemy krok 0 (pytanie), potem normalne kroki */}
+                        {renderEmperorPollSlide(isFullscreen, (isTransitioning && slides[currentSlide]?.id === 'intro') ? 0 : currentStep)}
                     </div>
                 )}
 
@@ -826,7 +873,8 @@ export default function WeeklySummaryPage() {
                             zIndex: 5
                         }}
                     >
-                        {renderRemainingPlayersSlide(isFullscreen)}
+                        {/* Podczas fadeoutu intro pokazujemy krok 0 (napis "PODSUMOWANIE..."), potem normalne kroki */}
+                        {renderRemainingPlayersSlide(isFullscreen, (isTransitioning && slides[currentSlide]?.id === 'intro') ? 0 : currentStep)}
                     </div>
                 )}
 
@@ -860,25 +908,69 @@ export default function WeeklySummaryPage() {
 
     // SLAJD 0: Intro slide
     function renderIntroSlide(isFullscreen: boolean) {
+        // Tablica tekstów dla kroków 0-6 (automatyczna sekwencja)
+        const introTexts = ['A', 'AMONG', 'US', 'DRA', 'DRAMA', 'A', 'AFE'];
+        
+        // ZAWSZE renderuj finalne intro (z logo) na dole jako bazę
+        const finalIntroContent = renderFinalIntro(isFullscreen);
+        
+        // Kroki 0-6: OGROMNE teksty (placeholdery) - wyświetlane NA WIERZCHU finalnego intro
+        if (currentStep >= 0 && currentStep < 7) {
+            return (
+                <>
+                    {/* Finalne intro zawsze załadowane pod spodem (z-index: 1) */}
+                    <div style={{ position: 'absolute', inset: 0, zIndex: 1 }}>
+                        {finalIntroContent}
+                    </div>
+                    
+                    {/* Czarne tło przykrywające intro + teksty na wierzchu (z-index: 10) */}
+                    <div 
+                        className="absolute inset-0 bg-black flex items-center justify-center"
+                        style={{ zIndex: 10 }}
+                    >
+                        {/* Pokaż tekst tylko gdy minęło początkowe opóźnienie */}
+                        {introInitialDelayPassed && (
+                            <h1 
+                                className={`font-bold text-amber-400 ${isFullscreen ? 'text-[20rem]' : 'text-9xl'}`}
+                                style={{
+                                    textShadow: '0 0 60px rgba(251, 191, 36, 0.8)',
+                                    animation: 'fadeIn 0.5s ease-in'
+                                }}
+                            >
+                                {introTexts[currentStep]}
+                            </h1>
+                        )}
+                    </div>
+                </>
+            );
+        }
+        
+        // Krok 7: Samo finalne intro (teksty już znikły)
+        return finalIntroContent;
+    }
+    
+    // Funkcja renderująca finalne intro z logo
+    function renderFinalIntro(isFullscreen: boolean) {
         // Jeśli nie ma jeszcze wygenerowanych avatarów, nie renderuj tła
         if (randomAvatars.length === 0) {
             return (
-                <div className="relative flex flex-col items-center justify-center h-full overflow-hidden">
+                <div className="relative flex items-center justify-center h-full overflow-hidden">
                     {/* Główna zawartość intro bez tła */}
-                    <div className="relative z-10 transition-all duration-1000 ease-out opacity-100 scale-100">
-                        <div className="text-center">
-                            <Image
-                                src="/images/intro.png"
-                                alt="Drama Afera Intro"
-                                width={isFullscreen ? 1000 : 700}
-                                height={isFullscreen ? 1000 : 700}
-                                className="mx-auto mb-8 drop-shadow-2xl relative z-20"
-                            />
-                            <p className={`text-amber-200 font-medium tracking-wider relative z-20 ${isFullscreen ? 'text-4xl' : 'text-lg'}`}>
-                                POWERED BY ZIOMSON & MALKIZ
-                            </p>                              
-                        </div>
+                    <div className="absolute inset-0 flex items-center justify-center z-10">
+                        <Image
+                            src="/images/DAXD.png"
+                            alt="Drama Afera Intro"
+                            width={isFullscreen ? 2000 : 700}
+                            height={isFullscreen ? 2000 : 700}
+                            className="drop-shadow-2xl transition-all duration-1000 ease-out opacity-100 scale-100"
+                        />
                     </div>
+                    <p 
+                        className={`text-amber-200 font-medium tracking-wider absolute left-1/2 top-1/2 -translate-x-1/2 z-30 text-center whitespace-nowrap ${isFullscreen ? 'text-4xl' : 'text-lg'}`}
+                        style={{ marginTop: '-110px' }}
+                    >
+                        POWERED BY ZIOMSON & MALKIZ
+                    </p>
                 </div>
             );
         }
@@ -922,34 +1014,41 @@ export default function WeeklySummaryPage() {
                     {/* Warstwa rozmycia */}
                     <div className="absolute inset-0 backdrop-blur"></div>
                     {/* Czerwony overlay na całe tło */}
-                    <div className="absolute inset-0 bg-red-800/60 mix-blend-multiply"></div>
+                    <div 
+                        className="absolute inset-0 mix-blend-multiply" 
+                        style={{ 
+                            backgroundColor: 'rgba(87, 34, 25, 1)',
+                            opacity: 0.9 
+                        }}
+                    ></div>
                 </div>
 
                 {/* Główna zawartość intro */}
-                <div className="relative z-10 transition-all duration-1000 ease-out opacity-100 scale-100">
-                    <div className="text-center">
-                        <Image
-                            src="/images/intro.png"
-                            alt="Drama Afera Intro"
-                            width={isFullscreen ? 1000 : 700}
-                            height={isFullscreen ? 1000 : 700}
-                            className="mx-auto mb-8 drop-shadow-2xl relative z-20"
-                        />
-                        <p className={`text-amber-200 font-medium tracking-wider relative z-20 ${isFullscreen ? 'text-4xl' : 'text-lg'}`}>
-                            POWERED BY ZIOMSON & MALKIZ
-                        </p>                              
-                    </div>
+                <div className="absolute inset-0 flex items-center justify-center z-10">
+                    <Image
+                        src="/images/DAXD.png"
+                        alt="Drama Afera Intro"
+                        width={isFullscreen ? 1800 : 700}
+                        height={isFullscreen ? 1800 : 700}
+                        className="drop-shadow-2xl transition-all duration-1000 ease-out opacity-100 scale-100"
+                    />
                 </div>
+                <p 
+                    className={`text-amber-200 font-medium tracking-wider absolute left-1/2 top-1/2 -translate-x-1/2 z-30 text-center whitespace-nowrap ${isFullscreen ? 'text-4xl' : 'text-lg'}`}
+                    style={{ marginTop: '420px' }}
+                >
+                    POWERED BY ZIOMSON & MALKIZ
+                </p>
             </div>
         );
     }
 
     // SLAJD: Ankieta Emperor
-    function renderEmperorPollSlide(isFullscreen: boolean) {
+    function renderEmperorPollSlide(isFullscreen: boolean, step: number = currentStep) {
         if (!emperorPoll) return null;
 
         // Krok 0: Pytanie
-        if (currentStep === 0) {
+        if (step === 0) {
             return (
                 <div className="relative flex items-center justify-center h-full">
                     <div className="text-center px-8">
@@ -1357,7 +1456,7 @@ export default function WeeklySummaryPage() {
     }
 
     // SLAJD: Pozostałe miejsca - prosta lista od dołu
-    function renderRemainingPlayersSlide(isFullscreen: boolean) {
+    function renderRemainingPlayersSlide(isFullscreen: boolean, step: number = currentStep) {
         // Sortuj według punktów DAP (malejąco) - tak samo jak w hostinfo
         const sortedStats = [...weeklyStats].sort((a, b) => b.totalPoints - a.totalPoints);
         
@@ -1368,8 +1467,8 @@ export default function WeeklySummaryPage() {
             return null;
         }
 
-        // Liczba graczy do pokazania (currentStep, bo krok 0 to napis)
-        const visibleCount = currentStep;
+        // Liczba graczy do pokazania (step, bo krok 0 to napis)
+        const visibleCount = step;
 
         // Automatyczne skalowanie do wysokości ekranu
         const maxPlayers = playersToReveal.length;
