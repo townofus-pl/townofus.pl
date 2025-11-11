@@ -94,14 +94,13 @@ export default function WeeklySummaryPage() {
     const [isTransitioning, setIsTransitioning] = useState(false);
     const [showConfetti, setShowConfetti] = useState(false);
     const [introBlackOverlay, setIntroBlackOverlay] = useState(true);
-    const [backgroundMusic, setBackgroundMusic] = useState<HTMLAudioElement | null>(null);
     const backgroundMusicRef = useRef<HTMLAudioElement | null>(null); // Ref zamiast state - nie triggeruje re-render
     const [introInitialDelayPassed, setIntroInitialDelayPassed] = useState(false); // Czy minęło początkowe opóźnienie intro
 
     // Konfiguracja automatycznej sekwencji intro
     const INTRO_INITIAL_DELAY = 760; // ms - opóźnienie przed pierwszym tekstem po zniknięciu czarnego ekranu
     // Czasy trwania dla każdego kroku (A, B, C, D, E, F, G) w ms
-    const INTRO_STEP_DURATIONS = [
+    const INTRO_STEP_DURATIONS = useMemo(() => [
         240, // A
         230, // MONG
         250, // US
@@ -109,7 +108,7 @@ export default function WeeklySummaryPage() {
         180, // MA
         160, // A
         190  // FE
-    ];
+    ], []);
 
     // Oblicz liczbę graczy do odkrycia (od ostatniego do 4. miejsca)
     const remainingPlayersCount = Math.max(0, weeklyStats.length - 3);
