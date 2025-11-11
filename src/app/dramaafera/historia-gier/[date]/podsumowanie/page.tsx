@@ -321,7 +321,7 @@ export default function WeeklySummaryPage() {
                 
                 const audio = backgroundMusicRef.current;
                 const startVolume = audio.volume;
-                const targetVolume = 0.07; // 7% głośności
+                const targetVolume = 0.15; // 13% głośności
                 const fadeDuration = 1000; // 1 sekunda
                 const fadeSteps = 50; // 50 kroków
                 const stepDuration = fadeDuration / fadeSteps;
@@ -994,6 +994,8 @@ export default function WeeklySummaryPage() {
                                     >
                                         {/* Avatar na całą wysokość ekranu */}
                                         <div className="relative w-[48rem] h-full overflow-hidden shadow-2xl" style={{ clipPath: 'polygon(25% 0%, 100% 0%, 75% 100%, 0% 100%)' }}>
+                                            {/* Szare tło pod avatarem (wypełnia przezroczystość) */}
+                                            <div className="absolute inset-0" style={{ backgroundColor: '#303030' }}></div>
                                             <Image
                                                 src={`/images/avatars/${player}.png`}
                                                 alt={player}
@@ -1654,6 +1656,20 @@ export default function WeeklySummaryPage() {
         );
     }
 
+    // Funkcja pomocnicza do określenia rangi na podstawie ratingu
+    function getRankName(rating: number): string {
+        if (rating >= 2400) return 'CELESTIAL OVERLORD';
+        if (rating >= 2300) return 'GRANDMASTER';
+        if (rating >= 2200) return 'MASTER';
+        if (rating >= 2150) return 'VIRTUOSO';
+        if (rating >= 2100) return 'THE SPECIALIST';
+        if (rating >= 2050) return 'THE CAPTAIN';
+        if (rating >= 1975) return 'THE CREWMATE';
+        if (rating >= 1875) return 'THE CADET';
+        if (rating >= 1750) return 'THE PISSLOW';
+        return 'CWEL';
+    }
+
     // SLAJD: Największe Sigmy Tygodnia
     function renderSigmasSlide(isFullscreen: boolean) {
         if (topSigmas.length < 3) return null;
@@ -1723,17 +1739,28 @@ export default function WeeklySummaryPage() {
                             </div>
 
                             {/* Nick */}
-                            <div className={`font-bold text-white mb-6 ${isFullscreen ? 'text-4xl' : 'text-2xl'}`}>
+                            <div className={`font-bold text-white mb-2 ${isFullscreen ? 'text-4xl' : 'text-2xl'}`}>
                                 {sigma.nickname}
+                            </div>
+
+                            {/* Ranga */}
+                            <div className={`text-amber-400 font-semibold mb-6 ${isFullscreen ? 'text-lg' : 'text-sm'}`}>
+                                {getRankName(sigma.ratingAfter)}
                             </div>
 
                             {/* Statystyki wzrostu */}
                             <div className={`text-amber-300 ${isFullscreen ? 'text-2xl' : 'text-lg'}`}>
                                 <div className="mb-3">
                                     <div className="text-gray-400 text-sm mb-1">Pozycja w rankingu</div>
-                                    <span className="font-bold text-red-500">#{sigma.rankBefore}</span> 
-                                    <span className="mx-2">→</span> 
-                                    <span className="font-bold text-green-500">#{sigma.rankAfter}</span>
+                                    {sigma.rankBefore === sigma.rankAfter ? (
+                                        <span className="font-bold text-amber-400">#{sigma.rankAfter}</span>
+                                    ) : (
+                                        <>
+                                            <span className="font-bold text-red-500">#{sigma.rankBefore}</span> 
+                                            <span className="mx-2">→</span> 
+                                            <span className="font-bold text-green-500">#{sigma.rankAfter}</span>
+                                        </>
+                                    )}
                                 </div>
                                 <div>
                                     <div className="text-gray-400 text-sm mb-1">Rating</div>
@@ -2038,17 +2065,28 @@ export default function WeeklySummaryPage() {
                             </div>
 
                             {/* Nick */}
-                            <div className={`font-bold text-white mb-6 ${isFullscreen ? 'text-4xl' : 'text-2xl'}`}>
+                            <div className={`font-bold text-white mb-2 ${isFullscreen ? 'text-4xl' : 'text-2xl'}`}>
                                 {cwel.nickname}
+                            </div>
+
+                            {/* Ranga */}
+                            <div className={`text-red-400 font-semibold mb-6 ${isFullscreen ? 'text-lg' : 'text-sm'}`}>
+                                {getRankName(cwel.ratingAfter)}
                             </div>
 
                             {/* Statystyki spadku */}
                             <div className={`text-red-300 ${isFullscreen ? 'text-2xl' : 'text-lg'}`}>
                                 <div className="mb-3">
                                     <div className="text-gray-400 text-sm mb-1">Pozycja w rankingu</div>
-                                    <span className="font-bold text-green-500">#{cwel.rankBefore}</span> 
-                                    <span className="mx-2">→</span> 
-                                    <span className="font-bold text-red-500">#{cwel.rankAfter}</span>
+                                    {cwel.rankBefore === cwel.rankAfter ? (
+                                        <span className="font-bold text-red-400">#{cwel.rankAfter}</span>
+                                    ) : (
+                                        <>
+                                            <span className="font-bold text-green-500">#{cwel.rankBefore}</span> 
+                                            <span className="mx-2">→</span> 
+                                            <span className="font-bold text-red-500">#{cwel.rankAfter}</span>
+                                        </>
+                                    )}
                                 </div>
                                 <div>
                                     <div className="text-gray-400 text-sm mb-1">Rating</div>
@@ -2336,7 +2374,18 @@ export default function WeeklySummaryPage() {
                     className="w-full max-w-4xl flex flex-col gap-4"
                     style={{ maxHeight: '60vh', overflowY: 'auto' }}
                 >
-                    {emperorHistory.map((emperor) => {
+                    {[...emperorHistory]
+                        .sort((a, b) => {
+                            // Najpierw sortuj według liczby gwiazdek (malejąco)
+                            if (a.count !== b.count) {
+                                return b.count - a.count;
+                            }
+                            // Jeśli ta sama liczba gwiazdek, sortuj według najnowszej daty (malejąco - świeżsi wyżej)
+                            const aLatestDate = a.dates[a.dates.length - 1];
+                            const bLatestDate = b.dates[b.dates.length - 1];
+                            return bLatestDate.localeCompare(aLatestDate);
+                        })
+                        .map((emperor) => {
                         return (
                             <div
                                 key={emperor.nickname}
@@ -2392,7 +2441,8 @@ export default function WeeklySummaryPage() {
                                 </div>
                             </div>
                         );
-                    })}
+                    })
+                    }
                 </div>
             </div>
         );
