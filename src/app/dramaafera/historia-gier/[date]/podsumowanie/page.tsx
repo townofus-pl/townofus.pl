@@ -107,7 +107,7 @@ export default function WeeklySummaryPage() {
         235, // DRA
         230, // MA
         225, // A
-        260  // FE
+        270  // FE
     ], []);
 
     // Oblicz liczbę graczy do odkrycia (od ostatniego do 4. miejsca)
