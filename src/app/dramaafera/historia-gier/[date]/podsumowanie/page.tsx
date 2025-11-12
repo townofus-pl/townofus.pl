@@ -1767,7 +1767,7 @@ export default function WeeklySummaryPage() {
                                     <span className="mx-2">→</span> 
                                     <span className="font-bold text-green-400">{Math.round(sigma.ratingAfter)}</span>
                                     <div className="text-green-400 font-bold mt-1">
-                                        +{Math.round(sigma.ratingChange)}
+                                        +{Math.round(sigma.ratingAfter) - Math.round(sigma.ratingBefore)}
                                     </div>
                                 </div>
                             </div>
@@ -1812,13 +1812,29 @@ export default function WeeklySummaryPage() {
         
         // Znajdź ostatni punkt przed początkiem tygodnia
         const pointsBeforeWeek = sortedData.filter(p => p.date < weekStartDate);
-        const lastPointBefore = pointsBeforeWeek.length > 0 ? pointsBeforeWeek[pointsBeforeWeek.length - 1] : null;
+        const lastPointBefore = pointsBeforeWeek.length > 0 
+            ? pointsBeforeWeek[pointsBeforeWeek.length - 1] 
+            : null;
         
         // Punkty z tygodnia
         const pointsInWeek = sortedData.filter(p => p.date >= weekStartDate && p.date < weekEndDate);
         
         // Połącz: punkt sprzed tygodnia (jeśli istnieje) + punkty z tygodnia
-        const filteredData = lastPointBefore ? [lastPointBefore, ...pointsInWeek] : pointsInWeek;
+        // Jeśli nie ma punktu sprzed tygodnia i są punkty z tygodnia, dodaj punkt startowy 2000
+        let filteredData: RankingHistoryPoint[];
+        if (lastPointBefore) {
+            filteredData = [lastPointBefore, ...pointsInWeek];
+        } else if (pointsInWeek.length > 0) {
+            // Gracz nie miał wcześniej rankingu - dodaj punkt startowy 2000
+            const startPoint: RankingHistoryPoint = {
+                date: new Date(pointsInWeek[0].date.getTime() - 1000), // 1 sekundę przed pierwszą grą
+                rating: 2000,
+                position: 0
+            };
+            filteredData = [startPoint, ...pointsInWeek];
+        } else {
+            filteredData = pointsInWeek;
+        }
         
         if (filteredData.length === 0) return null;
 
@@ -2093,7 +2109,7 @@ export default function WeeklySummaryPage() {
                                     <span className="mx-2">→</span> 
                                     <span className="font-bold text-red-400">{Math.round(cwel.ratingAfter)}</span>
                                     <div className="text-red-400 font-bold mt-1">
-                                        {Math.round(cwel.ratingChange)}
+                                        {Math.round(cwel.ratingAfter) - Math.round(cwel.ratingBefore)}
                                     </div>
                                 </div>
                             </div>
@@ -2144,7 +2160,21 @@ export default function WeeklySummaryPage() {
         const pointsInWeek = sortedData.filter(p => p.date >= weekStartDate && p.date < weekEndDate);
         
         // Połącz: punkt sprzed tygodnia (jeśli istnieje) + punkty z tygodnia
-        const filteredData = lastPointBefore ? [lastPointBefore, ...pointsInWeek] : pointsInWeek;
+        // Jeśli nie ma punktu sprzed tygodnia i są punkty z tygodnia, dodaj punkt startowy 2000
+        let filteredData: RankingHistoryPoint[];
+        if (lastPointBefore) {
+            filteredData = [lastPointBefore, ...pointsInWeek];
+        } else if (pointsInWeek.length > 0) {
+            // Gracz nie miał wcześniej rankingu - dodaj punkt startowy 2000
+            const startPoint: RankingHistoryPoint = {
+                date: new Date(pointsInWeek[0].date.getTime() - 1000), // 1 sekundę przed pierwszą grą
+                rating: 2000,
+                position: 0
+            };
+            filteredData = [startPoint, ...pointsInWeek];
+        } else {
+            filteredData = pointsInWeek;
+        }
         
         if (filteredData.length === 0) return null;
 
