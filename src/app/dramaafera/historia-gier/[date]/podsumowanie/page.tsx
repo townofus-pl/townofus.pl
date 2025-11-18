@@ -1646,7 +1646,7 @@ export default function WeeklySummaryPage() {
                                     gap: `${gapSize}px`
                                 }}
                             >
-                        {columnPlayers.map((player, indexInColumn) => {
+                        {columnPlayers.map((player) => {
                             // Oblicz globalny indeks gracza w oryginalnej liście playersToReveal
                             // Ponieważ rozdzielaliśmy naprzemiennie: lewa=0,2,4... prawa=1,3,5...
                             const globalIndex = playersToReveal.findIndex(p => p.nickname === player.nickname);
