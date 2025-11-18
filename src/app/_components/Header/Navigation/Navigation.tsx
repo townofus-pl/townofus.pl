@@ -19,10 +19,19 @@ const navigationItems: NavigationItemProps[] = [
     {
         href: "/lobby-15-plus",
         label: "AleLuduMod",
-        badge: (
+        /*badge: (
             <span className="ml-2 text-yellow-400 font-bold drop-shadow-[0_0_4px_rgba(250,204,21,0.7)]">
                 UPDATE!
-            </span>
+            </span> 
+        )*/
+    },
+     {
+        href: "/susmodder",
+        label: "Susmodder",
+        badge: (
+            <span className="ml-2 text-red-500 font-bold drop-shadow-[0_0_4px_rgba(250,0,0,0.7)]">
+                NOWOŚĆ!
+            </span> 
         )
     },
     {
@@ -44,10 +53,10 @@ const navigationItems: NavigationItemProps[] = [
         ),
         external: true,
     },
-    {
+    /*{
         href: "/tajemniczy",
         label: "Dymowy Among"
-    }
+    }*/
 ];
 
 export const Navigation = () => {
