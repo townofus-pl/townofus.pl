@@ -31,7 +31,7 @@ export const Tracker: Role = {
             value: true,
             type: SettingTypes.Boolean,
         },
-        "Maximum Number of Tracks": {
+        "Maximum Number Of Tracks": {
             value: 5,
             type: SettingTypes.Number,
         },

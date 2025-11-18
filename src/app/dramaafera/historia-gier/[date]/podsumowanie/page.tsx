@@ -712,7 +712,7 @@ export default function WeeklySummaryPage() {
             {/* Pełnoekranowa prezentacja - renderowana przez Portal */}
             {isPresentationFullscreen && typeof document !== 'undefined' && createPortal(
                 <div 
-                    className="fixed inset-0 w-screen h-screen bg-black text-white overflow-hidden cursor-pointer select-none"
+                    className="fixed inset-0 w-screen h-screen bg-black flex items-center justify-center overflow-hidden"
                     onClick={handleClick}
                     style={{ 
                         position: 'fixed',
@@ -727,8 +727,22 @@ export default function WeeklySummaryPage() {
                         msUserSelect: 'none'
                     }}
                 >
-                    {/* Zawartość prezentacji - tylko tryb pełnoekranowy */}
-                    {renderPresentationContent(true)}
+                    {/* Kontener 16:9 - stałe proporcje na każdym ekranie */}
+                    <div
+                        style={{
+                            position: 'relative',
+                            width: '100%',
+                            height: '100%',
+                            maxWidth: '177.78vh', // 16:9 aspect ratio based on height
+                            maxHeight: '56.25vw',  // 16:9 aspect ratio based on width
+                            aspectRatio: '16/9',
+                            backgroundColor: 'black'
+                        }}
+                        className="text-white cursor-pointer select-none"
+                    >
+                        {/* Zawartość prezentacji - tylko tryb pełnoekranowy */}
+                        {renderPresentationContent(true)}
+                    </div>
                 </div>,
                 document.body // Renderuje bezpośrednio w body, poza layout Next.js
             )}
@@ -779,10 +793,10 @@ export default function WeeklySummaryPage() {
                         src="https://www.youtube-nocookie.com/embed/6BFhVrifW-0?autoplay=1&mute=1&loop=1&controls=0&showinfo=0&rel=0&iv_load_policy=3&modestbranding=1&playsinline=1&start=0&playlist=6BFhVrifW-0&volume=0"
                         className="absolute inset-0"
                         style={{
-                            width: '100vw',
-                            height: '56.25vw',
-                            minHeight: '100vh',
-                            minWidth: '177.78vh',
+                            width: '100%',
+                            height: '56.25%',
+                            minHeight: '100%',
+                            minWidth: '177.78%',
                             top: '50%',
                             left: '50%',
                             transform: 'translate(-50%, -50%)',
@@ -801,7 +815,7 @@ export default function WeeklySummaryPage() {
 
                 {/* Confetti Effect */}
                 {showConfetti && (
-                    <div className="fixed inset-0 z-40 pointer-events-none overflow-hidden">
+                    <div className="absolute inset-0 z-40 pointer-events-none overflow-hidden">
                         {[...Array(50)].map((_, i) => (
                             <div
                                 key={i}
@@ -1197,15 +1211,16 @@ export default function WeeklySummaryPage() {
         return (
             <>
                 {/* Główne podium - używa grafiki podium.png */}
-                <div className="fixed bottom-[-334px] left-0 right-0 flex justify-center items-end relative z-10">
-                    <div className="relative">
+                <div className="absolute left-0 right-0 flex justify-center z-10" style={{ bottom: 0, margin: 0, padding: 0, lineHeight: 0 }}>
+                    <div className="relative" style={{ margin: 0, padding: 0, display: 'block', lineHeight: 0 }}>
                         {/* Grafika podium */}
                         <Image
                             src="/images/podium.png"
                             alt="Podium"
                             width={isFullscreen ? 1300 : 600}
                             height={isFullscreen ? 450 : 350}
-                            className="relative z-0"
+                            className="z-0"
+                            style={{ display: 'block', margin: 0, padding: 0, verticalAlign: 'bottom' }}
                         />
                         
                         {/* 3. miejsce - prawa pozycja - pokazuje się w kroku 1 */}
@@ -1471,8 +1486,12 @@ export default function WeeklySummaryPage() {
         // Liczba graczy do pokazania (step, bo krok 0 to napis)
         const visibleCount = step;
 
-        // Automatyczne skalowanie do wysokości ekranu
-        const maxPlayers = playersToReveal.length;
+        // Określ liczbę kolumn - zawsze 2 kolumny gdy więcej niż 1 gracz
+        const numberOfColumns = playersToReveal.length > 1 ? 2 : 1;
+        const playersPerColumn = Math.ceil(playersToReveal.length / numberOfColumns);
+        
+        // Automatyczne skalowanie do wysokości ekranu - bazując na liczbie graczy w KOLUMNIE
+        const maxPlayers = playersPerColumn; // Używamy liczby graczy w kolumnie, nie całkowitej
         const screenHeight = typeof window !== 'undefined' ? window.innerHeight : 800;
         
         // 82% wysokości ekranu dostępne dla listy (zostawiamy 18% na marginesy)
@@ -1518,24 +1537,124 @@ export default function WeeklySummaryPage() {
         }
 
         // Krok 1+: Lista graczy (currentStep - 1 bo odejmujemy krok z napisem)
+        // Podziel graczy na kolumny - zigzag od dołu: prawo, lewo, prawo, lewo...
+        // playersToReveal[0] to najsłabszy gracz, playersToReveal[length-1] to najlepszy (4. miejsce)
+        const leftColumn: WeeklyPlayerStats[] = [];
+        const rightColumn: WeeklyPlayerStats[] = [];
+        const centerRow: WeeklyPlayerStats[] = []; // Dla nieparzystej liczby - najlepszy (4. miejsce) samotnie
+        
+        if (playersToReveal.length % 2 === 1) {
+            // Nieparzysta liczba - najlepszy (ostatni w tablicy) sam wyśrodkowany
+            centerRow.push(playersToReveal[playersToReveal.length - 1]);
+            // Reszta naprzemiennie od najsłabszego: pierwszy w prawo, drugi w lewo...
+            for (let i = 0; i < playersToReveal.length - 1; i++) {
+                if (i % 2 === 0) {
+                    rightColumn.push(playersToReveal[i]);
+                } else {
+                    leftColumn.push(playersToReveal[i]);
+                }
+            }
+        } else {
+            // Parzysta liczba - normalny zigzag: pierwszy w prawo, drugi w lewo...
+            playersToReveal.forEach((player, index) => {
+                if (index % 2 === 0) {
+                    rightColumn.push(player);
+                } else {
+                    leftColumn.push(player);
+                }
+            });
+        }
+        
+        const hasCenter = centerRow.length > 0;
+        const columns = hasCenter ? [leftColumn, centerRow, rightColumn] : [leftColumn, rightColumn];
+
         return (
             <div className="absolute inset-0 flex flex-col justify-center items-center" style={{ padding: '9vh 0' }}>
-                <div className="relative w-full flex justify-center">
-                    {/* Lista graczy od dołu do góry - każdy na swojej pozycji */}
-                    <div 
-                        className="flex flex-col-reverse" 
-                        style={{ 
-                            width: '100%', 
-                            maxWidth: isFullscreen ? '900px' : '700px',
-                            gap: `${gapSize}px`
-                        }}
-                    >
-                        {playersToReveal.map((player, index) => {
+                <div className="relative w-full flex flex-col items-center" style={{ gap: `${gapSize}px` }}>
+                    {/* Gracz 4. wyśrodkowany na górze (jeśli nieparzysta liczba) */}
+                    {hasCenter && centerRow.length > 0 && (
+                        <div className="flex justify-center" style={{ width: '45%', maxWidth: isFullscreen ? '450px' : '350px' }}>
+                            {centerRow.map((player) => {
+                                const globalIndex = playersToReveal.findIndex(p => p.nickname === player.nickname);
+                                const isVisible = globalIndex < visibleCount;
+                                const isNew = globalIndex === visibleCount - 1;
+                                const actualPosition = playersToReveal.length - globalIndex + 3;
+                                
+                                if (!isVisible) {
+                                    // Placeholder - niewidoczny ale zajmuje miejsce
+                                    return (
+                                        <div
+                                            key={`placeholder-${player.nickname}`}
+                                            className="flex items-center bg-gradient-to-r from-zinc-800/90 to-zinc-900/90 backdrop-blur-sm rounded-lg shadow-2xl w-full"
+                                            style={{
+                                                padding: `${padding}px ${padding * 1.5}px`,
+                                                minHeight: `${calculatedItemHeight}px`,
+                                                gap: `${Math.max(6, padding * 0.8)}px`,
+                                                border: `${calculatedItemHeight < 60 ? '1px' : '2px'} solid rgba(251, 191, 36, 0.5)`,
+                                                visibility: 'hidden'
+                                            }}
+                                        >
+                                            <div className={`font-bold text-amber-400 ${fontSize} flex-shrink-0`} style={{ width: `${numberWidth}px`, textAlign: 'center' }}>#</div>
+                                            <div className="relative rounded-lg overflow-hidden border-amber-400 shadow-xl flex-shrink-0" style={{ width: `${avatarSize}px`, height: `${avatarSize}px`, borderWidth: calculatedItemHeight < 60 ? '2px' : '3px' }} />
+                                            <div className="flex-grow">
+                                                <div className={`font-bold text-white ${fontSize} leading-tight mb-1`}>&nbsp;</div>
+                                                <div className={`text-amber-300 ${smallFontSize} leading-tight`}>&nbsp;</div>
+                                            </div>
+                                        </div>
+                                    );
+                                }
+                                
+                                return (
+                                    <div
+                                        key={player.nickname}
+                                        className="flex items-center bg-gradient-to-r from-zinc-800/90 to-zinc-900/90 backdrop-blur-sm rounded-lg shadow-2xl w-full"
+                                        style={{
+                                            padding: `${padding}px ${padding * 1.5}px`,
+                                            minHeight: `${calculatedItemHeight}px`,
+                                            gap: `${Math.max(6, padding * 0.8)}px`,
+                                            border: `${calculatedItemHeight < 60 ? '1px' : '2px'} solid rgba(251, 191, 36, 0.5)`,
+                                            opacity: isNew ? 0 : 1,
+                                            animation: isNew ? 'fadeInSlide 0.7s ease-out forwards' : 'none'
+                                        }}
+                                    >
+                                        <div className={`font-bold text-amber-400 ${fontSize} flex-shrink-0`} style={{ width: `${numberWidth}px`, textAlign: 'center' }}>
+                                            #{actualPosition}
+                                        </div>
+                                        <div className="relative rounded-lg overflow-hidden border-amber-400 shadow-xl flex-shrink-0" style={{ width: `${avatarSize}px`, height: `${avatarSize}px`, borderWidth: calculatedItemHeight < 60 ? '2px' : '3px' }}>
+                                            <Image src={`/images/avatars/${player.nickname}.png`} alt={player.nickname} fill className="object-cover" onError={(e) => { const target = e.target as HTMLImageElement; target.src = '/images/avatars/placeholder.png'; }} />
+                                        </div>
+                                        <div className="flex-grow">
+                                            <div className={`font-bold text-white ${fontSize} leading-tight mb-1`}>{player.nickname}</div>
+                                            <div className={`text-amber-300 ${smallFontSize} leading-tight`}><span className="font-bold">{player.totalPoints}</span> DAP</div>
+                                        </div>
+                                    </div>
+                                );
+                            })}
+                        </div>
+                    )}
+                    
+                    {/* Dwie kolumny z resztą graczy */}
+                    <div className="relative w-full flex justify-center gap-4">
+                    {columns.filter((_, idx) => !hasCenter || idx !== 1).map((columnPlayers, columnIndex) => {
+                        return (
+                            <div 
+                                key={`column-${columnIndex}`}
+                                className="flex flex-col-reverse" 
+                                style={{ 
+                                    width: '45%',
+                                    maxWidth: isFullscreen ? '450px' : '350px',
+                                    gap: `${gapSize}px`
+                                }}
+                            >
+                        {columnPlayers.map((player, indexInColumn) => {
+                            // Oblicz globalny indeks gracza w oryginalnej liście playersToReveal
+                            // Ponieważ rozdzielaliśmy naprzemiennie: lewa=0,2,4... prawa=1,3,5...
+                            const globalIndex = playersToReveal.findIndex(p => p.nickname === player.nickname);
                             // Sprawdź czy ten gracz jest już widoczny
-                            const isVisible = index < visibleCount;
-                            const isNew = index === visibleCount - 1;
+                            const isVisible = globalIndex < visibleCount;
+                            const isNew = globalIndex === visibleCount - 1;
                             // Oblicz pozycję: playersToReveal są odwróceni, więc ostatni w tablicy to 4. miejsce
-                            const actualPosition = playersToReveal.length - index + 3; // +3 bo top 3 nie jest w tej liście
+                            const actualPosition = playersToReveal.length - globalIndex + 3; // +3 bo top 3 nie jest w tej liście
                             
                             // Jeśli niewidoczny, renderuj placeholder z identyczną strukturą
                             if (!isVisible) {
@@ -1637,6 +1756,9 @@ export default function WeeklySummaryPage() {
                                 </div>
                             );
                         })}
+                            </div>
+                        );
+                    })}
                     </div>
                 </div>
 
@@ -1657,6 +1779,7 @@ export default function WeeklySummaryPage() {
 
     // Funkcja pomocnicza do określenia rangi na podstawie ratingu
     function getRankName(rating: number): string {
+        if (rating >= 2500) return 'PIERDOLONA LEGENDA';
         if (rating >= 2400) return 'CELESTIAL OVERLORD';
         if (rating >= 2300) return 'GRANDMASTER';
         if (rating >= 2200) return 'MASTER';
@@ -2479,7 +2602,8 @@ export default function WeeklySummaryPage() {
 
     // Funkcja do określenia tieru na podstawie ratingu
     function getRankTier(rating: number): { name: string; color: string; range: string } {
-        if (rating >= 2400) return { name: 'CELESTIAL OVERLORD', color: 'rgb(147, 112, 219)', range: '2400+' };
+        if (rating >= 2500) return { name: 'PIERDOLONA LEGENDA', color: 'rgb(114, 5, 14)', range: '2500+' };
+        if (rating >= 2400) return { name: 'CELESTIAL OVERLORD', color: 'rgb(147, 112, 219)', range: '2400-2500' };
         if (rating >= 2300) return { name: 'GRANDMASTER', color: 'rgb(255, 215, 0)', range: '2300-2400' };
         if (rating >= 2200) return { name: 'MASTER', color: 'rgb(220, 220, 220)', range: '2200-2300' };
         if (rating >= 2150) return { name: 'VIRTUOSO', color: 'rgb(0, 0, 0)', range: '2150-2200' };
@@ -2516,7 +2640,8 @@ export default function WeeklySummaryPage() {
 
         // Definicja wszystkich tierów w kolejności
         const allTiers = [
-            { name: 'CELESTIAL OVERLORD', color: 'rgb(147, 112, 219)', range: '2400+', minRating: 2400 },
+            { name: 'PIERDOLONA LEGENDA', color: 'rgb(114, 5, 14)', range: '2500+', minRating: 2500 },
+            { name: 'CELESTIAL OVERLORD', color: 'rgb(147, 112, 219)', range: '2400-2500', minRating: 2400 },
             { name: 'GRANDMASTER', color: 'rgb(255, 215, 0)', range: '2300-2400', minRating: 2300 },
             { name: 'MASTER', color: 'rgb(220, 220, 220)', range: '2200-2300', minRating: 2200 },
             { name: 'VIRTUOSO', color: 'rgb(0, 0, 0)', range: '2150-2200', minRating: 2150 },
