@@ -1,11 +1,11 @@
 {
 	"date": "20251105",
 	"question": "Kto zostanie Emperorem?",
-	"totalVotes": 0,
+	"totalVotes": 13,
 	"votes": [
 		{
 			"nickname": "MikoTheOwl",
-			"votes": 0
+			"votes": 1
 		},
 		{
 			"nickname": "Malkiz",
@@ -13,11 +13,11 @@
 		},
 		{
 			"nickname": "Budyn",
-			"votes": 0
+			"votes": 3
 		},
 		{
 			"nickname": "ziomson",
-			"votes": 0
+			"votes": 1
 		},
 		{
 			"nickname": "Subek",
@@ -25,23 +25,23 @@
 		},
 		{
 			"nickname": "Miras",
-			"votes": 0
+			"votes": 1
 		},
 		{
 			"nickname": "Bartek",
-			"votes": 0
+			"votes": 1
 		},
 		{
 			"nickname": "brubel",
-			"votes": 0
+			"votes": 2
 		},
 		{
 			"nickname": "Dziekansqr",
-			"votes": 0
+			"votes": 2
 		},
 		{
 			"nickname": "Cleopatrie",
-			"votes": 0
+			"votes": 2
 		}
 	]
 }
