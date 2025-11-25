@@ -183,7 +183,7 @@ Slot 6
 Slot 7
 12
 Slot 8
-12
+7
 Slot 9
 7
 Slot 10
@@ -726,3 +726,4 @@ Kill Cooldown Bonus
 10
 Increased Kill Cooldown When 2+ Imps
 False
+
