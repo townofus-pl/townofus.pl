@@ -242,7 +242,7 @@ export default function WeeklySummaryPage() {
             // Muzyka uruchamia się PO kliknięciu, więc przeglądarka już nie blokuje autoplay
             if (!backgroundMusicRef.current) {
                 console.log('🎵 Tworzę nowy obiekt Audio...');
-                const audio = new Audio('/sounds/among us DRAMA AFERA.mp3');
+                const audio = new Audio('/sounds/alergik.mp3');
                 audio.loop = true;
                 audio.volume = 1.0; // Pełna głośność
                 
@@ -971,7 +971,7 @@ export default function WeeklySummaryPage() {
                     {/* Główna zawartość intro bez tła */}
                     <div className="absolute inset-0 flex items-center justify-center z-10">
                         <Image
-                            src="/images/DAXD.png"
+                            src="/images/DAXDalergik.png"
                             alt="Drama Afera Intro"
                             width={isFullscreen ? 2000 : 700}
                             height={isFullscreen ? 2000 : 700}
@@ -1041,7 +1041,7 @@ export default function WeeklySummaryPage() {
                 {/* Główna zawartość intro */}
                 <div className="absolute inset-0 flex items-center justify-center z-10">
                     <Image
-                        src="/images/DAXD.png"
+                        src="/images/DAXDalergik.png"
                         alt="Drama Afera Intro"
                         width={isFullscreen ? 1800 : 700}
                         height={isFullscreen ? 1800 : 700}
