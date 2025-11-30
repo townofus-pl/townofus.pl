@@ -19,10 +19,6 @@ const navigationItems: NavigationItemProps[] = [
         href: "/dramaafera/ranking",
         label: "Ranking",
     },
-    {
-        href: "/dramaafera/role",
-        label: "Role",
-    },
     {   
         href: "/dramaafera/historia-gier",
         label: "Historia Gier",
