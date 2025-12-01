@@ -726,3 +726,4 @@ Kill Cooldown Bonus
 10
 Increased Kill Cooldown When 2+ Imps
 False
+
