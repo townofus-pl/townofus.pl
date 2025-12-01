@@ -4,6 +4,9 @@ import { notFound } from "next/navigation";
 import { RoleImage } from "../_components/RoleImage";
 import { getAllGamesData, getRoleColor } from "../../_services/gameDataService";
 import type { UIGameData, UIPlayerData } from "../../_services/gameDataService";
+import { Roles } from "@/roles";
+import type { Role } from "@/constants/rolesAndModifiers";
+import { SettingsList } from "@/app/_components/RolesList/RoleCard/SettingsList";
 
 // Funkcja pomocnicza do konwersji nazwy roli na format URL-friendly
 function convertRoleToUrlSlug(role: string): string {
@@ -365,6 +368,33 @@ export default async function RoleStatsPage({ params }: RolePageProps) {
     }
     
     const roleColor = getRoleColor(roleName);
+    
+    // Znajdź definicję roli z @/roles
+    // Próbuj różnych wariantów nazwy
+    let roleDefinition: Role | undefined = Roles.find(r => r.name === roleName);
+    
+    // Jeśli nie znaleziono, spróbuj dopasować role ze złożonymi nazwami (np. "Plaguebearer / Pestilence")
+    if (!roleDefinition) {
+        roleDefinition = Roles.find(r => {
+            // Sprawdź czy nazwa roli w definicji zawiera "/" (złożona nazwa)
+            if (r.name.includes(' / ')) {
+                const parts = r.name.split(' / ');
+                return parts.some(part => part === roleName);
+            }
+            return false;
+        });
+    }
+    
+    // Jeśli nadal nie znaleziono, spróbuj bez spacji i case-insensitive
+    if (!roleDefinition) {
+        const normalizedRoleName = roleName.toLowerCase().replace(/\s+/g, '');
+        roleDefinition = Roles.find(r => r.name.toLowerCase().replace(/\s+/g, '') === normalizedRoleName);
+    }
+    
+    // Debug - wypisz czy znaleziono definicję
+    console.log('Role name:', roleName);
+    console.log('Role definition found:', !!roleDefinition);
+    console.log('Available roles:', Roles.map(r => r.name));
 
     return (
         <div className="min-h-screen bg-zinc-900/50 text-white">
@@ -401,14 +431,6 @@ export default async function RoleStatsPage({ params }: RolePageProps) {
                             >
                                 {roleName}
                             </h2>
-                            
-                            {/* Link do opisu roli - prowadzi do głównej strony z opisem wszystkich ról */}
-                            <Link 
-                                href={`/#${convertRoleToUrlSlug(roleName)}`}
-                                className="inline-block mb-6 px-4 py-2 bg-zinc-800/50 rounded-lg border border-zinc-700/50 text-white hover:text-gray-300 hover:bg-zinc-700/50 transition-colors"
-                            >
-                                📖 Zobacz opis roli
-                            </Link>
                             
                             {/* Podstawowe statystyki roli */}
                             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
@@ -455,6 +477,36 @@ export default async function RoleStatsPage({ params }: RolePageProps) {
                         </div>
                     </div>
                 </div>
+
+                {/* Opis roli i ustawienia - identyczny układ jak RoleCard */}
+                {roleDefinition && (
+                    <div className="grid grid-cols-1 gap-y-5 p-5 bg-zinc-900/50 rounded-xl border-l-5 mb-6"
+                         style={{borderColor: roleColor}}>
+                        <div className="grid grid-cols-1 md:grid-cols-2/1 gap-5">
+                            <div className="bg-zinc-900/50 rounded-xl p-4 flex flex-col gap-10 justify-between">
+                                <div className="text-xl">{roleDefinition.description}</div>
+                                <SettingsList settings={roleDefinition.settings}/>
+                            </div>  
+                            <div className="bg-zinc-900/50 rounded-xl p-4">
+                                <h5 className="font-brook text-5xl mb-5">Umiejętności</h5>
+                                <ul className="text-xl">
+                                    {roleDefinition.abilities.map(ability => (
+                                        <li key={ability.name}
+                                            className="my-2.5 font-brook text-3xl bg-zinc-800/75 p-2 rounded flex items-center justify-start gap-2">
+                                            <Image src={ability.icon} alt={ability.name} width={64} height={64} className="w-8"/>
+                                            {ability.name}
+                                        </li>
+                                    ))}
+                                </ul>
+                            </div>
+                        </div>
+                        {roleDefinition.tip && (
+                            <div className="bg-zinc-900/50 p-4 rounded-lg flex gap-5 items-center justify-start">
+                                <h5 className="font-brook text-3xl">Porada: {roleDefinition.tip}</h5>
+                            </div>
+                        )}
+                    </div>
+                )}
 
                 {/* Szczegółowe statystyki roli */}
                 <div className="bg-zinc-900/50 backdrop-blur-md rounded-xl border border-zinc-700/50 p-6 mb-6">
