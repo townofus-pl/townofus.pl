@@ -7,20 +7,10 @@ const files = [
     href: "/files/TownOfUs.dll",
   },
   {
-    name: "malkizhats.catalog",
-    size: "25.73 KB",
-    href: "/files/malkizhats.catalog",
-  },
-  {
     name: "AUnlocker.dll",
     size: "24.00 KB",
     href: "/files/AUnlocker.dll",
-  },
-  {
-    name: "malkizhats.bundle",
-    size: "1.05 MB",
-    href: "/files/malkizhats.bundle",
-  },
+  }
 ];
 
 export default function DramaaferaSkinyPage() {
