@@ -1855,7 +1855,11 @@ export async function getPlayerVotingStats(
     
     // Pobierz spotkania w batchach aby uniknąć problemów z limitami D1
     const BATCH_SIZE = 100;
-    const allMeetings: any[] = [];
+    type MeetingWithVotes = Awaited<ReturnType<typeof prisma.meeting.findMany<{
+      where: { id: { in: number[] }; deletedAt: null };
+      include: { meetingVotes: true };
+    }>>>[number];
+    const allMeetings: MeetingWithVotes[] = [];
     
     for (let i = 0; i < meetingIds.length; i += BATCH_SIZE) {
       const batchIds = meetingIds.slice(i, i + BATCH_SIZE);
