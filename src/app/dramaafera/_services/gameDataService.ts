@@ -1785,70 +1785,95 @@ export async function getPlayerVotingStats(
       };
     }
 
-    // Pobierz wszystkie gry gracza
-    const playerGames = await prisma.gamePlayerStatistics.findMany({
-      where: {
-        playerId: player.id,
-        game: withoutDeleted
-      },
-      select: {
-        gameId: true
-      }
-    });
-
-    const gameIds = playerGames.map(g => g.gameId);
-
-    // Głosy oddane przez gracza
+    // Zamiast pobierać wszystkie gameIds i używać IN clause (co ma limity),
+    // pobierzmy dane bezpośrednio przez relacje
+    
+    // Głosy oddane przez gracza - bezpośrednio przez voterId, bez używania gameIds
     const votesCast = await prisma.meetingVote.findMany({
       where: {
         voterId: player.id,
         meeting: {
-          gameId: { in: gameIds },
-          deletedAt: null
+          deletedAt: null,
+          game: withoutDeleted
         }
       },
       include: {
         target: true,
-        meeting: true
+        meeting: {
+          include: {
+            game: true
+          }
+        }
       }
     });
 
-    // Głosy otrzymane przez gracza
+    // Głosy otrzymane przez gracza - bezpośrednio przez targetId
     const votesReceived = await prisma.meetingVote.findMany({
       where: {
         targetId: player.id,
         meeting: {
-          gameId: { in: gameIds },
-          deletedAt: null
+          deletedAt: null,
+          game: withoutDeleted
         }
       },
       include: {
         voter: true,
-        meeting: true
-      }
-    });
-
-    // Skipy gracza
-    const skipVotesData = await prisma.meetingSkipVote.findMany({
-      where: {
-        playerId: player.id,
         meeting: {
-          gameId: { in: gameIds },
-          deletedAt: null
+          include: {
+            game: true
+          }
         }
       }
     });
 
-    // Wszystkie spotkania w grach gracza
-    const allMeetings = await prisma.meeting.findMany({
+    // Skipy gracza - bezpośrednio przez playerId
+    const skipVotesData = await prisma.meetingSkipVote.findMany({
       where: {
-        gameId: { in: gameIds },
-        deletedAt: null
+        playerId: player.id,
+        meeting: {
+          deletedAt: null,
+          game: withoutDeleted
+        }
       },
       include: {
-        meetingVotes: true
+        meeting: {
+          include: {
+            game: true
+          }
+        }
       }
     });
+
+    // Zbierz unikalne meetingIds z głosów i skipów gracza
+    const meetingIdsSet = new Set<number>();
+    votesCast.forEach(v => meetingIdsSet.add(v.meetingId));
+    votesReceived.forEach(v => meetingIdsSet.add(v.meetingId));
+    skipVotesData.forEach(s => meetingIdsSet.add(s.meetingId));
+    
+    // Pobierz tylko te spotkania, gdzie gracz uczestniczył
+    const meetingIds = Array.from(meetingIdsSet);
+    
+    // Pobierz spotkania w batchach aby uniknąć problemów z limitami D1
+    const BATCH_SIZE = 100;
+    type MeetingWithVotes = Awaited<ReturnType<typeof prisma.meeting.findMany<{
+      where: { id: { in: number[] }; deletedAt: null };
+      include: { meetingVotes: true };
+    }>>>[number];
+    const allMeetings: MeetingWithVotes[] = [];
+    
+    for (let i = 0; i < meetingIds.length; i += BATCH_SIZE) {
+      const batchIds = meetingIds.slice(i, i + BATCH_SIZE);
+      const batchMeetings = await prisma.meeting.findMany({
+        where: {
+          id: { in: batchIds },
+          deletedAt: null
+        },
+        include: {
+          meetingVotes: true
+        }
+      });
+      allMeetings.push(...batchMeetings);
+    }
 
     // Liczba spotkań, w których gracz brał udział (nie był martwy)
     // Założenie: jeśli gracz nie głosował i nie skipował, prawdopodobnie był martwy
