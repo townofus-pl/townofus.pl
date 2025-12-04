@@ -530,8 +530,13 @@ export function formatPlayerStatsWithColors(player: UIPlayerData, maxTasks?: num
     }
   });
 
-  // Obsługa completed tasks - nie wyświetlaj jeśli 0 zrobionych (identycznie z /dramaafera/)
-  if (stats.completedTasks > 0) {
+  // Obsługa completed tasks
+  // Wyświetl dla Crewmate bez modyfikatora Lovers nawet jeśli 0 tasków
+  const isCrewmate = player.team === 'Crewmate';
+  const hasLovers = player.modifiers.some(mod => mod.toLowerCase().includes('lover'));
+  const shouldShowTasks = isCrewmate && !hasLovers;
+  
+  if (stats.completedTasks > 0 || shouldShowTasks) {
     const tasksText = maxTasks !== undefined 
       ? `Completed Tasks: ${stats.completedTasks}/${maxTasks}`
       : `Completed Tasks: ${stats.completedTasks}`;

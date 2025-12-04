@@ -8,6 +8,15 @@ import { Roles } from "@/roles";
 import type { Role } from "@/constants/rolesAndModifiers";
 import { SettingsList } from "@/app/_components/RolesList/RoleCard/SettingsList";
 
+// Funkcja pomocnicza do normalizacji nazw ról z bazy danych
+function normalizeRoleName(role: string): string {
+    const roleNameMapping: Record<string, string> = {
+        'SoulCollector': 'Soul Collector',
+        'GuardianAngel': 'Guardian Angel',
+    };
+    return roleNameMapping[role] || role;
+}
+
 // Funkcja pomocnicza do konwersji nazwy roli na format URL-friendly
 function convertRoleToUrlSlug(role: string): string {
     return role.toLowerCase()
@@ -20,13 +29,15 @@ function convertUrlSlugToRole(slug: string, allRoles: string[]): string {
     // Najpierw spróbuj znaleźć dokładne dopasowanie przez konwersję wszystkich ról
     const slugLower = slug.toLowerCase();
     for (const role of allRoles) {
-        if (convertRoleToUrlSlug(role) === slugLower) {
-            return role;
+        const normalizedRole = normalizeRoleName(role);
+        if (convertRoleToUrlSlug(normalizedRole) === slugLower) {
+            return normalizedRole;
         }
     }
     
-    // Fallback - konwertuj myślniki na spacje i zdekoduj
-    return decodeURIComponent(slug.replace(/-/g, ' '));
+    // Fallback - konwertuj myślniki na spacje i kapitalizuj pierwsze litery słów
+    const words = decodeURIComponent(slug.replace(/-/g, ' ')).split(' ');
+    return words.map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
 }
 
 // Funkcja pomocnicza do generowania ścieżki obrazka roli
@@ -143,18 +154,22 @@ function generateRoleStats(allGames: UIGameData[], targetRole: string): RoleStat
         });
 
         game.detailedStats.playersData.forEach((player: UIPlayerData) => {
+            // Normalizuj nazwy ról podczas porównywania
+            const normalizedPlayerRole = normalizeRoleName(player.role);
+            const normalizedRoleHistory = player.roleHistory?.map(r => normalizeRoleName(r));
+            
             // Sprawdź wystąpienia roli w całej historii (dla totalAppearances)
-            const hasRoleInHistory = player.role === targetRole ||
-                (player.roleHistory && player.roleHistory.includes(targetRole));
+            const hasRoleInHistory = normalizedPlayerRole === targetRole ||
+                (normalizedRoleHistory && normalizedRoleHistory.includes(targetRole));
             
             if (hasRoleInHistory) {
                 totalAppearances++;
             }
             
             // Sprawdź czy gracz miał tę rolę tylko jako pierwotną rolę
-            const originalRole = player.roleHistory && player.roleHistory.length > 0 
-                ? player.roleHistory[0] 
-                : player.role;
+            const originalRole = normalizedRoleHistory && normalizedRoleHistory.length > 0 
+                ? normalizedRoleHistory[0] 
+                : normalizedPlayerRole;
             const hasRole = originalRole === targetRole;
 
             if (hasRole) {
