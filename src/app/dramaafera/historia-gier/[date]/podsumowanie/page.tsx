@@ -1513,7 +1513,7 @@ export default function WeeklySummaryPage() {
                     >
                         <video
                             ref={videoRef}
-                            src="/video/mamika.mp4"
+                            src="/video/Mamika.mp4"
                             autoPlay
                             playsInline
                             style={{
