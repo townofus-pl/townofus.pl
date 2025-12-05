@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback, useMemo, useRef } from "react";
+import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { createPortal } from "react-dom";
 import Image from "next/image";
 import { useParams } from "next/navigation";
@@ -96,6 +96,11 @@ export default function WeeklySummaryPage() {
     const [introBlackOverlay, setIntroBlackOverlay] = useState(true);
     const backgroundMusicRef = useRef<HTMLAudioElement | null>(null); // Ref zamiast state - nie triggeruje re-render
     const [introInitialDelayPassed, setIntroInitialDelayPassed] = useState(false); // Czy minęło początkowe opóźnienie intro
+    const [isVideoPlaying, setIsVideoPlaying] = useState(false); // Czy film mamika jest odtwarzany
+    
+    // Hooki dla filmu mamika (muszą być zawsze, nawet jeśli nie są używane)
+    const [videoOpacity, setVideoOpacity] = useState(1);
+    const videoRef = useRef<HTMLVideoElement>(null);
 
     // Konfiguracja automatycznej sekwencji intro
     const INTRO_INITIAL_DELAY = 760; // ms - opóźnienie przed pierwszym tekstem po zniknięciu czarnego ekranu
@@ -229,6 +234,25 @@ export default function WeeklySummaryPage() {
         }
     }, [currentSlide, currentStep, introBlackOverlay, isPresentationFullscreen, introInitialDelayPassed, slides]);
 
+    // Obsługa fadeout dla filmu mamika (dla daty 20251203)
+    useEffect(() => {
+        const video = videoRef.current;
+        if (!video || date !== '20251203' || currentSlide !== slides.findIndex(s => s.id === 'podium') || currentStep !== 2) {
+            return;
+        }
+        
+        const handleTimeUpdate = () => {
+            const timeRemaining = video.duration - video.currentTime;
+            // Rozpocznij fadeout 1 sekundę przed końcem
+            if (timeRemaining <= 1 && timeRemaining > 0) {
+                setVideoOpacity(timeRemaining);
+            }
+        };
+        
+        video.addEventListener('timeupdate', handleTimeUpdate);
+        return () => video.removeEventListener('timeupdate', handleTimeUpdate);
+    }, [date, currentSlide, currentStep, slides]);
+
     // Funkcja do przejścia do kolejnego kroku/slajdu
     const handleNext = useCallback(() => {
         const currentSlideConfig = slides[currentSlide];
@@ -242,7 +266,7 @@ export default function WeeklySummaryPage() {
             // Muzyka uruchamia się PO kliknięciu, więc przeglądarka już nie blokuje autoplay
             if (!backgroundMusicRef.current) {
                 console.log('🎵 Tworzę nowy obiekt Audio...');
-                const audio = new Audio('/sounds/alergik.mp3');
+                const audio = new Audio('/sounds/drama afera anime.mp3');
                 audio.loop = true;
                 audio.volume = 1.0; // Pełna głośność
                 
@@ -291,10 +315,16 @@ export default function WeeklySummaryPage() {
         
         // Jeśli są jeszcze kroki w bieżącym slajdzie
         if (currentStep < currentSlideConfig.steps - 1) {
-            // Sprawdź czy to odkrycie 1. miejsca na podium (step 2->3)
-            if (currentSlideConfig.id === 'podium' && currentStep === 2) {
+            // Sprawdź czy to odkrycie 1. miejsca na podium
+            // Dla 20251203: krok 2->3 (film->2.i1.razem), dla innych: krok 2->3 (2.->1.)
+            if (currentSlideConfig.id === 'podium' && currentStep === 2 && date !== '20251203') {
                 setShowConfetti(true);
                 setTimeout(() => setShowConfetti(false), 5000); // Confetti przez 5 sekund
+            }
+            // Dla 20251203: confetti przy odkryciu 2. i 1. miejsca razem (krok 3)
+            if (currentSlideConfig.id === 'podium' && currentStep === 2 && date === '20251203') {
+                // Krok 2->3 dla 20251203 to po filmie, ale confetti dopiero w następnym kroku
+                // Nie ustawiamy tutaj, bo krok 2 to film który sam przejdzie dalej
             }
             
             // Fade transition między sigmami, cwelami i emperor-history (każdy krok od kroku 0)
@@ -533,8 +563,12 @@ export default function WeeklySummaryPage() {
     // STARE: const maxSteps = weeklyStats.length > 0 ? (weeklyStats.length > 3 ? 5 : 4) : 1;
 
     const handleClick = useCallback(() => {
+        // Blokuj kliknięcia podczas odtwarzania filmu
+        if (isVideoPlaying) {
+            return;
+        }
         handleNext();
-    }, [handleNext]);
+    }, [handleNext, isVideoPlaying]);
 
     const togglePresentationFullscreen = () => {
         if (!isPresentationFullscreen) {
@@ -971,7 +1005,7 @@ export default function WeeklySummaryPage() {
                     {/* Główna zawartość intro bez tła */}
                     <div className="absolute inset-0 flex items-center justify-center z-10">
                         <Image
-                            src="/images/DAXDalergik.png"
+                            src="/images/DAXDanime.png"
                             alt="Drama Afera Intro"
                             width={isFullscreen ? 2000 : 700}
                             height={isFullscreen ? 2000 : 700}
@@ -1041,7 +1075,7 @@ export default function WeeklySummaryPage() {
                 {/* Główna zawartość intro */}
                 <div className="absolute inset-0 flex items-center justify-center z-10">
                     <Image
-                        src="/images/DAXDalergik.png"
+                        src="/images/DAXDanime.png"
                         alt="Drama Afera Intro"
                         width={isFullscreen ? 1800 : 700}
                         height={isFullscreen ? 1800 : 700}
@@ -1297,7 +1331,7 @@ export default function WeeklySummaryPage() {
                             </div>
                         </div>
 
-                        {/* 2. miejsce - lewa pozycja - pokazuje się w kroku 2 */}
+                        {/* 2. miejsce - lewa pozycja - pokazuje się w kroku 2 (lub 3 dla 20251203) */}
                         <div className="absolute" style={{ 
                             left: isFullscreen ? '12%' : '12%', 
                             top: isFullscreen ? '22%' : '8%',
@@ -1305,7 +1339,7 @@ export default function WeeklySummaryPage() {
                             height: isFullscreen ? '260px' : '150px'
                         }}>
                             {/* Napisy nad avatarem - pokazują się po odkryciu */}
-                            {currentStep >= 2 && sortedStats[1] && (
+                            {((date !== '20251203' && currentStep >= 2) || (date === '20251203' && currentStep >= 3)) && sortedStats[1] && (
                                 <div 
                                     className="absolute left-1/2 -translate-x-1/2 text-center"
                                     style={{ 
@@ -1327,7 +1361,7 @@ export default function WeeklySummaryPage() {
                             
                             <div 
                                 className={`flip-card-container ${
-                                    currentStep >= 2 ? 'flip-card-flipped' : ''
+                                    ((date !== '20251203' && currentStep >= 2) || (date === '20251203' && currentStep >= 3)) ? 'flip-card-flipped' : ''
                                 }`}
                             >
                                 {/* Tylna strona - znak zapytania */}
@@ -1467,6 +1501,47 @@ export default function WeeklySummaryPage() {
                         }
                     }
                 `}</style>
+
+                {/* Film mamika jako nakładka dla daty 20251203 i kroku 2 */}
+                {date === '20251203' && currentStep === 2 && (
+                    <div 
+                        className="absolute inset-0 flex items-center justify-center bg-black z-50"
+                        style={{
+                            opacity: videoOpacity,
+                            transition: 'opacity 0.1s linear'
+                        }}
+                    >
+                        <video
+                            ref={videoRef}
+                            src="/video/mamika.mp4"
+                            autoPlay
+                            playsInline
+                            style={{
+                                width: '100%',
+                                height: '100%',
+                                objectFit: 'contain'
+                            }}
+                            onPlay={() => {
+                                console.log('🎬 Film mamika rozpoczął odtwarzanie');
+                                setIsVideoPlaying(true);
+                            }}
+                            onEnded={() => {
+                                console.log('🎬 Film mamika zakończony - przechodzę dalej');
+                                setIsVideoPlaying(false);
+                                // Automatyczne przejście do następnego kroku (2. i 1. miejsce razem)
+                                setShowConfetti(true);
+                                setTimeout(() => setShowConfetti(false), 5000);
+                                setCurrentStep(3);
+                            }}
+                            onError={(e) => {
+                                console.error('❌ Błąd odtwarzania filmu:', e);
+                                setIsVideoPlaying(false);
+                                // W razie błędu przejdź dalej
+                                setCurrentStep(3);
+                            }}
+                        />
+                    </div>
+                )}
             </>
         );
     }
