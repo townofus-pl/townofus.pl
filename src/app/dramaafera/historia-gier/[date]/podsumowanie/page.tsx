@@ -1251,7 +1251,7 @@ export default function WeeklySummaryPage() {
                         <Image
                             src="/images/podium.png"
                             alt="Podium"
-                            width={isFullscreen ? 1300 : 600}
+                            width={isFullscreen ? 1400 : 600}
                             height={isFullscreen ? 450 : 350}
                             className="z-0"
                             style={{ display: 'block', margin: 0, padding: 0, verticalAlign: 'bottom' }}
@@ -1259,8 +1259,8 @@ export default function WeeklySummaryPage() {
                         
                         {/* 3. miejsce - prawa pozycja - pokazuje się w kroku 1 */}
                         <div className="absolute" style={{ 
-                            right: isFullscreen ? '12.5%' : '12%', 
-                            top: isFullscreen ? '28%' : '12%',
+                            right: isFullscreen ? '13.5%' : '12%', 
+                            top: isFullscreen ? '30%' : '12%',
                             width: isFullscreen ? '260px' : '80px',
                             height: isFullscreen ? '260px' : '80px'
                         }}>
@@ -1333,8 +1333,8 @@ export default function WeeklySummaryPage() {
 
                         {/* 2. miejsce - lewa pozycja - pokazuje się w kroku 2 (lub 3 dla 20251203) */}
                         <div className="absolute" style={{ 
-                            left: isFullscreen ? '12%' : '12%', 
-                            top: isFullscreen ? '22%' : '8%',
+                            left: isFullscreen ? '13.5%' : '12%', 
+                            top: isFullscreen ? '24%' : '8%',
                             width: isFullscreen ? '260px' : '150px',
                             height: isFullscreen ? '260px' : '150px'
                         }}>
@@ -1403,8 +1403,8 @@ export default function WeeklySummaryPage() {
 
                         {/* 1. miejsce - środkowa pozycja (najwyższa) - pokazuje się w kroku 3 */}
                         <div className="absolute" style={{ 
-                            left: isFullscreen ? '36%' : '42%', 
-                            top: isFullscreen ? '-13%' : '2%',
+                            left: isFullscreen ? '36.7%' : '42%', 
+                            top: isFullscreen ? '-10%' : '2%',
                             width: isFullscreen ? '370px' : '105px',
                             height: isFullscreen ? '370px' : '105px'
                         }}>
@@ -1415,7 +1415,7 @@ export default function WeeklySummaryPage() {
                                     style={{ 
                                         bottom: '100%',
                                         marginBottom: isFullscreen ? '30px' : '15px',
-                                        width: isFullscreen ? '400px' : '200px',
+                                        width: isFullscreen ? '700px' : '200px',
                                         opacity: 0,
                                         animation: 'fadeIn 1s ease-out 0.5s forwards'
                                     }}
@@ -1427,7 +1427,7 @@ export default function WeeklySummaryPage() {
                                             animation: 'glow 2s ease-in-out infinite alternate'
                                         }}
                                     >
-                                        EMPEROR
+                                        THE EMPRESS
                                     </div>
                                     <div className={`font-bold text-amber-400 ${isFullscreen ? 'text-4xl' : 'text-2xl'} mb-1`}>
                                         {sortedStats[0].nickname}
@@ -2754,24 +2754,24 @@ export default function WeeklySummaryPage() {
         }
 
         return (
-            <div className="relative w-full h-full flex flex-col px-80 py-6" style={{ overflow: 'hidden' }}>
+            <div className="relative w-full h-full flex flex-col py-6" style={{ overflow: 'hidden' }}>
                 {/* Nagłówek */}
                 <div 
-                    className={`text-center mt-10 mb-6 ${isFullscreen ? 'text-6xl' : 'text-5xl'} font-bold text-amber-400`}
-                    style={{ textShadow: '0 0 40px rgba(251, 191, 36, 0.9), 0 0 80px rgba(251, 191, 36, 0.6)' }}
+                    className={`text-center mt-10 mb-6 ${isFullscreen ? 'text-6xl' : 'text-5xl'} px-100 font-bold text-amber-400`}
+                    style={{ textShadow: '0 0 40px rgba(251, 191, 36, 0.9), 0 0 80px rgba(251, 191, 36, 0.6)', whiteSpace: 'nowrap' }}
                 >
                     AMONG US RANKING AFERA PO {formatDate(date)}
                 </div>
 
                 {/* Tabela */}
-                <div className="flex-1 overflow-y-auto flex items-center justify-center">
+                <div className="flex-1 px-80 overflow-y-auto flex items-center justify-center">
                     <table className="border-collapse" style={{ border: '3px solid rgb(251, 191, 36)' }}>
                         <thead>
                             <tr style={{ backgroundColor: 'rgba(217, 119, 6, 0.3)', borderBottom: '3px solid rgb(251, 191, 36)' }}>
-                                <th className={`py-3 px-4 text-amber-300 font-bold ${isFullscreen ? 'text-3xl' : 'text-2xl'}`} style={{ borderRight: '3px solid rgb(251, 191, 36)' }}>
+                                <th className={`py-3 px-4 text-amber-300 font-bold ${isFullscreen ? 'text-3xl' : 'text-2xl'}`} style={{ borderRight: '3px solid rgb(251, 191, 36)', width: '1%', whiteSpace: 'nowrap' }}>
                                     #
                                 </th>
-                                <th className={`py-3 px-16 text-amber-300 font-bold ${isFullscreen ? 'text-3xl' : 'text-2xl'}`} style={{ borderRight: '3px solid rgb(251, 191, 36)' }}>
+                                <th className={`py-3 px-4 text-amber-300 font-bold ${isFullscreen ? 'text-3xl' : 'text-2xl'}`} style={{ borderRight: '3px solid rgb(251, 191, 36)', width: '1%', whiteSpace: 'nowrap' }}>
                                     TIER
                                 </th>
                                 <th className={`py-3 px-4 text-amber-300 font-bold ${isFullscreen ? 'text-3xl' : 'text-2xl'}`}>
@@ -2794,10 +2794,10 @@ export default function WeeklySummaryPage() {
                                                     borderBottom: '2px dotted rgba(200, 200, 200, 0.5)'
                                                 }}
                                             >
-                                                <td className={`py-3 px-4 text-center text-white font-bold ${isFullscreen ? 'text-3xl' : 'text-2xl'}`} style={{ borderRight: '2px dotted rgba(200, 200, 200, 0.5)' }}>
+                                                <td className={`py-3 px-4 text-center text-white font-bold ${isFullscreen ? 'text-3xl' : 'text-2xl'}`} style={{ borderRight: '2px dotted rgba(200, 200, 200, 0.5)', width: '1%', whiteSpace: 'nowrap' }}>
                                                     👑
                                                 </td>
-                                                <td className={`py-3 px-4 text-center text-white font-bold ${isFullscreen ? 'text-3xl' : 'text-2xl'}`} style={{ borderRight: '2px dotted rgba(200, 200, 200, 0.5)' }}>
+                                                <td className={`py-3 px-4 text-center text-white font-bold ${isFullscreen ? 'text-3xl' : 'text-2xl'}`} style={{ borderRight: '2px dotted rgba(200, 200, 200, 0.5)', width: '1%', whiteSpace: 'nowrap' }}>
                                                     THE EMPEROR
                                                 </td>
                                                 <td className={`py-3 px-4 text-center text-white font-bold ${isFullscreen ? 'text-3xl' : 'text-lg'}`}>
@@ -2822,10 +2822,10 @@ export default function WeeklySummaryPage() {
                                                         borderBottom: '2px dotted rgba(200, 200, 200, 0.5)'
                                                     }}
                                                 >
-                                                    <td className={`py-3 px-4 text-center ${textColor} font-bold ${isFullscreen ? 'text-3xl' : 'text-2xl'}`} style={{ borderRight: '2px dotted rgba(200, 200, 200, 0.5)' }}>
+                                                    <td className={`py-3 px-4 text-center ${textColor} font-bold ${isFullscreen ? 'text-3xl' : 'text-2xl'}`} style={{ borderRight: '2px dotted rgba(200, 200, 200, 0.5)', width: '1%', whiteSpace: 'nowrap' }}>
                                                         {tierRange}
                                                     </td>
-                                                    <td className={`py-3 px-16 text-center ${textColor} ${isFullscreen ? 'text-xl' : 'text-lg'}`} style={{ whiteSpace: 'nowrap', borderRight: '2px dotted rgba(200, 200, 200, 0.5)' }}>
+                                                    <td className={`py-3 px-4 text-center ${textColor} ${isFullscreen ? 'text-xl' : 'text-lg'}`} style={{ whiteSpace: 'nowrap', borderRight: '2px dotted rgba(200, 200, 200, 0.5)', width: '1%' }}>
                                                         {tierName}
                                                     </td>
                                                     <td className={`py-3 px-4 text-center ${textColor} ${isFullscreen ? 'text-lg' : 'text-base'}`}>
