@@ -1,14 +1,30 @@
 import { getGamesListByDate, getGameData, formatDisplayDate, UIGameData, UIPlayerData } from '../../../_services/gameDataService';
 import { notFound } from 'next/navigation';
 import Image from 'next/image';
+import type { Metadata } from 'next';
 import { getCloudflareContext } from '@opennextjs/cloudflare';
 import { getPrismaClient } from '../../../../api/_database';
 import { withoutDeleted } from '../../../../api/schema/common';
+
+interface HostInfoPageProps {
+  params: Promise<{
+    date: string;
+  }>;
+}
 
 export async function generateStaticParams() {
   // Return empty array during build time as Cloudflare context is not available
   // This will be populated at runtime
   return [];
+}
+
+export async function generateMetadata({ params }: HostInfoPageProps): Promise<Metadata> {
+  const { date } = await params;
+  const formattedDate = formatDisplayDate(date);
+  
+  return {
+    title: `Drama Afera - Host Info - ${formattedDate}`
+  };
 }
 
 interface PlayerHostInfo {
@@ -26,12 +42,6 @@ interface PlayerRankingChange {
   change: number;
   ratingBefore: number;
   ratingAfter: number;
-}
-
-interface HostInfoPageProps {
-  params: Promise<{
-    date: string;
-  }>;
 }
 
 export default async function HostInfoPage({ params }: HostInfoPageProps) {

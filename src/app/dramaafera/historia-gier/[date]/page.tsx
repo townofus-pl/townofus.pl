@@ -1,5 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
+import type { Metadata } from "next";
 import { getGamesListByDate, formatDisplayDate } from "../../_services/gameDataService";
 import { TeamColors } from "@/constants/teams";
 import { notFound } from "next/navigation";
@@ -24,6 +25,15 @@ export async function generateStaticParams() {
     // Return empty array during build time as Cloudflare context is not available
     // This will be populated at runtime
     return [];
+}
+
+export async function generateMetadata({ params }: DatePageProps): Promise<Metadata> {
+    const { date } = await params;
+    const formattedDate = formatDisplayDate(date);
+    
+    return {
+        title: `Drama Afera - ${formattedDate}`
+    };
 }
 
 export default async function DateGamesPage({ params }: DatePageProps) {
