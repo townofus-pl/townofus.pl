@@ -8,7 +8,6 @@ import type { UIGameData, UIPlayerData } from "../../_services/gameDataService";
 import { Roles } from "@/roles";
 import type { Role } from "@/constants/rolesAndModifiers";
 import { SettingsList } from "@/app/_components/RolesList/RoleCard/SettingsList";
-import { SettingTypes } from "@/constants/settings";
 import { promises as fs } from 'fs';
 import path from 'path';
 import { parseSettingsFile, getMatchingFileName, updateSettingValue } from '../../_utils/settingsParser';
