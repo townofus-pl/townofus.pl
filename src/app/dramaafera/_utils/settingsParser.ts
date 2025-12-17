@@ -47,7 +47,7 @@ export function getMatchingFileName(roleName: string, cleanedFileContentMap: Map
 }
 
 // Funkcja do aktualizacji wartości ustawienia na podstawie typu
-export function updateSettingValue(settingType: SettingTypes, value: string): any {
+export function updateSettingValue(settingType: SettingTypes, value: string): string | number | boolean {
     switch (settingType) {
         case SettingTypes.Boolean:
             return value.toLowerCase() === 'true';
