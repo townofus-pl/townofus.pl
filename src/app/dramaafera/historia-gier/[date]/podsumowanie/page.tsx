@@ -266,7 +266,7 @@ export default function WeeklySummaryPage() {
             // Muzyka uruchamia się PO kliknięciu, więc przeglądarka już nie blokuje autoplay
             if (!backgroundMusicRef.current) {
                 console.log('🎵 Tworzę nowy obiekt Audio...');
-                const audio = new Audio('/sounds/drama afera anime.mp3');
+                const audio = new Audio('/sounds/DAswieta.mp3');
                 audio.loop = true;
                 audio.volume = 1.0; // Pełna głośność
                 
@@ -824,7 +824,7 @@ export default function WeeklySummaryPage() {
                 {/* YouTube video - odtwarzanie z wyciszonym dźwiękiem (tylko obraz) - ładowane od początku */}
                 <div className="absolute inset-0 overflow-hidden">
                     <iframe
-                        src="https://www.youtube-nocookie.com/embed/6BFhVrifW-0?autoplay=1&mute=1&loop=1&controls=0&showinfo=0&rel=0&iv_load_policy=3&modestbranding=1&playsinline=1&start=0&playlist=6BFhVrifW-0&volume=0"
+                        src="https://www.youtube-nocookie.com/embed/mpfQE5OXVuk?autoplay=1&mute=1&loop=1&controls=0&showinfo=0&rel=0&iv_load_policy=3&modestbranding=1&playsinline=1&start=0&playlist=mpfQE5OXVuk&volume=0"
                         className="absolute inset-0"
                         style={{
                             width: '100%',
@@ -1005,7 +1005,7 @@ export default function WeeklySummaryPage() {
                     {/* Główna zawartość intro bez tła */}
                     <div className="absolute inset-0 flex items-center justify-center z-10">
                         <Image
-                            src="/images/DAXDanime.png"
+                            src="/images/DAsanta.png"
                             alt="Drama Afera Intro"
                             width={isFullscreen ? 2000 : 700}
                             height={isFullscreen ? 2000 : 700}
@@ -1075,7 +1075,7 @@ export default function WeeklySummaryPage() {
                 {/* Główna zawartość intro */}
                 <div className="absolute inset-0 flex items-center justify-center z-10">
                     <Image
-                        src="/images/DAXDanime.png"
+                        src="/images/DAsanta.png"
                         alt="Drama Afera Intro"
                         width={isFullscreen ? 1800 : 700}
                         height={isFullscreen ? 1800 : 700}
@@ -1427,7 +1427,7 @@ export default function WeeklySummaryPage() {
                                             animation: 'glow 2s ease-in-out infinite alternate'
                                         }}
                                     >
-                                        THE EMPRESS
+                                        THE EMPEROR
                                     </div>
                                     <div className={`font-bold text-amber-400 ${isFullscreen ? 'text-4xl' : 'text-2xl'} mb-1`}>
                                         {sortedStats[0].nickname}
@@ -2598,8 +2598,11 @@ export default function WeeklySummaryPage() {
 
                 {/* Lista emperorów */}
                 <div 
-                    className="w-full max-w-4xl flex flex-col gap-4"
-                    style={{ maxHeight: '60vh', overflowY: 'auto' }}
+                    className="w-full max-w-4xl flex flex-col"
+                    style={{ 
+                        gap: emperorHistory.length > 4 ? '0.75rem' : '1rem',
+                        maxHeight: '60vh'
+                    }}
                 >
                     {[...emperorHistory]
                         .sort((a, b) => {
@@ -2613,19 +2616,29 @@ export default function WeeklySummaryPage() {
                             return bLatestDate.localeCompare(aLatestDate);
                         })
                         .map((emperor) => {
+                        const scaleFactor = emperorHistory.length > 4 ? 0.85 : 1;
+                        const avatarSize = isFullscreen ? 100 * scaleFactor : 80 * scaleFactor;
+                        const fontSize = emperorHistory.length > 4 
+                            ? (isFullscreen ? 'text-2xl' : 'text-xl')
+                            : (isFullscreen ? 'text-3xl' : 'text-2xl');
+                        const starSize = emperorHistory.length > 4 
+                            ? (isFullscreen ? 'text-4xl' : 'text-3xl')
+                            : (isFullscreen ? 'text-5xl' : 'text-4xl');
+                        
                         return (
                             <div
                                 key={emperor.nickname}
                                 className={`flex items-center bg-gradient-to-r from-zinc-800/90 to-zinc-900/90 backdrop-blur-sm rounded-lg shadow-2xl border-2 ${
                                     emperor.isLatest ? 'border-amber-400' : 'border-red-400/50'
-                                } p-6`}
+                                }`}
+                                style={{ padding: emperorHistory.length > 4 ? '1rem' : '1.5rem' }}
                             >
                                 {/* Avatar */}
                                 <div 
                                     className="relative rounded-lg overflow-hidden border-2 border-red-400 shadow-xl mr-6 flex-shrink-0"
                                     style={{ 
-                                        width: isFullscreen ? '100px' : '80px', 
-                                        height: isFullscreen ? '100px' : '80px'
+                                        width: `${avatarSize}px`, 
+                                        height: `${avatarSize}px`
                                     }}
                                 >
                                     <Image
@@ -2641,7 +2654,7 @@ export default function WeeklySummaryPage() {
                                 </div>
 
                                 {/* Nick */}
-                                <div className={`font-bold text-white ${isFullscreen ? 'text-3xl' : 'text-2xl'} flex-grow`}>
+                                <div className={`font-bold text-white ${fontSize} flex-grow`}>
                                     {emperor.nickname}
                                 </div>
 
@@ -2654,7 +2667,7 @@ export default function WeeklySummaryPage() {
                                         return (
                                             <div
                                                 key={starIndex}
-                                                className={`${isFullscreen ? 'text-5xl' : 'text-4xl'} transition-all duration-300 ${
+                                                className={`${starSize} transition-all duration-300 ${
                                                     isNewStar ? 'animate-[pulse_1s_ease-in-out_infinite] text-amber-400' : 'text-amber-500'
                                                 }`}
                                                 style={{
