@@ -47,7 +47,7 @@ export async function generateMetadata({ params }: UserProfileProps): Promise<Me
     const playerName = decodeURIComponent(nick.replace(/-/g, ' '));
     
     return {
-        title: `${playerName} - Profil gracza | Drama Afera`,
+        title: `Drama Afera - ${playerName}`,
         description: `Statystyki gracza ${playerName} w Among Us Drama Afera. Historia rankingu, zagranych gier i szczegółowe statystyki.`,
     };
 }

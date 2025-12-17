@@ -1,12 +1,17 @@
 import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
+import type { Metadata } from "next";
 import { RoleImage } from "../_components/RoleImage";
 import { getAllGamesData, getRoleColor } from "../../_services/gameDataService";
 import type { UIGameData, UIPlayerData } from "../../_services/gameDataService";
 import { Roles } from "@/roles";
 import type { Role } from "@/constants/rolesAndModifiers";
 import { SettingsList } from "@/app/_components/RolesList/RoleCard/SettingsList";
+import { SettingTypes } from "@/constants/settings";
+import { promises as fs } from 'fs';
+import path from 'path';
+import { parseSettingsFile, getMatchingFileName, updateSettingValue } from '../../_utils/settingsParser';
 
 // Funkcja pomocnicza do normalizacji nazw ról z bazy danych
 function normalizeRoleName(role: string): string {
@@ -28,6 +33,7 @@ function convertRoleToUrlSlug(role: string): string {
 function convertUrlSlugToRole(slug: string, allRoles: string[]): string {
     // Najpierw spróbuj znaleźć dokładne dopasowanie przez konwersję wszystkich ról
     const slugLower = slug.toLowerCase();
+    
     for (const role of allRoles) {
         const normalizedRole = normalizeRoleName(role);
         if (convertRoleToUrlSlug(normalizedRole) === slugLower) {
@@ -38,6 +44,22 @@ function convertUrlSlugToRole(slug: string, allRoles: string[]): string {
     // Fallback - konwertuj myślniki na spacje i kapitalizuj pierwsze litery słów
     const words = decodeURIComponent(slug.replace(/-/g, ' ')).split(' ');
     return words.map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+}
+
+interface RolePageProps {
+    params: Promise<{
+        nazwa: string;
+    }>;
+}
+
+export async function generateMetadata({ params }: RolePageProps): Promise<Metadata> {
+    const { nazwa } = await params;
+    const allRoles = Roles.map(r => r.name);
+    const roleName = convertUrlSlugToRole(nazwa, allRoles);
+    
+    return {
+        title: `Drama Afera - ${roleName}`
+    };
 }
 
 // Funkcja pomocnicza do generowania ścieżki obrazka roli
@@ -411,6 +433,50 @@ export default async function RoleStatsPage({ params }: RolePageProps) {
     console.log('Role definition found:', !!roleDefinition);
     console.log('Available roles:', Roles.map(r => r.name));
 
+    // Wczytaj plik dramaafera.txt i zaktualizuj wartości ustawień
+    let roleDefinitionWithSettings = roleDefinition;
+    if (roleDefinition) {
+        try {
+            const filePath = path.join(process.cwd(), 'public', 'settings', 'dramaafera.txt');
+            const fileContent = await fs.readFile(filePath, 'utf-8');
+            
+            // Parsowanie pliku
+            const { fileContentMap, cleanedFileContentMap } = parseSettingsFile(fileContent);
+
+            // Skopiuj definicję roli i zaktualizuj wartości ustawień
+            roleDefinitionWithSettings = {
+                ...roleDefinition,
+                settings: { ...roleDefinition.settings }
+            };
+
+            // Zaktualizuj wartości ustawień z pliku
+            Object.keys(roleDefinitionWithSettings.settings).forEach(key => {
+                if (fileContentMap.has(key)) {
+                    const value = fileContentMap.get(key);
+                    if (value !== undefined) {
+                        const setting = { ...roleDefinitionWithSettings!.settings[key] };
+                        setting.value = updateSettingValue(setting.type, value);
+                        roleDefinitionWithSettings!.settings[key] = setting;
+                    }
+                }
+            });
+
+            // Specjalna obsługa dla "Probability Of Appearing"
+            if (roleDefinitionWithSettings.settings["Probability Of Appearing"]) {
+                const fileName = getMatchingFileName(roleDefinition.name, cleanedFileContentMap);
+                const probability = fileName ? cleanedFileContentMap.get(fileName) : undefined;
+                if (probability !== undefined) {
+                    const setting = { ...roleDefinitionWithSettings.settings["Probability Of Appearing"] };
+                    setting.value = Number.isInteger(probability) ? probability : Number(probability.toFixed(2));
+                    roleDefinitionWithSettings.settings["Probability Of Appearing"] = setting;
+                }
+            }
+        } catch (error) {
+            console.error('Error loading dramaafera.txt:', error);
+            // Jeśli nie można wczytać pliku, użyj domyślnych wartości
+        }
+    }
+
     return (
         <div className="min-h-screen bg-zinc-900/50 text-white">
             {/* Header */}
@@ -494,18 +560,18 @@ export default async function RoleStatsPage({ params }: RolePageProps) {
                 </div>
 
                 {/* Opis roli i ustawienia - identyczny układ jak RoleCard */}
-                {roleDefinition && (
+                {roleDefinitionWithSettings && (
                     <div className="grid grid-cols-1 gap-y-5 p-5 bg-zinc-900/50 rounded-xl border-l-5 mb-6"
                          style={{borderColor: roleColor}}>
                         <div className="grid grid-cols-1 md:grid-cols-2/1 gap-5">
                             <div className="bg-zinc-900/50 rounded-xl p-4 flex flex-col gap-10 justify-between">
-                                <div className="text-xl">{roleDefinition.description}</div>
-                                <SettingsList settings={roleDefinition.settings}/>
+                                <div className="text-xl">{roleDefinitionWithSettings.description}</div>
+                                <SettingsList settings={roleDefinitionWithSettings.settings}/>
                             </div>  
                             <div className="bg-zinc-900/50 rounded-xl p-4">
                                 <h5 className="font-brook text-5xl mb-5">Umiejętności</h5>
                                 <ul className="text-xl">
-                                    {roleDefinition.abilities.map(ability => (
+                                    {roleDefinitionWithSettings.abilities.map(ability => (
                                         <li key={ability.name}
                                             className="my-2.5 font-brook text-3xl bg-zinc-800/75 p-2 rounded flex items-center justify-start gap-2">
                                             <Image src={ability.icon} alt={ability.name} width={64} height={64} className="w-8"/>
@@ -515,9 +581,9 @@ export default async function RoleStatsPage({ params }: RolePageProps) {
                                 </ul>
                             </div>
                         </div>
-                        {roleDefinition.tip && (
+                        {roleDefinitionWithSettings.tip && (
                             <div className="bg-zinc-900/50 p-4 rounded-lg flex gap-5 items-center justify-start">
-                                <h5 className="font-brook text-3xl">Porada: {roleDefinition.tip}</h5>
+                                <h5 className="font-brook text-3xl">Porada: {roleDefinitionWithSettings.tip}</h5>
                             </div>
                         )}
                     </div>

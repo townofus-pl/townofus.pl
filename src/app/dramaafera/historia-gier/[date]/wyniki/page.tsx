@@ -1,12 +1,28 @@
-import { getGamesListByDate, getGameData, normalizeRoleName, getRoleColor, determineTeam, UIGameData, UIPlayerData } from '../../../_services/gameDataService';
+import { getGamesListByDate, getGameData, normalizeRoleName, getRoleColor, determineTeam, UIGameData, UIPlayerData, formatDisplayDate } from '../../../_services/gameDataService';
+import type { Metadata } from 'next';
 import PlayerTable from '@/app/_components/PlayerTable';
 import RoleTable from '@/app/_components/RoleTable';
+
+interface WynikiPageProps {
+  params: Promise<{
+    date: string;
+  }>;
+}
 
 // Dodaj wymagany eksport generateStaticParams dla Next.js SSG
 export async function generateStaticParams() {
   // Return empty array during build time as Cloudflare context is not available
   // This will be populated at runtime
   return [];
+}
+
+export async function generateMetadata({ params }: WynikiPageProps): Promise<Metadata> {
+  const { date } = await params;
+  const formattedDate = formatDisplayDate(date);
+  
+  return {
+    title: `Drama Afera - Wyniki - ${formattedDate}`
+  };
 }
 
 interface PlayerDayStats {
@@ -31,7 +47,7 @@ interface RoleDayStats {
   results: ('W' | 'L' | null)[];
 }
 
-export default async function WynikiDniaPage({ params }: { params: Promise<{ date: string }> }) {
+export default async function WynikiDniaPage({ params }: WynikiPageProps) {
   // Pobierz wszystkie gry z danego dnia (GameSummary)
   const { date } = await params;
   const games = await getGamesListByDate(date);

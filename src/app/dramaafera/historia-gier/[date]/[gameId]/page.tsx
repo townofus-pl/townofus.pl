@@ -1,6 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
-import { getGameData, formatDisplayDate } from "../../../_services/gameDataService";
+import type { Metadata } from "next";
+import { getGameData, formatDisplayDate, getGamesListByDate } from "../../../_services/gameDataService";
 import { TeamColors } from "@/constants/teams";
 import { notFound } from "next/navigation";
 import { PlayerStatsSection } from "./PlayerStatsSection";
@@ -21,6 +22,20 @@ export async function generateStaticParams() {
     return [];
 }
 
+export async function generateMetadata({ params }: GamePageProps): Promise<Metadata> {
+    const { date, gameId } = await params;
+    const formattedDate = formatDisplayDate(date);
+    
+    // Pobierz listę gier tego dnia, żeby znaleźć numer gry
+    const games = await getGamesListByDate(date);
+    const gameIndex = games.findIndex(g => g.id.toString() === gameId);
+    // Numeracja od najstarszej (1) do najmłodszej (games.length)
+    const gameNumber = gameIndex !== -1 ? games.length - gameIndex : gameId;
+    
+    return {
+        title: `Drama Afera - Gra #${gameNumber} - ${formattedDate}`
+    };
+}
 
 export default async function GamePage({ params }: GamePageProps) {
     const {date, gameId} = await params;
