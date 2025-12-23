@@ -4,7 +4,7 @@ const files = [
   {
     name: "TownOfUs.dll",
     size: "2.24 MB",
-    href: "/files/TownOfUs.dll",
+    href: "https://github.com/MalkizH3/malkizToU/releases/latest/download/TownOfUs.dll",
   },
   {
     name: "AUnlocker.dll",

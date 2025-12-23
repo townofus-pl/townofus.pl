@@ -247,11 +247,11 @@ export default function RoleTable({ roles, reversedGames, detailedGames, date, h
               #
             </th>
             <th className="px-2 py-2 text-yellow-400 font-bold" style={{ width: '13rem' }}>ROLA</th>
-            <th className="px-2 py-2 text-yellow-400 font-bold">DRUŻYNA</th>
+            <th className="px-2 py-2 text-yellow-400 font-bold">TEAM</th>
             <th className="px-2 py-2 text-yellow-400 font-bold">GRY</th>
             <th className="px-2 py-2 text-yellow-400 font-bold">WIN</th>
             <th className="px-2 py-2 text-yellow-400 font-bold">LOSE</th>
-            <th className="px-2 py-2 text-yellow-400 font-bold">WINRATIO</th>
+            <th className="px-2 py-2 text-yellow-400 font-bold">W/R</th>
             {reversedGames.map((g, idx: number) => (
               <th
                 key={idx}
@@ -316,13 +316,15 @@ export default function RoleTable({ roles, reversedGames, detailedGames, date, h
                                '#808080' 
                       }}
                     >
-                      {role.team}
+                      {role.team === 'Crewmate' ? 'Crew' : 
+                               role.team === 'Impostor' ? 'Imp' : 
+                               'Neu' }
                     </span>
                   </td>
                   <td className="px-2 py-1 text-center">{role.games}</td>
                   <td className="px-2 py-1 text-center text-green-400 font-bold">{role.wins}</td>
                   <td className="px-2 py-1 text-center text-red-400 font-bold">{role.loses}</td>
-                  <td className="px-2 py-1 text-center font-bold" style={{ color: role.winRatio >= 50 ? '#22C55E' : role.winRatio >= 30 ? '#F59E0B' : '#EF4444' }}>{role.winRatio.toFixed(2)}%</td>
+                  <td className="px-2 py-1 text-center font-bold" style={{ color: role.winRatio >= 50 ? '#22C55E' : role.winRatio >= 30 ? '#F59E0B' : '#EF4444' }}>{role.winRatio.toFixed(0)}%</td>
                   {role.results.map((res, i) => (
                     <td
                       key={i}

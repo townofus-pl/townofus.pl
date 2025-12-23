@@ -293,19 +293,19 @@ True
 Assassin Can Guess Lovers
 True
 Radiate Colour Range
-0,5
+0
 Radiate Max Range
 1
 Sense Duration
 2
 Examine Cooldown
-20
+17,5
 Show Detective Reports
 True
 Time Where Detective Will Have Role
 5
 Time Where Detective Will Have Faction
-10
+15
 Tasks Remaining When Haunter Can Be Clicked
 5
 Tasks Remaining When Alert Is Sent
@@ -325,11 +325,11 @@ False
 Footprint Vent Visible
 False
 Watch Cooldown
-20
+15
 Lookout Watches Reset After Each Round
 True
 Maximum Number Of Players That Can Be Watched
-3
+2
 Dead Body Arrow Duration
 0
 Seer Cooldown
@@ -347,7 +347,7 @@ False
 Snitch Sees Neutral Roles
 False
 Tasks Remaining When Revealed
-2
+1
 Snitch Sees Impostors In Meetings
 True
 Snitch Sees Traitor
@@ -355,21 +355,21 @@ True
 Who Sees Dead Bodies On Admin
 1
 Arrow Update Interval
-3
+2
 Track Cooldown
 20
 Tracker Arrows Reset After Each Round
 True
 Maximum Number Of Tracks
-3
+4
 Min Amount Of Time In Trap To Register
 0
 Trap Cooldown
-20
+12
 Traps Removed After Each Round
 True
 Maximum Number Of Traps
-3
+4
 Trap Size
 0,35000002
 Minimum Number Of Roles Required To Trigger Trap
@@ -377,11 +377,11 @@ Minimum Number Of Roles Required To Trigger Trap
 Hunter Kill Cooldown
 20
 Hunter Stalk Cooldown
-10
+12
 Hunter Stalk Duration
 20
 Maximum Stalk Uses
-5
+3
 Hunter Kills Last Voter If Voted Out
 False
 Hunter Can Report Who They've Killed
@@ -393,7 +393,7 @@ True
 Sheriff Kills Neutral Killing Roles
 True
 Sheriff Kill Cooldown
-20
+22,5
 Sheriff Can Report Who They've Killed
 True
 Can Be Killed On Alert
@@ -403,9 +403,9 @@ Alert Cooldown
 Alert Duration
 10
 Maximum Number Of Alerts
-5
+7
 Number Of Vigilante Kills
-15
+3
 Vigilante Can Kill More Than Once Per Meeting
 True
 Vigilante Can Guess Neutral Benign Roles
@@ -419,9 +419,9 @@ True
 Vigilante Can Guess Lovers
 True
 Jail Cooldown
-20
+15
 Maximum Number Of Executes
-5
+4
 Campaign Cooldown
 20
 Prosecutor Dies When They Exile A Crewmate
@@ -431,11 +431,11 @@ True
 Altruist Revive Duration
 1
 Revive Uses
-3
+4
 Revive Radius
 0,5
 Barrier Cooldown
-20
+25
 Show Barriered Player
 2
 Cleric Gets Attack Notification
@@ -465,7 +465,7 @@ True
 Show Fortified Player
 2
 Maximum Number Of Fixes
-5
+3
 Mediate Cooldown
 5
 Reveal Appearance Of Mediate Target
@@ -479,9 +479,9 @@ Flush Cooldown
 Maximum Number Of Barricades
 5
 Transport Cooldown
-20
+22,5
 Maximum Number Of Transports
-5
+3
 Transporter Can Use Vitals
 False
 Amnesiac Gets Arrows Pointing To Dead Bodies
@@ -563,13 +563,13 @@ Mimic Duration
 Hack Cooldown
 20
 Hack Duration
-10
+8
 Glitch Kill Cooldown
-20
+22,5
 Glitch Can Vent
 True
 Juggernaut Initial Kill Cooldown
-20
+17,5
 Reduced Kill Cooldown Per Kill
 2,5
 Juggernaut Can Vent
@@ -581,11 +581,11 @@ Pestilence Kill Cooldown
 Pestilence Can Vent
 True
 Reap Cooldown
-20
+12,5
 Soul Collector Can Vent
 True
 Vampire Bite Cooldown
-20
+15
 Vampires Have Impostor Vision
 False
 Vampires Can Vent
@@ -619,13 +619,13 @@ True
 Flash Grenade Cooldown
 20
 Flash Grenade Duration
-10
+12
 Flash Radius
 1
 Grenadier Can Vent
 True
 Morphling Cooldown
-20
+25
 Morphling Duration
 10
 Morphling Can Vent
@@ -633,15 +633,15 @@ True
 Swoop Cooldown
 20
 Swoop Duration
-10
+15
 Swooper Can Vent
 True
 Ability Cooldown
-20
+22,5
 Ability Duration
-10
+5
 Sprint Speed
-1,9999993
+1,7499995
 Minimum Freeze Speed
 0,25
 Freeze Radius
@@ -671,19 +671,19 @@ False
 Time It Takes To Fully Charge
 20
 Time It Takes To Use Full Charge
-1,9999993
+1,4999998
 Initial Blackmail Cooldown
-10
+12
 Only Target Sees Blackmail
 False
 Maximum People Alive Where Blackmailed Can Vote
 1
 Hypnotize Cooldown
-20
+17,5
 Mine Cooldown
 10
 Drag Cooldown
-10
+12,5
 Undertaker Drag Speed
 1
 Undertaker Can Vent
