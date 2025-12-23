@@ -266,7 +266,7 @@ export default function WeeklySummaryPage() {
             // Muzyka uruchamia się PO kliknięciu, więc przeglądarka już nie blokuje autoplay
             if (!backgroundMusicRef.current) {
                 console.log('🎵 Tworzę nowy obiekt Audio...');
-                const audio = new Audio('/sounds/DAswieta.mp3');
+                const audio = new Audio('/sounds/among us DRAMA AFERA.mp3');
                 audio.loop = true;
                 audio.volume = 1.0; // Pełna głośność
                 
@@ -824,7 +824,7 @@ export default function WeeklySummaryPage() {
                 {/* YouTube video - odtwarzanie z wyciszonym dźwiękiem (tylko obraz) - ładowane od początku */}
                 <div className="absolute inset-0 overflow-hidden">
                     <iframe
-                        src="https://www.youtube-nocookie.com/embed/mpfQE5OXVuk?autoplay=1&mute=1&loop=1&controls=0&showinfo=0&rel=0&iv_load_policy=3&modestbranding=1&playsinline=1&start=0&playlist=mpfQE5OXVuk&volume=0"
+                        src="https://www.youtube-nocookie.com/embed/6BFhVrifW-0?autoplay=1&mute=1&loop=1&controls=0&showinfo=0&rel=0&iv_load_policy=3&modestbranding=1&playsinline=1&start=0&playlist=6BFhVrifW-0&volume=0"
                         className="absolute inset-0"
                         style={{
                             width: '100%',
@@ -1005,7 +1005,7 @@ export default function WeeklySummaryPage() {
                     {/* Główna zawartość intro bez tła */}
                     <div className="absolute inset-0 flex items-center justify-center z-10">
                         <Image
-                            src="/images/DAsanta.png"
+                            src="/images/DAXD.png"
                             alt="Drama Afera Intro"
                             width={isFullscreen ? 2000 : 700}
                             height={isFullscreen ? 2000 : 700}
@@ -1075,7 +1075,7 @@ export default function WeeklySummaryPage() {
                 {/* Główna zawartość intro */}
                 <div className="absolute inset-0 flex items-center justify-center z-10">
                     <Image
-                        src="/images/DAsanta.png"
+                        src="/images/DAXD.png"
                         alt="Drama Afera Intro"
                         width={isFullscreen ? 1800 : 700}
                         height={isFullscreen ? 1800 : 700}

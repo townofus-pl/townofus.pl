@@ -153,11 +153,11 @@ export default function PlayerTable({ players, reversedGames, detailedGames, dat
             >
               #
             </th>
-            <th className="px-2 py-2 text-yellow-400 font-bold" style={{ width: '12rem' }}>GRACZ</th>
-            <th className="px-2 py-2 text-yellow-400 font-bold">ILOŚĆ GIER</th>
+            <th className="px-2 py-2 text-yellow-400 font-bold" style={{ width: '10rem' }}>GRACZ</th>
+            <th className="px-2 py-2 text-yellow-400 font-bold">GRY</th>
             <th className="px-2 py-2 text-yellow-400 font-bold">WIN</th>
             <th className="px-2 py-2 text-yellow-400 font-bold">LOSE</th>
-            <th className="px-2 py-2 text-yellow-400 font-bold">WINRATIO</th>
+            <th className="px-2 py-2 text-yellow-400 font-bold">W/R</th>
             {reversedGames.map((g, idx: number) => (
               <th
                 key={idx}

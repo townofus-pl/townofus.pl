@@ -80,24 +80,55 @@ export default function RankingPage() {
     const [sortBy, setSortBy] = useState<keyof RankingPlayer>("currentRating");
     const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
     const [isLoading, setIsLoading] = useState(true);
+    const [lastUpdateHash, setLastUpdateHash] = useState<string>("");
+    const [lastUpdateTime, setLastUpdateTime] = useState<Date | null>(null);
+    const [isRefreshing, setIsRefreshing] = useState(false);
 
-    useEffect(() => {
-        (async () => {
-            try {
-                setIsLoading(true);
-                const response = await fetch('/api/ranking');
-                if (!response.ok) {
-                    throw new Error('Failed to fetch ranking data');
-                }
-                const data: RankingApiResponse = await response.json();
-                setPlayerStats(data.data.ranking);
-            } catch (error) {
-                console.error('Błąd ładowania danych rankingu:', error);
-            } finally {
-                setIsLoading(false);
+    // Funkcja do pobierania danych rankingu
+    const fetchRankingData = async () => {
+        try {
+            if (!isLoading) setIsRefreshing(true);
+            
+            const response = await fetch('/api/ranking');
+            if (!response.ok) {
+                throw new Error('Failed to fetch ranking data');
             }
-        })();
+            const data: RankingApiResponse = await response.json();
+            
+            // Oblicz hash danych aby sprawdzić czy się zmieniły
+            const dataHash = JSON.stringify(data.data.ranking.map(p => ({
+                id: p.playerId,
+                rating: p.currentRating,
+                games: p.totalGames
+            })));
+            
+            // Aktualizuj tylko jeśli dane się zmieniły
+            if (dataHash !== lastUpdateHash) {
+                setPlayerStats(data.data.ranking);
+                setLastUpdateHash(dataHash);
+                setLastUpdateTime(new Date());
+            }
+        } catch (error) {
+            console.error('Błąd ładowania danych rankingu:', error);
+        } finally {
+            setIsLoading(false);
+            setIsRefreshing(false);
+        }
+    };
+
+    // Pierwsze załadowanie danych
+    useEffect(() => {
+        fetchRankingData();
     }, []);
+
+    // Auto-odświeżanie co 30 sekund
+    useEffect(() => {
+        const interval = setInterval(() => {
+            fetchRankingData();
+        }, 30000); // 30 sekund
+
+        return () => clearInterval(interval);
+    }, [lastUpdateHash]);
 
     // Rozszerz sortowanie o currentRating (zastępuje rankingPoints)
     const sortPlayersWithRanking = (players: RankingPlayer[], sortBy: keyof RankingPlayer, sortOrder: "asc" | "desc") => {
@@ -138,6 +169,15 @@ export default function RankingPage() {
                     <p className="text-center text-gray-300 mt-4 text-lg">
                         Najlepsi gracze Drama Afera Among Us
                     </p>
+                    {/* Informacja o auto-odświeżaniu */}
+                    {lastUpdateTime && (
+                        <div className="text-center mt-3 flex items-center justify-center gap-2">
+                            <span className={`inline-block w-2 h-2 rounded-full ${isRefreshing ? 'bg-yellow-400 animate-pulse' : 'bg-green-400'}`}></span>
+                            <span className="text-sm text-gray-400">
+                                {isRefreshing ? 'Sprawdzanie aktualizacji...' : `Ostatnia aktualizacja: ${lastUpdateTime.toLocaleTimeString('pl-PL')}`}
+                            </span>
+                        </div>
+                    )}
                 </div>
 
                 {/* Loading state */}
