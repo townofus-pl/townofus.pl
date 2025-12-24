@@ -4,6 +4,7 @@ import React, { useState, useEffect, useCallback, useMemo, useRef } from "react"
 import { createPortal } from "react-dom";
 import Image from "next/image";
 import { useParams } from "next/navigation";
+import type { UIGameData } from '@/data/games/converter';
 
 // Typy dla danych gracza
 interface WeeklyPlayerStats {
@@ -89,6 +90,7 @@ export default function WeeklySummaryPage() {
     const [cwelRankingHistory, setCwelRankingHistory] = useState<Map<string, RankingHistoryPoint[]>>(new Map());
     const [emperorHistory, setEmperorHistory] = useState<EmperorHistoryEntry[]>([]);
     const [rankingAfterSession, setRankingAfterSession] = useState<PlayerRankingAfterSession[]>([]);
+    const [topPlayerGames, setTopPlayerGames] = useState<UIGameData[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [isTransitioning, setIsTransitioning] = useState(false);
@@ -140,6 +142,11 @@ export default function WeeklySummaryPage() {
             name: 'Podium',
             steps: 4 // Krok 0: pusty, Krok 1: 3. miejsce, Krok 2: 2. miejsce, Krok 3: 1. miejsce
         },
+        ...(topPlayerGames.length > 0 && weeklyStats.length > 0 ? [{
+            id: 'top-player',
+            name: 'Top 1 Player Details',
+            steps: 1 // Pokazanie wszystkich gier od razu
+        }] : []),
         ...(topSigmas.length >= 3 ? [{
             id: 'sigmas',
             name: 'Największe Sigmy',
@@ -160,7 +167,7 @@ export default function WeeklySummaryPage() {
             name: 'Ranking po sesji',
             steps: 2 // Krok 0: tytuł, Krok 1: cała tabela z animacją
         }] : [])
-    ], [emperorPoll, remainingPlayersCount, topSigmas.length, topCwele.length, emperorHistory.length, rankingAfterSession.length]);
+    ], [emperorPoll, remainingPlayersCount, topSigmas.length, topCwele.length, emperorHistory.length, rankingAfterSession.length, topPlayerGames.length, weeklyStats.length]);
 
     // Oblicz całkowitą liczbę slajdów
     const totalSlides = slides.length;
@@ -544,6 +551,27 @@ export default function WeeklySummaryPage() {
                     }
                 } catch (rankingErr) {
                     console.log('Ranking error:', rankingErr);
+                }
+                
+                // Pobierz dane o grach TOP1 gracza
+                try {
+                    if (statsData.data && statsData.data.players.length > 0) {
+                        const topPlayer = [...statsData.data.players].sort((a, b) => b.totalPoints - a.totalPoints)[0];
+                        console.log('Top player:', topPlayer.nickname);
+                        
+                        // Pobierz szczegóły gier z tego dnia
+                        const gamesResponse = await fetch(`/api/games/by-date?date=${date}`);
+                        if (gamesResponse.ok) {
+                            const gamesData = await gamesResponse.json() as { success: boolean; data?: { detailedGames: UIGameData[] } };
+                            if (gamesData.success && gamesData.data?.detailedGames) {
+                                const playerGames = gamesData.data.detailedGames;
+                                console.log('Games for top player:', playerGames.length);
+                                setTopPlayerGames(playerGames);
+                            }
+                        }
+                    }
+                } catch (topPlayerErr) {
+                    console.log('Top player games error:', topPlayerErr);
                 }
                 
             } catch (err) {
@@ -937,6 +965,9 @@ export default function WeeklySummaryPage() {
                         {renderPodiumSlide(isFullscreen)}
                     </div>
                 )}
+
+                {/* SLAJD: Top 1 Player Details */}
+                {slides[currentSlide]?.id === 'top-player' && renderTopPlayerSlide(isFullscreen)}
 
                 {/* SLAJD: Największe Sigmy */}
                 {slides[currentSlide]?.id === 'sigmas' && renderSigmasSlide(isFullscreen)}
@@ -1558,6 +1589,20 @@ export default function WeeklySummaryPage() {
             return null;
         }
 
+        // Lista WSZYSTKICH graczy (alfabetycznie) do pokazania po lewej stronie
+        const allPlayersAlphabetically = [...weeklyStats].sort((a, b) => 
+            a.nickname.toLowerCase().localeCompare(b.nickname.toLowerCase())
+        );
+
+        // Zbiór nicków graczy którzy zostali już odkryci (od kroku 1 w górę)
+        const revealedNicknames = new Set<string>();
+        if (step > 0) {
+            // Dodaj odkrytych graczy (od najsłabszego do obecnie odkrytego)
+            playersToReveal.slice(0, step).forEach(player => {
+                revealedNicknames.add(player.nickname);
+            });
+        }
+
         // Liczba graczy do pokazania (step, bo krok 0 to napis)
         const visibleCount = step;
 
@@ -1599,6 +1644,35 @@ export default function WeeklySummaryPage() {
         if (currentStep === 0) {
             return (
                 <div className="relative w-full h-full flex items-center justify-center">
+                    {/* Lista avatarów po lewej - widoczna od początku */}
+                    <div className="absolute left-8 top-1/2 -translate-y-1/2 grid grid-cols-2 gap-3" style={{ maxHeight: '90vh', overflowY: 'auto' }}>
+                        {allPlayersAlphabetically.map(player => {
+                            const isRevealed = revealedNicknames.has(player.nickname);
+                            return (
+                                <div 
+                                    key={player.nickname}
+                                    className="relative"
+                                    style={{
+                                        width: `${avatarSize}px`,
+                                        height: `${avatarSize}px`,
+                                        filter: isRevealed ? 'grayscale(100%)' : 'none',
+                                        opacity: isRevealed ? 0.5 : 1,
+                                        transition: 'filter 0.5s ease, opacity 0.5s ease'
+                                    }}
+                                >
+                                    <Image
+                                        src={`/images/avatars/${player.nickname}.png`}
+                                        alt={player.nickname}
+                                        width={avatarSize}
+                                        height={avatarSize}
+                                        className="rounded-full border-2 border-amber-500"
+                                    />
+                                </div>
+                            );
+                        })}
+                    </div>
+
+                    {/* Centralny napis */}
                     <h1 
                         className={`font-bold text-amber-400 text-center ${isFullscreen ? 'text-7xl' : 'text-5xl'}`}
                         style={{
@@ -1645,6 +1719,34 @@ export default function WeeklySummaryPage() {
 
         return (
             <div className="absolute inset-0 flex flex-col justify-center items-center" style={{ padding: '9vh 0' }}>
+                {/* Lista avatarów po lewej - widoczna podczas odkrywania graczy */}
+                <div className="absolute left-8 top-1/2 -translate-y-1/2 grid grid-cols-2 gap-3" style={{ maxHeight: '90vh', overflowY: 'auto' }}>
+                    {allPlayersAlphabetically.map(player => {
+                        const isRevealed = revealedNicknames.has(player.nickname);
+                        return (
+                            <div 
+                                key={player.nickname}
+                                className="relative"
+                                style={{
+                                    width: `${avatarSize}px`,
+                                    height: `${avatarSize}px`,
+                                    filter: isRevealed ? 'grayscale(100%)' : 'none',
+                                    opacity: isRevealed ? 0.3 : 1,
+                                    transition: 'filter 0.5s ease, opacity 0.5s ease'
+                                }}
+                            >
+                                <Image
+                                    src={`/images/avatars/${player.nickname}.png`}
+                                    alt={player.nickname}
+                                    width={avatarSize}
+                                    height={avatarSize}
+                                    className="rounded-full border-2 border-amber-500"
+                                />
+                            </div>
+                        );
+                    })}
+                </div>
+
                 <div className="relative w-full flex flex-col items-center" style={{ gap: `${gapSize}px` }}>
                     {/* Gracz 4. wyśrodkowany na górze (jeśli nieparzysta liczba) */}
                     {hasCenter && centerRow.length > 0 && (
@@ -1865,6 +1967,196 @@ export default function WeeklySummaryPage() {
         if (rating >= 1875) return 'THE CADET';
         if (rating >= 1750) return 'THE PISSLOW';
         return 'CWEL';
+    }
+
+    // SLAJD: Top 1 Player Details
+    function renderTopPlayerSlide(isFullscreen: boolean) {
+        if (topPlayerGames.length === 0 || weeklyStats.length === 0) return null;
+
+        // Znajdź TOP1 gracza
+        const sortedStats = [...weeklyStats].sort((a, b) => b.totalPoints - a.totalPoints);
+        const topPlayer = sortedStats[0];
+
+        // Filtruj tylko gry tego gracza
+        const playerGamesDetails = topPlayerGames.map(game => {
+            const playerData = game.detailedStats.playersData.find(p => p.nickname === topPlayer.nickname);
+            return {
+                game,
+                playerData,
+                played: !!playerData
+            };
+        });
+
+        // Rozmiar kwadratów
+        const squareSize = isFullscreen ? 160 : 80;
+        const gap = isFullscreen ? 16 : 12;
+
+        return (
+            <div 
+                className="relative w-full h-full flex flex-col items-center justify-center px-8"
+                style={{
+                    opacity: isTransitioning ? 0 : 1,
+                    transition: 'opacity 0.5s ease-out'
+                }}
+            >
+                {/* Tytuł - nick gracza */}
+                <h1 
+                    className={`font-bold text-amber-400 mb-4 ${isFullscreen ? 'text-8xl' : 'text-6xl'}`}
+                    style={{
+                        textShadow: '0 0 40px rgba(251, 191, 36, 0.7)',
+                        textTransform: 'uppercase'
+                    }}
+                >
+                    {topPlayer.nickname}
+                </h1>
+
+                {/* Podtytuł - data */}
+                <p className={`text-amber-200 mb-12 ${isFullscreen ? 'text-4xl' : 'text-2xl'}`}>
+                    RUNDY Z {formatDate(date)}
+                </p>
+
+                {/* Grid z grami - dzielone na rzędy po 10 */}
+                <div className="flex flex-col items-center" style={{ gap: `${gap}px` }}>
+                    {Array.from({ length: Math.ceil(playerGamesDetails.length / 10) }).map((_, rowIndex) => {
+                        const startIdx = rowIndex * 10;
+                        const endIdx = Math.min(startIdx + 10, playerGamesDetails.length);
+                        const rowGames = playerGamesDetails.slice(startIdx, endIdx);
+
+                        return (
+                            <div 
+                                key={rowIndex}
+                                className="flex justify-center"
+                                style={{ gap: `${gap}px` }}
+                            >
+                                {rowGames.map((gameDetail, index) => {
+                                    const { playerData, played } = gameDetail;
+                                    const won = playerData?.win || false;
+                                    const actualIndex = startIdx + index;
+
+                                    return (
+                                        <div key={actualIndex} className="flex flex-col items-center">
+                                {/* Kwadrat z grą */}
+                                <div
+                                    className="relative"
+                                    style={{
+                                        width: `${squareSize}px`,
+                                        height: `${squareSize}px`,
+                                        border: played 
+                                            ? (won ? '4px solid rgba(245, 216, 122, 1)' : '4px solid rgb(162, 17, 17)')
+                                            : '4px solid rgb(100, 100, 100)',
+                                        backgroundColor: played ? 'rgba(0, 0, 0, 0.6)' : 'rgba(50, 50, 50, 0.6)',
+                                        boxShadow: played
+                                            ? (won 
+                                                ? 'inset 0 0 30px rgba(197, 176, 98, 0.5), inset 0 0 25px rgba(207, 178, 72, 0.3)'
+                                                : 'inset 0 0 30px rgba(105, 13, 13, 0.5), inset 0 0 25px rgba(182, 41, 41, 0.3)')
+                                            : 'none',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center'
+                                    }}
+                                >
+                                    {played && playerData && (
+                                        <Image
+                                            src={`/images/roles/${playerData.role.replace(/([a-z])([A-Z])/g, '$1_$2').toLowerCase()}.png`}
+                                            alt={playerData.role}
+                                            width={squareSize}
+                                            height={squareSize}
+                                            className="object-contain scale-[1.3]"
+                                            style={{ position: 'relative', zIndex: 10 }}
+                                        />
+                                    )}
+                                </div>
+
+                                {/* Statystyki pod kwadratem */}
+                                {played && playerData && (
+                                    <div className={`text-center mt-2 ${isFullscreen ? 'text-s' : 'text-xs'} leading-tight`}>
+                                        {/* Kills */}
+                                        {playerData.originalStats.correctKills > 0 && (
+                                            <div className="text-green-500">{playerData.originalStats.correctKills} CORRECT KILL{playerData.originalStats.correctKills > 1 ? 'S' : ''}</div>
+                                        )}
+                                        {playerData.originalStats.incorrectKills > 0 && (
+                                            <div className="text-red-500">{playerData.originalStats.incorrectKills} INCORRECT KILL{playerData.originalStats.incorrectKills > 1 ? 'S' : ''}</div>
+                                        )}
+                                        
+                                        {/* Guesses */}
+                                        {playerData.originalStats.correctGuesses > 0 && (
+                                            <div className="text-green-500">{playerData.originalStats.correctGuesses} CORRECT GUESS{playerData.originalStats.correctGuesses > 1 ? 'ES' : ''}</div>
+                                        )}
+                                        {playerData.originalStats.incorrectGuesses > 0 && (
+                                            <div className="text-red-500">{playerData.originalStats.incorrectGuesses} INCORRECT GUESS{playerData.originalStats.incorrectGuesses > 1 ? 'ES' : ''}</div>
+                                        )}
+                                        
+                                        {/* Medic Shields */}
+                                        {playerData.originalStats.correctMedicShields > 0 && (
+                                            <div className="text-green-500">{playerData.originalStats.correctMedicShields} CORRECT SHIELD{playerData.originalStats.correctMedicShields > 1 ? 'S' : ''}</div>
+                                        )}
+                                        {playerData.originalStats.incorrectMedicShields > 0 && (
+                                            <div className="text-red-500">{playerData.originalStats.incorrectMedicShields} INCORRECT SHIELD{playerData.originalStats.incorrectMedicShields > 1 ? 'S' : ''}</div>
+                                        )}
+                                        
+                                        {/* Warden Fortifies */}
+                                        {playerData.originalStats.correctWardenFortifies > 0 && (
+                                            <div className="text-green-500">{playerData.originalStats.correctWardenFortifies} CORRECT FORTIF{playerData.originalStats.correctWardenFortifies > 1 ? 'IES' : 'Y'}</div>
+                                        )}
+                                        {playerData.originalStats.incorrectWardenFortifies > 0 && (
+                                            <div className="text-red-500">{playerData.originalStats.incorrectWardenFortifies} INCORRECT FORTIF{playerData.originalStats.incorrectWardenFortifies > 1 ? 'IES' : 'Y'}</div>
+                                        )}
+                                        
+                                        {/* Jailor Executes */}
+                                        {playerData.originalStats.correctJailorExecutes > 0 && (
+                                            <div className="text-green-500">{playerData.originalStats.correctJailorExecutes} CORRECT EXECUTE{playerData.originalStats.correctJailorExecutes > 1 ? 'S' : ''}</div>
+                                        )}
+                                        {playerData.originalStats.incorrectJailorExecutes > 0 && (
+                                            <div className="text-red-500">{playerData.originalStats.incorrectJailorExecutes} INCORRECT EXECUTE{playerData.originalStats.incorrectJailorExecutes > 1 ? 'S' : ''}</div>
+                                        )}
+                                        
+                                        {/* Prosecutor Prosecutes */}
+                                        {playerData.originalStats.correctProsecutes > 0 && (
+                                            <div className="text-green-500">{playerData.originalStats.correctProsecutes} CORRECT PROSECUTE{playerData.originalStats.correctProsecutes > 1 ? 'S' : ''}</div>
+                                        )}
+                                        {playerData.originalStats.incorrectProsecutes > 0 && (
+                                            <div className="text-red-500">{playerData.originalStats.incorrectProsecutes} INCORRECT PROSECUTE{playerData.originalStats.incorrectProsecutes > 1 ? 'S' : ''}</div>
+                                        )}
+                                        
+                                        {/* Deputy Shoots */}
+                                        {playerData.originalStats.correctDeputyShoots > 0 && (
+                                            <div className="text-green-500">{playerData.originalStats.correctDeputyShoots} CORRECT SHOT{playerData.originalStats.correctDeputyShoots > 1 ? 'S' : ''}</div>
+                                        )}
+                                        {playerData.originalStats.incorrectDeputyShoots > 0 && (
+                                            <div className="text-red-500">{playerData.originalStats.incorrectDeputyShoots} INCORRECT SHOT{playerData.originalStats.incorrectDeputyShoots > 1 ? 'S' : ''}</div>
+                                        )}
+                                        
+                                        {/* Altruist Revives */}
+                                        {playerData.originalStats.correctAltruistRevives > 0 && (
+                                            <div className="text-green-500">{playerData.originalStats.correctAltruistRevives} CORRECT REVIVE{playerData.originalStats.correctAltruistRevives > 1 ? 'S' : ''}</div>
+                                        )}
+                                        {playerData.originalStats.incorrectAltruistRevives > 0 && (
+                                            <div className="text-red-500">{playerData.originalStats.incorrectAltruistRevives} INCORRECT REVIVE{playerData.originalStats.incorrectAltruistRevives > 1 ? 'S' : ''}</div>
+                                        )}
+                                        
+                                        {/* Swaps */}
+                                        {playerData.originalStats.correctSwaps > 0 && (
+                                            <div className="text-green-500">{playerData.originalStats.correctSwaps} CORRECT SWAP{playerData.originalStats.correctSwaps > 1 ? 'S' : ''}</div>
+                                        )}
+                                        {playerData.originalStats.incorrectSwaps > 0 && (
+                                            <div className="text-red-500">{playerData.originalStats.incorrectSwaps} INCORRECT SWAP{playerData.originalStats.incorrectSwaps > 1 ? 'S' : ''}</div>
+                                        )}
+                                        
+                                        {/* Janitor Cleans */}
+                                        {playerData.originalStats.janitorCleans > 0 && (
+                                            <div className="text-gray-400">{playerData.originalStats.janitorCleans} CLEAN{playerData.originalStats.janitorCleans > 1 ? 'S' : ''}</div>
+                                        )}
+                                    </div>
+                                )}
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        );
+                    })}
+                </div>
+            </div>
+        );
     }
 
     // SLAJD: Największe Sigmy Tygodnia
