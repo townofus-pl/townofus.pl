@@ -4,7 +4,15 @@ import React, { useState, useEffect, useCallback, useMemo, useRef } from "react"
 import { createPortal } from "react-dom";
 import Image from "next/image";
 import { useParams } from "next/navigation";
+import localFont from "next/font/local";
 import type { UIGameData } from '@/data/games/converter';
+
+// Import czcionki videotext
+const videotext = localFont({
+    src: '../../../_fonts/videotext.ttf',
+    display: 'swap',
+    variable: '--font-videotext',
+});
 
 // Typy dla danych gracza
 interface WeeklyPlayerStats {
@@ -140,22 +148,29 @@ export default function WeeklySummaryPage() {
         {
             id: 'podium',
             name: 'Podium',
-            steps: 4 // Krok 0: pusty, Krok 1: 3. miejsce, Krok 2: 2. miejsce, Krok 3: 1. miejsce
+            steps: 9 // Krok 0: pusty, Krok 1: 3. miejsce, Krok 2: historia 3., Krok 3: powrót, Krok 4: 2. miejsce, Krok 5: historia 2., Krok 6: powrót, Krok 7: 1. miejsce, Krok 8: historia 1. -> przejście dalej
         },
-        ...(topPlayerGames.length > 0 && weeklyStats.length > 0 ? [{
-            id: 'top-player',
-            name: 'Top 1 Player Details',
-            steps: 1 // Pokazanie wszystkich gier od razu
-        }] : []),
         ...(topSigmas.length >= 3 ? [{
             id: 'sigmas',
             name: 'Największe Sigmy',
-            steps: 4 // Krok 0: tytuł, Krok 1: 3. sigma, Krok 2: 2. sigma, Krok 3: 1. sigma
+            steps: (() => {
+                const sortedStats = [...weeklyStats].sort((a, b) => b.totalPoints - a.totalPoints);
+                const top3Nicknames = sortedStats.slice(0, 3).map(p => p.nickname);
+                const top1Sigma = topSigmas[0];
+                const top1WasInTop3 = top3Nicknames.includes(top1Sigma.nickname);
+                return top1WasInTop3 ? 4 : 5; // 0=tytuł, 1-3=sigmy, 4=historia top1 (jeśli nie był w top3)
+            })()
         }] : []),
         ...(topCwele.length >= 3 ? [{
             id: 'cwele',
             name: 'Największe Cwele',
-            steps: 4 // Krok 0: tytuł, Krok 1: 3. cwel, Krok 2: 2. cwel, Krok 3: 1. cwel
+            steps: (() => {
+                const sortedStats = [...weeklyStats].sort((a, b) => b.totalPoints - a.totalPoints);
+                const top3Nicknames = sortedStats.slice(0, 3).map(p => p.nickname);
+                const top1Cwel = topCwele[0];
+                const top1WasInTop3 = top3Nicknames.includes(top1Cwel.nickname);
+                return top1WasInTop3 ? 4 : 5; // 0=tytuł, 1-3=cwele, 4=historia top1 (jeśli nie był w top3)
+            })()
         }] : []),
         ...(emperorHistory.length > 0 ? [{
             id: 'emperor-history',
@@ -167,7 +182,7 @@ export default function WeeklySummaryPage() {
             name: 'Ranking po sesji',
             steps: 2 // Krok 0: tytuł, Krok 1: cała tabela z animacją
         }] : [])
-    ], [emperorPoll, remainingPlayersCount, topSigmas.length, topCwele.length, emperorHistory.length, rankingAfterSession.length, topPlayerGames.length, weeklyStats.length]);
+    ], [emperorPoll, remainingPlayersCount, topSigmas.length, topCwele.length, emperorHistory.length, rankingAfterSession.length, weeklyStats.length]);
 
     // Oblicz całkowitą liczbę slajdów
     const totalSlides = slides.length;
@@ -324,12 +339,12 @@ export default function WeeklySummaryPage() {
         if (currentStep < currentSlideConfig.steps - 1) {
             // Sprawdź czy to odkrycie 1. miejsca na podium
             // Dla 20251203: krok 2->3 (film->2.i1.razem), dla innych: krok 2->3 (2.->1.)
-            if (currentSlideConfig.id === 'podium' && currentStep === 2 && date !== '20251203') {
+            if (currentSlideConfig.id === 'podium' && currentStep === 6) {
                 setShowConfetti(true);
                 setTimeout(() => setShowConfetti(false), 5000); // Confetti przez 5 sekund
             }
             // Dla 20251203: confetti przy odkryciu 2. i 1. miejsca razem (krok 3)
-            if (currentSlideConfig.id === 'podium' && currentStep === 2 && date === '20251203') {
+            if (currentSlideConfig.id === 'podium' && currentStep === 2) {
                 // Krok 2->3 dla 20251203 to po filmie, ale confetti dopiero w następnym kroku
                 // Nie ustawiamy tutaj, bo krok 2 to film który sam przejdzie dalej
             }
@@ -841,6 +856,15 @@ export default function WeeklySummaryPage() {
                         transform: translateX(0);
                     }
                 }
+                
+                @keyframes pulseShadow {
+                    0%, 100% {
+                        filter: drop-shadow(0 0 10px rgba(239, 68, 68, 0.8));
+                    }
+                    50% {
+                        filter: drop-shadow(0 0 10px rgba(245, 148, 148, 1));
+                    }
+                }
             `}</style>
         </>
     );
@@ -850,7 +874,7 @@ export default function WeeklySummaryPage() {
         return (
             <>
                 {/* YouTube video - odtwarzanie z wyciszonym dźwiękiem (tylko obraz) - ładowane od początku */}
-                <div className="absolute inset-0 overflow-hidden">
+                <div className="absolute inset-0 overflow-hidden" style={{ opacity: 1 }}>
                     <iframe
                         src="https://www.youtube-nocookie.com/embed/6BFhVrifW-0?autoplay=1&mute=1&loop=1&controls=0&showinfo=0&rel=0&iv_load_policy=3&modestbranding=1&playsinline=1&start=0&playlist=6BFhVrifW-0&volume=0"
                         className="absolute inset-0"
@@ -863,14 +887,14 @@ export default function WeeklySummaryPage() {
                             left: '50%',
                             transform: 'translate(-50%, -50%)',
                             pointerEvents: 'none',
-                            border: 'none'
+                            border: 'none',
+                            opacity: 1,
+                            filter: 'none'
                         }}
                         frameBorder="0"
                         allow=""
                         allowFullScreen
                     />
-                    {/* Overlay dla lepszej czytelności tekstu */}
-                    <div className="absolute inset-0 bg-black/40"></div>
                 </div>
 
 
@@ -966,9 +990,6 @@ export default function WeeklySummaryPage() {
                     </div>
                 )}
 
-                {/* SLAJD: Top 1 Player Details */}
-                {slides[currentSlide]?.id === 'top-player' && renderTopPlayerSlide(isFullscreen)}
-
                 {/* SLAJD: Największe Sigmy */}
                 {slides[currentSlide]?.id === 'sigmas' && renderSigmasSlide(isFullscreen)}
 
@@ -1009,10 +1030,12 @@ export default function WeeklySummaryPage() {
                         {/* Pokaż tekst tylko gdy minęło początkowe opóźnienie */}
                         {introInitialDelayPassed && (
                             <h1 
-                                className={`font-bold text-amber-400 ${isFullscreen ? 'text-[20rem]' : 'text-9xl'}`}
+                                className={`${videotext.className} font-bold ${isFullscreen ? 'text-[20rem]' : 'text-9xl'}`}
                                 style={{
-                                    textShadow: '0 0 60px rgba(251, 191, 36, 0.8)',
-                                    animation: 'fadeIn 0.5s ease-in'
+                                    color: 'rgb(240, 194, 42)',
+                                    textShadow: '0 0 60px rgba(204, 169, 56, 0.8)',
+                                    animation: 'fadeIn 0.5s ease-in',
+                                    letterSpacing: isFullscreen ? '-0.11em' : '-0.05em'
                                 }}
                             >
                                 {introTexts[currentStep]}
@@ -1114,8 +1137,8 @@ export default function WeeklySummaryPage() {
                     />
                 </div>
                 <p 
-                    className={`text-amber-200 font-medium tracking-wider absolute left-1/2 top-1/2 -translate-x-1/2 z-30 text-center whitespace-nowrap ${isFullscreen ? 'text-4xl' : 'text-lg'}`}
-                    style={{ marginTop: '420px' }}
+                    className={`${videotext.className} text-amber-200 font-medium tracking-wider absolute left-1/2 top-1/2 -translate-x-1/2 z-30 text-center whitespace-nowrap ${isFullscreen ? 'text-4xl' : 'text-lg'}`}
+                    style={{ marginTop: '420px', letterSpacing: '-0.02em' }}
                 >
                     POWERED BY ZIOMSON & MALKIZ
                 </p>
@@ -1133,9 +1156,11 @@ export default function WeeklySummaryPage() {
                 <div className="relative flex items-center justify-center h-full">
                     <div className="text-center px-8">
                         <h1 
-                            className={`font-bold text-amber-400 leading-tight ${isFullscreen ? 'text-7xl' : 'text-4xl'}`}
+                            className={`${videotext.className} font-bold leading-tight ${isFullscreen ? 'text-9xl' : 'text-5xl'}`}
                             style={{
-                                textShadow: '0 0 20px rgba(251, 191, 36, 0.5)'
+                                color: 'rgba(226, 185, 49, 1)',
+                                textShadow: '0 0 20px rgba(194, 165, 69, 0.5)',
+                                letterSpacing: isFullscreen ? '-0.05em' : '-0.02em'
                             }}
                         >
                             KTO ZOSTANIE EMPEROREM<br />WEDŁUG ANKIETOWANYCH?
@@ -1157,7 +1182,13 @@ export default function WeeklySummaryPage() {
             <div className="relative flex items-center justify-center h-full px-8">
                 <div className="flex flex-col items-center w-full max-w-7xl">
                     {/* Tytuł */}
-                    <h2 className={`font-bold text-amber-400 mb-8 ${isFullscreen ? 'text-5xl' : 'text-3xl'}`}>
+                    <h2 
+                        className={`${videotext.className} font-bold mb-8 ${isFullscreen ? 'text-9xl' : 'text-4xl'}`}
+                        style={{ 
+                            color: 'rgba(245, 216, 122, 1)',
+                            letterSpacing: isFullscreen ? '-0.05em' : '-0.02em'
+                        }}
+                    >
                         WYNIKI ANKIETY
                     </h2>
 
@@ -1181,25 +1212,30 @@ export default function WeeklySummaryPage() {
                                             animation: `fadeIn 0.6s ease-out ${index * 0.1}s forwards`
                                         }}
                                     >
-                                        <div className={`font-bold text-amber-300 ${isFullscreen ? 'text-3xl' : 'text-xl'}`}>
+                                        <div 
+                                            className={`font-bold ${isFullscreen ? 'text-3xl' : 'text-xl'}`}
+                                            style={{ color: 'rgba(245, 216, 122, 1)' }}
+                                        >
                                             {vote.votes}
                                         </div>
-                                        <div className={`font-bold text-amber-400 ${isFullscreen ? 'text-2xl' : 'text-lg'}`}>
+                                        <div 
+                                            className={`font-bold ${isFullscreen ? 'text-2xl' : 'text-lg'}`}
+                                            style={{ color: 'rgba(245, 216, 122, 1)' }}
+                                        >
                                             {percentage}%
                                         </div>
                                     </div>
 
                                     {/* Słupek */}
                                     <div 
-                                        className="relative w-full rounded-t-lg bg-gradient-to-t from-amber-600 to-amber-400 shadow-xl"
+                                        className="relative w-full shadow-xl"
                                         style={{ 
                                             height: `${barHeight}px`,
                                             opacity: 0,
-                                            animation: `slideUpBar 0.8s ease-out ${index * 0.1}s forwards`
+                                            animation: `slideUpBar 0.8s ease-out ${index * 0.1}s forwards`,
+                                            backgroundColor: 'rgba(245, 216, 122, 1)'
                                         }}
                                     >
-                                        {/* Efekt połysku */}
-                                        <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/20 to-transparent rounded-t-lg"></div>
                                     </div>
 
                                     {/* Avatar i nick gracza - zawsze na dole */}
@@ -1211,10 +1247,12 @@ export default function WeeklySummaryPage() {
                                         }}
                                     >
                                         <div 
-                                            className="relative rounded-lg overflow-hidden border-4 border-amber-400 shadow-xl"
+                                            className="relative overflow-hidden"
                                             style={{ 
                                                 width: `${avatarSize}px`, 
-                                                height: `${avatarSize}px`
+                                                height: `${avatarSize}px`,
+                                                border: '3px solid rgba(245, 216, 122, 1)',
+                                                backgroundColor: 'rgba(0, 0, 0, 0.6)'
                                             }}
                                         >
                                             <Image
@@ -1227,6 +1265,13 @@ export default function WeeklySummaryPage() {
                                                 onError={(e) => {
                                                     const target = e.target as HTMLImageElement;
                                                     target.src = '/images/avatars/placeholder.png';
+                                                }}
+                                            />
+                                            {/* Warstwa wewnętrznego cienia */}
+                                            <div 
+                                                className="absolute inset-0 pointer-events-none"
+                                                style={{
+                                                    boxShadow: 'inset 0 0 20px rgba(197, 176, 98, 0.3), inset 0 0 10px rgba(207, 178, 72, 0.2)'
                                                 }}
                                             />
                                         </div>
@@ -1268,15 +1313,216 @@ export default function WeeklySummaryPage() {
         );
     }
 
+    // Funkcja pomocnicza do renderowania historii gier dla dowolnego gracza
+    function renderPlayerHistory(nickname: string, isFullscreen: boolean) {
+        if (topPlayerGames.length === 0) return null;
+
+        // Filtruj tylko gry tego gracza
+        const playerGamesDetails = topPlayerGames.map(game => {
+            const playerData = game.detailedStats.playersData.find(p => p.nickname === nickname);
+            return {
+                game,
+                playerData,
+                played: !!playerData
+            };
+        });
+
+        // Rozmiar kwadratów
+        const squareSize = isFullscreen ? 160 : 80;
+        const gap = isFullscreen ? 16 : 12;
+
+        return (
+            <div 
+                className="absolute inset-0 flex flex-col items-center justify-center px-8 z-50"
+                style={{
+                    opacity: 1
+                }}
+            >
+                {/* Tytuł - nick gracza */}
+                <h1 
+                    className={`${videotext.className} font-bold text-amber-400 mb-4 ${isFullscreen ? 'text-8xl' : 'text-6xl'}`}
+                    style={{
+                        textShadow: '0 0 40px rgba(251, 191, 36, 0.7)',
+                        textTransform: 'uppercase',
+                        letterSpacing: '-0.02em'
+                    }}
+                >
+                    {nickname}
+                </h1>
+
+                {/* Podtytuł - data */}
+                <p className={`${videotext.className} text-amber-200 mb-12 ${isFullscreen ? 'text-4xl' : 'text-2xl'}`} style={{ letterSpacing: '-0.02em' }}>
+                    RUNDY Z {formatDate(date)}
+                </p>
+
+                {/* Grid z grami - dzielone na rzędy po 10 */}
+                <div className="flex flex-col items-center" style={{ gap: `${gap}px` }}>
+                    {Array.from({ length: Math.ceil(playerGamesDetails.length / 10) }).map((_, rowIndex) => {
+                        const startIdx = rowIndex * 10;
+                        const endIdx = Math.min(startIdx + 10, playerGamesDetails.length);
+                        const rowGames = playerGamesDetails.slice(startIdx, endIdx);
+
+                        return (
+                            <div 
+                                key={rowIndex}
+                                className="flex justify-center"
+                                style={{ gap: `${gap}px` }}
+                            >
+                                {rowGames.map((gameDetail, index) => {
+                                    const { playerData, played } = gameDetail;
+                                    const won = playerData?.win || false;
+                                    const actualIndex = startIdx + index;
+
+                                    return (
+                                        <div key={actualIndex} className="flex flex-col items-center">
+                                {/* Kwadrat z grą */}
+                                <div
+                                    className="relative"
+                                    style={{
+                                        width: `${squareSize}px`,
+                                        height: `${squareSize}px`,
+                                        border: played 
+                                            ? (won ? '4px solid rgba(245, 216, 122, 1)' : '4px solid rgb(162, 17, 17)')
+                                            : '4px solid rgb(61, 61, 61)',
+                                        backgroundColor: 'rgba(0, 0, 0, 0.6)',
+                                        boxShadow: played
+                                            ? (won 
+                                                ? 'inset 0 0 30px rgba(197, 176, 98, 0.5), inset 0 0 25px rgba(207, 178, 72, 0.3)'
+                                                : 'inset 0 0 30px rgba(105, 13, 13, 0.5), inset 0 0 25px rgba(182, 41, 41, 0.3)')
+                                            : 'inset 0 0 30px rgba(61, 61, 61   , 0.5)',
+                                        display: 'flex',
+                                        alignItems: 'center',
+                                        justifyContent: 'center'
+                                    }}
+                                >
+                                    {played && playerData && (
+                                        <Image
+                                            src={`/images/roles/${playerData.role.replace(/([a-z])([A-Z])/g, '$1_$2').toLowerCase()}.png`}
+                                            alt={playerData.role}
+                                            width={squareSize}
+                                            height={squareSize}
+                                            className="object-contain scale-[1.3]"
+                                            style={{ position: 'relative', zIndex: 10 }}
+                                        />
+                                    )}
+                                </div>
+
+                                {/* Statystyki pod kwadratem */}
+                                {played && playerData && (
+                                    <div className={`text-center mt-2 ${isFullscreen ? 'text-s' : 'text-xs'} leading-tight`}>
+                                        {/* Kills */}
+                                        {playerData.originalStats.correctKills > 0 && (
+                                            <div className="text-green-500">{playerData.originalStats.correctKills} CORRECT KILL{playerData.originalStats.correctKills > 1 ? 'S' : ''}</div>
+                                        )}
+                                        {playerData.originalStats.incorrectKills > 0 && (
+                                            <div className="text-red-500">{playerData.originalStats.incorrectKills} INCORRECT KILL{playerData.originalStats.incorrectKills > 1 ? 'S' : ''}</div>
+                                        )}
+                                        
+                                        {/* Guesses */}
+                                        {playerData.originalStats.correctGuesses > 0 && (
+                                            <div className="text-green-500">{playerData.originalStats.correctGuesses} CORRECT GUESS{playerData.originalStats.correctGuesses > 1 ? 'ES' : ''}</div>
+                                        )}
+                                        {playerData.originalStats.incorrectGuesses > 0 && (
+                                            <div className="text-red-500">{playerData.originalStats.incorrectGuesses} INCORRECT GUESS{playerData.originalStats.incorrectGuesses > 1 ? 'ES' : ''}</div>
+                                        )}
+                                        
+                                        {/* Medic Shields */}
+                                        {playerData.originalStats.correctMedicShields > 0 && (
+                                            <div className="text-green-500">{playerData.originalStats.correctMedicShields} CORRECT SHIELD{playerData.originalStats.correctMedicShields > 1 ? 'S' : ''}</div>
+                                        )}
+                                        {playerData.originalStats.incorrectMedicShields > 0 && (
+                                            <div className="text-red-500">{playerData.originalStats.incorrectMedicShields} INCORRECT SHIELD{playerData.originalStats.incorrectMedicShields > 1 ? 'S' : ''}</div>
+                                        )}
+                                        
+                                        {/* Warden Fortifies */}
+                                        {playerData.originalStats.correctWardenFortifies > 0 && (
+                                            <div className="text-green-500">{playerData.originalStats.correctWardenFortifies} CORRECT FORTIF{playerData.originalStats.correctWardenFortifies > 1 ? 'IES' : 'Y'}</div>
+                                        )}
+                                        {playerData.originalStats.incorrectWardenFortifies > 0 && (
+                                            <div className="text-red-500">{playerData.originalStats.incorrectWardenFortifies} INCORRECT FORTIF{playerData.originalStats.incorrectWardenFortifies > 1 ? 'IES' : 'Y'}</div>
+                                        )}
+                                        
+                                        {/* Jailor Executes */}
+                                        {playerData.originalStats.correctJailorExecutes > 0 && (
+                                            <div className="text-green-500">{playerData.originalStats.correctJailorExecutes} CORRECT EXECUTE{playerData.originalStats.correctJailorExecutes > 1 ? 'S' : ''}</div>
+                                        )}
+                                        {playerData.originalStats.incorrectJailorExecutes > 0 && (
+                                            <div className="text-red-500">{playerData.originalStats.incorrectJailorExecutes} INCORRECT EXECUTE{playerData.originalStats.incorrectJailorExecutes > 1 ? 'S' : ''}</div>
+                                        )}
+                                        
+                                        {/* Prosecutor Prosecutes */}
+                                        {playerData.originalStats.correctProsecutes > 0 && (
+                                            <div className="text-green-500">{playerData.originalStats.correctProsecutes} CORRECT PROSECUTE{playerData.originalStats.correctProsecutes > 1 ? 'S' : ''}</div>
+                                        )}
+                                        {playerData.originalStats.incorrectProsecutes > 0 && (
+                                            <div className="text-red-500">{playerData.originalStats.incorrectProsecutes} INCORRECT PROSECUTE{playerData.originalStats.incorrectProsecutes > 1 ? 'S' : ''}</div>
+                                        )}
+                                        
+                                        {/* Deputy Shoots */}
+                                        {playerData.originalStats.correctDeputyShoots > 0 && (
+                                            <div className="text-green-500">{playerData.originalStats.correctDeputyShoots} CORRECT SHOT{playerData.originalStats.correctDeputyShoots > 1 ? 'S' : ''}</div>
+                                        )}
+                                        {playerData.originalStats.incorrectDeputyShoots > 0 && (
+                                            <div className="text-red-500">{playerData.originalStats.incorrectDeputyShoots} INCORRECT SHOT{playerData.originalStats.incorrectDeputyShoots > 1 ? 'S' : ''}</div>
+                                        )}
+                                        
+                                        {/* Altruist Revives */}
+                                        {playerData.originalStats.correctAltruistRevives > 0 && (
+                                            <div className="text-green-500">{playerData.originalStats.correctAltruistRevives} CORRECT REVIVE{playerData.originalStats.correctAltruistRevives > 1 ? 'S' : ''}</div>
+                                        )}
+                                        {playerData.originalStats.incorrectAltruistRevives > 0 && (
+                                            <div className="text-red-500">{playerData.originalStats.incorrectAltruistRevives} INCORRECT REVIVE{playerData.originalStats.incorrectAltruistRevives > 1 ? 'S' : ''}</div>
+                                        )}
+                                        
+                                        {/* Swaps */}
+                                        {playerData.originalStats.correctSwaps > 0 && (
+                                            <div className="text-green-500">{playerData.originalStats.correctSwaps} CORRECT SWAP{playerData.originalStats.correctSwaps > 1 ? 'S' : ''}</div>
+                                        )}
+                                        {playerData.originalStats.incorrectSwaps > 0 && (
+                                            <div className="text-red-500">{playerData.originalStats.incorrectSwaps} INCORRECT SWAP{playerData.originalStats.incorrectSwaps > 1 ? 'S' : ''}</div>
+                                        )}
+                                        
+                                        {/* Janitor Cleans */}
+                                        {playerData.originalStats.janitorCleans > 0 && (
+                                            <div className="text-gray-400">{playerData.originalStats.janitorCleans} CLEAN{playerData.originalStats.janitorCleans > 1 ? 'S' : ''}</div>
+                                        )}
+                                    </div>
+                                )}
+                                        </div>
+                                    );
+                                })}
+                            </div>
+                        );
+                    })}
+                </div>
+            </div>
+        );
+    }
+
     // SLAJD: Podium z krokami
     function renderPodiumSlide(isFullscreen: boolean) {
         // Sortuj według punktów DAP (malejąco) żeby mieć prawidłową TOP 3
         const sortedStats = [...weeklyStats].sort((a, b) => b.totalPoints - a.totalPoints);
         
+        // Określenie opacity podium na podstawie kroku (overlay histori gier)
+        const showHistoryStep2 = currentStep === 2; // Historia 3. miejsca
+        const showHistoryStep5 = currentStep === 5; // Historia 2. miejsca
+        const showHistoryStep8 = currentStep === 8; // Historia 1. miejsca
+        const podiumOpacity = (showHistoryStep2 || showHistoryStep5 || showHistoryStep8) ? 0 : 1;
+        
         return (
             <>
                 {/* Główne podium - używa grafiki podium.png */}
-                <div className="absolute left-0 right-0 flex justify-center z-10" style={{ bottom: 0, margin: 0, padding: 0, lineHeight: 0 }}>
+                <div 
+                    className="absolute left-0 right-0 flex justify-center z-10" 
+                    style={{ 
+                        bottom: 0, 
+                        margin: 0, 
+                        padding: 0, 
+                        lineHeight: 0,
+                        opacity: podiumOpacity
+                    }}
+                >
                     <div className="relative" style={{ margin: 0, padding: 0, display: 'block', lineHeight: 0 }}>
                         {/* Grafika podium */}
                         <Image
@@ -1307,10 +1553,13 @@ export default function WeeklySummaryPage() {
                                         animation: 'fadeIn 1s ease-out 0.5s forwards'
                                     }}
                                 >
-                                    <div className={`font-bold text-amber-400 ${isFullscreen ? 'text-3xl' : 'text-xl'} mb-1`}>
+                                    <div 
+                                        className={`${videotext.className} font-bold text-amber-400 ${isFullscreen ? 'text-3xl' : 'text-xl'} mb-1`}
+                                        style={{ textTransform: 'uppercase' }}
+                                    >
                                         {sortedStats[2].nickname}
                                     </div>
-                                    <div className={`font-bold text-amber-300 ${isFullscreen ? 'text-2xl' : 'text-lg'}`}>
+                                    <div className={`${videotext.className} font-bold text-amber-300 ${isFullscreen ? 'text-2xl' : 'text-lg'}`}>
                                         {sortedStats[2].totalPoints} DAP
                                     </div>
                                 </div>
@@ -1327,13 +1576,16 @@ export default function WeeklySummaryPage() {
                             >
                                 {/* Tylna strona - znak zapytania */}
                                 <div 
-                                    className="absolute inset-0 bg-black/80 border-4 border-amber-400 rounded-lg flex items-center justify-center"
+                                    className="absolute inset-0 flex items-center justify-center"
                                     style={{ 
                                         backfaceVisibility: 'hidden',
-                                        transform: 'rotateY(0deg)'
+                                        transform: 'rotateY(0deg)',
+                                        border: '6px solid rgba(245, 216, 122, 1)',
+                                        backgroundColor: 'rgba(0, 0, 0, 0.6)',
+                                        boxShadow: 'inset 0 0 60px rgba(197, 176, 98, 0.5), inset 0 0 25px rgba(207, 178, 72, 0.3)'
                                     }}
                                 >
-                                    <div className="text-white text-9xl font-bold pixelated">?</div>
+                                    <div className={`${videotext.className} text-white text-9xl font-bold pixelated`}>?</div>
                                 </div>
                                 
                                 {/* Przednia strona - avatar gracza */}
@@ -1345,15 +1597,28 @@ export default function WeeklySummaryPage() {
                                     }}
                                 >
                                     {sortedStats[2] && (
-                                        <div className="relative w-full h-full">
+                                        <div 
+                                            className="relative w-full h-full"
+                                            style={{
+                                                border: '6px solid rgba(245, 216, 122, 1)',
+                                                backgroundColor: 'rgba(0, 0, 0, 0.6)'
+                                            }}
+                                        >
                                             <Image
                                                 src={`/images/avatars/${sortedStats[2].nickname}.png`}
                                                 alt={sortedStats[2].nickname}
                                                 fill
-                                                className="rounded-lg border-4 border-amber-400 shadow-lg object-cover"
+                                                className="object-cover"
                                                 onError={(e) => {
                                                     const target = e.target as HTMLImageElement;
                                                     target.src = '/images/avatars/placeholder.png';
+                                                }}
+                                            />
+                                            {/* Overlay z cieniem wewnętrznym */}
+                                            <div 
+                                                className="absolute inset-0 pointer-events-none"
+                                                style={{
+                                                    boxShadow: 'inset 0 0 60px rgba(197, 176, 98, 0.5), inset 0 0 25px rgba(207, 178, 72, 0.3)'
                                                 }}
                                             />
                                         </div>
@@ -1362,7 +1627,7 @@ export default function WeeklySummaryPage() {
                             </div>
                         </div>
 
-                        {/* 2. miejsce - lewa pozycja - pokazuje się w kroku 2 (lub 3 dla 20251203) */}
+                        {/* 2. miejsce - lewa pozycja - pokazuje się w kroku 4 */}
                         <div className="absolute" style={{ 
                             left: isFullscreen ? '13.5%' : '12%', 
                             top: isFullscreen ? '24%' : '8%',
@@ -1370,7 +1635,7 @@ export default function WeeklySummaryPage() {
                             height: isFullscreen ? '260px' : '150px'
                         }}>
                             {/* Napisy nad avatarem - pokazują się po odkryciu */}
-                            {((date !== '20251203' && currentStep >= 2) || (date === '20251203' && currentStep >= 3)) && sortedStats[1] && (
+                            {currentStep >= 4 && sortedStats[1] && (
                                 <div 
                                     className="absolute left-1/2 -translate-x-1/2 text-center"
                                     style={{ 
@@ -1381,10 +1646,13 @@ export default function WeeklySummaryPage() {
                                         animation: 'fadeIn 1s ease-out 0.5s forwards'
                                     }}
                                 >
-                                    <div className={`font-bold text-amber-400 ${isFullscreen ? 'text-3xl' : 'text-xl'} mb-1`}>
+                                    <div 
+                                        className={`${videotext.className} font-bold text-amber-400 ${isFullscreen ? 'text-3xl' : 'text-xl'} mb-1`}
+                                        style={{ textTransform: 'uppercase', letterSpacing: '-0.02em' }}
+                                    >
                                         {sortedStats[1].nickname}
                                     </div>
-                                    <div className={`font-bold text-amber-300 ${isFullscreen ? 'text-2xl' : 'text-lg'}`}>
+                                    <div className={`${videotext.className} font-bold text-amber-300 ${isFullscreen ? 'text-2xl' : 'text-lg'}`} style={{ letterSpacing: '-0.02em' }}>
                                         {sortedStats[1].totalPoints} DAP
                                     </div>
                                 </div>
@@ -1392,18 +1660,21 @@ export default function WeeklySummaryPage() {
                             
                             <div 
                                 className={`flip-card-container ${
-                                    ((date !== '20251203' && currentStep >= 2) || (date === '20251203' && currentStep >= 3)) ? 'flip-card-flipped' : ''
+                                    currentStep >= 4 ? 'flip-card-flipped' : ''
                                 }`}
                             >
                                 {/* Tylna strona - znak zapytania */}
                                 <div 
-                                    className="absolute inset-0 bg-black/80 border-4 border-amber-400 rounded-lg flex items-center justify-center"
+                                    className="absolute inset-0 flex items-center justify-center"
                                     style={{ 
                                         backfaceVisibility: 'hidden',
-                                        transform: 'rotateY(0deg)'
+                                        transform: 'rotateY(0deg)',
+                                        border: '6px solid rgba(245, 216, 122, 1)',
+                                        backgroundColor: 'rgba(0, 0, 0, 0.6)',
+                                        boxShadow: 'inset 0 0 60px rgba(197, 176, 98, 0.5), inset 0 0 25px rgba(207, 178, 72, 0.3)'
                                     }}
                                 >
-                                    <div className="text-white text-9xl font-bold pixelated">?</div>
+                                    <div className={`${videotext.className} text-white text-9xl font-bold pixelated`}>?</div>
                                 </div>
                                 
                                 {/* Przednia strona - avatar gracza */}
@@ -1415,15 +1686,28 @@ export default function WeeklySummaryPage() {
                                     }}
                                 >
                                     {sortedStats[1] && (
-                                        <div className="relative w-full h-full">
+                                        <div 
+                                            className="relative w-full h-full"
+                                            style={{
+                                                border: '6px solid rgba(245, 216, 122, 1)',
+                                                backgroundColor: 'rgba(0, 0, 0, 0.6)'
+                                            }}
+                                        >
                                             <Image
                                                 src={`/images/avatars/${sortedStats[1].nickname}.png`}
                                                 alt={sortedStats[1].nickname}
                                                 fill
-                                                className="rounded-lg border-4 border-amber-400 shadow-xl object-cover"
+                                                className="object-cover"
                                                 onError={(e) => {
                                                     const target = e.target as HTMLImageElement;
                                                     target.src = '/images/avatars/placeholder.png';
+                                                }}
+                                            />
+                                            {/* Overlay z cieniem wewnętrznym */}
+                                            <div 
+                                                className="absolute inset-0 pointer-events-none"
+                                                style={{
+                                                    boxShadow: 'inset 0 0 60px rgba(197, 176, 98, 0.5), inset 0 0 25px rgba(207, 178, 72, 0.3)'
                                                 }}
                                             />
                                         </div>
@@ -1432,7 +1716,7 @@ export default function WeeklySummaryPage() {
                             </div>
                         </div>
 
-                        {/* 1. miejsce - środkowa pozycja (najwyższa) - pokazuje się w kroku 3 */}
+                        {/* 1. miejsce - środkowa pozycja (najwyższa) - pokazuje się w kroku 7 */}
                         <div className="absolute" style={{ 
                             left: isFullscreen ? '36.7%' : '42%', 
                             top: isFullscreen ? '-10%' : '2%',
@@ -1440,7 +1724,7 @@ export default function WeeklySummaryPage() {
                             height: isFullscreen ? '370px' : '105px'
                         }}>
                             {/* Napisy nad avatarem - EMPEROR, nick, DAP */}
-                            {currentStep >= 3 && sortedStats[0] && (
+                            {currentStep >= 7 && sortedStats[0] && (
                                 <div 
                                     className="absolute left-1/2 -translate-x-1/2 text-center"
                                     style={{ 
@@ -1452,18 +1736,22 @@ export default function WeeklySummaryPage() {
                                     }}
                                 >
                                     <div 
-                                        className={`font-bold text-red-500 ${isFullscreen ? 'text-7xl' : 'text-4xl'} mb-2 tracking-wider`}
+                                        className={`${videotext.className} font-bold text-red-500 ${isFullscreen ? 'text-7xl' : 'text-4xl'} mb-2 tracking-wider`}
                                         style={{
                                             textShadow: '0 0 20px rgba(239, 68, 68, 0.8), 0 0 40px rgba(239, 68, 68, 0.6), 0 0 60px rgba(239, 68, 68, 0.4)',
-                                            animation: 'glow 2s ease-in-out infinite alternate'
+                                            animation: 'glow 2s ease-in-out infinite alternate',
+                                            letterSpacing: '-0.02em'
                                         }}
                                     >
                                         THE EMPEROR
                                     </div>
-                                    <div className={`font-bold text-amber-400 ${isFullscreen ? 'text-4xl' : 'text-2xl'} mb-1`}>
+                                    <div 
+                                        className={`${videotext.className} font-bold text-amber-400 ${isFullscreen ? 'text-4xl' : 'text-2xl'} mb-1`}
+                                        style={{ textTransform: 'uppercase', letterSpacing: '-0.02em' }}
+                                    >
                                         {sortedStats[0].nickname}
                                     </div>
-                                    <div className={`font-bold text-amber-300 ${isFullscreen ? 'text-3xl' : 'text-xl'}`}>
+                                    <div className={`${videotext.className} font-bold text-amber-300 ${isFullscreen ? 'text-3xl' : 'text-xl'}`} style={{ letterSpacing: '-0.02em' }}>
                                         {sortedStats[0].totalPoints} DAP
                                     </div>
                                 </div>
@@ -1471,7 +1759,7 @@ export default function WeeklySummaryPage() {
                             
                             <div 
                                 className={`relative w-full h-full transition-transform duration-1000 ${
-                                    currentStep >= 3 ? 'flip-card-flipped' : ''
+                                    currentStep >= 7 ? 'flip-card-flipped' : ''
                                 }`}
                                 style={{ 
                                     transformStyle: 'preserve-3d',
@@ -1480,13 +1768,16 @@ export default function WeeklySummaryPage() {
                             >
                                 {/* Tylna strona - znak zapytania */}
                                 <div 
-                                    className="absolute inset-0 bg-black/80 border-4 border-amber-400 rounded-lg flex items-center justify-center"
+                                    className="absolute inset-0 flex items-center justify-center"
                                     style={{ 
                                         backfaceVisibility: 'hidden',
-                                        transform: 'rotateY(0deg)'
+                                        transform: 'rotateY(0deg)',
+                                        border: '6px solid rgba(245, 216, 122, 1)',
+                                        backgroundColor: 'rgba(0, 0, 0, 0.6)',
+                                        boxShadow: 'inset 0 0 60px rgba(197, 176, 98, 0.5), inset 0 0 25px rgba(207, 178, 72, 0.3)'
                                     }}
                                 >
-                                    <div className="text-white text-9xl font-bold pixelated">?</div>
+                                    <div className={`${videotext.className} text-white text-[14rem] font-bold pixelated`}>? </div>
                                 </div>
                                 
                                 {/* Przednia strona - avatar gracza */}
@@ -1498,15 +1789,28 @@ export default function WeeklySummaryPage() {
                                     }}
                                 >
                                     {sortedStats[0] && (
-                                        <div className="relative w-full h-full">
+                                        <div 
+                                            className="relative w-full h-full"
+                                            style={{
+                                                border: '6px solid rgba(245, 216, 122, 1)',
+                                                backgroundColor: 'rgba(0, 0, 0, 0.6)'
+                                            }}
+                                        >
                                             <Image
                                                 src={`/images/avatars/${sortedStats[0].nickname}.png`}
                                                 alt={sortedStats[0].nickname}
                                                 fill
-                                                className="rounded-lg border-4 border-amber-300 shadow-2xl object-cover"
+                                                className="object-cover"
                                                 onError={(e) => {
                                                     const target = e.target as HTMLImageElement;
                                                     target.src = '/images/avatars/placeholder.png';
+                                                }}
+                                            />
+                                            {/* Overlay z cieniem wewnętrznym */}
+                                            <div 
+                                                className="absolute inset-0 pointer-events-none"
+                                                style={{
+                                                    boxShadow: 'inset 0 0 60px rgba(197, 176, 98, 0.5), inset 0 0 25px rgba(207, 178, 72, 0.3)'
                                                 }}
                                             />
                                             {/* Korona */}
@@ -1533,46 +1837,14 @@ export default function WeeklySummaryPage() {
                     }
                 `}</style>
 
-                {/* Film mamika jako nakładka dla daty 20251203 i kroku 2 */}
-                {date === '20251203' && currentStep === 2 && (
-                    <div 
-                        className="absolute inset-0 flex items-center justify-center bg-black z-50"
-                        style={{
-                            opacity: videoOpacity,
-                            transition: 'opacity 0.1s linear'
-                        }}
-                    >
-                        <video
-                            ref={videoRef}
-                            src="/video/Mamika.mp4"
-                            autoPlay
-                            playsInline
-                            style={{
-                                width: '100%',
-                                height: '100%',
-                                objectFit: 'contain'
-                            }}
-                            onPlay={() => {
-                                console.log('🎬 Film mamika rozpoczął odtwarzanie');
-                                setIsVideoPlaying(true);
-                            }}
-                            onEnded={() => {
-                                console.log('🎬 Film mamika zakończony - przechodzę dalej');
-                                setIsVideoPlaying(false);
-                                // Automatyczne przejście do następnego kroku (2. i 1. miejsce razem)
-                                setShowConfetti(true);
-                                setTimeout(() => setShowConfetti(false), 5000);
-                                setCurrentStep(3);
-                            }}
-                            onError={(e) => {
-                                console.error('❌ Błąd odtwarzania filmu:', e);
-                                setIsVideoPlaying(false);
-                                // W razie błędu przejdź dalej
-                                setCurrentStep(3);
-                            }}
-                        />
-                    </div>
-                )}
+                {/* Overlay z historią gier gracza 3. miejsca - krok 2 */}
+                {currentStep === 2 && sortedStats[2] && topPlayerGames.length > 0 && renderPlayerHistory(sortedStats[2].nickname, isFullscreen)}
+
+                {/* Overlay z historią gier gracza 2. miejsca - krok 5 */}
+                {currentStep === 5 && sortedStats[1] && topPlayerGames.length > 0 && renderPlayerHistory(sortedStats[1].nickname, isFullscreen)}
+
+                {/* Overlay z historią gier gracza 1. miejsca - krok 8 */}
+                {currentStep === 8 && sortedStats[0] && topPlayerGames.length > 0 && renderPlayerHistory(sortedStats[0].nickname, isFullscreen)}
             </>
         );
     }
@@ -2163,6 +2435,10 @@ export default function WeeklySummaryPage() {
     function renderSigmasSlide(isFullscreen: boolean) {
         if (topSigmas.length < 3) return null;
 
+        // Sortuj według punktów DAP żeby mieć TOP 3 (do sprawdzenia czy sigma była w top 3)
+        const sortedStats = [...weeklyStats].sort((a, b) => b.totalPoints - a.totalPoints);
+        const top3Nicknames = sortedStats.slice(0, 3).map(p => p.nickname);
+
         // Krok 0: Tytuł
         if (currentStep === 0) {
             return (
@@ -2176,7 +2452,7 @@ export default function WeeklySummaryPage() {
                     <h1 
                         className={`font-bold text-amber-400 text-center ${isFullscreen ? 'text-7xl' : 'text-5xl'}`}
                         style={{
-                            textShadow: '0 0 40px rgba(251, 191, 36, 0.7)'
+                            textShadow: '0 0 40px rgba(251, 191, 36, 0.7)'      
                         }}
                     >
                         NAJWIĘKSZE SIGMY<br />TYGODNIA
@@ -2186,10 +2462,25 @@ export default function WeeklySummaryPage() {
         }
 
         // Kroki 1-3: Pokazywanie sigm (3. -> 2. -> 1.)
+        // Krok 4: Historia TOP 1 (jeśli nie był w top 3)
+        const top1Sigma = topSigmas[0];
+        const top1WasInTop3 = top3Nicknames.includes(top1Sigma.nickname);
+
+        // Krok 4: Historia TOP 1 (tylko jeśli nie był w top 3)
+        if (currentStep === 4) {
+            if (!top1WasInTop3 && topPlayerGames.length > 0) {
+                return renderPlayerHistory(top1Sigma.nickname, isFullscreen);
+            }
+            // Jeśli był w top 3, ten krok nie istnieje (slides.steps = 4 zamiast 5)
+            return null;
+        }
+
+        // Kroki 1-3: Normalne wyświetlanie sigm
         const sigmaIndex = 3 - currentStep; // 2, 1, 0 dla kroków 1, 2, 3
         const sigma = topSigmas[sigmaIndex];
         const rankingHistory = sigmaRankingHistory.get(sigma.nickname) || [];
 
+        // Normalny widok sigmy
         return (
             <div 
                 className="relative w-full h-full flex items-center justify-center px-8"
@@ -2203,16 +2494,21 @@ export default function WeeklySummaryPage() {
                     <div className="flex-shrink-0" style={{ width: isFullscreen ? '400px' : '300px' }}>
                         <div className="text-center">
                             {/* Pozycja */}
-                            <div className={`font-bold text-amber-400 mb-4 ${isFullscreen ? 'text-5xl' : 'text-3xl'}`}>
+                            <div 
+                                className={`font-bold mb-4 ${isFullscreen ? 'text-5xl' : 'text-3xl'}`}
+                                style={{ color: 'rgba(245, 216, 122, 1)' }}
+                            >
                                 #{sigmaIndex + 1} SIGMA
                             </div>
 
                             {/* Avatar */}
                             <div 
-                                className="relative mx-auto rounded-lg overflow-hidden border-4 border-amber-400 shadow-2xl mb-6"
+                                className="relative mx-auto overflow-hidden mb-6"
                                 style={{ 
                                     width: isFullscreen ? '300px' : '200px', 
-                                    height: isFullscreen ? '300px' : '200px'
+                                    height: isFullscreen ? '300px' : '200px',
+                                    border: '6px solid rgba(245, 216, 122, 1)',
+                                    backgroundColor: 'rgba(0, 0, 0, 0.6)'
                                 }}
                             >
                                 <Image
@@ -2225,6 +2521,13 @@ export default function WeeklySummaryPage() {
                                         target.src = '/images/avatars/placeholder.png';
                                     }}
                                 />
+                                {/* Overlay z cieniem wewnętrznym */}
+                                <div 
+                                    className="absolute inset-0 pointer-events-none"
+                                    style={{
+                                        boxShadow: 'inset 0 0 60px rgba(197, 176, 98, 0.5), inset 0 0 25px rgba(207, 178, 72, 0.3)'
+                                    }}
+                                />
                             </div>
 
                             {/* Nick */}
@@ -2233,7 +2536,10 @@ export default function WeeklySummaryPage() {
                             </div>
 
                             {/* Ranga */}
-                            <div className={`text-amber-400 font-semibold mb-6 ${isFullscreen ? 'text-lg' : 'text-sm'}`}>
+                            <div 
+                                className={`${videotext.className} font-semibold mb-6 ${isFullscreen ? 'text-3xl' : 'text-sm'}`}
+                                style={{ color: 'rgba(245, 216, 122, 1)' }}
+                            >
                                 {getRankName(sigma.ratingAfter)}
                             </div>
 
@@ -2242,21 +2548,21 @@ export default function WeeklySummaryPage() {
                                 <div className="mb-3">
                                     <div className="text-gray-400 text-sm mb-1">Pozycja w rankingu</div>
                                     {sigma.rankBefore === sigma.rankAfter ? (
-                                        <span className="font-bold text-amber-400">#{sigma.rankAfter}</span>
+                                        <span className={`${videotext.className} text-4xl font-bold` } style={{ color: 'rgb(255, 255, 255)' }}>#{sigma.rankAfter}</span>
                                     ) : (
                                         <>
-                                            <span className="font-bold text-red-500">#{sigma.rankBefore}</span> 
-                                            <span className="mx-2">→</span> 
-                                            <span className="font-bold text-green-500">#{sigma.rankAfter}</span>
+                                            <span className={`${videotext.className} text-4xl text-white`}>#{sigma.rankBefore}</span> 
+                                            <span className="text-4xl text-white mx-2">→</span> 
+                                            <span className={`${videotext.className} text-4xl text-green-500`} style={{ textShadow: '0 0 60px rgba(34, 197, 94, 0.9), 0 0 40px rgba(34, 197, 94, 0.7), 0 0 20px rgba(34, 197, 94, 0.5)' }}>#{sigma.rankAfter}</span>
                                         </>
                                     )}
                                 </div>
                                 <div>
                                     <div className="text-gray-400 text-sm mb-1">Rating</div>
-                                    <span className="font-bold">{Math.round(sigma.ratingBefore)}</span> 
-                                    <span className="mx-2">→</span> 
-                                    <span className="font-bold text-green-400">{Math.round(sigma.ratingAfter)}</span>
-                                    <div className="text-green-400 font-bold mt-1">
+                                    <span className={`${videotext.className} text-4xl text-white`}>{Math.round(sigma.ratingBefore)}</span> 
+                                    <span className="text-4xl text-white mx-2">→</span> 
+                                    <span className={`${videotext.className} text-4xl text-green-400`} style={{ textShadow: '0 0 60px rgba(74, 222, 128, 0.9), 0 0 40px rgba(74, 222, 128, 0.7), 0 0 20px rgba(74, 222, 128, 0.5)' }}>{Math.round(sigma.ratingAfter)}</span>
+                                    <div className={`${videotext.className} text-2xl text-white mt-0`}>
                                         +{Math.round(sigma.ratingAfter) - Math.round(sigma.ratingBefore)}
                                     </div>
                                 </div>
@@ -2266,7 +2572,10 @@ export default function WeeklySummaryPage() {
 
                     {/* Prawa strona - Wykres */}
                     <div className="flex-grow">
-                        <h2 className={`font-bold text-amber-400 text-center mb-6 ${isFullscreen ? 'text-3xl' : 'text-xl'}`}>
+                        <h2 
+                            className={`font-bold text-center mb-6 ${isFullscreen ? 'text-3xl' : 'text-xl'}`}
+                            style={{ color: 'rgba(245, 216, 122, 1)' }}
+                        >
                             Historia Rankingu
                         </h2>
                         
@@ -2394,7 +2703,7 @@ export default function WeeklySummaryPage() {
                                     x={-10}
                                     y={chartHeight * ratio + 5}
                                     fill="rgb(161, 161, 170)"
-                                    fontSize={isFullscreen ? "14" : "12"}
+                                    fontSize={isFullscreen ? "20" : "12"}
                                     textAnchor="end"
                                 >
                                     {Math.round(score)}
@@ -2444,7 +2753,7 @@ export default function WeeklySummaryPage() {
                     <path
                         d={pathData}
                         fill="none"
-                        stroke="#fbbf24"
+                        stroke="rgb(245, 196, 37)"
                         strokeWidth={3}
                         strokeLinecap="round"
                         strokeLinejoin="round"
@@ -2453,8 +2762,8 @@ export default function WeeklySummaryPage() {
                     {/* Gradient pod wykresem */}
                     <defs>
                         <linearGradient id="areaGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                            <stop offset="0%" stopColor="#fbbf24" stopOpacity="0.3" />
-                            <stop offset="100%" stopColor="#fbbf24" stopOpacity="0" />
+                            <stop offset="0%" stopColor="rgb(238, 191, 39)" stopOpacity="0.3" />
+                            <stop offset="100%" stopColor="rgba(245, 216, 122, 1)" stopOpacity="0" />
                         </linearGradient>
                     </defs>
 
@@ -2485,7 +2794,7 @@ export default function WeeklySummaryPage() {
                                     <text
                                         x={x}
                                         y={y - 15}
-                                        fill="#fbbf24"
+                                        fill="#f5d87a"
                                         fontSize={isFullscreen ? "16" : "14"}
                                         fontWeight="bold"
                                         textAnchor="middle"
@@ -2505,6 +2814,10 @@ export default function WeeklySummaryPage() {
     function renderCweleSlide(isFullscreen: boolean) {
         if (topCwele.length < 3) return null;
 
+        // Sortuj według punktów DAP żeby mieć TOP 3 (do sprawdzenia czy cwel był w top 3)
+        const sortedStats = [...weeklyStats].sort((a, b) => b.totalPoints - a.totalPoints);
+        const top3Nicknames = sortedStats.slice(0, 3).map(p => p.nickname);
+
         // Krok 0: Tytuł
         if (currentStep === 0) {
             return (
@@ -2516,9 +2829,9 @@ export default function WeeklySummaryPage() {
                     }}
                 >
                     <h1 
-                        className={`font-bold text-red-400 text-center ${isFullscreen ? 'text-7xl' : 'text-5xl'}`}
+                        className={`font-bold text-red-600 text-center ${isFullscreen ? 'text-7xl' : 'text-5xl'}`}
                         style={{
-                            textShadow: '0 0 40px rgba(239, 68, 68, 0.7)'
+                            textShadow: '0 0 40px rgba(161, 8, 8, 0.7)'
                         }}
                     >
                         NAJWIĘKSZE CWELE<br />TYGODNIA
@@ -2528,10 +2841,25 @@ export default function WeeklySummaryPage() {
         }
 
         // Kroki 1-3: Pokazywanie cweli (3. -> 2. -> 1.)
+        // Krok 4: Historia TOP 1 (jeśli nie był w top 3)
+        const top1Cwel = topCwele[0];
+        const top1WasInTop3 = top3Nicknames.includes(top1Cwel.nickname);
+
+        // Krok 4: Historia TOP 1 (tylko jeśli nie był w top 3)
+        if (currentStep === 4) {
+            if (!top1WasInTop3 && topPlayerGames.length > 0) {
+                return renderPlayerHistory(top1Cwel.nickname, isFullscreen);
+            }
+            // Jeśli był w top 3, ten krok nie istnieje (slides.steps = 4 zamiast 5)
+            return null;
+        }
+
+        // Kroki 1-3: Normalne wyświetlanie cweli
         const cwelIndex = 3 - currentStep; // 2, 1, 0 dla kroków 1, 2, 3
         const cwel = topCwele[cwelIndex];
         const rankingHistory = cwelRankingHistory.get(cwel.nickname) || [];
 
+        // Normalny widok cwela
         return (
             <div 
                 className="relative w-full h-full flex items-center justify-center px-8"
@@ -2545,16 +2873,21 @@ export default function WeeklySummaryPage() {
                     <div className="flex-shrink-0" style={{ width: isFullscreen ? '400px' : '300px' }}>
                         <div className="text-center">
                             {/* Pozycja */}
-                            <div className={`font-bold text-red-400 mb-4 ${isFullscreen ? 'text-5xl' : 'text-3xl'}`}>
+                            <div 
+                                className={`font-bold mb-4 ${isFullscreen ? 'text-5xl' : 'text-3xl'}`}
+                                style={{ color: 'rgb(202, 15, 15)' }}
+                            >
                                 #{cwelIndex + 1} CWEL
                             </div>
 
                             {/* Avatar */}
                             <div 
-                                className="relative mx-auto rounded-lg overflow-hidden border-4 border-red-400 shadow-2xl mb-6"
+                                className="relative mx-auto overflow-hidden mb-6"
                                 style={{ 
                                     width: isFullscreen ? '300px' : '200px', 
-                                    height: isFullscreen ? '300px' : '200px'
+                                    height: isFullscreen ? '300px' : '200px',
+                                    border: '6px solid rgb(162, 17, 17)',
+                                    backgroundColor: 'rgba(0, 0, 0, 0.6)'
                                 }}
                             >
                                 <Image
@@ -2567,6 +2900,13 @@ export default function WeeklySummaryPage() {
                                         target.src = '/images/avatars/placeholder.png';
                                     }}
                                 />
+                                {/* Overlay z cieniem wewnętrznym */}
+                                <div 
+                                    className="absolute inset-0 pointer-events-none"
+                                    style={{
+                                        boxShadow: 'inset 0 0 60px rgba(105, 13, 13, 0.5), inset 0 0 25px rgba(182, 41, 41, 0.3)'
+                                    }}
+                                />
                             </div>
 
                             {/* Nick */}
@@ -2575,7 +2915,10 @@ export default function WeeklySummaryPage() {
                             </div>
 
                             {/* Ranga */}
-                            <div className={`text-red-400 font-semibold mb-6 ${isFullscreen ? 'text-lg' : 'text-sm'}`}>
+                            <div 
+                                className={`${videotext.className} font-semibold mb-6 ${isFullscreen ? 'text-3xl' : 'text-sm'}`}
+                                style={{ color: 'rgb(202, 15, 15)' }}
+                            >
                                 {getRankName(cwel.ratingAfter)}
                             </div>
 
@@ -2584,21 +2927,21 @@ export default function WeeklySummaryPage() {
                                 <div className="mb-3">
                                     <div className="text-gray-400 text-sm mb-1">Pozycja w rankingu</div>
                                     {cwel.rankBefore === cwel.rankAfter ? (
-                                        <span className="font-bold text-red-400">#{cwel.rankAfter}</span>
+                                        <span className={`font-bold text-4xl ${videotext.className}`}  style={{ color: 'rgb(255, 255, 255)' }}>#{cwel.rankAfter}</span>
                                     ) : (
                                         <>
-                                            <span className="font-bold text-green-500">#{cwel.rankBefore}</span> 
-                                            <span className="mx-2">→</span> 
-                                            <span className="font-bold text-red-500">#{cwel.rankAfter}</span>
+                                            <span className={`${videotext.className} text-4xl text-white`}>#{cwel.rankBefore}</span> 
+                                            <span className="mx-2 text-4xl text-white">→</span> 
+                                            <span className={`${videotext.className} text-4xl`} style={{ color: 'rgb(202, 15, 15)', textShadow: '0 0 60px rgba(160, 10, 10, 0.9), 0 0 40px rgba(209, 10, 10, 0.7), 0 0 20px rgba(238, 18, 18, 0.5)' }}>#{cwel.rankAfter}</span>
                                         </>
                                     )}
                                 </div>
                                 <div>
                                     <div className="text-gray-400 text-sm mb-1">Rating</div>
-                                    <span className="font-bold">{Math.round(cwel.ratingBefore)}</span> 
-                                    <span className="mx-2">→</span> 
-                                    <span className="font-bold text-red-400">{Math.round(cwel.ratingAfter)}</span>
-                                    <div className="text-red-400 font-bold mt-1">
+                                    <span className={`${videotext.className} text-4xl text-white`}>{Math.round(cwel.ratingBefore)}</span> 
+                                    <span className="mx-2 text-4xl text-white">→</span> 
+                                    <span className={`${videotext.className} text-4xl`} style={{ color: 'rgb(202, 15, 15)', textShadow: '0 0 60px rgba(160, 10, 10, 0.9), 0 0 40px rgba(209, 10, 10, 0.7), 0 0 20px rgba(238, 18, 18, 0.5)' }}>{Math.round(cwel.ratingAfter)}</span>
+                                    <div className={`${videotext.className} mt-1 text-2xl`} style={{ color: 'rgb(255, 255, 255)' }}>
                                         {Math.round(cwel.ratingAfter) - Math.round(cwel.ratingBefore)}
                                     </div>
                                 </div>
@@ -2608,7 +2951,10 @@ export default function WeeklySummaryPage() {
 
                     {/* Prawa strona - Wykres */}
                     <div className="flex-grow">
-                        <h2 className={`font-bold text-red-400 text-center mb-6 ${isFullscreen ? 'text-3xl' : 'text-xl'}`}>
+                        <h2 
+                            className={`font-bold text-center mb-6 ${isFullscreen ? 'text-3xl' : 'text-xl'}`}
+                            style={{ color: 'rgb(162, 17, 17)' }}
+                        >
                             Historia Rankingu
                         </h2>
                         
@@ -2786,7 +3132,7 @@ export default function WeeklySummaryPage() {
                     <path
                         d={pathData}
                         fill="none"
-                        stroke="#ef4444"
+                        stroke="rgb(162, 17, 17)"
                         strokeWidth={3}
                         strokeLinecap="round"
                         strokeLinejoin="round"
@@ -2795,8 +3141,8 @@ export default function WeeklySummaryPage() {
                     {/* Gradient pod wykresem - czerwony */}
                     <defs>
                         <linearGradient id="cwelAreaGradient" x1="0%" y1="0%" x2="0%" y2="100%">
-                            <stop offset="0%" stopColor="#ef4444" stopOpacity="0.3" />
-                            <stop offset="100%" stopColor="#ef4444" stopOpacity="0" />
+                            <stop offset="0%" stopColor="rgb(162, 17, 17)" stopOpacity="0.3" />
+                            <stop offset="100%" stopColor="rgb(162, 17, 17)" stopOpacity="0" />
                         </linearGradient>
                     </defs>
 
@@ -2858,7 +3204,7 @@ export default function WeeklySummaryPage() {
                     }}
                 >
                     <h1 
-                        className={`font-bold text-red-400 text-center ${isFullscreen ? 'text-7xl' : 'text-5xl'}`}
+                        className={`${videotext.className} font-bold text-red-400 text-center ${isFullscreen ? 'text-9xl' : 'text-5xl'}`}
                         style={{
                             textShadow: '0 0 40px rgba(239, 68, 68, 0.7)'
                         }}
@@ -2880,7 +3226,7 @@ export default function WeeklySummaryPage() {
             >
                 {/* Tytuł na górze */}
                 <h1 
-                    className={`font-bold text-red-400 mb-8 ${isFullscreen ? 'text-6xl' : 'text-4xl'}`}
+                    className={`${videotext.className} font-bold text-red-400 mb-8 ${isFullscreen ? 'text-6xl' : 'text-4xl'}`}
                     style={{
                         textShadow: '0 0 40px rgba(239, 68, 68, 0.7)'
                     }}
@@ -2911,26 +3257,26 @@ export default function WeeklySummaryPage() {
                         const scaleFactor = emperorHistory.length > 4 ? 0.85 : 1;
                         const avatarSize = isFullscreen ? 100 * scaleFactor : 80 * scaleFactor;
                         const fontSize = emperorHistory.length > 4 
-                            ? (isFullscreen ? 'text-2xl' : 'text-xl')
-                            : (isFullscreen ? 'text-3xl' : 'text-2xl');
+                            ? (isFullscreen ? 'text-4xl' : 'text-2xl')
+                            : (isFullscreen ? 'text-5xl' : 'text-3xl');
                         const starSize = emperorHistory.length > 4 
-                            ? (isFullscreen ? 'text-4xl' : 'text-3xl')
-                            : (isFullscreen ? 'text-5xl' : 'text-4xl');
+                            ? (isFullscreen ? 'text-6xl' : 'text-4xl')
+                            : (isFullscreen ? 'text-7xl' : 'text-5xl');
                         
                         return (
                             <div
                                 key={emperor.nickname}
-                                className={`flex items-center bg-gradient-to-r from-zinc-800/90 to-zinc-900/90 backdrop-blur-sm rounded-lg shadow-2xl border-2 ${
-                                    emperor.isLatest ? 'border-amber-400' : 'border-red-400/50'
-                                }`}
+                                className="flex items-center"
                                 style={{ padding: emperorHistory.length > 4 ? '1rem' : '1.5rem' }}
                             >
                                 {/* Avatar */}
                                 <div 
-                                    className="relative rounded-lg overflow-hidden border-2 border-red-400 shadow-xl mr-6 flex-shrink-0"
+                                    className="relative overflow-hidden mr-6 flex-shrink-0"
                                     style={{ 
                                         width: `${avatarSize}px`, 
-                                        height: `${avatarSize}px`
+                                        height: `${avatarSize}px`,
+                                        border: '3px solid rgba(245, 216, 122, 1)',
+                                        backgroundColor: 'rgba(0, 0, 0, 0.6)'
                                     }}
                                 >
                                     <Image
@@ -2943,10 +3289,17 @@ export default function WeeklySummaryPage() {
                                             target.src = '/images/avatars/placeholder.png';
                                         }}
                                     />
+                                    {/* Warstwa wewnętrznego cienia */}
+                                    <div 
+                                        className="absolute inset-0 pointer-events-none"
+                                        style={{
+                                            boxShadow: 'inset 0 0 20px rgba(197, 176, 98, 0.3), inset 0 0 10px rgba(207, 178, 72, 0.2)'
+                                        }}
+                                    />
                                 </div>
 
                                 {/* Nick */}
-                                <div className={`font-bold text-white ${fontSize} flex-grow`}>
+                                <div className={`${videotext.className} font-bold text-white uppercase ${fontSize} flex-grow`}>
                                     {emperor.nickname}
                                 </div>
 
@@ -2959,14 +3312,14 @@ export default function WeeklySummaryPage() {
                                         return (
                                             <div
                                                 key={starIndex}
-                                                className={`${starSize} transition-all duration-300 ${
-                                                    isNewStar ? 'animate-[pulse_1s_ease-in-out_infinite] text-amber-400' : 'text-amber-500'
-                                                }`}
+                                                className={`${videotext.className} ${starSize} transition-all duration-300`}
                                                 style={{
-                                                    filter: isNewStar ? 'drop-shadow(0 0 10px rgba(251, 191, 36, 0.8))' : 'none'
+                                                    color: 'rgb(239, 68, 68)',
+                                                    filter: 'drop-shadow(0 0 10px rgba(239, 68, 68, 0.8))',
+                                                    animation: isNewStar ? 'pulseShadow 1s ease-in-out infinite' : 'none'
                                                 }}
                                             >
-                                                ⭐
+                                                *
                                             </div>
                                         );
                                     })}
