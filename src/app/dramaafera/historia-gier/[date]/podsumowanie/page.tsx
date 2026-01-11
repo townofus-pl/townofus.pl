@@ -106,10 +106,10 @@ export default function WeeklySummaryPage() {
     const [introBlackOverlay, setIntroBlackOverlay] = useState(true);
     const backgroundMusicRef = useRef<HTMLAudioElement | null>(null); // Ref zamiast state - nie triggeruje re-render
     const [introInitialDelayPassed, setIntroInitialDelayPassed] = useState(false); // Czy minęło początkowe opóźnienie intro
-    const [isVideoPlaying, setIsVideoPlaying] = useState(false); // Czy film mamika jest odtwarzany
+    const [isVideoPlaying, _setIsVideoPlaying] = useState(false); // Czy film mamika jest odtwarzany
     
     // Hooki dla filmu mamika (muszą być zawsze, nawet jeśli nie są używane)
-    const [videoOpacity, setVideoOpacity] = useState(1);
+    const [_videoOpacity, setVideoOpacity] = useState(1);
     const videoRef = useRef<HTMLVideoElement>(null);
 
     // Konfiguracja automatycznej sekwencji intro
@@ -2241,8 +2241,8 @@ export default function WeeklySummaryPage() {
         return 'CWEL';
     }
 
-    // SLAJD: Top 1 Player Details
-    function renderTopPlayerSlide(isFullscreen: boolean) {
+    // SLAJD: Top 1 Player Details - nieużywana, ale zostawiona na przyszłość
+    function _renderTopPlayerSlide(isFullscreen: boolean) {
         if (topPlayerGames.length === 0 || weeklyStats.length === 0) return null;
 
         // Znajdź TOP1 gracza
