@@ -9,7 +9,7 @@ import type { UIGameData } from '@/data/games/converter';
 
 // Import czcionki videotext
 const videotext = localFont({
-    src: '../../../_fonts/videotext.ttf',
+    src: '../../../_fonts/Videotext.ttf',
     display: 'swap',
     variable: '--font-videotext',
 });
