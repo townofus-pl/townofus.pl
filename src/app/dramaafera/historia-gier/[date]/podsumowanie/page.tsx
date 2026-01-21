@@ -3299,27 +3299,34 @@ export default function WeeklySummaryPage() {
                                 </div>
 
                                 {/* Nick */}
-                                <div className={`${videotext.className} font-bold text-white uppercase ${fontSize} flex-grow`}>
+                                <div className={`${videotext.className} font-bold text-white uppercase ${fontSize} flex-grow flex items-center`}>
                                     {emperor.nickname}
                                 </div>
 
                                 {/* Gwiazdki */}
-                                <div className="flex gap-2 items-center">
+                                <div className="flex gap-2 items-center flex-shrink-0">
                                     {Array.from({ length: emperor.count }).map((_, starIndex) => {
                                         // Ostatnia gwiazdka jest "nowa" jeśli to najnowszy emperor
                                         const isNewStar = emperor.isLatest && starIndex === emperor.count - 1;
+                                        const starSizePx = emperorHistory.length > 4 
+                                            ? (isFullscreen ? 60 : 40)
+                                            : (isFullscreen ? 70 : 50);
                                         
                                         return (
                                             <div
                                                 key={starIndex}
-                                                className={`${videotext.className} ${starSize} transition-all duration-300`}
+                                                className="transition-all duration-300"
                                                 style={{
-                                                    color: 'rgb(239, 68, 68)',
                                                     filter: 'drop-shadow(0 0 10px rgba(239, 68, 68, 0.8))',
                                                     animation: isNewStar ? 'pulseShadow 1s ease-in-out infinite' : 'none'
                                                 }}
                                             >
-                                                *
+                                                <Image
+                                                    src="/images/star.svg"
+                                                    alt="Emperor star"
+                                                    width={40}
+                                                    height={40}
+                                                />
                                             </div>
                                         );
                                     })}
