@@ -182,7 +182,7 @@ export default function WeeklySummaryPage() {
             name: 'Ranking po sesji',
             steps: 2 // Krok 0: tytuł, Krok 1: cała tabela z animacją
         }] : [])
-    ], [emperorPoll, remainingPlayersCount, topSigmas.length, topCwele.length, emperorHistory.length, rankingAfterSession.length, weeklyStats.length]);
+    ], [emperorPoll, remainingPlayersCount, topSigmas, topCwele, emperorHistory.length, rankingAfterSession.length, weeklyStats]);
 
     // Oblicz całkowitą liczbę slajdów
     const totalSlides = slides.length;
@@ -254,7 +254,7 @@ export default function WeeklySummaryPage() {
             }
             // Krok 7: Finalne intro - czeka na kliknięcie użytkownika
         }
-    }, [currentSlide, currentStep, introBlackOverlay, isPresentationFullscreen, introInitialDelayPassed, slides]);
+    }, [currentSlide, currentStep, introBlackOverlay, isPresentationFullscreen, introInitialDelayPassed, slides, INTRO_STEP_DURATIONS]);
 
     // Obsługa fadeout dla filmu mamika (dla daty 20251203)
     useEffect(() => {
@@ -3259,7 +3259,7 @@ export default function WeeklySummaryPage() {
                         const fontSize = emperorHistory.length > 4 
                             ? (isFullscreen ? 'text-4xl' : 'text-2xl')
                             : (isFullscreen ? 'text-5xl' : 'text-3xl');
-                        const starSize = emperorHistory.length > 4 
+                        const _starSize = emperorHistory.length > 4 
                             ? (isFullscreen ? 'text-6xl' : 'text-4xl')
                             : (isFullscreen ? 'text-7xl' : 'text-5xl');
                         
@@ -3299,27 +3299,34 @@ export default function WeeklySummaryPage() {
                                 </div>
 
                                 {/* Nick */}
-                                <div className={`${videotext.className} font-bold text-white uppercase ${fontSize} flex-grow`}>
+                                <div className={`${videotext.className} font-bold text-white uppercase ${fontSize} flex-grow flex items-center`}>
                                     {emperor.nickname}
                                 </div>
 
                                 {/* Gwiazdki */}
-                                <div className="flex gap-2 items-center">
+                                <div className="flex gap-2 items-center flex-shrink-0">
                                     {Array.from({ length: emperor.count }).map((_, starIndex) => {
                                         // Ostatnia gwiazdka jest "nowa" jeśli to najnowszy emperor
                                         const isNewStar = emperor.isLatest && starIndex === emperor.count - 1;
+                                        const _starSizePx = emperorHistory.length > 4 
+                                            ? (isFullscreen ? 60 : 40)
+                                            : (isFullscreen ? 70 : 50);
                                         
                                         return (
                                             <div
                                                 key={starIndex}
-                                                className={`${videotext.className} ${starSize} transition-all duration-300`}
+                                                className="transition-all duration-300"
                                                 style={{
-                                                    color: 'rgb(239, 68, 68)',
                                                     filter: 'drop-shadow(0 0 10px rgba(239, 68, 68, 0.8))',
                                                     animation: isNewStar ? 'pulseShadow 1s ease-in-out infinite' : 'none'
                                                 }}
                                             >
-                                                *
+                                                <Image
+                                                    src="/images/star.svg"
+                                                    alt="Emperor star"
+                                                    width={40}
+                                                    height={40}
+                                                />
                                             </div>
                                         );
                                     })}
