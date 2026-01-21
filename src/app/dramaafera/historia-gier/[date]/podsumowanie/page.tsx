@@ -1743,7 +1743,7 @@ export default function WeeklySummaryPage() {
                                             letterSpacing: '-0.02em'
                                         }}
                                     >
-                                        THE EMPEROR
+                                        THE EMPRESS
                                     </div>
                                     <div 
                                         className={`${videotext.className} font-bold text-amber-400 ${isFullscreen ? 'text-4xl' : 'text-2xl'} mb-1`}
@@ -3463,7 +3463,7 @@ export default function WeeklySummaryPage() {
                                                     👑
                                                 </td>
                                                 <td className={`py-3 px-4 text-center text-white font-bold ${isFullscreen ? 'text-3xl' : 'text-2xl'}`} style={{ borderRight: '2px dotted rgba(200, 200, 200, 0.5)', width: '1%', whiteSpace: 'nowrap' }}>
-                                                    THE EMPEROR
+                                                    THE EMPRESS
                                                 </td>
                                                 <td className={`py-3 px-4 text-center text-white font-bold ${isFullscreen ? 'text-3xl' : 'text-lg'}`}>
                                                     {emperor.nickname}
