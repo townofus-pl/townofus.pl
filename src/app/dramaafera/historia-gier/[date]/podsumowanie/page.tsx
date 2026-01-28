@@ -3216,6 +3216,11 @@ export default function WeeklySummaryPage() {
         }
 
         // Krok 1: Pokazanie całej listy
+        // Dodaj sztuczne wpisy user1 i user2 tylko do wyświetlania (dla testu layoutu)
+        const displayEmperorHistory = [
+            ...emperorHistory,       
+        ];
+
         return (
             <div 
                 className="relative w-full h-full flex flex-col items-center justify-center px-8"
@@ -3226,7 +3231,7 @@ export default function WeeklySummaryPage() {
             >
                 {/* Tytuł na górze */}
                 <h1 
-                    className={`${videotext.className} font-bold text-red-400 mb-8 ${isFullscreen ? 'text-6xl' : 'text-4xl'}`}
+                    className={`${videotext.className} font-bold text-red-400 mb-6 ${isFullscreen ? 'text-6xl' : 'text-4xl'}`}
                     style={{
                         textShadow: '0 0 40px rgba(239, 68, 68, 0.7)'
                     }}
@@ -3238,11 +3243,10 @@ export default function WeeklySummaryPage() {
                 <div 
                     className="w-full max-w-4xl flex flex-col"
                     style={{ 
-                        gap: emperorHistory.length > 4 ? '0.75rem' : '1rem',
-                        maxHeight: '60vh'
+                        gap: displayEmperorHistory.length > 9 ? '0.3rem' : displayEmperorHistory.length > 8 ? '0.75rem' : displayEmperorHistory.length > 7 ? '0.75rem' : '1rem',
                     }}
                 >
-                    {[...emperorHistory]
+                    {[...displayEmperorHistory]
                         .sort((a, b) => {
                             // Najpierw sortuj według liczby gwiazdek (malejąco)
                             if (a.count !== b.count) {
@@ -3254,12 +3258,16 @@ export default function WeeklySummaryPage() {
                             return bLatestDate.localeCompare(aLatestDate);
                         })
                         .map((emperor) => {
-                        const scaleFactor = emperorHistory.length > 4 ? 0.85 : 1;
+                        const scaleFactor = displayEmperorHistory.length > 9 ? 0.7 : displayEmperorHistory.length > 7 ? 0.75 : displayEmperorHistory.length > 6 ? 0.85 : displayEmperorHistory.length > 3 ? 1 : 1.3;
                         const avatarSize = isFullscreen ? 100 * scaleFactor : 80 * scaleFactor;
-                        const fontSize = emperorHistory.length > 4 
+                        const fontSize = displayEmperorHistory.length > 6
+                            ? (isFullscreen ? 'text-3xl' : 'text-xl')
+                            : displayEmperorHistory.length > 4 
                             ? (isFullscreen ? 'text-4xl' : 'text-2xl')
                             : (isFullscreen ? 'text-5xl' : 'text-3xl');
-                        const _starSize = emperorHistory.length > 4 
+                        const _starSize = displayEmperorHistory.length > 6
+                            ? (isFullscreen ? 'text-5xl' : 'text-3xl')
+                            : displayEmperorHistory.length > 4 
                             ? (isFullscreen ? 'text-6xl' : 'text-4xl')
                             : (isFullscreen ? 'text-7xl' : 'text-5xl');
                         
@@ -3267,7 +3275,7 @@ export default function WeeklySummaryPage() {
                             <div
                                 key={emperor.nickname}
                                 className="flex items-center"
-                                style={{ padding: emperorHistory.length > 4 ? '1rem' : '1.5rem' }}
+                                style={{ padding: displayEmperorHistory.length > 6 ? '0.5rem' : displayEmperorHistory.length > 4 ? '1rem' : '1.5rem' }}
                             >
                                 {/* Avatar */}
                                 <div 
@@ -3308,7 +3316,7 @@ export default function WeeklySummaryPage() {
                                     {Array.from({ length: emperor.count }).map((_, starIndex) => {
                                         // Ostatnia gwiazdka jest "nowa" jeśli to najnowszy emperor
                                         const isNewStar = emperor.isLatest && starIndex === emperor.count - 1;
-                                        const _starSizePx = emperorHistory.length > 4 
+                                        const _starSizePx = displayEmperorHistory.length > 4 
                                             ? (isFullscreen ? 60 : 40)
                                             : (isFullscreen ? 70 : 50);
                                         
