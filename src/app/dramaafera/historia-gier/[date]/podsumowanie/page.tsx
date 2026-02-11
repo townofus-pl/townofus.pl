@@ -1610,7 +1610,7 @@ export default function WeeklySummaryPage() {
                                                 boxShadow: 'inset 0 0 60px rgba(197, 176, 98, 0.5), inset 0 0 25px rgba(207, 178, 72, 0.3)'
                                             }}
                                         >
-                                            <div className={`${videotext.className} text-white ${isFullscreen ? 'text-6xl' : 'text-2xl'} font-bold pixelated`}>?</div>
+                                            <div className={`${videotext.className} text-white text-9xl font-bold pixelated`}>?</div>
                                         </div>
                                         
                                         {/* Przednia strona - avatar */}
