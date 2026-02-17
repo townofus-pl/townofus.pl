@@ -11,6 +11,7 @@ import type { UIGameData } from '@/data/games/converter';
 declare global {
     interface Window {
         __playerRankingChangesCache?: Map<string, Map<string, number>>;
+        __loadPlayerRankingChanges?: (nickname: string) => Promise<Map<string, number> | null>;
     }
 }
 
@@ -670,7 +671,7 @@ export default function WeeklySummaryPage() {
                                 window.__playerRankingChangesCache = allChanges;
                                 
                                 // Zapisz funkcję ładowania do użycia później
-                                (window as any).__loadPlayerRankingChanges = loadPlayerRankingChanges;
+                                window.__loadPlayerRankingChanges = loadPlayerRankingChanges;
                             }
                         }
                     }
@@ -695,7 +696,7 @@ export default function WeeklySummaryPage() {
     useEffect(() => {
         const loadAdditionalPlayers = async () => {
             const cache = window.__playerRankingChangesCache;
-            const loadFunc = (window as any).__loadPlayerRankingChanges as ((nickname: string) => Promise<Map<string, number> | null>) | undefined;
+            const loadFunc = window.__loadPlayerRankingChanges;
             
             if (!cache || !loadFunc || !date) return;
             
