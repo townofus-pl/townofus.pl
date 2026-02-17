@@ -23,7 +23,9 @@ export async function GET(
         const formattedHistory = rankingHistory.map(point => ({
             date: point.date.toISOString(),
             rating: point.score,
-            position: 0 // TODO: oblicz pozycję w rankingu na podstawie score
+            position: 0, // TODO: oblicz pozycję w rankingu na podstawie score
+            gameId: point.gameId,
+            gameIdentifier: point.gameIdentifier
         }));
 
         return NextResponse.json({
