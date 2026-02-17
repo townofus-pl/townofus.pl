@@ -11,7 +11,7 @@ import type { UIGameData } from '@/data/games/converter';
 declare global {
     interface Window {
         __playerRankingChangesCache?: Map<string, Map<string, number>>;
-        __loadPlayerRankingChanges?: (nickname: string) => Promise<Map<string, number> | null>;
+        __loadPlayerRankingChanges?: (nickname: string) => Promise<Map<string, number> | undefined>;
     }
 }
 
@@ -606,7 +606,7 @@ export default function WeeklySummaryPage() {
                                 setTopPlayerGames(playerGames);
                                 
                                 // Funkcja pomocnicza do ładowania zmian rankingu dla gracza
-                                const loadPlayerRankingChanges = async (nickname: string): Promise<Map<string, number> | null> => {
+                                const loadPlayerRankingChanges = async (nickname: string): Promise<Map<string, number> | undefined> => {
                                     try {
                                         const historyResponse = await fetch(`/api/dramaafera/ranking-history/${encodeURIComponent(nickname)}`);
                                         if (historyResponse.ok) {
@@ -644,7 +644,7 @@ export default function WeeklySummaryPage() {
                                     } catch (playerErr) {
                                         console.log(`Error loading ranking for ${nickname}:`, playerErr);
                                     }
-                                    return null;
+                                    return undefined;
                                 };
                                 
                                 // Pobierz historię rankingu dla wszystkich graczy z top 3
@@ -738,71 +738,87 @@ export default function WeeklySummaryPage() {
 
     // Efekt do aktualizacji wyświetlanych zmian rankingu w zależności od aktualnie wyświetlanego gracza
     useEffect(() => {
-        // Sprawdź który gracz jest aktualnie wyświetlany w historii gier
-        if (weeklyStats.length === 0 || topPlayerGames.length === 0) return;
-        
-        const currentSlideConfig = slides[currentSlide];
-        if (!currentSlideConfig) return;
-
-        const sortedStats = [...weeklyStats].sort((a, b) => b.totalPoints - a.totalPoints);
-        const hasThirdPlaceTie = sortedStats.length >= 4 && 
-            sortedStats[2].totalPoints === sortedStats[3].totalPoints;
-
-        let playerToShow: string | null = null;
-
-        if (currentSlideConfig.id === 'podium') {
-            if (hasThirdPlaceTie) {
-                // Przy remisie: krok 2=historia 1. z remisu, 3=historia 2. z remisu, 6=historia 2., 9=historia 1.
-                if (currentStep === 2 && sortedStats[2]) playerToShow = sortedStats[2].nickname;
-                else if (currentStep === 3 && sortedStats[3]) playerToShow = sortedStats[3].nickname;
-                else if (currentStep === 6 && sortedStats[1]) playerToShow = sortedStats[1].nickname;
-                else if (currentStep === 9 && sortedStats[0]) playerToShow = sortedStats[0].nickname;
-            } else {
-                // Normalnie: krok 2=historia 3., 5=historia 2., 8=historia 1.
-                if (currentStep === 2 && sortedStats[2]) playerToShow = sortedStats[2].nickname;
-                else if (currentStep === 5 && sortedStats[1]) playerToShow = sortedStats[1].nickname;
-                else if (currentStep === 8 && sortedStats[0]) playerToShow = sortedStats[0].nickname;
-            }
-        } else if (currentSlideConfig.id === 'sigmas') {
-            const top3Nicknames = sortedStats.slice(0, 3).map(p => p.nickname);
-            const top1Sigma = topSigmas[0];
-            const top1WasInTop3 = top3Nicknames.includes(top1Sigma?.nickname);
+        const updatePlayerChanges = async () => {
+            // Sprawdź który gracz jest aktualnie wyświetlany w historii gier
+            if (weeklyStats.length === 0 || topPlayerGames.length === 0) return;
             
-            if (!top1WasInTop3 && currentStep === 4 && top1Sigma) {
-                playerToShow = top1Sigma.nickname;
-            }
-        } else if (currentSlideConfig.id === 'cwele') {
-            const top3Nicknames = sortedStats.slice(0, 3).map(p => p.nickname);
-            const top1Cwel = topCwele[0];
-            const top1WasInTop3 = top3Nicknames.includes(top1Cwel?.nickname);
-            
-            if (!top1WasInTop3 && currentStep === 4 && top1Cwel) {
-                playerToShow = top1Cwel.nickname;
-            }
-        }
+            const currentSlideConfig = slides[currentSlide];
+            if (!currentSlideConfig) return;
 
-        if (playerToShow) {
-            console.log('🎯 Switching to player:', playerToShow);
-            // Pobierz zmiany z cache
-            const cache = window.__playerRankingChangesCache;
-            if (cache) {
-                const playerChanges = cache.get(playerToShow);
-                if (playerChanges) {
-                    setPlayerRankingChanges(playerChanges);
-                    console.log('📊 Loaded changes from cache for', playerToShow, playerChanges.size, 'games');
+            const sortedStats = [...weeklyStats].sort((a, b) => b.totalPoints - a.totalPoints);
+            const hasThirdPlaceTie = sortedStats.length >= 4 && 
+                sortedStats[2].totalPoints === sortedStats[3].totalPoints;
+
+            let playerToShow: string | null = null;
+
+            if (currentSlideConfig.id === 'podium') {
+                if (hasThirdPlaceTie) {
+                    // Przy remisie: krok 2=historia 1. z remisu, 3=historia 2. z remisu, 6=historia 2., 9=historia 1.
+                    if (currentStep === 2 && sortedStats[2]) playerToShow = sortedStats[2].nickname;
+                    else if (currentStep === 3 && sortedStats[3]) playerToShow = sortedStats[3].nickname;
+                    else if (currentStep === 6 && sortedStats[1]) playerToShow = sortedStats[1].nickname;
+                    else if (currentStep === 9 && sortedStats[0]) playerToShow = sortedStats[0].nickname;
                 } else {
-                    console.log('⚠️ No cached changes for', playerToShow);
+                    // Normalnie: krok 2=historia 3., 5=historia 2., 8=historia 1.
+                    if (currentStep === 2 && sortedStats[2]) playerToShow = sortedStats[2].nickname;
+                    else if (currentStep === 5 && sortedStats[1]) playerToShow = sortedStats[1].nickname;
+                    else if (currentStep === 8 && sortedStats[0]) playerToShow = sortedStats[0].nickname;
+                }
+            } else if (currentSlideConfig.id === 'sigmas') {
+                const top3Nicknames = sortedStats.slice(0, 3).map(p => p.nickname);
+                const top1Sigma = topSigmas[0];
+                const top1WasInTop3 = top3Nicknames.includes(top1Sigma?.nickname);
+                
+                if (!top1WasInTop3 && currentStep === 4 && top1Sigma) {
+                    playerToShow = top1Sigma.nickname;
+                }
+            } else if (currentSlideConfig.id === 'cwele') {
+                const top3Nicknames = sortedStats.slice(0, 3).map(p => p.nickname);
+                const top1Cwel = topCwele[0];
+                const top1WasInTop3 = top3Nicknames.includes(top1Cwel?.nickname);
+                
+                if (!top1WasInTop3 && currentStep === 4 && top1Cwel) {
+                    playerToShow = top1Cwel.nickname;
+                }
+            }
+
+            if (playerToShow) {
+                console.log('🎯 Switching to player:', playerToShow);
+                // Pobierz zmiany z cache
+                const cache = window.__playerRankingChangesCache;
+                const loadFunc = window.__loadPlayerRankingChanges;
+                
+                if (cache) {
+                    let playerChanges = cache.get(playerToShow);
+                    
+                    // Jeśli nie ma w cache, załaduj teraz
+                    if (!playerChanges && loadFunc) {
+                        console.log('🔄 Player not in cache, loading now:', playerToShow);
+                        playerChanges = await loadFunc(playerToShow);
+                        if (playerChanges) {
+                            cache.set(playerToShow, playerChanges);
+                            console.log('✅ Loaded and cached', playerChanges.size, 'games for', playerToShow);
+                        }
+                    }
+                    
+                    if (playerChanges) {
+                        setPlayerRankingChanges(playerChanges);
+                        console.log('📊 Displaying changes for', playerToShow, playerChanges.size, 'games');
+                    } else {
+                        console.log('⚠️ No changes available for', playerToShow);
+                        setPlayerRankingChanges(new Map());
+                    }
+                } else {
+                    console.log('⚠️ No cache available');
                     setPlayerRankingChanges(new Map());
                 }
             } else {
-                console.log('⚠️ No cache available');
+                // Wyczyść mapę jeśli nie wyświetlamy historii gracza
                 setPlayerRankingChanges(new Map());
             }
-        } else {
-            // Wyczyść mapę jeśli nie wyświetlamy historii gracza
-            setPlayerRankingChanges(new Map());
-        }
+        };
 
+        updatePlayerChanges();
     }, [currentSlide, currentStep, weeklyStats, topPlayerGames, slides, topSigmas, topCwele]);
 
     // Kroki animacji: 0=intro, 1=tytuł, 2=3.miejsce, 3=2.miejsce, 4=1.miejsce, 5=pozostałe miejsca
@@ -1587,11 +1603,15 @@ export default function WeeklySummaryPage() {
                                     return (
                                         <div key={actualIndex} className="flex flex-col items-center">
                                 {/* Zmiana punktów rankingowych NAD kwadratem */}
-                                {played && rankingChange !== undefined && (
+                                {rankingChange !== undefined && (
                                     <div 
                                         className={`${videotext.className} font-bold mb-1 ${isFullscreen ? 'text-xl' : 'text-base'}`}
                                         style={{
-                                            color: rankingChange >= 0 ? 'rgb(34, 197, 94)' : 'rgb(239, 68, 68)',
+                                            color: rankingChange === 0 
+                                                ? 'rgb(156, 163, 175)' // Szary dla 0
+                                                : rankingChange > 0 
+                                                    ? 'rgb(34, 197, 94)' // Zielony dla dodatnich
+                                                    : 'rgb(239, 68, 68)', // Czerwony dla ujemnych
                                             textShadow: '0 0 10px rgba(0, 0, 0, 0.8)'
                                         }}
                                     >
@@ -1629,10 +1649,26 @@ export default function WeeklySummaryPage() {
                                             style={{ 
                                                 position: 'relative', 
                                                 zIndex: 10,
-                                                filter: disconnected ? 'grayscale(100%)' : 'none',
-                                                imageRendering: disconnected ? 'pixelated' : 'auto'
+                                                filter: disconnected ? 'grayscale(100%)' : 'none'
                                             }}
                                         />
+                                    )}
+                                    
+                                    {/* D/C overlay dla disconnect */}
+                                    {disconnected && (
+                                        <div 
+                                            className={`${videotext.className} font-bold absolute`}
+                                            style={{
+                                                bottom: isFullscreen ? '8px' : '4px',
+                                                color: 'rgba(255, 255, 255, 0.9)',
+                                                textShadow: '0 0 10px rgba(0, 0, 0, 1)',
+                                                fontSize: isFullscreen ? '32px' : '16px',
+                                                zIndex: 20,
+                                                letterSpacing: '0.1em'
+                                            }}
+                                        >
+                                            D/C
+                                        </div>
                                     )}
                                 </div>
 
@@ -2720,6 +2756,7 @@ export default function WeeklySummaryPage() {
                                 {rowGames.map((gameDetail, index) => {
                                     const { playerData, played, game } = gameDetail;
                                     const won = playerData?.win || false;
+                                    const disconnected = playerData?.originalStats?.disconnected === 1;
                                     const actualIndex = startIdx + index;
                                     
                                     // Pobierz zmianę punktów rankingowych dla tej gry
@@ -2728,11 +2765,15 @@ export default function WeeklySummaryPage() {
                                     return (
                                         <div key={actualIndex} className="flex flex-col items-center">
                                 {/* Zmiana punktów rankingowych NAD kwadratem */}
-                                {played && rankingChange !== undefined && (
+                                {rankingChange !== undefined && (
                                     <div 
-                                        className={`font-bold mb-1 ${isFullscreen ? 'text-xl' : 'text-base'}`}
+                                        className={`${videotext.className} font-bold mb-1 ${isFullscreen ? 'text-xl' : 'text-base'}`}
                                         style={{
-                                            color: rankingChange >= 0 ? 'rgb(34, 197, 94)' : 'rgb(239, 68, 68)',
+                                            color: rankingChange === 0 
+                                                ? 'rgb(156, 163, 175)' // Szary dla 0
+                                                : rankingChange > 0 
+                                                    ? 'rgb(34, 197, 94)' // Zielony dla dodatnich
+                                                    : 'rgb(239, 68, 68)', // Czerwony dla ujemnych
                                             textShadow: '0 0 10px rgba(0, 0, 0, 0.8)'
                                         }}
                                     >
@@ -2766,9 +2807,31 @@ export default function WeeklySummaryPage() {
                                             alt={playerData.role}
                                             width={squareSize}
                                             height={squareSize}
-                                            className="object-contain scale-[1.3]"
-                                            style={{ position: 'relative', zIndex: 10 }}
+                                            className={`object-contain scale-[1.3] ${disconnected ? 'pixelated' : ''}`}
+                                            style={{ 
+                                                position: 'relative', 
+                                                zIndex: 10,
+                                                filter: disconnected ? 'blur(4px) grayscale(100%)' : 'none',
+                                                imageRendering: disconnected ? 'pixelated' : 'auto'
+                                            }}
                                         />
+                                    )}
+                                    
+                                    {/* D/C overlay dla disconnect */}
+                                    {disconnected && (
+                                        <div 
+                                            className={`${videotext.className} font-bold absolute`}
+                                            style={{
+                                                bottom: isFullscreen ? '8px' : '4px',
+                                                color: 'rgba(255, 255, 255, 0.9)',
+                                                textShadow: '0 0 10px rgba(0, 0, 0, 1)',
+                                                fontSize: isFullscreen ? '32px' : '16px',
+                                                zIndex: 20,
+                                                letterSpacing: '0.1em'
+                                            }}
+                                        >
+                                            D/C
+                                        </div>
                                     )}
                                 </div>
 
