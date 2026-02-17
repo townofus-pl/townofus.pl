@@ -1385,6 +1385,7 @@ export default function WeeklySummaryPage() {
                                 {rowGames.map((gameDetail, index) => {
                                     const { playerData, played } = gameDetail;
                                     const won = playerData?.win || false;
+                                    const disconnected = playerData?.originalStats?.disconnected === 1;
                                     const actualIndex = startIdx + index;
 
                                     return (
@@ -1415,8 +1416,13 @@ export default function WeeklySummaryPage() {
                                             alt={playerData.role}
                                             width={squareSize}
                                             height={squareSize}
-                                            className="object-contain scale-[1.3]"
-                                            style={{ position: 'relative', zIndex: 10 }}
+                                            className={`object-contain scale-[1.3] ${disconnected ? 'pixelated' : ''}`}
+                                            style={{ 
+                                                position: 'relative', 
+                                                zIndex: 10,
+                                                filter: disconnected ? 'grayscale(100%)' : 'none',
+                                                imageRendering: disconnected ? 'pixelated' : 'auto'
+                                            }}
                                         />
                                     )}
                                 </div>
