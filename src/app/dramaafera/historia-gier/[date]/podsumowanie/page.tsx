@@ -604,16 +604,10 @@ export default function WeeklySummaryPage() {
                                 console.log('Games for top player:', playerGames.length);
                                 setTopPlayerGames(playerGames);
                                 
-                                // Pobierz historię rankingu dla wszystkich graczy z top 3 i oblicz zmiany
-                                const sortedStats = [...statsData.data.players].sort((a, b) => b.totalPoints - a.totalPoints);
-                                const top3Players = sortedStats.slice(0, 3);
-                                
-                                // Zbierz zmiany dla wszystkich graczy z top 3
-                                const allChanges = new Map<string, Map<string, number>>();
-                                
-                                for (const player of top3Players) {
+                                // Funkcja pomocnicza do ładowania zmian rankingu dla gracza
+                                const loadPlayerRankingChanges = async (nickname: string): Promise<Map<string, number> | null> => {
                                     try {
-                                        const historyResponse = await fetch(`/api/dramaafera/ranking-history/${encodeURIComponent(player.nickname)}`);
+                                        const historyResponse = await fetch(`/api/dramaafera/ranking-history/${encodeURIComponent(nickname)}`);
                                         if (historyResponse.ok) {
                                             const historyData = await historyResponse.json() as { 
                                                 success: boolean; 
@@ -642,12 +636,27 @@ export default function WeeklySummaryPage() {
                                                     }
                                                 }
                                                 
-                                                allChanges.set(player.nickname, playerChanges);
-                                                console.log(`📊 Loaded ${playerChanges.size} game changes for ${player.nickname}`);
+                                                console.log(`📊 Loaded ${playerChanges.size} game changes for ${nickname}`);
+                                                return playerChanges;
                                             }
                                         }
                                     } catch (playerErr) {
-                                        console.log(`Error loading ranking for ${player.nickname}:`, playerErr);
+                                        console.log(`Error loading ranking for ${nickname}:`, playerErr);
+                                    }
+                                    return null;
+                                };
+                                
+                                // Pobierz historię rankingu dla wszystkich graczy z top 3
+                                const sortedStats = [...statsData.data.players].sort((a, b) => b.totalPoints - a.totalPoints);
+                                const top3Players = sortedStats.slice(0, 3);
+                                
+                                // Zbierz zmiany dla wszystkich graczy z top 3
+                                const allChanges = new Map<string, Map<string, number>>();
+                                
+                                for (const player of top3Players) {
+                                    const changes = await loadPlayerRankingChanges(player.nickname);
+                                    if (changes) {
+                                        allChanges.set(player.nickname, changes);
                                     }
                                 }
                                 
@@ -657,8 +666,11 @@ export default function WeeklySummaryPage() {
                                     setPlayerRankingChanges(top1Changes);
                                 }
                                 
-                                // Zapisz wszystkie zmiany w stanie dla późniejszego użycia
+                                // Zapisz cache (tymczasowo tylko top 3, sigmy i cwele będą dodane późnej)
                                 window.__playerRankingChangesCache = allChanges;
+                                
+                                // Zapisz funkcję ładowania do użycia później
+                                (window as any).__loadPlayerRankingChanges = loadPlayerRankingChanges;
                             }
                         }
                     }
@@ -678,6 +690,50 @@ export default function WeeklySummaryPage() {
             fetchData();
         }
     }, [date]);
+
+    // Efekt do ładowania zmian rankingu dla sigm i cweli (gdy zostaną załadowane)
+    useEffect(() => {
+        const loadAdditionalPlayers = async () => {
+            const cache = window.__playerRankingChangesCache;
+            const loadFunc = (window as any).__loadPlayerRankingChanges as ((nickname: string) => Promise<Map<string, number> | null>) | undefined;
+            
+            if (!cache || !loadFunc || !date) return;
+            
+            let updated = false;
+            
+            // Dodaj top 1 sigmę jeśli nie jest w cache
+            if (topSigmas.length > 0) {
+                const top1Sigma = topSigmas[0];
+                if (!cache.has(top1Sigma.nickname)) {
+                    console.log('📊 Loading ranking changes for top sigma:', top1Sigma.nickname);
+                    const changes = await loadFunc(top1Sigma.nickname);
+                    if (changes) {
+                        cache.set(top1Sigma.nickname, changes);
+                        updated = true;
+                    }
+                }
+            }
+            
+            // Dodaj top 1 cwela jeśli nie jest w cache
+            if (topCwele.length > 0) {
+                const top1Cwel = topCwele[0];
+                if (!cache.has(top1Cwel.nickname)) {
+                    console.log('📊 Loading ranking changes for top cwel:', top1Cwel.nickname);
+                    const changes = await loadFunc(top1Cwel.nickname);
+                    if (changes) {
+                        cache.set(top1Cwel.nickname, changes);
+                        updated = true;
+                    }
+                }
+            }
+            
+            if (updated) {
+                console.log('✅ Cache updated with sigmas/cwele. Total players:', cache.size);
+            }
+        };
+        
+        loadAdditionalPlayers();
+    }, [topSigmas, topCwele, date]);
 
     // Efekt do aktualizacji wyświetlanych zmian rankingu w zależności od aktualnie wyświetlanego gracza
     useEffect(() => {
