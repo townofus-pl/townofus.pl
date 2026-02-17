@@ -1,46 +1,46 @@
 {
 	"date": "20260211",
-	"question": "KTO BĘDZIE EMPEROREM PO DZIŚ?",
-	"totalVotes": 16,
+	"question": "KTO BĘDZIE EMPEROREM PO DZISIEJSZEJ SESJI???",
+	"totalVotes": 15,
 	"votes": [
 		{
-			"nickname": "cutejulcia",
+			"nickname": "cutejuicia",
 			"votes": 0
+		},
+		{
+			"nickname": "Cleopatrie",
+			"votes": 3
+		},
+		{
+			"nickname": "Bartek",
+			"votes": 5
+		},
+		{
+			"nickname": "Malkiz",
+			"votes": 1
+		},
+		{
+			"nickname": "czop",
+			"votes": 1
 		},
 		{
 			"nickname": "Subek",
 			"votes": 1
 		},
 		{
+			"nickname": "suinko",
+			"votes": 2
+		},
+		{
+			"nickname": "LeQ",
+			"votes": 0
+		},
+		{
 			"nickname": "Asiua",
-			"votes": 0
+			"votes": 1
 		},
 		{
-			"nickname": "mati",
-			"votes": 6
-		},
-		{
-			"nickname": "Bartek",
-			"votes": 8
-		},
-		{
-			"nickname": "ziomson",
-			"votes": 0
-		},
-		{
-			"nickname": "Malkiz",
-			"votes": 0
-		},
-		{
-			"nickname": "szymonix18",
-			"votes": 0
-		},
-		{
-			"nickname": "czop",
-			"votes": 0
-		},
-		{
-			"nickname": "Cleopatrie",
+			"nickname": "Natusia",
 			"votes": 1
 		}
 	]

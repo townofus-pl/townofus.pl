@@ -299,7 +299,7 @@ Radiate Max Range
 Sense Duration
 1
 Examine Cooldown
-17,5
+20
 Show Detective Reports
 True
 Time Where Detective Will Have Role
@@ -317,7 +317,7 @@ Who Can Click Haunter
 Footprint Size
 4
 Footprint Interval
-0,25
+0,10000001
 Footprint Duration
 3
 Anonymous Footprint
@@ -331,9 +331,9 @@ True
 Maximum Number Of Players That Can Be Watched
 1
 Dead Body Arrow Duration
-0,50000006
+1
 Seer Cooldown
-17,5
+12,5
 Crewmate Killing Roles Are Red
 True
 Neutral Benign Roles Are Red
@@ -361,7 +361,7 @@ Track Cooldown
 Tracker Arrows Reset After Each Round
 True
 Maximum Number Of Tracks
-5
+8
 Min Amount Of Time In Trap To Register
 0
 Trap Cooldown
@@ -369,17 +369,17 @@ Trap Cooldown
 Traps Removed After Each Round
 True
 Maximum Number Of Traps
-2
+1
 Trap Size
 0,35000002
 Minimum Number Of Roles Required To Trigger Trap
-4
+5
 Hunter Kill Cooldown
 20
 Hunter Stalk Cooldown
 15
 Hunter Stalk Duration
-20
+17,5
 Maximum Stalk Uses
 1
 Hunter Kills Last Voter If Voted Out
@@ -399,9 +399,9 @@ True
 Can Be Killed On Alert
 False
 Alert Cooldown
-17,5
+20
 Alert Duration
-12
+10
 Maximum Number Of Alerts
 4
 Number Of Vigilante Kills
@@ -419,7 +419,7 @@ True
 Vigilante Can Guess Lovers
 True
 Jail Cooldown
-5
+8
 Maximum Number Of Executes
 2
 Campaign Cooldown
@@ -431,11 +431,11 @@ True
 Altruist Revive Duration
 3
 Revive Uses
-3
+4
 Revive Radius
 0,75
 Barrier Cooldown
-40
+35
 Show Barriered Player
 2
 Cleric Gets Attack Notification
@@ -449,7 +449,7 @@ False
 Show Medic Reports
 True
 Time Where Medic Will Have Color Type
-25
+27,5
 Confess Cooldown
 20
 Initial Bless Cooldown
@@ -465,7 +465,7 @@ True
 Show Fortified Player
 2
 Maximum Number Of Fixes
-4
+1
 Mediate Cooldown
 5
 Reveal Appearance Of Mediate Target
@@ -479,9 +479,9 @@ Flush Cooldown
 Maximum Number Of Barricades
 4
 Transport Cooldown
-22,5
+25
 Maximum Number Of Transports
-2
+1
 Transporter Can Use Vitals
 True
 Amnesiac Gets Arrows Pointing To Dead Bodies
@@ -551,9 +551,9 @@ Tasks Remaining When Phantom Can Be Clicked
 Phantom Win Ends Game
 True
 Douse Cooldown
-22,5
+20
 Ignite Radius
-0,79999995
+1
 Arsonist Can Vent
 True
 Mimic Cooldown
@@ -561,7 +561,7 @@ Mimic Cooldown
 Mimic Duration
 5
 Hack Cooldown
-20
+17,5
 Hack Duration
 8
 Glitch Kill Cooldown
@@ -569,7 +569,7 @@ Glitch Kill Cooldown
 Glitch Can Vent
 True
 Juggernaut Initial Kill Cooldown
-15
+17,5
 Reduced Kill Cooldown Per Kill
 2,5
 Juggernaut Can Vent
@@ -585,7 +585,7 @@ Reap Cooldown
 Soul Collector Can Vent
 True
 Vampire Bite Cooldown
-17,5
+22,5
 Vampires Have Impostor Vision
 False
 Vampires Can Vent
@@ -599,33 +599,33 @@ False
 Can Convert Neutral Evil Roles
 False
 Rampage Cooldown
-15
-Rampage Duration
 20
+Rampage Duration
+17,5
 Rampage Kill Cooldown
-2
+3
 Werewolf Can Vent When Rampaged
 True
 Blind Cooldown
-22,5
+27,5
 Blind Duration
 10
 Blind Radius
-1,25
+1
 Recall Cooldown
-12,5
+10
 Escapist Can Vent
 True
 Flash Grenade Cooldown
-12,5
+10
 Flash Grenade Duration
 12
 Flash Radius
-1,25
+1,75
 Grenadier Can Vent
 True
 Morphling Cooldown
-25
+27,5
 Morphling Duration
 12
 Morphling Can Vent
@@ -643,9 +643,9 @@ Ability Duration
 Sprint Speed
 1,7499995
 Minimum Freeze Speed
-0,50000006
+0,7500001
 Freeze Radius
-0,5
+0,25
 Detonate Delay
 5
 Max Kills In Detonation
@@ -671,7 +671,7 @@ False
 Time It Takes To Fully Charge
 20
 Time It Takes To Use Full Charge
-1,9999993
+2,299999
 Initial Blackmail Cooldown
 1
 Only Target Sees Blackmail
@@ -679,7 +679,7 @@ False
 Maximum People Alive Where Blackmailed Can Vote
 1
 Hypnotize Cooldown
-32,5
+27,5
 Mine Cooldown
 10
 Drag Cooldown
