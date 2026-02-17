@@ -7,6 +7,13 @@ import { useParams } from "next/navigation";
 import localFont from "next/font/local";
 import type { UIGameData } from '@/data/games/converter';
 
+// Rozszerzenie window o cache dla rankingów
+declare global {
+    interface Window {
+        __playerRankingChangesCache?: Map<string, Map<string, number>>;
+    }
+}
+
 // Import czcionki videotext
 const videotext = localFont({
     src: '../../../_fonts/Videotext.ttf',
@@ -449,8 +456,7 @@ export default function WeeklySummaryPage() {
                 // NIE USTAWIAMY STATE
             }
         }
-    }, [currentSlide, currentStep, slides, totalSlides, introBlackOverlay]);
-    // backgroundMusic usunięte z dependencies - używamy tylko Ref!
+    }, [currentSlide, currentStep, slides, totalSlides, introBlackOverlay, weeklyStats]);
 
     // Pobieranie danych tygodniowych i ankiety
     useEffect(() => {
@@ -652,7 +658,7 @@ export default function WeeklySummaryPage() {
                                 }
                                 
                                 // Zapisz wszystkie zmiany w stanie dla późniejszego użycia
-                                (window as any).__playerRankingChangesCache = allChanges;
+                                window.__playerRankingChangesCache = allChanges;
                             }
                         }
                     }
@@ -721,7 +727,7 @@ export default function WeeklySummaryPage() {
         if (playerToShow) {
             console.log('🎯 Switching to player:', playerToShow);
             // Pobierz zmiany z cache
-            const cache = (window as any).__playerRankingChangesCache as Map<string, Map<string, number>>;
+            const cache = window.__playerRankingChangesCache;
             if (cache) {
                 const playerChanges = cache.get(playerToShow);
                 if (playerChanges) {
