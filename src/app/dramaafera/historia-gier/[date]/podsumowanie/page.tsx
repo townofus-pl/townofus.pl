@@ -7,6 +7,13 @@ import { useParams } from "next/navigation";
 import localFont from "next/font/local";
 import type { UIGameData } from '@/data/games/converter';
 
+// Rozszerzenie window o cache dla rankingów
+declare global {
+    interface Window {
+        __playerRankingChangesCache?: Map<string, Map<string, number>>;
+    }
+}
+
 // Import czcionki videotext
 const videotext = localFont({
     src: '../../../_fonts/Videotext.ttf',
@@ -99,6 +106,7 @@ export default function WeeklySummaryPage() {
     const [emperorHistory, setEmperorHistory] = useState<EmperorHistoryEntry[]>([]);
     const [rankingAfterSession, setRankingAfterSession] = useState<PlayerRankingAfterSession[]>([]);
     const [topPlayerGames, setTopPlayerGames] = useState<UIGameData[]>([]);
+    const [playerRankingChanges, setPlayerRankingChanges] = useState<Map<string, number>>(new Map());
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     const [isTransitioning, setIsTransitioning] = useState(false);
@@ -448,8 +456,7 @@ export default function WeeklySummaryPage() {
                 // NIE USTAWIAMY STATE
             }
         }
-    }, [currentSlide, currentStep, slides, totalSlides, introBlackOverlay]);
-    // backgroundMusic usunięte z dependencies - używamy tylko Ref!
+    }, [currentSlide, currentStep, slides, totalSlides, introBlackOverlay, weeklyStats]);
 
     // Pobieranie danych tygodniowych i ankiety
     useEffect(() => {
@@ -596,6 +603,62 @@ export default function WeeklySummaryPage() {
                                 const playerGames = gamesData.data.detailedGames;
                                 console.log('Games for top player:', playerGames.length);
                                 setTopPlayerGames(playerGames);
+                                
+                                // Pobierz historię rankingu dla wszystkich graczy z top 3 i oblicz zmiany
+                                const sortedStats = [...statsData.data.players].sort((a, b) => b.totalPoints - a.totalPoints);
+                                const top3Players = sortedStats.slice(0, 3);
+                                
+                                // Zbierz zmiany dla wszystkich graczy z top 3
+                                const allChanges = new Map<string, Map<string, number>>();
+                                
+                                for (const player of top3Players) {
+                                    try {
+                                        const historyResponse = await fetch(`/api/dramaafera/ranking-history/${encodeURIComponent(player.nickname)}`);
+                                        if (historyResponse.ok) {
+                                            const historyData = await historyResponse.json() as { 
+                                                success: boolean; 
+                                                data?: { date: string; rating: number; gameId?: number; gameIdentifier?: string }[] 
+                                            };
+                                            
+                                            if (historyData.success && historyData.data) {
+                                                // Sortuj po dacie (chronologicznie)
+                                                const sortedHistory = [...historyData.data].sort((a, b) => 
+                                                    new Date(a.date).getTime() - new Date(b.date).getTime()
+                                                );
+                                                
+                                                // Oblicz zmiany dla każdej gry
+                                                const playerChanges = new Map<string, number>();
+                                                
+                                                for (let i = 0; i < sortedHistory.length; i++) {
+                                                    const current = sortedHistory[i];
+                                                    if (current.gameIdentifier && current.gameIdentifier.startsWith(date)) {
+                                                        // Znajdź poprzedni wpis (ostatni przed tą grą)
+                                                        const previous = i > 0 ? sortedHistory[i - 1] : null;
+                                                        
+                                                        // Zmiana to różnica między obecną a poprzednią wartością
+                                                        const change = previous ? current.rating - previous.rating : current.rating;
+                                                        
+                                                        playerChanges.set(current.gameIdentifier, change);
+                                                    }
+                                                }
+                                                
+                                                allChanges.set(player.nickname, playerChanges);
+                                                console.log(`📊 Loaded ${playerChanges.size} game changes for ${player.nickname}`);
+                                            }
+                                        }
+                                    } catch (playerErr) {
+                                        console.log(`Error loading ranking for ${player.nickname}:`, playerErr);
+                                    }
+                                }
+                                
+                                // Ustaw zmiany dla pierwszego gracza (TOP1)
+                                const top1Changes = allChanges.get(topPlayer.nickname);
+                                if (top1Changes) {
+                                    setPlayerRankingChanges(top1Changes);
+                                }
+                                
+                                // Zapisz wszystkie zmiany w stanie dla późniejszego użycia
+                                window.__playerRankingChangesCache = allChanges;
                             }
                         }
                     }
@@ -615,6 +678,75 @@ export default function WeeklySummaryPage() {
             fetchData();
         }
     }, [date]);
+
+    // Efekt do aktualizacji wyświetlanych zmian rankingu w zależności od aktualnie wyświetlanego gracza
+    useEffect(() => {
+        // Sprawdź który gracz jest aktualnie wyświetlany w historii gier
+        if (weeklyStats.length === 0 || topPlayerGames.length === 0) return;
+        
+        const currentSlideConfig = slides[currentSlide];
+        if (!currentSlideConfig) return;
+
+        const sortedStats = [...weeklyStats].sort((a, b) => b.totalPoints - a.totalPoints);
+        const hasThirdPlaceTie = sortedStats.length >= 4 && 
+            sortedStats[2].totalPoints === sortedStats[3].totalPoints;
+
+        let playerToShow: string | null = null;
+
+        if (currentSlideConfig.id === 'podium') {
+            if (hasThirdPlaceTie) {
+                // Przy remisie: krok 2=historia 1. z remisu, 3=historia 2. z remisu, 6=historia 2., 9=historia 1.
+                if (currentStep === 2 && sortedStats[2]) playerToShow = sortedStats[2].nickname;
+                else if (currentStep === 3 && sortedStats[3]) playerToShow = sortedStats[3].nickname;
+                else if (currentStep === 6 && sortedStats[1]) playerToShow = sortedStats[1].nickname;
+                else if (currentStep === 9 && sortedStats[0]) playerToShow = sortedStats[0].nickname;
+            } else {
+                // Normalnie: krok 2=historia 3., 5=historia 2., 8=historia 1.
+                if (currentStep === 2 && sortedStats[2]) playerToShow = sortedStats[2].nickname;
+                else if (currentStep === 5 && sortedStats[1]) playerToShow = sortedStats[1].nickname;
+                else if (currentStep === 8 && sortedStats[0]) playerToShow = sortedStats[0].nickname;
+            }
+        } else if (currentSlideConfig.id === 'sigmas') {
+            const top3Nicknames = sortedStats.slice(0, 3).map(p => p.nickname);
+            const top1Sigma = topSigmas[0];
+            const top1WasInTop3 = top3Nicknames.includes(top1Sigma?.nickname);
+            
+            if (!top1WasInTop3 && currentStep === 4 && top1Sigma) {
+                playerToShow = top1Sigma.nickname;
+            }
+        } else if (currentSlideConfig.id === 'cwele') {
+            const top3Nicknames = sortedStats.slice(0, 3).map(p => p.nickname);
+            const top1Cwel = topCwele[0];
+            const top1WasInTop3 = top3Nicknames.includes(top1Cwel?.nickname);
+            
+            if (!top1WasInTop3 && currentStep === 4 && top1Cwel) {
+                playerToShow = top1Cwel.nickname;
+            }
+        }
+
+        if (playerToShow) {
+            console.log('🎯 Switching to player:', playerToShow);
+            // Pobierz zmiany z cache
+            const cache = window.__playerRankingChangesCache;
+            if (cache) {
+                const playerChanges = cache.get(playerToShow);
+                if (playerChanges) {
+                    setPlayerRankingChanges(playerChanges);
+                    console.log('📊 Loaded changes from cache for', playerToShow, playerChanges.size, 'games');
+                } else {
+                    console.log('⚠️ No cached changes for', playerToShow);
+                    setPlayerRankingChanges(new Map());
+                }
+            } else {
+                console.log('⚠️ No cache available');
+                setPlayerRankingChanges(new Map());
+            }
+        } else {
+            // Wyczyść mapę jeśli nie wyświetlamy historii gracza
+            setPlayerRankingChanges(new Map());
+        }
+
+    }, [currentSlide, currentStep, weeklyStats, topPlayerGames, slides, topSigmas, topCwele]);
 
     // Kroki animacji: 0=intro, 1=tytuł, 2=3.miejsce, 3=2.miejsce, 4=1.miejsce, 5=pozostałe miejsca
     // STARE: const maxSteps = weeklyStats.length > 0 ? (weeklyStats.length > 3 ? 5 : 4) : 1;
@@ -1383,13 +1515,33 @@ export default function WeeklySummaryPage() {
                                 style={{ gap: `${gap}px` }}
                             >
                                 {rowGames.map((gameDetail, index) => {
-                                    const { playerData, played } = gameDetail;
+                                    const { playerData, played, game } = gameDetail;
                                     const won = playerData?.win || false;
                                     const disconnected = playerData?.originalStats?.disconnected === 1;
                                     const actualIndex = startIdx + index;
+                                    
+                                    // Pobierz zmianę punktów rankingowych dla tej gry
+                                    const rankingChange = playerRankingChanges.get(game.id);
+                                    
+                                    if (actualIndex === 0) {
+                                        console.log('🎮 Game ID:', game.id, 'Ranking change:', rankingChange, 'Map size:', playerRankingChanges.size);
+                                    }
 
                                     return (
                                         <div key={actualIndex} className="flex flex-col items-center">
+                                {/* Zmiana punktów rankingowych NAD kwadratem */}
+                                {played && rankingChange !== undefined && (
+                                    <div 
+                                        className={`${videotext.className} font-bold mb-1 ${isFullscreen ? 'text-xl' : 'text-base'}`}
+                                        style={{
+                                            color: rankingChange >= 0 ? 'rgb(34, 197, 94)' : 'rgb(239, 68, 68)',
+                                            textShadow: '0 0 10px rgba(0, 0, 0, 0.8)'
+                                        }}
+                                    >
+                                        {rankingChange >= 0 ? '+' : ''}{Math.round(rankingChange)}
+                                    </div>
+                                )}
+
                                 {/* Kwadrat z grą */}
                                 <div
                                     className="relative"
@@ -2509,12 +2661,28 @@ export default function WeeklySummaryPage() {
                                 style={{ gap: `${gap}px` }}
                             >
                                 {rowGames.map((gameDetail, index) => {
-                                    const { playerData, played } = gameDetail;
+                                    const { playerData, played, game } = gameDetail;
                                     const won = playerData?.win || false;
                                     const actualIndex = startIdx + index;
+                                    
+                                    // Pobierz zmianę punktów rankingowych dla tej gry
+                                    const rankingChange = playerRankingChanges.get(game.id);
 
                                     return (
                                         <div key={actualIndex} className="flex flex-col items-center">
+                                {/* Zmiana punktów rankingowych NAD kwadratem */}
+                                {played && rankingChange !== undefined && (
+                                    <div 
+                                        className={`font-bold mb-1 ${isFullscreen ? 'text-xl' : 'text-base'}`}
+                                        style={{
+                                            color: rankingChange >= 0 ? 'rgb(34, 197, 94)' : 'rgb(239, 68, 68)',
+                                            textShadow: '0 0 10px rgba(0, 0, 0, 0.8)'
+                                        }}
+                                    >
+                                        {rankingChange >= 0 ? '+' : ''}{Math.round(rankingChange)}
+                                    </div>
+                                )}
+
                                 {/* Kwadrat z grą */}
                                 <div
                                     className="relative"
