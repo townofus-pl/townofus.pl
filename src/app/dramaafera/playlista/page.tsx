@@ -12,6 +12,7 @@ interface WeekData {
 export default function PlaylistaPage() {
   // Dane wszystkich tygodni
   const weeks: WeekData[] = [
+    { id: "s2week17", title: "S2 WEEK 17", videoId: "MrZ43WZw7Tc" },
     { id: "s2week16", title: "S2 WEEK 16", videoId: "27pY_4SgvMI" },
     { id: "s2week15", title: "S2 WEEK 15", videoId: "9Q2nol989sE" },
     { id: "s2week14", title: "S2 WEEK 14", videoId: "vQwJhizrM-c" },
