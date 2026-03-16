@@ -91,6 +91,28 @@ interface PlayerRankingAfterSession {
     ratingChange: number;
 }
 
+const PODIUM_STANDARD_STEPS = {
+    thirdPlaceReveal: 1,
+    thirdPlaceHistory: 2,
+    fakeSecondReveal: 4,
+    fakeSecondHistory: 5,
+    fakeSecondReturn: 6,
+    swapReveal: 7,
+    secondPlaceHistory: 8,
+    total: 9
+} as const;
+
+const PODIUM_TIE_STEPS = {
+    secondPlaceReveal: 5,
+    secondPlaceHistory: 6,
+    firstPlaceReveal: 8,
+    firstPlaceHistory: 9,
+    total: 10
+} as const;
+
+const PODIUM_SWAP_DURATION = 2600;
+const PODIUM_SWAP_SECOND_REVEAL_DELAY = 850;
+
 export default function WeeklySummaryPage() {
     const params = useParams();
     const date = params?.date as string;
@@ -112,6 +134,8 @@ export default function WeeklySummaryPage() {
     const [error, setError] = useState<string | null>(null);
     const [isTransitioning, setIsTransitioning] = useState(false);
     const [showConfetti, setShowConfetti] = useState(false);
+    const [podiumSwapSecondRevealed, setPodiumSwapSecondRevealed] = useState(false);
+    const [isPodiumSwapAnimating, setIsPodiumSwapAnimating] = useState(false);
     const [introBlackOverlay, setIntroBlackOverlay] = useState(true);
     const backgroundMusicRef = useRef<HTMLAudioElement | null>(null); // Ref zamiast state - nie triggeruje re-render
     const [introInitialDelayPassed, setIntroInitialDelayPassed] = useState(false); // Czy minęło początkowe opóźnienie intro
@@ -170,8 +194,8 @@ export default function WeeklySummaryPage() {
                 const sortedStats = [...weeklyStats].sort((a, b) => b.totalPoints - a.totalPoints);
                 const hasThirdPlaceTie = sortedStats.length >= 4 && sortedStats[2].totalPoints === sortedStats[3].totalPoints;
                 // Przy remisie: 0=pusty, 1=odkrycie 3., 2=historia 1. z remisu, 3=historia 2. z remisu, 4=powrót, 5=2., 6=historia 2., 7=powrót, 8=1., 9=historia 1.
-                // Normalnie: 0=pusty, 1=3., 2=historia 3., 3=powrót, 4=2., 5=historia 2., 6=powrót, 7=1., 8=historia 1.
-                return hasThirdPlaceTie ? 10 : 9;
+                // Normalnie: 0=pusty, 1=3., 2=historia 3., 3=powrót, 4=fake 2. (tak naprawdę 1.), 5=historia fake 2. czyli 1., 6=powrót, 7=swap 1.<->2. z odkryciem 2., 8=historia 2.
+                return hasThirdPlaceTie ? PODIUM_TIE_STEPS.total : PODIUM_STANDARD_STEPS.total;
             })()
         },
         ...(topSigmas.length >= 3 ? [{
@@ -361,13 +385,10 @@ export default function WeeklySummaryPage() {
         
         // Jeśli są jeszcze kroki w bieżącym slajdzie
         if (currentStep < currentSlideConfig.steps - 1) {
-            // Sprawdź czy to odkrycie 1. miejsca na podium
-            // Przy remisie: krok 7 (przed 8=1.miejsce), normalnie: krok 6 (przed 7=1.miejsce)
             const sortedStats = [...weeklyStats].sort((a, b) => b.totalPoints - a.totalPoints);
             const hasThirdPlaceTie = sortedStats.length >= 4 && sortedStats[2].totalPoints === sortedStats[3].totalPoints;
-            const firstPlaceRevealStep = hasThirdPlaceTie ? 7 : 6;
             
-            if (currentSlideConfig.id === 'podium' && currentStep === firstPlaceRevealStep) {
+            if (currentSlideConfig.id === 'podium' && hasThirdPlaceTie && currentStep === PODIUM_TIE_STEPS.firstPlaceReveal - 1) {
                 setShowConfetti(true);
                 setTimeout(() => setShowConfetti(false), 5000); // Confetti przez 5 sekund
             }
@@ -458,6 +479,38 @@ export default function WeeklySummaryPage() {
             }
         }
     }, [currentSlide, currentStep, slides, totalSlides, introBlackOverlay, weeklyStats]);
+
+    useEffect(() => {
+        const currentSlideConfig = slides[currentSlide];
+        const isStandardPodiumSwapStep =
+            currentSlideConfig?.id === 'podium' &&
+            !hasThirdPlaceTie &&
+            currentStep === PODIUM_STANDARD_STEPS.swapReveal;
+
+        if (!isStandardPodiumSwapStep) {
+            setIsPodiumSwapAnimating(false);
+            setPodiumSwapSecondRevealed(false);
+            return;
+        }
+
+        setIsPodiumSwapAnimating(true);
+        setPodiumSwapSecondRevealed(false);
+
+        const revealTimer = setTimeout(() => {
+            setPodiumSwapSecondRevealed(true);
+            setShowConfetti(true);
+            setTimeout(() => setShowConfetti(false), 5000);
+        }, PODIUM_SWAP_SECOND_REVEAL_DELAY);
+
+        const finishTimer = setTimeout(() => {
+            setIsPodiumSwapAnimating(false);
+        }, PODIUM_SWAP_DURATION);
+
+        return () => {
+            clearTimeout(revealTimer);
+            clearTimeout(finishTimer);
+        };
+    }, [currentSlide, currentStep, hasThirdPlaceTie, slides]);
 
     // Pobieranie danych tygodniowych i ankiety
     useEffect(() => {
@@ -759,10 +812,10 @@ export default function WeeklySummaryPage() {
                     else if (currentStep === 6 && sortedStats[1]) playerToShow = sortedStats[1].nickname;
                     else if (currentStep === 9 && sortedStats[0]) playerToShow = sortedStats[0].nickname;
                 } else {
-                    // Normalnie: krok 2=historia 3., 5=historia 2., 8=historia 1.
+                    // Normalnie: krok 2=historia 3., 5=historia fake 2. czyli 1., 8=historia prawdziwego 2.
                     if (currentStep === 2 && sortedStats[2]) playerToShow = sortedStats[2].nickname;
-                    else if (currentStep === 5 && sortedStats[1]) playerToShow = sortedStats[1].nickname;
-                    else if (currentStep === 8 && sortedStats[0]) playerToShow = sortedStats[0].nickname;
+                    else if (currentStep === PODIUM_STANDARD_STEPS.fakeSecondHistory && sortedStats[0]) playerToShow = sortedStats[0].nickname;
+                    else if (currentStep === PODIUM_STANDARD_STEPS.secondPlaceHistory && sortedStats[1]) playerToShow = sortedStats[1].nickname;
                 }
             } else if (currentSlideConfig.id === 'sigmas') {
                 const top3Nicknames = sortedStats.slice(0, 3).map(p => p.nickname);
@@ -826,11 +879,11 @@ export default function WeeklySummaryPage() {
 
     const handleClick = useCallback(() => {
         // Blokuj kliknięcia podczas odtwarzania filmu
-        if (isVideoPlaying) {
+        if (isVideoPlaying || isPodiumSwapAnimating) {
             return;
         }
         handleNext();
-    }, [handleNext, isVideoPlaying]);
+    }, [handleNext, isPodiumSwapAnimating, isVideoPlaying]);
 
     const togglePresentationFullscreen = () => {
         if (!isPresentationFullscreen) {
@@ -1775,11 +1828,37 @@ export default function WeeklySummaryPage() {
         
         // Określenie opacity podium na podstawie kroku (overlay histori gier)
         // Przy remisie: krok 2=historia 1. z remisu, 3=historia 2. z remisu, 6=historia 2., 9=historia 1.
-        // Normalnie: krok 2=historia 3., 5=historia 2., 8=historia 1.
+        // Normalnie: krok 2=historia 3., 5=historia fake 2. czyli 1., 8=historia prawdziwego 2.
         const showHistorySteps = hasThirdPlaceTie 
-            ? [2, 3, 6, 9]  // Historie przy remisie
-            : [2, 5, 8];     // Historie normalnie
+            ? [2, 3, PODIUM_TIE_STEPS.secondPlaceHistory, PODIUM_TIE_STEPS.firstPlaceHistory]  // Historie przy remisie
+            : [PODIUM_STANDARD_STEPS.thirdPlaceHistory, PODIUM_STANDARD_STEPS.fakeSecondHistory, PODIUM_STANDARD_STEPS.secondPlaceHistory];     // Historie normalnie
         const podiumOpacity = showHistorySteps.includes(currentStep) ? 0 : 1;
+        const secondPlaceStyle = {
+            left: isFullscreen ? '13.5%' : '12%',
+            top: isFullscreen ? '24%' : '8%',
+            width: isFullscreen ? '260px' : '150px',
+            height: isFullscreen ? '260px' : '150px'
+        };
+        const firstPlaceStyle = {
+            left: isFullscreen ? '36.7%' : '42%',
+            top: isFullscreen ? '-10%' : '2%',
+            width: isFullscreen ? '370px' : '105px',
+            height: isFullscreen ? '370px' : '105px'
+        };
+        const showActualSecondPlace = hasThirdPlaceTie
+            ? currentStep >= PODIUM_TIE_STEPS.secondPlaceReveal
+            : currentStep >= PODIUM_STANDARD_STEPS.secondPlaceHistory;
+        const showActualFirstPlace = hasThirdPlaceTie
+            ? currentStep >= PODIUM_TIE_STEPS.firstPlaceReveal
+            : false; // 1. miejsce odkrywane tylko przez ruchomy overlay w normalnym trybie
+        const showMovingWinnerOverlay = !hasThirdPlaceTie && !!sortedStats[0];
+        const movingOverlaysVisible = showMovingWinnerOverlay &&
+            currentStep >= (PODIUM_STANDARD_STEPS.fakeSecondReveal - 1) &&
+            currentStep <= PODIUM_STANDARD_STEPS.swapReveal;
+        const movingWinnerVisible = showMovingWinnerOverlay &&
+            currentStep >= PODIUM_STANDARD_STEPS.fakeSecondReveal &&
+            currentStep <= PODIUM_STANDARD_STEPS.swapReveal;
+        const movingWinnerUsesFirstStyle = currentStep === PODIUM_STANDARD_STEPS.swapReveal;
         
         return (
             <>
@@ -2063,15 +2142,10 @@ export default function WeeklySummaryPage() {
                         )}
 
                         {/* 2. miejsce - lewa pozycja - pokazuje się w odpowiednim kroku */}
-                        {/* Przy remisie: krok 5, normalnie: krok 4 */}
-                        <div className="absolute" style={{ 
-                            left: isFullscreen ? '13.5%' : '12%', 
-                            top: isFullscreen ? '24%' : '8%',
-                            width: isFullscreen ? '260px' : '150px',
-                            height: isFullscreen ? '260px' : '150px'
-                        }}>
+                        {/* Przy remisie: krok 5, normalnie: odkrywa się dopiero po swapie */}
+                        <div className="absolute" style={{ ...secondPlaceStyle, visibility: (!hasThirdPlaceTie && movingOverlaysVisible) ? 'hidden' : 'visible' }}>
                             {/* Napisy nad avatarem - pokazują się po odkryciu */}
-                            {currentStep >= (hasThirdPlaceTie ? 5 : 4) && sortedStats[1] && (
+                            {showActualSecondPlace && sortedStats[1] && (
                                 <div 
                                     className="absolute left-1/2 -translate-x-1/2 text-center"
                                     style={{ 
@@ -2096,7 +2170,7 @@ export default function WeeklySummaryPage() {
                             
                             <div 
                                 className={`flip-card-container ${
-                                    currentStep >= (hasThirdPlaceTie ? 5 : 4) ? 'flip-card-flipped' : ''
+                                    showActualSecondPlace ? 'flip-card-flipped' : ''
                                 }`}
                             >
                                 {/* Tylna strona - znak zapytania */}
@@ -2153,15 +2227,10 @@ export default function WeeklySummaryPage() {
                         </div>
 
                         {/* 1. miejsce - środkowa pozycja (najwyższa) - pokazuje się w odpowiednim kroku */}
-                        {/* Przy remisie: krok 8, normalnie: krok 7 */}
-                        <div className="absolute" style={{ 
-                            left: isFullscreen ? '36.7%' : '42%', 
-                            top: isFullscreen ? '-10%' : '2%',
-                            width: isFullscreen ? '370px' : '105px',
-                            height: isFullscreen ? '370px' : '105px'
-                        }}>
+                        {/* Przy remisie: krok 8, normalnie: finał podium po historii 2. miejsca */}
+                        <div className="absolute" style={{ ...firstPlaceStyle, visibility: (!hasThirdPlaceTie && movingOverlaysVisible) ? 'hidden' : 'visible' }}>
                             {/* Napisy nad avatarem - EMPEROR, nick, DAP */}
-                            {currentStep >= (hasThirdPlaceTie ? 8 : 7) && sortedStats[0] && (
+                            {showActualFirstPlace && sortedStats[0] && (
                                 <div 
                                     className="absolute left-1/2 -translate-x-1/2 text-center"
                                     style={{ 
@@ -2196,7 +2265,7 @@ export default function WeeklySummaryPage() {
                             
                             <div 
                                 className={`relative w-full h-full transition-transform duration-1000 ${
-                                    currentStep >= (hasThirdPlaceTie ? 8 : 7) ? 'flip-card-flipped' : ''
+                                    showActualFirstPlace ? 'flip-card-flipped' : ''
                                 }`}
                                 style={{ 
                                     transformStyle: 'preserve-3d',
@@ -2259,6 +2328,222 @@ export default function WeeklySummaryPage() {
                                 </div>
                             </div>
                         </div>
+
+                        {!hasThirdPlaceTie && sortedStats[0] && (
+                            <div
+                                className="absolute pointer-events-none"
+                                style={{
+                                    ...(movingWinnerUsesFirstStyle ? firstPlaceStyle : secondPlaceStyle),
+                                    zIndex: 30,
+                                    opacity: movingOverlaysVisible ? 1 : 0,
+                                    transition: [
+                                        `left ${PODIUM_SWAP_DURATION}ms cubic-bezier(0.22, 1, 0.36, 1)`,
+                                        `top ${PODIUM_SWAP_DURATION}ms cubic-bezier(0.22, 1, 0.36, 1)`,
+                                        `width ${PODIUM_SWAP_DURATION}ms cubic-bezier(0.22, 1, 0.36, 1)`,
+                                        `height ${PODIUM_SWAP_DURATION}ms cubic-bezier(0.22, 1, 0.36, 1)`,
+                                        'opacity 200ms ease-out'
+                                    ].join(', ')
+                                }}
+                            >
+                                <div
+                                    className="absolute left-1/2 -translate-x-1/2 text-center"
+                                    style={{
+                                        bottom: '100%',
+                                        marginBottom: movingWinnerUsesFirstStyle ? (isFullscreen ? '30px' : '15px') : (isFullscreen ? '20px' : '10px'),
+                                        width: movingWinnerUsesFirstStyle ? (isFullscreen ? '700px' : '200px') : (isFullscreen ? '300px' : '150px'),
+                                        opacity: movingWinnerVisible ? 1 : 0,
+                                        transition: `all ${PODIUM_SWAP_DURATION}ms cubic-bezier(0.22, 1, 0.36, 1)`
+                                    }}
+                                >
+                                    {movingWinnerUsesFirstStyle ? (
+                                        <>
+                                            <div 
+                                                className={`${videotext.className} font-bold text-red-500 ${isFullscreen ? 'text-7xl' : 'text-4xl'} mb-2 tracking-wider`}
+                                                style={{
+                                                    textShadow: '0 0 20px rgba(239, 68, 68, 0.8), 0 0 40px rgba(239, 68, 68, 0.6), 0 0 60px rgba(239, 68, 68, 0.4)',
+                                                    animation: 'glow 2s ease-in-out infinite alternate',
+                                                    letterSpacing: '-0.02em'
+                                                }}
+                                            >
+                                                THE EMPEROR
+                                            </div>
+                                            <div 
+                                                className={`${videotext.className} font-bold text-amber-400 ${isFullscreen ? 'text-4xl' : 'text-2xl'} mb-1`}
+                                                style={{ textTransform: 'uppercase', letterSpacing: '-0.02em' }}
+                                            >
+                                                {sortedStats[0].nickname}
+                                            </div>
+                                            <div className={`${videotext.className} font-bold text-amber-300 ${isFullscreen ? 'text-3xl' : 'text-xl'}`} style={{ letterSpacing: '-0.02em' }}>
+                                                {sortedStats[0].totalPoints} DAP
+                                            </div>
+                                        </>
+                                    ) : (
+                                        <>
+                                            <div 
+                                                className={`${videotext.className} font-bold text-amber-400 ${isFullscreen ? 'text-3xl' : 'text-xl'} mb-1`}
+                                                style={{ textTransform: 'uppercase', letterSpacing: '-0.02em' }}
+                                            >
+                                                {sortedStats[0].nickname}
+                                            </div>
+                                            <div className={`${videotext.className} font-bold text-amber-300 ${isFullscreen ? 'text-2xl' : 'text-lg'}`} style={{ letterSpacing: '-0.02em' }}>
+                                                {sortedStats[0].totalPoints} DAP
+                                            </div>
+                                        </>
+                                    )}
+                                </div>
+
+                                <div 
+                                    className={`flip-card-container ${
+                                        currentStep >= PODIUM_STANDARD_STEPS.fakeSecondReveal ? 'flip-card-flipped' : ''
+                                    }`}
+                                >
+                                    <div 
+                                        className="absolute inset-0 flex items-center justify-center"
+                                        style={{ 
+                                            backfaceVisibility: 'hidden',
+                                            transform: 'rotateY(0deg)',
+                                            border: '6px solid rgba(245, 216, 122, 1)',
+                                            backgroundColor: 'rgba(0, 0, 0, 0.6)',
+                                            boxShadow: 'inset 0 0 60px rgba(197, 176, 98, 0.5), inset 0 0 25px rgba(207, 178, 72, 0.3)'
+                                        }}
+                                    >
+                                        <div className={`${videotext.className} text-white text-9xl font-bold pixelated`}>?</div>
+                                    </div>
+
+                                    <div 
+                                        className="absolute inset-0"
+                                        style={{ 
+                                            backfaceVisibility: 'hidden',
+                                            transform: 'rotateY(180deg)'
+                                        }}
+                                    >
+                                        <div 
+                                            className="relative w-full h-full"
+                                            style={{
+                                                border: '6px solid rgba(245, 216, 122, 1)',
+                                                backgroundColor: 'rgba(0, 0, 0, 0.6)'
+                                            }}
+                                        >
+                                            <Image
+                                                src={`/images/avatars/${sortedStats[0].nickname}.png`}
+                                                alt={sortedStats[0].nickname}
+                                                fill
+                                                className="object-cover"
+                                                onError={(e) => {
+                                                    const target = e.target as HTMLImageElement;
+                                                    target.src = '/images/avatars/placeholder.png';
+                                                }}
+                                            />
+                                            <div 
+                                                className="absolute inset-0 pointer-events-none"
+                                                style={{
+                                                    boxShadow: 'inset 0 0 60px rgba(197, 176, 98, 0.5), inset 0 0 25px rgba(207, 178, 72, 0.3)'
+                                                }}
+                                            />
+                                            <div 
+                                                className="absolute -top-8 left-1/2 transform -translate-x-1/2 text-5xl"
+                                                style={{
+                                                    opacity: movingWinnerUsesFirstStyle ? 1 : 0,
+                                                    transition: `opacity ${Math.round(PODIUM_SWAP_DURATION * 0.45)}ms ease-out`
+                                                }}
+                                            >
+                                                👑
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+                        {!hasThirdPlaceTie && sortedStats[1] && (
+                            <div
+                                className="absolute pointer-events-none"
+                                style={{
+                                    ...(movingWinnerUsesFirstStyle ? secondPlaceStyle : firstPlaceStyle),
+                                    zIndex: 30,
+                                    opacity: movingOverlaysVisible ? 1 : 0,
+                                    transition: [
+                                        `left ${PODIUM_SWAP_DURATION}ms cubic-bezier(0.22, 1, 0.36, 1)`,
+                                        `top ${PODIUM_SWAP_DURATION}ms cubic-bezier(0.22, 1, 0.36, 1)`,
+                                        `width ${PODIUM_SWAP_DURATION}ms cubic-bezier(0.22, 1, 0.36, 1)`,
+                                        `height ${PODIUM_SWAP_DURATION}ms cubic-bezier(0.22, 1, 0.36, 1)`,
+                                        'opacity 200ms ease-out'
+                                    ].join(', ')
+                                }}
+                            >
+                                <div
+                                    className="absolute left-1/2 -translate-x-1/2 text-center"
+                                    style={{
+                                        bottom: '100%',
+                                        marginBottom: isFullscreen ? '20px' : '10px',
+                                        width: isFullscreen ? '300px' : '150px',
+                                        opacity: podiumSwapSecondRevealed ? 1 : 0,
+                                        transition: 'opacity 300ms ease-out'
+                                    }}
+                                >
+                                    <div 
+                                        className={`${videotext.className} font-bold text-amber-400 ${isFullscreen ? 'text-3xl' : 'text-xl'} mb-1`}
+                                        style={{ textTransform: 'uppercase', letterSpacing: '-0.02em' }}
+                                    >
+                                        {sortedStats[1].nickname}
+                                    </div>
+                                    <div className={`${videotext.className} font-bold text-amber-300 ${isFullscreen ? 'text-2xl' : 'text-lg'}`} style={{ letterSpacing: '-0.02em' }}>
+                                        {sortedStats[1].totalPoints} DAP
+                                    </div>
+                                </div>
+
+                                <div 
+                                    className={`flip-card-container ${
+                                        podiumSwapSecondRevealed ? 'flip-card-flipped' : ''
+                                    }`}
+                                >
+                                    <div 
+                                        className="absolute inset-0 flex items-center justify-center"
+                                        style={{ 
+                                            backfaceVisibility: 'hidden',
+                                            transform: 'rotateY(0deg)',
+                                            border: '6px solid rgba(245, 216, 122, 1)',
+                                            backgroundColor: 'rgba(0, 0, 0, 0.6)',
+                                            boxShadow: 'inset 0 0 60px rgba(197, 176, 98, 0.5), inset 0 0 25px rgba(207, 178, 72, 0.3)'
+                                        }}
+                                    >
+                                        <div className={`${videotext.className} text-white text-9xl font-bold pixelated`}>?</div>
+                                    </div>
+
+                                    <div 
+                                        className="absolute inset-0"
+                                        style={{ 
+                                            backfaceVisibility: 'hidden',
+                                            transform: 'rotateY(180deg)'
+                                        }}
+                                    >
+                                        <div 
+                                            className="relative w-full h-full"
+                                            style={{
+                                                border: '6px solid rgba(245, 216, 122, 1)',
+                                                backgroundColor: 'rgba(0, 0, 0, 0.6)'
+                                            }}
+                                        >
+                                            <Image
+                                                src={`/images/avatars/${sortedStats[1].nickname}.png`}
+                                                alt={sortedStats[1].nickname}
+                                                fill
+                                                className="object-cover"
+                                                onError={(e) => {
+                                                    const target = e.target as HTMLImageElement;
+                                                    target.src = '/images/avatars/placeholder.png';
+                                                }}
+                                            />
+                                            <div 
+                                                className="absolute inset-0 pointer-events-none"
+                                                style={{
+                                                    boxShadow: 'inset 0 0 60px rgba(197, 176, 98, 0.5), inset 0 0 25px rgba(207, 178, 72, 0.3)'
+                                                }}
+                                            />
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
 
@@ -2284,11 +2569,11 @@ export default function WeeklySummaryPage() {
                         {currentStep === 9 && sortedStats[0] && topPlayerGames.length > 0 && renderPlayerHistory(sortedStats[0].nickname, isFullscreen)}
                     </>
                 ) : (
-                    // Normalnie: krok 2=historia 3., 5=historia 2., 8=historia 1.
+                    // Normalnie: krok 2=historia 3., 5=historia fake 2. czyli 1., 8=historia prawdziwego 2.
                     <>
                         {currentStep === 2 && sortedStats[2] && topPlayerGames.length > 0 && renderPlayerHistory(sortedStats[2].nickname, isFullscreen)}
-                        {currentStep === 5 && sortedStats[1] && topPlayerGames.length > 0 && renderPlayerHistory(sortedStats[1].nickname, isFullscreen)}
-                        {currentStep === 8 && sortedStats[0] && topPlayerGames.length > 0 && renderPlayerHistory(sortedStats[0].nickname, isFullscreen)}
+                        {currentStep === PODIUM_STANDARD_STEPS.fakeSecondHistory && sortedStats[0] && topPlayerGames.length > 0 && renderPlayerHistory(sortedStats[0].nickname, isFullscreen)}
+                        {currentStep === PODIUM_STANDARD_STEPS.secondPlaceHistory && sortedStats[1] && topPlayerGames.length > 0 && renderPlayerHistory(sortedStats[1].nickname, isFullscreen)}
                     </>
                 )}
             </>
