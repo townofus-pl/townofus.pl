@@ -11,11 +11,20 @@ export function extractDramaAferaSubPath(pathname: string): string {
 }
 
 // Builds a full dramaafera URL with a season prefix when needed.
+// `path` may be with or without a leading `/`; empty/whitespace/root values return the base URL.
 // Current season: /dramaafera{path}
 // Other seasons:  /dramaafera/sezon/{id}{path}
 export function buildSeasonUrl(path: string, seasonId: number): string {
-  if (seasonId === CURRENT_SEASON) {
-    return `/dramaafera${path}`;
+  let normalizedPath = path?.trim() ?? '';
+
+  if (!normalizedPath || normalizedPath === '/') {
+    normalizedPath = '';
+  } else if (!normalizedPath.startsWith('/')) {
+    normalizedPath = `/${normalizedPath}`;
   }
-  return `/dramaafera/sezon/${seasonId}${path}`;
+
+  if (seasonId === CURRENT_SEASON) {
+    return `/dramaafera${normalizedPath}`;
+  }
+  return `/dramaafera/sezon/${seasonId}${normalizedPath}`;
 }

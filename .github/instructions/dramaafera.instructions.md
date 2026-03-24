@@ -37,6 +37,8 @@ Phase 1 complete:
 - Game.season and PlayerRanking.season columns (Int, default 1) added via migration 0003
   NOTE: @default(1) is temporary for migration backfill — Phase 3 removes it via a
   second migration (0004) after all create code sets season explicitly
+- rankingCalculator.ts — selects game.season and sets PlayerRanking.season on create (pulled forward from Phase 3)
+- players/post.ts — sets PlayerRanking.season = CURRENT_SEASON on initial ranking create (pulled forward from Phase 3)
 
 Phase 2 complete:
 - SeasonSwitcher.tsx in _components/Header/ — 'use client' dropdown, uses useSeason() +

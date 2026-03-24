@@ -6,6 +6,7 @@ import {
   PlayerModelSchema,
   PlayerRankingModelSchema
 } from '../../../generated/zod/schemas/variants/pure';
+import { PlayerRankingReason } from '../_constants/rankingTypes';
 
 // Extend Zod with OpenAPI
 extendZodWithOpenApi(z);
@@ -45,7 +46,7 @@ export const PlayerRankingSchema = PlayerRankingModelSchema.pick({
     playerId: 42,
     gameId: 123,
     score: 1543.2,
-    reason: 'game_result',
+    reason: PlayerRankingReason.GameResult,
     createdAt: new Date('2024-01-15T10:30:00Z')
   }
 });

@@ -110,7 +110,23 @@ Type: { type, name, id, color, team: Teams, icon, description: ReactNode, settin
 ELO-like: START_RATING=2000, W=9 (game influence), PEN=5 (absence penalty)
 Calculator: src/app/api/_utils/rankingCalculator.ts → calculateRankingForGame(prisma, gameId)
 PlayerRanking.reason values defined in src/app/api/_constants/rankingTypes.ts as PlayerRankingReason:
-  base_value | initial_value | game_result | absence_penalty | absence_no_penalty | penalty | reward | season_reset
+  `const` object + derived type (same identifier — valid TS value/type namespace split):
+  PlayerRankingReason.BaseValue | .InitialValue | .GameResult | .AbsencePenalty |
+  .AbsenceNoPenalty | .Penalty | .Reward | .SeasonReset
+  Always import as a value (not `import type`) when using the constants.
+
+Every PlayerRanking write MUST include an explicit season:
+  rankingCalculator.ts  — reads game.season and passes it to playerRanking.create()
+  players/post.ts       — uses CURRENT_SEASON for the initial ranking row on player creation
+  (Phase 3 will remove @default(1) from schema once all write paths set season explicitly)
+
+### Database gotchas
+
+`prisma.model.findUnique()` cannot accept extra `where` conditions beyond the unique key —
+it does not support `{ ...withoutDeleted }`. To find a single record by PK and exclude
+soft-deleted rows, use `findFirst` instead:
+  prisma.game.findFirst({ where: { id, ...withoutDeleted } })
+Performance is identical on PK lookups (SQLite uses the unique index either way).
 
 ## Proposing New Rules
 
