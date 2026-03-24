@@ -43,8 +43,8 @@ export async function calculateRankingForGame(
   try {
     
     // 1. Pobierz dane gry
-    const game = await prisma.game.findUnique({
-      where: { id: gameId },
+    const game = await prisma.game.findFirst({
+      where: { id: gameId, ...withoutDeleted },
       select: { 
         id: true, 
         startTime: true, 
