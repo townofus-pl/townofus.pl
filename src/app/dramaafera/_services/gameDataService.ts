@@ -6,6 +6,7 @@ import { Modifiers } from '@/modifiers';
 import { Teams } from '@/constants/teams';
 import type { Prisma } from '../../api/_database';
 import type { GamePlayerStatistics, PlayerRole, PlayerModifier } from '@prisma/client';
+import { CURRENT_SEASON } from '../_constants/seasons';
 
 // Type for game statistics with included relationships
 type GamePlayerStatisticsWithRelations = GamePlayerStatistics & {
@@ -216,6 +217,14 @@ async function getDatabaseClient() {
     // Return null to indicate database is not accessible
     return null;
   }
+}
+
+// Helper to build the game where clause filtered by season
+function buildSeasonGameWhere(seasonId?: number) {
+  return {
+    ...withoutDeleted,
+    season: seasonId ?? CURRENT_SEASON,
+  };
 }
 
 // Helper function to format duration
@@ -570,7 +579,7 @@ export function formatPlayerStatsWithColors(player: UIPlayerData, maxTasks?: num
 }
 
 // Fetch all games summary
-export async function getGamesList(): Promise<GameSummary[]> {
+export async function getGamesList(seasonId?: number): Promise<GameSummary[]> {
   const prisma = await getDatabaseClient();
   
   // Return empty array if database is not available (during build time)
@@ -579,7 +588,7 @@ export async function getGamesList(): Promise<GameSummary[]> {
   }
   
   const dbGames = await prisma.game.findMany({
-    where: withoutDeleted,
+    where: buildSeasonGameWhere(seasonId),
     include: {
       gamePlayerStatistics: {
         include: {
@@ -654,16 +663,16 @@ export async function getGamesList(): Promise<GameSummary[]> {
 }
 
 // Fetch games by specific date
-export async function getGamesListByDate(date: string): Promise<GameSummary[]> {
-  const allGames = await getGamesList();
+export async function getGamesListByDate(date: string, seasonId?: number): Promise<GameSummary[]> {
+  const allGames = await getGamesList(seasonId);
   return allGames
     .filter(game => extractDateFromGameId(game.id) === date)
     .sort((a, b) => b.id.localeCompare(a.id)); // Sort descending for display (newest first)
 }
 
 // Fetch list of dates with games
-export async function getGameDatesList(): Promise<DateWithGames[]> {
-  const games = await getGamesList();
+export async function getGameDatesList(seasonId?: number): Promise<DateWithGames[]> {
+  const games = await getGamesList(seasonId);
   
   // Return empty array if no games available (during build time)
   if (games.length === 0) {
@@ -915,7 +924,7 @@ export async function getGameData(gameId: string): Promise<UIGameData | null> {
 }
 
 // Fetch player statistics across all games
-export async function getPlayerStats(playerName: string): Promise<PlayerStats | null> {
+export async function getPlayerStats(playerName: string, seasonId?: number): Promise<PlayerStats | null> {
   const prisma = await getDatabaseClient();
   
   // Return null if database is not available (during build time)
@@ -930,12 +939,17 @@ export async function getPlayerStats(playerName: string): Promise<PlayerStats | 
     },
     include: {
       gamePlayerStatistics: {
+        where: {
+          game: {
+            season: seasonId ?? CURRENT_SEASON,
+            ...withoutDeleted
+          }
+        },
         include: {
           roleHistory: {
             orderBy: { order: 'asc' }
           },
-          modifiers: true,
-          game: true
+          modifiers: true
         }
       }
     }
@@ -1047,7 +1061,7 @@ const playerRankingPoints: Record<string, number> = {
 };
 
 // Get all games data (equivalent to getAllGamesData from converter)
-export async function getAllGamesData(): Promise<UIGameData[]> {
+export async function getAllGamesData(seasonId?: number): Promise<UIGameData[]> {
   const prisma = await getDatabaseClient();
   
   // Return empty array if database is not available (during build time)
@@ -1056,7 +1070,7 @@ export async function getAllGamesData(): Promise<UIGameData[]> {
   }
 
   const games = await prisma.game.findMany({
-    where: withoutDeleted,
+    where: buildSeasonGameWhere(seasonId),
     include: {
       gamePlayerStatistics: {
         where: {
@@ -1266,8 +1280,8 @@ export async function getAllGamesData(): Promise<UIGameData[]> {
 }
 
 // Generate player ranking statistics
-export async function generatePlayerRankingStats(): Promise<PlayerRankingStats[]> {
-  const allGames = await getAllGamesData();
+export async function generatePlayerRankingStats(seasonId?: number): Promise<PlayerRankingStats[]> {
+  const allGames = await getAllGamesData(seasonId);
   const playerStats = new Map<string, { played: number; won: number }>();
   
   // Iterate through all games and count statistics
@@ -1309,8 +1323,8 @@ export async function generatePlayerRankingStats(): Promise<PlayerRankingStats[]
 }
 
 // Generate role ranking statistics
-export async function generateRoleRankingStats(): Promise<RoleRankingStats[]> {
-  const allGames = await getAllGamesData();
+export async function generateRoleRankingStats(seasonId?: number): Promise<RoleRankingStats[]> {
+  const allGames = await getAllGamesData(seasonId);
   const roleStats = new Map<string, {
     gamesPlayed: number;
     wins: number;
@@ -1404,7 +1418,7 @@ export async function generateRoleRankingStats(): Promise<RoleRankingStats[]> {
 }
 
 // Get list of all players from database
-export async function getPlayersList(): Promise<string[]> {
+export async function getPlayersList(seasonId?: number): Promise<string[]> {
   const prisma = await getDatabaseClient();
   
   if (!prisma) {
@@ -1413,7 +1427,17 @@ export async function getPlayersList(): Promise<string[]> {
 
   try {
     const players = await prisma.player.findMany({
-      where: withoutDeleted,
+      where: {
+        ...withoutDeleted,
+        gamePlayerStatistics: {
+          some: {
+            game: {
+              season: seasonId ?? CURRENT_SEASON,
+              ...withoutDeleted
+            }
+          }
+        }
+      },
       select: {
         name: true
       },
@@ -1428,7 +1452,7 @@ export async function getPlayersList(): Promise<string[]> {
 }
 
 // Get user profile statistics from database
-export async function getUserProfileStats(playerName: string): Promise<UserProfileStats | null> {
+export async function getUserProfileStats(playerName: string, seasonId?: number): Promise<UserProfileStats | null> {
   const prisma = await getDatabaseClient();
   
   if (!prisma) {
@@ -1443,6 +1467,12 @@ export async function getUserProfileStats(playerName: string): Promise<UserProfi
       },
       include: {
         gamePlayerStatistics: {
+          where: {
+            game: {
+              season: seasonId ?? CURRENT_SEASON,
+              ...withoutDeleted
+            }
+          },
           include: {
             roleHistory: {
               orderBy: { order: 'asc' }
@@ -1576,7 +1606,7 @@ export interface RankingHistoryPoint {
 }
 
 // Get player ranking history from database
-export async function getPlayerRankingHistory(playerName: string): Promise<RankingHistoryPoint[]> {
+export async function getPlayerRankingHistory(playerName: string, seasonId?: number): Promise<RankingHistoryPoint[]> {
   const prisma = await getDatabaseClient();
   
   if (!prisma) {
@@ -1598,6 +1628,7 @@ export async function getPlayerRankingHistory(playerName: string): Promise<Ranki
     const rankings = await prisma.playerRanking.findMany({
       where: {
         playerId: player.id,
+        season: seasonId ?? CURRENT_SEASON,
         ...withoutDeleted
       },
       include: {
@@ -1641,7 +1672,7 @@ export interface PlayerTopGame {
 }
 
 // Get player's best games
-export async function getPlayerTopGames(playerName: string, limit: number = 3): Promise<{ best: PlayerTopGame[] }> {
+export async function getPlayerTopGames(playerName: string, limit: number = 3, seasonId?: number): Promise<{ best: PlayerTopGame[] }> {
   const prisma = await getDatabaseClient();
   
   if (!prisma) {
@@ -1664,7 +1695,10 @@ export async function getPlayerTopGames(playerName: string, limit: number = 3): 
     const playerGames = await prisma.gamePlayerStatistics.findMany({
       where: {
         playerId: player.id,
-        game: withoutDeleted
+        game: {
+          ...withoutDeleted,
+          season: seasonId ?? CURRENT_SEASON
+        }
       },
       include: {
         game: {
@@ -1750,7 +1784,8 @@ export interface VotingStatistics {
  * Pobierz statystyki głosowań gracza
  */
 export async function getPlayerVotingStats(
-  nick: string
+  nick: string,
+  seasonId?: number
 ): Promise<VotingStatistics> {
   const prisma = await getDatabaseClient();
   
@@ -1799,7 +1834,7 @@ export async function getPlayerVotingStats(
         voterId: player.id,
         meeting: {
           deletedAt: null,
-          game: withoutDeleted
+          game: { ...withoutDeleted, season: seasonId ?? CURRENT_SEASON }
         }
       },
       include: {
@@ -1818,7 +1853,7 @@ export async function getPlayerVotingStats(
         targetId: player.id,
         meeting: {
           deletedAt: null,
-          game: withoutDeleted
+          game: { ...withoutDeleted, season: seasonId ?? CURRENT_SEASON }
         }
       },
       include: {
@@ -1837,7 +1872,7 @@ export async function getPlayerVotingStats(
         playerId: player.id,
         meeting: {
           deletedAt: null,
-          game: withoutDeleted
+          game: { ...withoutDeleted, season: seasonId ?? CURRENT_SEASON }
         }
       },
       include: {
@@ -1871,7 +1906,8 @@ export async function getPlayerVotingStats(
       const batchMeetings = await prisma.meeting.findMany({
         where: {
           id: { in: batchIds },
-          deletedAt: null
+          deletedAt: null,
+          game: { season: seasonId ?? CURRENT_SEASON, ...withoutDeleted }
         },
         include: {
           meetingVotes: true
@@ -2007,7 +2043,7 @@ export async function getPlayerVotingStats(
  * Pobierz liczbę gwiazdek gracza (dni, w których miał najwięcej punktów)
  * Gwiazdka z ostatniej sesji pojawia się dopiero po pojawieniu się gry z nowej daty
  */
-export async function getPlayerStars(nick: string): Promise<number> {
+export async function getPlayerStars(nick: string, seasonId?: number): Promise<number> {
   const prisma = await getDatabaseClient();
   
   if (!prisma) {
@@ -2029,7 +2065,8 @@ export async function getPlayerStars(nick: string): Promise<number> {
     // Pobierz wszystkie gry pogrupowane po dacie
     const allGames = await prisma.game.findMany({
       where: {
-        deletedAt: null
+        deletedAt: null,
+        season: seasonId ?? CURRENT_SEASON
       },
       select: {
         id: true,
