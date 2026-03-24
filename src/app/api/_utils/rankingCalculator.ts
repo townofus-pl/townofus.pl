@@ -1,6 +1,7 @@
 // Types for better type safety
 import { withoutDeleted } from '../schema/common';
 import type { PrismaClient, Player, GamePlayerStatistics, PlayerRanking } from '@prisma/client';
+import type { PlayerRankingReason } from '../_constants/rankingTypes';
 
 // Stałe systemu rankingowego
 const RANKING_CONSTANTS = {
@@ -129,7 +130,7 @@ export async function calculateRankingForGame(
     }
 
     // 7. Oblicz nowe rankingi
-    const newRankings: Array<{ playerId: number; newRating: number; reason: string }> = [];
+    const newRankings: Array<{ playerId: number; newRating: number; reason: PlayerRankingReason }> = [];
 
     // Dla obecnych graczy
     for (const player of presentPlayers) {

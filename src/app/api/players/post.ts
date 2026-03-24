@@ -4,6 +4,7 @@ import { getPrismaClient } from '../_database';
 import { CreatePlayerRequestSchema } from '../schema/players';
 import { createSuccessResponse, createErrorResponse } from '../_utils';
 import { formatZodError, withoutDeleted } from '../schema/common';
+import type { PlayerRankingReason } from '../_constants/rankingTypes';
 
 export async function POST(request: NextRequest) {
   try {
@@ -52,7 +53,7 @@ export async function POST(request: NextRequest) {
       data: {
         playerId: newPlayer.id,
         score: 2000.0, // Default starting ranking
-        reason: 'initial_value'
+        reason: 'initial_value' satisfies PlayerRankingReason
       }
     });
 
