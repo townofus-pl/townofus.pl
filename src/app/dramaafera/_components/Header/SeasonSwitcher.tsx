@@ -5,7 +5,7 @@ import { SEASONS } from '../../_constants/seasons';
 import { useSeason } from '../../_hooks/useSeason';
 import { extractDramaAferaSubPath, buildSeasonUrl } from '../../_utils/seasonHelpers';
 
-export const SeasonSwitcher = ({ className }: { className?: string }) => {
+export default function SeasonSwitcher({ className }: { className?: string }) {
     const router = useRouter();
     const pathname = usePathname();
     const currentSeason = useSeason();
@@ -17,7 +17,7 @@ export const SeasonSwitcher = ({ className }: { className?: string }) => {
     };
 
     return (
-        <div className={`w-full md:w-fit${className ? ` ${className}` : ''}`}>
+        <div className={['w-full md:w-fit', className].filter(Boolean).join(' ')}>
             <select
                 value={currentSeason}
                 onChange={handleChange}
@@ -32,4 +32,4 @@ export const SeasonSwitcher = ({ className }: { className?: string }) => {
             </select>
         </div>
     );
-};
+}
