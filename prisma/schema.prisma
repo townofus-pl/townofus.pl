@@ -32,6 +32,7 @@ model Game {
     // Computed winner information (cached for performance)
     winnerTeam      String?  // 'Crewmate', 'Impostor', 'Neutral'
     winCondition    String?  // Description of how the game was won
+    season          Int      @default(1)
 
     // Timestamps
     createdAt       DateTime @default(now())
@@ -49,6 +50,9 @@ model Game {
     @@index([createdAt])
     @@index([deletedAt])
     @@index([winnerTeam])
+    @@index([season])
+    @@index([season, deletedAt])
+    @@index([season, winnerTeam])
     @@map("games")
 }
 
@@ -310,6 +314,7 @@ model PlayerRanking {
     gameId   Int? // Optional - null for base values, penalties, rewards
     score    Float   // Ranking points
     reason   String? // Optional description: "base_value", "game_result", "penalty", "reward"
+    season   Int     @default(1)
 
     // Timestamps
     createdAt DateTime @default(now())
@@ -326,5 +331,7 @@ model PlayerRanking {
     @@index([createdAt])
     @@index([reason])
     @@index([deletedAt])
+    @@index([season])
+    @@index([playerId, season, createdAt])
     @@map("player_rankings")
 }

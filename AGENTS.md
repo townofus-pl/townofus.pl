@@ -34,12 +34,16 @@ src/
 ├── app/
 │   ├── _components/              # Universal shared components (2+ pages)
 │   ├── api/                      # API routes
+│   │   ├── _constants/           # rankingTypes.ts (PlayerRankingReason)
 │   │   ├── _database/            # Prisma singleton, batchStatements, buildPaginationQuery
 │   │   ├── _middlewares/         # withAuth, withCors (barrel: @/app/api/_middlewares)
 │   │   ├── _utils/               # createSuccessResponse, createErrorResponse, rankingCalculator
 │   │   └── schema/               # Zod schemas, OpenAPI registry (openApiRegistry)
 │   └── dramaafera/               # Dramaafera section
 │       ├── _components/          # Dramaafera shared components
+│       ├── _constants/           # seasons.ts (SEASONS, CURRENT_SEASON, season helpers)
+│       ├── _hooks/               # useSeason.ts
+│       ├── _utils/               # seasonHelpers.ts (extractDramaAferaSubPath, buildSeasonUrl)
 │       └── _services/            # gameDataService.ts (~2100 lines) — RSC data layer
 ├── constants/                    # Teams, RoleOrModifierTypes, SettingTypes, abilities
 ├── roles/                        # 62 role definitions (snake_case filenames), exported from index.ts
@@ -105,7 +109,24 @@ Type: { type, name, id, color, team: Teams, icon, description: ReactNode, settin
 
 ELO-like: START_RATING=2000, W=9 (game influence), PEN=5 (absence penalty)
 Calculator: src/app/api/_utils/rankingCalculator.ts → calculateRankingForGame(prisma, gameId)
-PlayerRanking.reason values: base_value | game_result | absence_penalty | absence_no_penalty | penalty | reward | season_reset
+PlayerRanking.reason values defined in src/app/api/_constants/rankingTypes.ts as PlayerRankingReason:
+  `const` object + derived type (same identifier — valid TS value/type namespace split):
+  PlayerRankingReason.BaseValue | .InitialValue | .GameResult | .AbsencePenalty |
+  .AbsenceNoPenalty | .Penalty | .Reward | .SeasonReset
+  Always import as a value (not `import type`) when using the constants.
+
+Every PlayerRanking write MUST include an explicit season:
+  rankingCalculator.ts  — reads game.season and passes it to playerRanking.create()
+  players/post.ts       — uses CURRENT_SEASON for the initial ranking row on player creation
+  (Phase 3 will remove @default(1) from schema once all write paths set season explicitly)
+
+### Database gotchas
+
+`prisma.model.findUnique()` cannot accept extra `where` conditions beyond the unique key —
+it does not support `{ ...withoutDeleted }`. To find a single record by PK and exclude
+soft-deleted rows, use `findFirst` instead:
+  prisma.game.findFirst({ where: { id, ...withoutDeleted } })
+Performance is identical on PK lookups (SQLite uses the unique index either way).
 
 ## Proposing New Rules
 
