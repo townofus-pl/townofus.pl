@@ -4,8 +4,8 @@ export interface Season {
   endDate: string | null; // ISO date (exclusive), null = ongoing
 }
 
-// Date ranges used only for auto-determining season on game creation.
-// All read queries use the `season` column directly.
+// Date ranges used for auto-determining season on game creation.
+// Read queries will filter directly by the `season` column once Phase 2 is implemented.
 export const SEASONS: Season[] = [
   { id: 1, startDate: null, endDate: '2026-03-23' },
   { id: 2, startDate: '2026-03-23', endDate: null },

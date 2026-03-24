@@ -112,6 +112,11 @@ Calculator: src/app/api/_utils/rankingCalculator.ts → calculateRankingForGame(
 PlayerRanking.reason values defined in src/app/api/_constants/rankingTypes.ts as PlayerRankingReason:
   base_value | initial_value | game_result | absence_penalty | absence_no_penalty | penalty | reward | season_reset
 
+Every PlayerRanking write MUST include an explicit season:
+  rankingCalculator.ts  — reads game.season and passes it to playerRanking.create()
+  players/post.ts       — uses CURRENT_SEASON for the initial ranking row on player creation
+  (Phase 3 will remove @default(1) from schema once all write paths set season explicitly)
+
 ## Proposing New Rules
 
 When you notice a pattern used 2+ times, a decision made in this session, or a convention

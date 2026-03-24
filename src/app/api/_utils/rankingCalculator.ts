@@ -49,6 +49,7 @@ export async function calculateRankingForGame(
         id: true, 
         startTime: true, 
         gameIdentifier: true,
+        season: true,
         gamePlayerStatistics: {
           include: {
             player: true
@@ -180,7 +181,8 @@ export async function calculateRankingForGame(
           playerId: ranking.playerId,
           gameId: gameId,
           score: ranking.newRating,
-          reason: ranking.reason
+          reason: ranking.reason,
+          season: game.season
         }
       });
       
