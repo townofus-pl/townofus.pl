@@ -34,7 +34,7 @@ src/
 ├── app/
 │   ├── _components/              # Universal shared components (2+ pages)
 │   ├── api/                      # API routes
-│   │   ├── _database/            # Prisma singleton, withTransaction, buildPaginationQuery
+│   │   ├── _database/            # Prisma singleton, batchStatements, buildPaginationQuery
 │   │   ├── _middlewares/         # withAuth, withCors (barrel: @/app/api/_middlewares)
 │   │   ├── _utils/               # createSuccessResponse, createErrorResponse, rankingCalculator
 │   │   └── schema/               # Zod schemas, OpenAPI registry (openApiRegistry)
