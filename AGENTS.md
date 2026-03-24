@@ -34,12 +34,16 @@ src/
 ├── app/
 │   ├── _components/              # Universal shared components (2+ pages)
 │   ├── api/                      # API routes
+│   │   ├── _constants/           # rankingTypes.ts (PlayerRankingReason)
 │   │   ├── _database/            # Prisma singleton, batchStatements, buildPaginationQuery
 │   │   ├── _middlewares/         # withAuth, withCors (barrel: @/app/api/_middlewares)
 │   │   ├── _utils/               # createSuccessResponse, createErrorResponse, rankingCalculator
 │   │   └── schema/               # Zod schemas, OpenAPI registry (openApiRegistry)
 │   └── dramaafera/               # Dramaafera section
 │       ├── _components/          # Dramaafera shared components
+│       ├── _constants/           # seasons.ts (SEASONS, CURRENT_SEASON, season helpers)
+│       ├── _hooks/               # useSeason.ts
+│       ├── _utils/               # seasonHelpers.ts (extractDramaAferaSubPath, buildSeasonUrl)
 │       └── _services/            # gameDataService.ts (~2100 lines) — RSC data layer
 ├── constants/                    # Teams, RoleOrModifierTypes, SettingTypes, abilities
 ├── roles/                        # 62 role definitions (snake_case filenames), exported from index.ts
@@ -105,7 +109,8 @@ Type: { type, name, id, color, team: Teams, icon, description: ReactNode, settin
 
 ELO-like: START_RATING=2000, W=9 (game influence), PEN=5 (absence penalty)
 Calculator: src/app/api/_utils/rankingCalculator.ts → calculateRankingForGame(prisma, gameId)
-PlayerRanking.reason values: base_value | game_result | absence_penalty | absence_no_penalty | penalty | reward | season_reset
+PlayerRanking.reason values defined in src/app/api/_constants/rankingTypes.ts as PlayerRankingReason:
+  base_value | initial_value | game_result | absence_penalty | absence_no_penalty | penalty | reward | season_reset
 
 ## Proposing New Rules
 

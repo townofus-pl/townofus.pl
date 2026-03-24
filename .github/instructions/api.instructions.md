@@ -10,6 +10,12 @@ Each API resource has separate files per HTTP method plus a route.ts:
   games/post.ts   — raw POST handler
   games/route.ts  — applies middleware, registers OpenAPI paths, exports GET/POST/etc.
 
+Shared directories:
+  _constants/   — domain-wide type definitions (e.g. PlayerRankingReason)
+  _database/    — Prisma singleton, batchStatements, buildPaginationQuery
+  _middlewares/ — withAuth, withCors
+  _utils/       — response helpers, rankingCalculator
+
 ## Handler signatures
 
 Non-dynamic route:
