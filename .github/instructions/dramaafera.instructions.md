@@ -38,6 +38,17 @@ Phase 1 complete:
   NOTE: @default(1) is temporary for migration backfill — Phase 3 removes it via a
   second migration (0004) after all create code sets season explicitly
 
+Phase 2 complete:
+- SeasonSwitcher.tsx in _components/Header/ — 'use client' dropdown, uses useSeason() +
+  buildSeasonUrl() + extractDramaAferaSubPath() to navigate between seasons while
+  preserving the current sub-path
+- Header.tsx rewritten as a flat CSS grid (lg: 2-col 1fr/auto, 3 rows; below lg: single column)
+  with all 5 elements (title, subtitle, nav, SeasonSwitcher, credits) as direct grid children,
+  explicitly placed via lg:col-start-* / lg:row-start-* — no nested column divs
+- Navigation.tsx updated: seasonDependent flag per nav item, buildSeasonUrl() applied to
+  season-dependent links (/ranking, /wyniki, /historia-gier), currentPage detection uses
+  extractDramaAferaSubPath() + prefix matching instead of exact path comparison
+
 ## Component structure
 
   dramaafera/
