@@ -29,6 +29,9 @@ export default {
             gridTemplateColumns: {
                 '2/1': '2fr 1fr',
             },
+            backgroundImage: {
+                'chevron-gray': `url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 20 20' fill='%239ca3af'%3E%3Cpath fill-rule='evenodd' d='M5.22 8.22a.75.75 0 0 1 1.06 0L10 11.94l3.72-3.72a.75.75 0 1 1 1.06 1.06l-4.25 4.25a.75.75 0 0 1-1.06 0L5.22 9.28a.75.75 0 0 1 0-1.06z' clip-rule='evenodd'/%3E%3C/svg%3E")`,
+            },
             borderWidth: {
                 5: '5px',
             }
