@@ -1,7 +1,7 @@
 // Types for better type safety
 import { withoutDeleted } from '../schema/common';
 import type { PrismaClient, Player, GamePlayerStatistics, PlayerRanking } from '@prisma/client';
-import type { PlayerRankingReason } from '../_constants/rankingTypes';
+import { PlayerRankingReason } from '../_constants/rankingTypes';
 
 // Stałe systemu rankingowego
 const RANKING_CONSTANTS = {
@@ -148,7 +148,7 @@ export async function calculateRankingForGame(
       newRankings.push({
         playerId: player.id,
         newRating,
-        reason: 'game_result'
+        reason: PlayerRankingReason.GameResult
       });
 
       console.log(`🎮 ${player.name}: ${Rs_i} + ${ratingChange.toFixed(2)} = ${newRating.toFixed(2)}`);
@@ -164,7 +164,7 @@ export async function calculateRankingForGame(
       newRankings.push({
         playerId: player.id,
         newRating,
-        reason: penalty > 0 ? 'absence_penalty' : 'absence_no_penalty'
+        reason: penalty > 0 ? PlayerRankingReason.AbsencePenalty : PlayerRankingReason.AbsenceNoPenalty
       });
 
       if (penalty > 0) {
