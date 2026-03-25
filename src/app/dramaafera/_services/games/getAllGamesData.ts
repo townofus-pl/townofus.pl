@@ -47,7 +47,7 @@ export async function getAllGamesData(seasonId?: number): Promise<UIGameData[]> 
     }
   });
 
-  return games.map(game => {
+  const result = games.map(game => {
     const duration = formatDuration(game.startTime || new Date(), game.endTime || new Date());
     const gameDate = extractDateFromGameId(game.gameIdentifier || '');
     const displayDate = formatDisplayDate(gameDate);
@@ -81,7 +81,7 @@ export async function getAllGamesData(seasonId?: number): Promise<UIGameData[]> 
     return {
       id: game.gameIdentifier || String(game.id),
       date: displayDate,
-      gameNumber: 0,
+      gameNumber: 0, // computed below
       startTime: game.startTime?.toISOString() || '',
       endTime: game.endTime?.toISOString() || '',
       duration,
@@ -101,4 +101,20 @@ export async function getAllGamesData(seasonId?: number): Promise<UIGameData[]> 
       }
     };
   });
+
+  // Compute per-date game numbers (1-based, ordered ascending by gameIdentifier)
+  const gamesByDate = new Map<string, typeof result>();
+  result.forEach(game => {
+    const date = extractDateFromGameId(game.id);
+    if (!gamesByDate.has(date)) gamesByDate.set(date, []);
+    gamesByDate.get(date)!.push(game);
+  });
+  gamesByDate.forEach(gamesForDate => {
+    gamesForDate.sort((a, b) => a.id.localeCompare(b.id));
+    gamesForDate.forEach((game, index) => {
+      game.gameNumber = index + 1;
+    });
+  });
+
+  return result;
 }

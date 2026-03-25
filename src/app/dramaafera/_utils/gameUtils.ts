@@ -129,6 +129,9 @@ export function getModifierColor(modifierName: string): string {
 
 export function determineTeam(roleName: string | string[]): string {
   // Handle array input - use last role (final role) like old system
+  if (Array.isArray(roleName) && roleName.length === 0) {
+    return Teams.Crewmate;
+  }
   const roleToCheck = Array.isArray(roleName) ? roleName[roleName.length - 1] : roleName;
 
   if (roleToCheck.toLowerCase() === 'plaguebearer' || roleToCheck.toLowerCase() === 'pestilence') {

@@ -105,6 +105,10 @@ export async function getSessionSummaryByDate(
   detailedGames.forEach((game, gameIdx) => {
     if (!game?.detailedStats?.playersData) return;
     game.detailedStats.playersData.forEach((player) => {
+      // Use the initial role (index 0) for per-role session stats.
+      // Intentional: we track what role a player *started* as, not their final role
+      // after a potential transformation (e.g. Plaguebearer → Pestilence).
+      // Consistent with generateRoleRankingStats which uses player.role (also initial/primary).
       const roleName =
         player.roleHistory && player.roleHistory.length > 0
           ? player.roleHistory[0]

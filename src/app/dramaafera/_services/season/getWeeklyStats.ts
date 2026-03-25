@@ -39,17 +39,17 @@ export async function getWeeklyStats(
   const month = parseInt(dateStr.substring(4, 6));
   const day = parseInt(dateStr.substring(6, 8));
 
-  const targetDate = new Date(year, month - 1, day);
-  const dayOfWeek = targetDate.getDay();
+  const targetDate = new Date(Date.UTC(year, month - 1, day));
+  const dayOfWeek = targetDate.getUTCDay();
 
   const startOfWeek = new Date(targetDate);
   const daysToSubtract = dayOfWeek === 0 ? 6 : dayOfWeek - 1;
-  startOfWeek.setDate(startOfWeek.getDate() - daysToSubtract);
-  startOfWeek.setHours(0, 0, 0, 0);
+  startOfWeek.setUTCDate(startOfWeek.getUTCDate() - daysToSubtract);
+  startOfWeek.setUTCHours(0, 0, 0, 0);
 
   const endOfWeek = new Date(startOfWeek);
-  endOfWeek.setDate(endOfWeek.getDate() + 7);
-  endOfWeek.setHours(0, 0, 0, 0);
+  endOfWeek.setUTCDate(endOfWeek.getUTCDate() + 7);
+  endOfWeek.setUTCHours(0, 0, 0, 0);
 
   const weeklyGames = await prisma.game.findMany({
     where: {

@@ -43,6 +43,7 @@ export async function getPlayerVotingStats(
     const votesCast = await prisma.meetingVote.findMany({
       where: {
         voterId: player.id,
+        target: withoutDeleted,
         meeting: {
           ...withoutDeleted,
           game: { ...withoutDeleted, season: seasonId ?? CURRENT_SEASON }
@@ -56,6 +57,7 @@ export async function getPlayerVotingStats(
     const votesReceived = await prisma.meetingVote.findMany({
       where: {
         targetId: player.id,
+        voter: withoutDeleted,
         meeting: {
           ...withoutDeleted,
           game: { ...withoutDeleted, season: seasonId ?? CURRENT_SEASON }

@@ -17,70 +17,63 @@ export async function getPlayerTopGames(playerName: string, limit: number = 3, s
     return { best: [] };
   }
 
-  try {
-    const player = await prisma.player.findFirst({
-      where: {
-        name: playerName,
-        ...withoutDeleted
-      }
-    });
-
-    if (!player) {
-      return { best: [] };
+  const player = await prisma.player.findFirst({
+    where: {
+      name: playerName,
+      ...withoutDeleted
     }
+  });
 
-    const playerGames = await prisma.gamePlayerStatistics.findMany({
-      where: {
-        playerId: player.id,
-        game: {
-          ...withoutDeleted,
-          season: seasonId ?? CURRENT_SEASON
-        }
-      },
-      include: {
-        game: {
-          select: {
-            gameIdentifier: true,
-            startTime: true,
-            endTime: true,
-            map: true
-          }
-        },
-        roleHistory: {
-          orderBy: { order: 'asc' },
-          take: 1
-        }
-      },
-      orderBy: {
-        totalPoints: 'desc'
-      },
-      take: limit
-    });
-
-    const mapGame = (stat: typeof playerGames[0]): PlayerTopGame => {
-      const roleName = stat.roleHistory[0]?.roleName || 'Unknown';
-      const displayRoleName = convertRoleNameForDisplay(roleName);
-      const roleColor = getRoleColor(displayRoleName);
-      const team = determineTeam(roleName);
-
-      return {
-        gameIdentifier: stat.game.gameIdentifier,
-        date: stat.game.startTime,
-        map: stat.game.map,
-        duration: formatDuration(stat.game.startTime, stat.game.endTime),
-        role: displayRoleName,
-        roleColor,
-        team,
-        win: stat.win,
-        totalPoints: stat.totalPoints
-      };
-    };
-
-    const best = playerGames.map(mapGame);
-    return { best };
-
-  } catch (error) {
-    console.error('Error fetching player top games:', error);
+  if (!player) {
     return { best: [] };
   }
+
+  const playerGames = await prisma.gamePlayerStatistics.findMany({
+    where: {
+      playerId: player.id,
+      game: {
+        ...withoutDeleted,
+        season: seasonId ?? CURRENT_SEASON
+      }
+    },
+    include: {
+      game: {
+        select: {
+          gameIdentifier: true,
+          startTime: true,
+          endTime: true,
+          map: true
+        }
+      },
+      roleHistory: {
+        orderBy: { order: 'asc' },
+        take: 1
+      }
+    },
+    orderBy: {
+      totalPoints: 'desc'
+    },
+    take: limit
+  });
+
+  const mapGame = (stat: typeof playerGames[0]): PlayerTopGame => {
+    const roleName = stat.roleHistory[0]?.roleName || 'Unknown';
+    const displayRoleName = convertRoleNameForDisplay(roleName);
+    const roleColor = getRoleColor(displayRoleName);
+    const team = determineTeam(roleName);
+
+    return {
+      gameIdentifier: stat.game.gameIdentifier,
+      date: stat.game.startTime,
+      map: stat.game.map,
+      duration: formatDuration(stat.game.startTime, stat.game.endTime),
+      role: displayRoleName,
+      roleColor,
+      team,
+      win: stat.win,
+      totalPoints: stat.totalPoints
+    };
+  };
+
+  return { best: playerGames.map(mapGame) };
 }

@@ -1,5 +1,6 @@
 import { getDatabaseClient, buildSeasonGameWhere } from '../db';
 import { withoutDeleted } from '@/app/api/schema/common';
+import { formatDisplayDate } from '@/app/dramaafera/_utils/gameUtils';
 
 export interface GameDateGameEntry {
   id: number;
@@ -68,22 +69,6 @@ export async function getGameDatesLightweight(
     }
   >();
 
-  const polishMonths = [
-    '',
-    'stycznia',
-    'lutego',
-    'marca',
-    'kwietnia',
-    'maja',
-    'czerwca',
-    'lipca',
-    'sierpnia',
-    'września',
-    'października',
-    'listopada',
-    'grudnia',
-  ];
-
   games.forEach((game) => {
     let dateKey = '';
     let displayDate = '';
@@ -92,10 +77,7 @@ export async function getGameDatesLightweight(
       const datePart = game.gameIdentifier.split('_')[0];
       if (datePart && datePart.length === 8) {
         dateKey = datePart;
-        const year = datePart.substring(0, 4);
-        const month = parseInt(datePart.substring(4, 6));
-        const day = parseInt(datePart.substring(6, 8));
-        displayDate = `${day} ${polishMonths[month]} ${year}`;
+        displayDate = formatDisplayDate(datePart);
       }
     } else if (game.startTime) {
       const d = new Date(game.startTime);

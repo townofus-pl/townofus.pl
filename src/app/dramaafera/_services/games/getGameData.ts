@@ -131,6 +131,8 @@ export async function getGameData(gameId: string): Promise<UIGameData | null> {
     description: event.description
   }));
 
+  const winnerInfo = calculateWinnerFromStats(game.gamePlayerStatistics);
+
   return {
     id: game.gameIdentifier,
     date: extractDateFromGameId(game.gameIdentifier),
@@ -139,7 +141,10 @@ export async function getGameData(gameId: string): Promise<UIGameData | null> {
     endTime: game.endTime.toISOString(),
     duration: formatDuration(game.startTime, game.endTime),
     map: game.map || 'Unknown',
-    ...calculateWinnerFromStats(game.gamePlayerStatistics),
+    winner: winnerInfo.winner,
+    winnerColor: winnerInfo.winnerColor,
+    // Prefer the stored DB value; fall back to the stat-derived value if absent
+    winCondition: game.winCondition || winnerInfo.winCondition,
     winnerNames,
     winnerColors,
     players: game.gamePlayerStatistics.length,

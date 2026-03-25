@@ -2,6 +2,7 @@ import { getDatabaseClient } from '../db';
 import { withoutDeleted } from '@/app/api/schema/common';
 import { CURRENT_SEASON } from '@/app/dramaafera/_constants/seasons';
 import { getRankingSnapshots, buildRankPositionMap } from './_rankingHelpers';
+import { formatDisplayDate } from '@/app/dramaafera/_utils/gameUtils';
 
 interface HostPlayerInfo {
   name: string;
@@ -34,25 +35,7 @@ export async function getHostInfo(
   const prisma = await getDatabaseClient();
   if (!prisma) return null;
 
-  const polishMonths = [
-    '',
-    'stycznia',
-    'lutego',
-    'marca',
-    'kwietnia',
-    'maja',
-    'czerwca',
-    'lipca',
-    'sierpnia',
-    'września',
-    'października',
-    'listopada',
-    'grudnia',
-  ];
-  const year = date.substring(0, 4);
-  const month = date.substring(4, 6);
-  const day = date.substring(6, 8);
-  const displayDate = `${parseInt(day)} ${polishMonths[parseInt(month)]} ${year}`;
+  const displayDate = formatDisplayDate(date);
 
   const games = await prisma.game.findMany({
     where: {
