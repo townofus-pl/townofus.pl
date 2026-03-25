@@ -9,11 +9,10 @@ export const videotext = localFont({
 export const PODIUM_STANDARD_STEPS = {
     thirdPlaceReveal: 1,
     thirdPlaceHistory: 2,
-    fakeSecondReveal: 4,
-    fakeSecondHistory: 5,
-    fakeSecondReturn: 6,
-    swapReveal: 7,
-    secondPlaceHistory: 8,
+    secondPlaceReveal: 4,
+    secondPlaceHistory: 5,
+    firstPlaceReveal: 7,
+    firstPlaceHistory: 8,
     total: 9
 } as const;
 
@@ -24,9 +23,6 @@ export const PODIUM_TIE_STEPS = {
     firstPlaceHistory: 9,
     total: 10
 } as const;
-
-export const PODIUM_SWAP_DURATION = 2600;
-export const PODIUM_SWAP_SECOND_REVEAL_DELAY = 850;
 
 // YYYYMMDD → DD.MM.YYYY
 export const formatDate = (dateStr: string): string => {

@@ -3,7 +3,7 @@
 import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { createPortal } from "react-dom";
 import type { PodsumowanieClientProps } from './types';
-import { formatDate, PODIUM_STANDARD_STEPS, PODIUM_TIE_STEPS, PODIUM_SWAP_DURATION, PODIUM_SWAP_SECOND_REVEAL_DELAY } from './constants';
+import { formatDate, PODIUM_STANDARD_STEPS, PODIUM_TIE_STEPS } from './constants';
 import IntroSlide from './IntroSlide';
 import EmperorPollSlide from './EmperorPollSlide';
 import RemainingPlayersSlide from './RemainingPlayersSlide';
@@ -40,8 +40,6 @@ export default function PodsumowanieClient({
     });
     const [isTransitioning, setIsTransitioning] = useState(false);
     const [showConfetti, setShowConfetti] = useState(false);
-    const [podiumSwapSecondRevealed, setPodiumSwapSecondRevealed] = useState(false);
-    const [isPodiumSwapAnimating, setIsPodiumSwapAnimating] = useState(false);
     const [introBlackOverlay, setIntroBlackOverlay] = useState(true);
     const backgroundMusicRef = useRef<HTMLAudioElement | null>(null); // Ref zamiast state - nie triggeruje re-render
     const [introInitialDelayPassed, setIntroInitialDelayPassed] = useState(false); // Czy minęło początkowe opóźnienie intro
@@ -100,7 +98,7 @@ export default function PodsumowanieClient({
                 const sortedStats = [...weeklyStats].sort((a, b) => b.totalPoints - a.totalPoints);
                 const hasThirdPlaceTie = sortedStats.length >= 4 && sortedStats[2].totalPoints === sortedStats[3].totalPoints;
                 // Przy remisie: 0=pusty, 1=odkrycie 3., 2=historia 1. z remisu, 3=historia 2. z remisu, 4=powrót, 5=2., 6=historia 2., 7=powrót, 8=1., 9=historia 1.
-                // Normalnie: 0=pusty, 1=3., 2=historia 3., 3=powrót, 4=fake 2. (tak naprawdę 1.), 5=historia fake 2. czyli 1., 6=powrót, 7=swap 1.<->2. z odkryciem 2., 8=historia 2.
+                // Normalnie: 0=pusty, 1=3., 2=historia 3., 3=powrót, 4=2., 5=historia 2., 6=powrót, 7=1. (EMPEROR), 8=historia 1.
                 return hasThirdPlaceTie ? PODIUM_TIE_STEPS.total : PODIUM_STANDARD_STEPS.total;
             })()
         },
@@ -294,7 +292,9 @@ export default function PodsumowanieClient({
             const sortedStats = [...weeklyStats].sort((a, b) => b.totalPoints - a.totalPoints);
             const hasThirdPlaceTie = sortedStats.length >= 4 && sortedStats[2].totalPoints === sortedStats[3].totalPoints;
             
-            if (currentSlideConfig.id === 'podium' && hasThirdPlaceTie && currentStep === PODIUM_TIE_STEPS.firstPlaceReveal - 1) {
+            if (currentSlideConfig.id === 'podium' && 
+                ((hasThirdPlaceTie && currentStep === PODIUM_TIE_STEPS.firstPlaceReveal - 1) ||
+                 (!hasThirdPlaceTie && currentStep === PODIUM_STANDARD_STEPS.firstPlaceReveal - 1))) {
                 setShowConfetti(true);
                 setTimeout(() => setShowConfetti(false), 5000); // Confetti przez 5 sekund
             }
@@ -386,38 +386,6 @@ export default function PodsumowanieClient({
         }
     }, [currentSlide, currentStep, slides, totalSlides, introBlackOverlay, weeklyStats]);
 
-    useEffect(() => {
-        const currentSlideConfig = slides[currentSlide];
-        const isStandardPodiumSwapStep =
-            currentSlideConfig?.id === 'podium' &&
-            !hasThirdPlaceTie &&
-            currentStep === PODIUM_STANDARD_STEPS.swapReveal;
-
-        if (!isStandardPodiumSwapStep) {
-            setIsPodiumSwapAnimating(false);
-            setPodiumSwapSecondRevealed(false);
-            return;
-        }
-
-        setIsPodiumSwapAnimating(true);
-        setPodiumSwapSecondRevealed(false);
-
-        const revealTimer = setTimeout(() => {
-            setPodiumSwapSecondRevealed(true);
-            setShowConfetti(true);
-            setTimeout(() => setShowConfetti(false), 5000);
-        }, PODIUM_SWAP_SECOND_REVEAL_DELAY);
-
-        const finishTimer = setTimeout(() => {
-            setIsPodiumSwapAnimating(false);
-        }, PODIUM_SWAP_DURATION);
-
-        return () => {
-            clearTimeout(revealTimer);
-            clearTimeout(finishTimer);
-        };
-    }, [currentSlide, currentStep, hasThirdPlaceTie, slides]);
-
     // Efekt do aktualizacji wyświetlanych zmian rankingu w zależności od aktualnie wyświetlanego gracza
     useEffect(() => {
         // Sprawdź który gracz jest aktualnie wyświetlany w historii gier
@@ -440,10 +408,10 @@ export default function PodsumowanieClient({
                 else if (currentStep === 6 && sortedStats[1]) playerToShow = sortedStats[1].nickname;
                 else if (currentStep === 9 && sortedStats[0]) playerToShow = sortedStats[0].nickname;
             } else {
-                // Normalnie: krok 2=historia 3., 5=historia fake 2. czyli 1., 8=historia prawdziwego 2.
+                // Normalnie: krok 2=historia 3., 5=historia 2., 8=historia 1.
                 if (currentStep === 2 && sortedStats[2]) playerToShow = sortedStats[2].nickname;
-                else if (currentStep === PODIUM_STANDARD_STEPS.fakeSecondHistory && sortedStats[0]) playerToShow = sortedStats[0].nickname;
                 else if (currentStep === PODIUM_STANDARD_STEPS.secondPlaceHistory && sortedStats[1]) playerToShow = sortedStats[1].nickname;
+                else if (currentStep === PODIUM_STANDARD_STEPS.firstPlaceHistory && sortedStats[0]) playerToShow = sortedStats[0].nickname;
             }
         } else if (currentSlideConfig.id === 'sigmas') {
             const top3Nicknames = sortedStats.slice(0, 3).map(p => p.nickname);
@@ -481,11 +449,11 @@ export default function PodsumowanieClient({
 
     const handleClick = useCallback(() => {
         // Blokuj kliknięcia podczas odtwarzania filmu
-        if (isVideoPlaying || isPodiumSwapAnimating) {
+        if (isVideoPlaying) {
             return;
         }
         handleNext();
-    }, [handleNext, isPodiumSwapAnimating, isVideoPlaying]);
+    }, [handleNext, isVideoPlaying]);
 
     const togglePresentationFullscreen = () => {
         if (!isPresentationFullscreen) {
@@ -792,8 +760,6 @@ export default function PodsumowanieClient({
                                         playerRankingChanges={playerRankingChanges}
                                         date={date}
                                         currentStep={currentStep}
-                                        podiumSwapSecondRevealed={podiumSwapSecondRevealed}
-                                        isTransitioning={isTransitioning}
                                     />
                                 </div>
                             )}
