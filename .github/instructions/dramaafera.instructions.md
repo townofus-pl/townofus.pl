@@ -50,9 +50,10 @@ Phase 2 complete:
   extractDramaAferaSubPath() + prefix matching instead of exact path comparison
 
 Phase 3 complete:
-- gameDataService.ts — all exported query functions accept optional seasonId?: number,
-  default to CURRENT_SEASON via buildSeasonGameWhere() helper; PlayerRanking queries
-  filter by season column directly
+- gameDataService.ts — most exported list/stats functions accept optional seasonId?: number,
+  default to CURRENT_SEASON via buildSeasonGameWhere() helper; getGameData(gameId) intentionally
+  has no seasonId (season is a stored property of the game record, not a filter criterion);
+  PlayerRanking queries filter by season column directly
 - createGame.ts — sets season: getSeasonForDate(startTime) on prisma.game.create()
 - @default(1) removed from Game.season and PlayerRanking.season via migration 0004
 - TODO comments in user/[nick]/page.tsx and role/[nazwa]/page.tsx flagging deferred

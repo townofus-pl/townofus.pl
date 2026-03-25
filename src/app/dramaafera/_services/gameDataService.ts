@@ -1833,7 +1833,7 @@ export async function getPlayerVotingStats(
       where: {
         voterId: player.id,
         meeting: {
-          deletedAt: null,
+          ...withoutDeleted,
           game: { ...withoutDeleted, season: seasonId ?? CURRENT_SEASON }
         }
       },
@@ -1852,7 +1852,7 @@ export async function getPlayerVotingStats(
       where: {
         targetId: player.id,
         meeting: {
-          deletedAt: null,
+          ...withoutDeleted,
           game: { ...withoutDeleted, season: seasonId ?? CURRENT_SEASON }
         }
       },
@@ -1871,7 +1871,7 @@ export async function getPlayerVotingStats(
       where: {
         playerId: player.id,
         meeting: {
-          deletedAt: null,
+          ...withoutDeleted,
           game: { ...withoutDeleted, season: seasonId ?? CURRENT_SEASON }
         }
       },
@@ -1906,7 +1906,7 @@ export async function getPlayerVotingStats(
       const batchMeetings = await prisma.meeting.findMany({
         where: {
           id: { in: batchIds },
-          deletedAt: null,
+          ...withoutDeleted,
           game: { season: seasonId ?? CURRENT_SEASON, ...withoutDeleted }
         },
         include: {
