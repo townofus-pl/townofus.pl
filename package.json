@@ -11,7 +11,7 @@
         "test:coverage": "jest --coverage",
         "prepare": "husky && npm run cf-typegen && npm run db:generate",
         "preview": "npm run preview:local",
-        "preview:local": "npm run db:migrate:apply:preview && opennextjs-cloudflare build && opennextjs-cloudflare preview",
+        "preview:local": "npm run db:migrate:apply:local && opennextjs-cloudflare build && opennextjs-cloudflare preview",
         "preview:remote": "npm run db:migrate:apply:preview && opennextjs-cloudflare build && opennextjs-cloudflare preview --remote",
         "deploy": "opennextjs-cloudflare build && opennextjs-cloudflare deploy",
         "upload": "opennextjs-cloudflare build && opennextjs-cloudflare upload",
