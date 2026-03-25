@@ -8,6 +8,7 @@ import { CURRENT_SEASON } from "@/app/dramaafera/_constants/seasons";
 import { getRankingAction } from "@/app/dramaafera/_actions/seasonActions";
 import { getRankName } from "@/app/dramaafera/_constants/rankTiers";
 import { buildSeasonUrl } from "@/app/dramaafera/_utils/seasonHelpers";
+import { convertNickToUrlSlug } from "@/app/dramaafera/_utils/gameUtils";
 
 type NumericRankingKey = {
     [K in keyof RankingPlayer]: RankingPlayer[K] extends number ? K : never;
@@ -16,11 +17,6 @@ type NumericRankingKey = {
 // Funkcja pomocnicza do generowania ścieżki avatara
 function getPlayerAvatarPath(playerName: string): string {
     return `/images/avatars/${playerName}.png`;
-}
-
-// Funkcja pomocnicza do konwersji nicku na format URL-friendly
-function convertNickToUrlSlug(nick: string): string {
-    return nick.replace(/\s+/g, '-').toLowerCase();
 }
 
 function sortPlayers(players: RankingPlayer[], sortBy: NumericRankingKey, sortOrder: "asc" | "desc") {
@@ -173,7 +169,6 @@ export default function RankingClient({ initialData, seasonId }: RankingClientPr
                                                 </div>
                                             </td>
                                             <td className="py-2 px-2">
-                                            {/* TODO Phase 7: make season-aware */}
                                             <Link href={buildSeasonUrl(`/user/${convertNickToUrlSlug(player.playerName)}`, seasonId)}>
                                                     <div className="flex items-center space-x-3 hover:bg-gray-700/30 rounded-lg p-2 transition-colors cursor-pointer">
                                                         <Image

@@ -3,7 +3,7 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import { RoleImage } from "../_components/RoleImage";
 import { getAllGamesData } from "../../_services";
-import { getRoleColor } from "@/app/dramaafera/_utils/gameUtils";
+import { getRoleColor, convertRoleNameForDisplay, convertUrlSlugToRole, convertNickToUrlSlug } from "@/app/dramaafera/_utils/gameUtils";
 import { buildSeasonUrl } from "@/app/dramaafera/_utils/seasonHelpers";
 import type { UIGameData, UIPlayerData } from "../../_services";
 import { Roles } from "@/roles";
@@ -11,44 +11,6 @@ import type { Role } from "@/constants/rolesAndModifiers";
 import { SettingsList } from "@/app/_components/RolesList/RoleCard/SettingsList";
 import { getCloudflareContext } from '@opennextjs/cloudflare';
 import { parseSettingsFile, getMatchingFileName, updateSettingValue } from '../../_utils/settingsParser';
-
-// Funkcja pomocnicza do normalizacji nazw ról z bazy danych
-function normalizeRoleName(role: string): string {
-    const roleNameMapping: Record<string, string> = {
-        'SoulCollector': 'Soul Collector',
-        'GuardianAngel': 'Guardian Angel',
-    };
-    return roleNameMapping[role] || role;
-}
-
-// Funkcja pomocnicza do konwersji nazwy roli na format URL-friendly
-function convertRoleToUrlSlug(role: string): string {
-    return role.toLowerCase()
-        .replace(/\s+/g, '-')
-        .replace(/[^\w\-]/g, '');
-}
-
-// Funkcja pomocnicza do konwersji URL slug z powrotem na nazwę roli
-function convertUrlSlugToRole(slug: string, allRoles: string[]): string {
-    // Najpierw spróbuj znaleźć dokładne dopasowanie przez konwersję wszystkich ról
-    const slugLower = slug.toLowerCase();
-
-    for (const role of allRoles) {
-        const normalizedRole = normalizeRoleName(role);
-        if (convertRoleToUrlSlug(normalizedRole) === slugLower) {
-            return normalizedRole;
-        }
-    }
-
-    // Fallback - konwertuj myślniki na spacje i kapitalizuj pierwsze litery słów
-    const words = decodeURIComponent(slug.replace(/-/g, ' ')).split(' ');
-    return words.map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
-}
-
-// Funkcja pomocnicza do konwersji nicku na format URL-friendly
-function convertNickToUrlSlug(nick: string): string {
-    return nick.replace(/\s+/g, '-').toLowerCase();
-}
 
 // Interface dla statystyk roli
 interface RoleStats {
@@ -153,8 +115,8 @@ function generateRoleStats(allGames: UIGameData[], targetRole: string): RoleStat
         });
 
         game.detailedStats.playersData.forEach((player: UIPlayerData) => {
-            const normalizedPlayerRole = normalizeRoleName(player.role);
-            const normalizedRoleHistory = player.roleHistory?.map(r => normalizeRoleName(r));
+            const normalizedPlayerRole = convertRoleNameForDisplay(player.role);
+            const normalizedRoleHistory = player.roleHistory?.map(r => convertRoleNameForDisplay(r));
 
             const hasRoleInHistory = normalizedPlayerRole === targetRole ||
                 (normalizedRoleHistory && normalizedRoleHistory.includes(targetRole));

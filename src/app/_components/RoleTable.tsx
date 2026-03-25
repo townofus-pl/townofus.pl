@@ -5,7 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import type { UIGameData, UIPlayerData } from '@/app/dramaafera/_services/games/types';
 import { buildSeasonUrl } from '@/app/dramaafera/_utils/seasonHelpers';
-import { CURRENT_SEASON } from '@/app/dramaafera/_constants/seasons';
+import { convertRoleToUrlSlug } from '@/app/dramaafera/_utils/gameUtils';
 
 interface RoleDayStats {
   name: string;
@@ -25,17 +25,10 @@ interface RoleTableProps {
   detailedGames: (UIGameData | null)[];
   date: string;
   hideZeroStats?: boolean; // Nowy prop do kontrolowania wyświetlania statystyk równych 0
-  seasonId?: number;
+  seasonId: number;
 }
 
-// Funkcja pomocnicza do konwersji nazwy roli na format URL-friendly
-function convertRoleToUrlSlug(role: string): string {
-  return role.toLowerCase()
-    .replace(/\s+/g, '-')
-    .replace(/[^\w\-]/g, '');
-}
-
-export default function RoleTable({ roles, reversedGames, detailedGames, date, hideZeroStats = false, seasonId = CURRENT_SEASON }: RoleTableProps) {
+export default function RoleTable({ roles, reversedGames, detailedGames, date, hideZeroStats = false, seasonId }: RoleTableProps) {
   const [expandedRoles, setExpandedRoles] = useState<Set<string>>(new Set());
 
   // Funkcja do pobierania ikony roli - przeniesiona z komponentu serwerowego

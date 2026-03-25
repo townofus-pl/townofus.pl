@@ -3,38 +3,7 @@ import { getAllGamesData } from "../../_services";
 import { Roles } from "@/roles";
 import { CURRENT_SEASON } from "../../_constants/seasons";
 import { RoleDetailContent } from "./RoleDetailContent";
-
-// Funkcja pomocnicza do normalizacji nazw ról z bazy danych
-function normalizeRoleName(role: string): string {
-    const roleNameMapping: Record<string, string> = {
-        'SoulCollector': 'Soul Collector',
-        'GuardianAngel': 'Guardian Angel',
-    };
-    return roleNameMapping[role] || role;
-}
-
-// Funkcja pomocnicza do konwersji nazwy roli na format URL-friendly
-function convertRoleToUrlSlug(role: string): string {
-    return role.toLowerCase()
-        .replace(/\s+/g, '-')
-        .replace(/[^\w\-]/g, '');
-}
-
-// Funkcja pomocnicza do konwersji URL slug z powrotem na nazwę roli
-function convertUrlSlugToRole(slug: string, allRoles: string[]): string {
-    const slugLower = slug.toLowerCase();
-
-    for (const role of allRoles) {
-        const normalizedRole = normalizeRoleName(role);
-        if (convertRoleToUrlSlug(normalizedRole) === slugLower) {
-            return normalizedRole;
-        }
-    }
-
-    // Fallback - konwertuj myślniki na spacje i kapitalizuj pierwsze litery słów
-    const words = decodeURIComponent(slug.replace(/-/g, ' ')).split(' ');
-    return words.map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
-}
+import { convertRoleToUrlSlug, convertUrlSlugToRole } from "@/app/dramaafera/_utils/gameUtils";
 
 interface RolePageProps {
     params: Promise<{
@@ -53,6 +22,9 @@ export async function generateMetadata({ params }: RolePageProps): Promise<Metad
 }
 
 export async function generateStaticParams() {
+    // No seasonId passed — getAllGamesData() defaults to CURRENT_SEASON via buildSeasonGameWhere().
+    // This is intentional: static params only need roles from the current season.
+    // Phase 8 season wrappers will handle cross-season role pages.
     const games = await getAllGamesData();
     const allRoles = new Set<string>();
 

@@ -5,7 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import type { UIGameData, UIPlayerData } from '@/app/dramaafera/_services/games/types';
 import { buildSeasonUrl } from '@/app/dramaafera/_utils/seasonHelpers';
-import { CURRENT_SEASON } from '@/app/dramaafera/_constants/seasons';
+import { convertNickToUrlSlug } from '@/app/dramaafera/_utils/gameUtils';
 
 interface PlayerDayStats {
   name: string;
@@ -23,16 +23,11 @@ interface PlayerTableProps {
   detailedGames: (UIGameData | null)[];
   date: string;
   hideZeroStats?: boolean; // Nowy prop do kontrolowania wyświetlania statystyk równych 0
-  seasonId?: number;
+  seasonId: number;
 }
 
-export default function PlayerTable({ players, reversedGames, detailedGames, date, hideZeroStats = false, seasonId = CURRENT_SEASON }: PlayerTableProps) {
+export default function PlayerTable({ players, reversedGames, detailedGames, date, hideZeroStats = false, seasonId }: PlayerTableProps) {
   const [expandedPlayers, setExpandedPlayers] = useState<Set<string>>(new Set());
-
-  // Funkcja pomocnicza do konwersji nicku na format URL-friendly
-  const convertNickToUrlSlug = (nick: string): string => {
-    return nick.replace(/\s+/g, '-').toLowerCase();
-  };
 
   const togglePlayerExpansion = (playerName: string) => {
     const newExpanded = new Set(expandedPlayers);

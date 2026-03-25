@@ -22,7 +22,7 @@ interface DateGamesContentProps {
 }
 
 export async function DateGamesContent({ date, seasonId }: DateGamesContentProps) {
-    const games = await getGamesListByDate(date);
+    const games = await getGamesListByDate(date, seasonId);
     
     if (games.length === 0) {
         notFound();

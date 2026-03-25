@@ -8,6 +8,7 @@ import { normalizeRoleName, getRoleColor, determineTeam, UIGameData, UIPlayerDat
 import type { UIGameData as ServicesUIGameData } from '@/app/dramaafera/_services/games/types';
 import PlayerTable from '@/app/_components/PlayerTable';
 import RoleTable from '@/app/_components/RoleTable';
+import { CURRENT_SEASON } from '@/app/dramaafera/_constants/seasons';
 
 interface PlayerDayStats {
   name: string;
@@ -157,6 +158,7 @@ export default async function WynikiDniaPage({ params }: { params: Promise<{ dat
         detailedGames={detailedGames as unknown as (ServicesUIGameData | null)[]}
         date={date}
         hideZeroStats={true}
+        seasonId={CURRENT_SEASON}
       />
 
       {/* Tabela ról */}
@@ -168,6 +170,7 @@ export default async function WynikiDniaPage({ params }: { params: Promise<{ dat
         detailedGames={detailedGames as unknown as (ServicesUIGameData | null)[]}
         date={date}
         hideZeroStats={true}
+        seasonId={CURRENT_SEASON}
       />
 
       {/* Statystyki zwycięstw pod tabelą */}

@@ -18,8 +18,9 @@ export async function generateMetadata({ params }: GamePageProps): Promise<Metad
     const { date, gameId } = await params;
     const formattedDate = formatDisplayDate(date);
     
-    // Pobierz listę gier tego dnia, żeby znaleźć numer gry
-    const games = await getGamesListByDate(date);
+    // Uses CURRENT_SEASON explicitly. Phase 8 sezon wrappers will provide
+    // seasonId from URL params and can override metadata at that point.
+    const games = await getGamesListByDate(date, CURRENT_SEASON);
     const gameIndex = games.findIndex(g => g.id.toString() === gameId);
     // Numeracja od najstarszej (1) do najmłodszej (games.length)
     const gameNumber = gameIndex !== -1 ? games.length - gameIndex : gameId;

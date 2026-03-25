@@ -140,6 +140,38 @@ export function getModifierColor(modifierName: string): string {
 }
 
 // ---------------------------------------------------------------------------
+// URL slug helpers
+// ---------------------------------------------------------------------------
+
+// Convert a role display name to a URL-friendly slug (e.g. "Soul Collector" → "soul-collector")
+export function convertRoleToUrlSlug(role: string): string {
+  return role.toLowerCase()
+    .replace(/\s+/g, '-')
+    .replace(/[^\w\-]/g, '');
+}
+
+// Convert a URL slug back to a display role name by matching against known roles
+export function convertUrlSlugToRole(slug: string, allRoles: string[]): string {
+  const slugLower = slug.toLowerCase();
+
+  for (const role of allRoles) {
+    const normalizedRole = convertRoleNameForDisplay(role);
+    if (convertRoleToUrlSlug(normalizedRole) === slugLower) {
+      return normalizedRole;
+    }
+  }
+
+  // Fallback - konwertuj myślniki na spacje i kapitalizuj pierwsze litery słów
+  const words = decodeURIComponent(slug.replace(/-/g, ' ')).split(' ');
+  return words.map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+}
+
+// Convert a player nickname to a URL-friendly slug (e.g. "Some Player" → "some-player")
+export function convertNickToUrlSlug(nick: string): string {
+  return nick.replace(/\s+/g, '-').toLowerCase();
+}
+
+// ---------------------------------------------------------------------------
 // Team determination
 // ---------------------------------------------------------------------------
 
