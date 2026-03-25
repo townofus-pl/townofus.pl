@@ -64,8 +64,8 @@ export default async function UserProfilePage({ params }: UserProfileProps) {
 
     const playerNick = convertUrlSlugToNick(nick, allPlayerNames);
 
-    // TODO: Pass seasonId from route params once player profile page supports season routing (Phase 4).
-    // Until then, all calls below default to CURRENT_SEASON — Season 1 data will not appear.
+    // TODO: przekazać seasonId z parametrów trasy, gdy strona profilu gracza będzie obsługiwała routing sezonów (Faza 4).
+    // Do tego czasu wszystkie wywołania poniżej domyślnie używają CURRENT_SEASON — dane z Sezonu 1 nie będą widoczne.
 
     // Pobierz statystyki dla konkretnego gracza z bazy danych
     const playerStats = await getUserProfileStats(playerNick);

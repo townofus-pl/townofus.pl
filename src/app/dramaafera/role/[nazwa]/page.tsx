@@ -351,7 +351,7 @@ interface RolePageProps {
 }
 
 export async function generateStaticParams() {
-    const games = await getAllGamesData(); // TODO: Pass seasonId once role pages support season routing (Phase 4)
+    const games = await getAllGamesData(); // TODO: przekazać seasonId, gdy strony ról będą obsługiwać routowanie po sezonach (Faza 4)
     const allRoles = new Set<string>();
     
     games.forEach(game => {
@@ -375,7 +375,7 @@ export default async function RoleStatsPage({ params }: RolePageProps) {
     const {nazwa} = await params;
     
     // Pobierz wszystkie gry z bazy danych
-    const games = await getAllGamesData(); // TODO: Pass seasonId once role pages support season routing (Phase 4) — currently defaults to CURRENT_SEASON
+    const games = await getAllGamesData(); // TODO: przekazać seasonId, gdy strony ról będą obsługiwać routowanie po sezonach (Faza 4) — tymczasowo domyślnie używa CURRENT_SEASON
     
     // Pobierz listę wszystkich ról
     const allRoles: string[] = [];
