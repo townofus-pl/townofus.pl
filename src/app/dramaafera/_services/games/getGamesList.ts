@@ -115,10 +115,10 @@ export async function getGamesListByDate(date: string, seasonId?: number): Promi
         }
       }
     },
-    orderBy: { startTime: 'asc' }
+    orderBy: { gameIdentifier: 'desc' }
   });
 
-  const games = dbGames.map((game, index) => {
+  const games = dbGames.map((game) => {
     const playerNames = game.gamePlayerStatistics.map(stat => stat.player.name);
     const winners = game.gamePlayerStatistics.filter(stat => stat.win);
     const winnerNames = winners.map(winner => winner.player.name);
@@ -136,7 +136,7 @@ export async function getGamesListByDate(date: string, seasonId?: number): Promi
     return {
       id: game.gameIdentifier,
       date: extractDateFromGameId(game.gameIdentifier),
-      gameNumber: index + 1,
+      gameNumber: 0, // Will be computed after sorting
       duration: formatDuration(game.startTime, game.endTime),
       players: game.gamePlayerStatistics.length,
       winner: winnerInfo.winner,
@@ -147,6 +147,12 @@ export async function getGamesListByDate(date: string, seasonId?: number): Promi
       winnerColors,
       allPlayerNames: playerNames
     };
+  });
+
+  // Assign chronological game numbers (1 = oldest) independent of display order
+  const sorted = [...games].sort((a, b) => a.id.localeCompare(b.id));
+  sorted.forEach((game, index) => {
+    game.gameNumber = index + 1;
   });
 
   return games;
