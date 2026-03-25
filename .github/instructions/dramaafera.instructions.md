@@ -109,7 +109,7 @@ Phase 5 complete (staged, pending commit):
 - host/page.tsx — server shell + _components/HostClient.tsx ('use client');
   server calls getGameDatesLightweight; file upload continues to POST /api/games/upload
 - _actions/seasonActions.ts ('use server') — exports getSessionResults, getHostInfoAction,
-  getRankingAction (all accept seasonId)
+  getRankingAction, getGameDatesAction (all accept seasonId)
 - RankingClient auto-refresh uses getRankingAction(seasonId) server action — NOT fetch('/api/ranking').
   The API route has no season filter; using it would silently return cross-season totals after 30s.
 - WynikiClient date-switching and auto-refresh use getSessionResults server action
@@ -121,7 +121,7 @@ Phase 5 complete (staged, pending commit):
 
   dramaafera/
   ├── _actions/             # Server actions ('use server') for client components
-  │                         # seasonActions.ts — getSessionResults, getHostInfoAction, getRankingAction
+  │                         # seasonActions.ts — getSessionResults, getHostInfoAction, getRankingAction, getGameDatesAction
   ├── _components/          # Shared across Dramaafera pages
   ├── _constants/           # seasons.ts
   ├── _hooks/               # useSeason.ts

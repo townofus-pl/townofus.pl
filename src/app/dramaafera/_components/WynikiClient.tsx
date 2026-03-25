@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 import PlayerTable from "@/app/_components/PlayerTable";
 import RoleTable from "@/app/_components/RoleTable";
 import type { UIGameData } from "@/data/games/converter";
@@ -15,7 +15,7 @@ interface WynikiClientProps {
 }
 
 export default function WynikiClient({ initialDates, initialResults, seasonId }: WynikiClientProps) {
-    const [availableDates] = useState<GameDateEntry[]>(initialDates);
+    const availableDates = initialDates;
     const [selectedDate, setSelectedDate] = useState<string>(
         initialResults?.date ?? (initialDates.length > 0 ? initialDates[0].date : "")
     );
@@ -25,6 +25,10 @@ export default function WynikiClient({ initialDates, initialResults, seasonId }:
     const [lastUpdateHash, setLastUpdateHash] = useState<string>("");
     const [lastUpdateTime, setLastUpdateTime] = useState<Date | null>(null);
     const [isRefreshing, setIsRefreshing] = useState(false);
+
+    // Ref to access lastUpdateHash inside useCallback without making it a dependency
+    const lastUpdateHashRef = useRef(lastUpdateHash);
+    useEffect(() => { lastUpdateHashRef.current = lastUpdateHash; }, [lastUpdateHash]);
 
     // Pobieranie wyników przez server action
     const fetchResultsData = useCallback(async (date: string, isAutoRefresh = false) => {
@@ -45,7 +49,7 @@ export default function WynikiClient({ initialDates, initialResults, seasonId }:
             });
 
             // Aktualizuj tylko jeśli dane się zmieniły lub to nie jest auto-refresh
-            if (dataHash !== lastUpdateHash || !isAutoRefresh) {
+            if (dataHash !== lastUpdateHashRef.current || !isAutoRefresh) {
                 setResultsData(data);
                 setLastUpdateHash(dataHash);
                 setLastUpdateTime(new Date());
@@ -58,7 +62,7 @@ export default function WynikiClient({ initialDates, initialResults, seasonId }:
             setDataLoading(false);
             setIsRefreshing(false);
         }
-    }, [seasonId, lastUpdateHash]);
+    }, [seasonId]);
 
     // Auto-odświeżanie co 30 sekund tylko dla najnowszej daty (bieżący sezon)
     useEffect(() => {

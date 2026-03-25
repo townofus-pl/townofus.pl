@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import type { RankingPlayer } from "@/app/dramaafera/_services";
@@ -64,6 +64,10 @@ export default function RankingClient({ initialData, seasonId }: RankingClientPr
     const [lastUpdateTime, setLastUpdateTime] = useState<Date | null>(null);
     const [isRefreshing, setIsRefreshing] = useState(false);
 
+    // Ref to access lastUpdateHash inside useCallback without making it a dependency
+    const lastUpdateHashRef = useRef(lastUpdateHash);
+    useEffect(() => { lastUpdateHashRef.current = lastUpdateHash; }, [lastUpdateHash]);
+
     // Auto-refresh: tylko dla bieżącego sezonu, co 30 sekund
     const fetchRankingData = useCallback(async () => {
         try {
@@ -79,7 +83,7 @@ export default function RankingClient({ initialData, seasonId }: RankingClientPr
             })));
 
             // Aktualizuj tylko jeśli dane się zmieniły
-            if (dataHash !== lastUpdateHash) {
+            if (dataHash !== lastUpdateHashRef.current) {
                 setPlayerStats(result.ranking);
                 setLastUpdateHash(dataHash);
                 setLastUpdateTime(new Date());
@@ -89,7 +93,7 @@ export default function RankingClient({ initialData, seasonId }: RankingClientPr
         } finally {
             setIsRefreshing(false);
         }
-    }, [seasonId, lastUpdateHash]);
+    }, [seasonId]);
 
     // Auto-odświeżanie co 30 sekund (tylko bieżący sezon)
     useEffect(() => {
@@ -192,7 +196,7 @@ export default function RankingClient({ initialData, seasonId }: RankingClientPr
                                                         />
                                                         <span className={`font-semibold text-lg transition-colors ${isTopRank ? "text-yellow-400" : "text-white hover:text-gray-300"}`}>
                                                             {player.playerName}
-                                                            {hasRanking && getRankTitle(Math.round(player.currentRating)) && (
+                                                            {hasRanking && (
                                                                 <span className="italic font-normal text-base text-gray-400 ml-2">
                                                                     ({getRankTitle(Math.round(player.currentRating))})
                                                                 </span>
@@ -209,7 +213,7 @@ export default function RankingClient({ initialData, seasonId }: RankingClientPr
                                                     <div className="w-20 bg-gray-600 rounded-full h-2">
                                                         <div
                                                             className="bg-gradient-to-r from-green-500 to-yellow-500 h-2 rounded-full"
-                                                            style={{ width: `${player.winRate}%` }}
+                                                            style={{ width: `${Math.min(100, Math.max(0, player.winRate))}%` }}
                                                         ></div>
                                                     </div>
                                                     <span className="text-sm font-semibold">{player.winRate}%</span>

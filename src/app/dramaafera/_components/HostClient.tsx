@@ -4,7 +4,7 @@ import { useState } from "react";
 import Image from "next/image";
 import type { GameDateEntry, HostInfoResult } from "@/app/dramaafera/_services";
 import { CURRENT_SEASON } from "@/app/dramaafera/_constants/seasons";
-import { getHostInfoAction } from "@/app/dramaafera/_actions/seasonActions";
+import { getHostInfoAction, getGameDatesAction } from "@/app/dramaafera/_actions/seasonActions";
 
 type UploadStatus = {
     status: 'idle' | 'uploading' | 'success' | 'error';
@@ -20,13 +20,6 @@ type UploadApiResponse = {
     error?: {
         message?: string;
     };
-};
-
-// Typ daty dla odświeżania listy dat po uploadzie (format API)
-type DateGroupApi = {
-    date: string;
-    displayDate: string;
-    totalGames: number;
 };
 
 interface HostClientProps {
@@ -116,19 +109,9 @@ export default function HostClient({ initialDates, seasonId }: HostClientProps) 
                     status: 'success',
                     message: `Gra została pomyślnie wgrana: ${data.data?.gameId || ''}`
                 });
-                // Odśwież listę dat bez przeładowania strony (przez API)
-                const datesResponse = await fetch('/api/games/dates');
-                if (datesResponse.ok) {
-                    const datesData = await datesResponse.json() as { data: { dates: DateGroupApi[] } };
-                    // Konwertuj format API na format GameDateEntry
-                    const convertedDates: GameDateEntry[] = datesData.data.dates.map(d => ({
-                        date: d.date,
-                        displayDate: d.displayDate,
-                        totalGames: d.totalGames,
-                        games: [],
-                    }));
-                    setAvailableDates(convertedDates);
-                }
+                // Odśwież listę dat przez server action, żeby zachować filtr sezonu
+                const updatedDates = await getGameDatesAction(seasonId);
+                setAvailableDates(updatedDates.dates);
             } else {
                 setUploadStatus({
                     status: 'error',
