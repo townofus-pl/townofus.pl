@@ -111,20 +111,7 @@ export default function RankingClient({ initialData, seasonId }: RankingClientPr
     }, [seasonId, fetchRankingData]);
 
     // Sortowanie z obsługą currentRating
-    const sortPlayersWithRanking = (players: RankingPlayer[], sortKey: NumericRankingKey, order: "asc" | "desc") => {
-        if (sortKey === "currentRating") {
-            return [...players].sort((a, b) => {
-                const valA = typeof a.currentRating === "number" ? a.currentRating : 0;
-                const valB = typeof b.currentRating === "number" ? b.currentRating : 0;
-                if (valA < valB) return order === "asc" ? -1 : 1;
-                if (valA > valB) return order === "asc" ? 1 : -1;
-                return 0;
-            });
-        }
-        return sortPlayers(players, sortKey, order);
-    };
-
-    const sortedStats = sortPlayersWithRanking(playerStats, sortBy, sortOrder);
+    const sortedStats = sortPlayers(playerStats, sortBy, sortOrder);
 
     function handleSort(column: NumericRankingKey) {
         if (sortBy === column) {

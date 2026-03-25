@@ -149,6 +149,11 @@ export default async function WynikiDniaPage({ params }: { params: Promise<{ dat
       <PlayerTable 
         players={players}
         reversedGames={reversedGames}
+        // Legacy path (dramaafera-old) — this page will be deleted once migration is complete.
+        // The old UIGameData type from @/data/games/converter is structurally compatible with
+        // the fields PlayerTable actually reads, but lacks service-layer-only fields (e.g.
+        // gameNumber, startTime). The cast is safe as long as no new field accesses are added
+        // to PlayerTable before this page is removed.
         detailedGames={detailedGames as unknown as (ServicesUIGameData | null)[]}
         date={date}
         hideZeroStats={true}
@@ -159,6 +164,7 @@ export default async function WynikiDniaPage({ params }: { params: Promise<{ dat
       <RoleTable 
         roles={roles}
         reversedGames={reversedGames}
+        // Same legacy cast as PlayerTable above — safe until this page is deleted.
         detailedGames={detailedGames as unknown as (ServicesUIGameData | null)[]}
         date={date}
         hideZeroStats={true}

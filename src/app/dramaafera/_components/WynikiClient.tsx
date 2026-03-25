@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useEffect, useCallback, useRef } from "react";
+
 import PlayerTable from "@/app/_components/PlayerTable";
 import RoleTable from "@/app/_components/RoleTable";
 import type { GameDateEntry, SessionSummary } from "@/app/dramaafera/_services";
@@ -14,7 +15,6 @@ interface WynikiClientProps {
 }
 
 export default function WynikiClient({ initialDates, initialResults, seasonId }: WynikiClientProps) {
-    const [availableDates] = useState<GameDateEntry[]>(initialDates);
     const [selectedDate, setSelectedDate] = useState<string>(
         initialResults?.date ?? (initialDates.length > 0 ? initialDates[0].date : "")
     );
@@ -66,10 +66,10 @@ export default function WynikiClient({ initialDates, initialResults, seasonId }:
     // Auto-odświeżanie co 30 sekund tylko dla najnowszej daty (bieżący sezon)
     useEffect(() => {
         if (seasonId !== CURRENT_SEASON) return;
-        if (!selectedDate || !availableDates.length) return;
+        if (!selectedDate || !initialDates.length) return;
 
         // Sprawdź czy wybrana data to najnowsza
-        const isNewestDate = selectedDate === availableDates[0]?.date;
+        const isNewestDate = selectedDate === initialDates[0]?.date;
         if (!isNewestDate) return;
 
         const interval = setInterval(() => {
@@ -77,7 +77,7 @@ export default function WynikiClient({ initialDates, initialResults, seasonId }:
         }, 30000);
 
         return () => clearInterval(interval);
-    }, [seasonId, selectedDate, availableDates, fetchResultsData]);
+    }, [seasonId, selectedDate, initialDates, fetchResultsData]);
 
     const handleDateChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const date = e.target.value;
@@ -92,7 +92,7 @@ export default function WynikiClient({ initialDates, initialResults, seasonId }:
     return (
         <div className="min-h-screen rounded-xl bg-zinc-900/50 text-white container mx-auto px-4 py-8">
             {/* Nagłówek z wyborem daty — zawsze widoczny gdy są dostępne daty */}
-            {availableDates.length > 0 && (
+            {initialDates.length > 0 && (
                 <div className="max-w-7xl mx-auto mb-8">
                     <h1 className="text-4xl font-bold text-white flex items-center justify-center gap-3 flex-wrap mb-2">
                         Wyniki dnia
@@ -102,7 +102,7 @@ export default function WynikiClient({ initialDates, initialResults, seasonId }:
                             className="bg-zinc-800 border border-gray-600 rounded-lg px-4 py-2 text-white text-2xl font-bold focus:outline-none focus:ring-2 focus:ring-blue-500 font-barlow hover:bg-zinc-700 transition-colors cursor-pointer"
                             style={{ minWidth: '200px' }}
                         >
-                            {availableDates.map((dateGroup) => (
+                            {initialDates.map((dateGroup) => (
                                 <option key={dateGroup.date} value={dateGroup.date} className="font-barlow text-base">
                                     {dateGroup.displayDate}
                                 </option>
@@ -111,7 +111,7 @@ export default function WynikiClient({ initialDates, initialResults, seasonId }:
                     </h1>
 
                     {/* Wskaźnik auto-refresh dla najnowszej daty (tylko bieżący sezon) */}
-                    {seasonId === CURRENT_SEASON && selectedDate === availableDates[0]?.date && (
+                    {seasonId === CURRENT_SEASON && selectedDate === initialDates[0]?.date && (
                         <div className="flex items-center justify-center gap-2 text-sm text-gray-400">
                             <div className={`w-2 h-2 rounded-full ${isRefreshing ? 'bg-yellow-400 animate-pulse' : 'bg-green-400'}`}></div>
                             <span>
