@@ -435,6 +435,7 @@ export default async function RoleStatsPage({ params }: RolePageProps) {
             if (!env.ASSETS) throw new Error('ASSETS binding not available');
             // "localhost" zadziała - https://developers.cloudflare.com/workers/static-assets/binding/
             const response = await env.ASSETS.fetch(new Request('http://localhost/settings/dramaafera.txt'));
+            if (!response.ok) throw new Error(`Failed to fetch settings: ${response.status}`);
             const fileContent = await response.text();
 
             // Parsowanie pliku
