@@ -6,26 +6,27 @@ import type { UIPlayerData } from '../_services/games/types';
 export function formatPlayerStatsWithColors(player: UIPlayerData, maxTasks?: number): Array<{ text: string; color?: string }> {
   const statParts: Array<{ text: string; color?: string }> = [];
 
+  // "label" jest po angielsku umyślnie!
   const statLabels: Record<string, { label: string; color?: string }> = {
-    'correctKills': { label: 'Poprawne zabójstwa', color: '#22C55E' },
-    'incorrectKills': { label: 'Błędne zabójstwa', color: '#EF4444' },
-    'correctProsecutes': { label: 'Poprawne oskarżenia', color: '#22C55E' },
-    'incorrectProsecutes': { label: 'Błędne oskarżenia', color: '#EF4444' },
-    'correctGuesses': { label: 'Poprawne zgadnięcia', color: '#22C55E' },
-    'incorrectGuesses': { label: 'Błędne zgadnięcia', color: '#EF4444' },
-    'correctDeputyShoots': { label: 'Poprawne strzały zastępcy', color: '#22C55E' },
-    'incorrectDeputyShoots': { label: 'Błędne strzały zastępcy', color: '#EF4444' },
-    'correctJailorExecutes': { label: 'Poprawne egzekucje strażnika', color: '#22C55E' },
-    'incorrectJailorExecutes': { label: 'Błędne egzekucje strażnika', color: '#EF4444' },
-    'correctMedicShields': { label: 'Poprawne osłony medyka', color: '#22C55E' },
-    'incorrectMedicShields': { label: 'Błędne osłony medyka', color: '#EF4444' },
-    'correctWardenFortifies': { label: 'Poprawne fortyfikacje strażnika', color: '#22C55E' },
-    'incorrectWardenFortifies': { label: 'Błędne fortyfikacje strażnika', color: '#EF4444' },
-    'janitorCleans': { label: 'Sprzątania woźnego' },
-    'correctAltruistRevives': { label: 'Poprawne wskrzeszenia altruisty', color: '#22C55E' },
-    'incorrectAltruistRevives': { label: 'Błędne wskrzeszenia altruisty', color: '#EF4444' },
-    'correctSwaps': { label: 'Poprawne zamiany', color: '#22C55E' },
-    'incorrectSwaps': { label: 'Błędne zamiany', color: '#EF4444' }
+    'correctKills': { label: 'Correct Kills', color: '#22C55E' }, // zielony
+    'incorrectKills': { label: 'Incorrect Kills', color: '#EF4444' }, // czerwony
+    'correctProsecutes': { label: 'Correct Prosecutes', color: '#22C55E' },
+    'incorrectProsecutes': { label: 'Incorrect Prosecutes', color: '#EF4444' },
+    'correctGuesses': { label: 'Correct Guesses', color: '#22C55E' },
+    'incorrectGuesses': { label: 'Incorrect Guesses', color: '#EF4444' },
+    'correctDeputyShoots': { label: 'Correct Deputy Shoots', color: '#22C55E' },
+    'incorrectDeputyShoots': { label: 'Incorrect Deputy Shoots', color: '#EF4444' },
+    'correctJailorExecutes': { label: 'Correct Jailor Executes', color: '#22C55E' },
+    'incorrectJailorExecutes': { label: 'Incorrect Jailor Executes', color: '#EF4444' },
+    'correctMedicShields': { label: 'Correct Medic Shields', color: '#22C55E' },
+    'incorrectMedicShields': { label: 'Incorrect Medic Shields', color: '#EF4444' },
+    'correctWardenFortifies': { label: 'Correct Warden Fortifies', color: '#22C55E' },
+    'incorrectWardenFortifies': { label: 'Incorrect Warden Fortifies', color: '#EF4444' },
+    'janitorCleans': { label: 'Janitor Cleans' },
+    'correctAltruistRevives': { label: 'Correct Altruist Revives', color: '#22C55E' },
+    'incorrectAltruistRevives': { label: 'Incorrect Altruist Revives', color: '#EF4444' },
+    'correctSwaps': { label: 'Correct Swaps', color: '#22C55E' },
+    'incorrectSwaps': { label: 'Incorrect Swaps', color: '#EF4444' }
   };
 
   const stats = player.originalStats;
