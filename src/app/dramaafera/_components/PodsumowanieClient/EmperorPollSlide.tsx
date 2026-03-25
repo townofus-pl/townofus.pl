@@ -144,30 +144,6 @@ export default function EmperorPollSlide({ isFullscreen, step, emperorPoll }: Em
                 </div>
             </div>
 
-            {/* Animacje keyframes */}
-            <style jsx>{`
-                @keyframes slideUpBar {
-                    from {
-                        opacity: 0;
-                        transform: scaleY(0);
-                        transform-origin: bottom;
-                    }
-                    to {
-                        opacity: 1;
-                        transform: scaleY(1);
-                        transform-origin: bottom;
-                    }
-                }
-                
-                @keyframes fadeIn {
-                    from {
-                        opacity: 0;
-                    }
-                    to {
-                        opacity: 1;
-                    }
-                }
-            `}</style>
         </div>
     );
 }

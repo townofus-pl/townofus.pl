@@ -16,17 +16,17 @@ import type { RankingHistoryPoint as ServiceRankingHistoryPoint } from '@/app/dr
 function computeRankingChanges(
     history: ServiceRankingHistoryPoint[],
     date: string,
-): Map<string, number> {
+): Record<string, number> {
     const sorted = [...history].sort((a, b) =>
         new Date(a.date).getTime() - new Date(b.date).getTime()
     );
-    const changes = new Map<string, number>();
+    const changes: Record<string, number> = {};
     for (let i = 0; i < sorted.length; i++) {
         const current = sorted[i];
         if (current.gameIdentifier && current.gameIdentifier.startsWith(date)) {
             const previous = i > 0 ? sorted[i - 1] : null;
             const change = previous ? current.score - previous.score : current.score;
-            changes.set(current.gameIdentifier, change);
+            changes[current.gameIdentifier] = change;
         }
     }
     return changes;
@@ -35,7 +35,7 @@ function computeRankingChanges(
 // Map service RankingHistoryPoint to client RankingHistoryPoint
 function mapRankingHistory(points: ServiceRankingHistoryPoint[]): RankingHistoryPoint[] {
     return points.map(p => ({
-        date: p.date,
+        dateString: p.date instanceof Date ? p.date.toISOString() : new Date(p.date).toISOString(),
         rating: p.score,
         position: 0,
     }));
@@ -47,6 +47,7 @@ export default async function WeeklySummaryPage({
     params: Promise<{ date: string }>;
 }) {
     const { date } = await params;
+    // TODO: Phase 7/8 — pass seasonId from URL params
     const seasonId = CURRENT_SEASON;
 
     // Fetch all data in parallel
@@ -78,15 +79,15 @@ export default async function WeeklySummaryPage({
         })),
     );
 
-    const sigmaRankingHistory = new Map<string, RankingHistoryPoint[]>();
-    const cwelRankingHistory = new Map<string, RankingHistoryPoint[]>();
+    const sigmaRankingHistory: Record<string, RankingHistoryPoint[]> = {};
+    const cwelRankingHistory: Record<string, RankingHistoryPoint[]> = {};
     for (const { nickname, history } of historyResults) {
         const mapped = mapRankingHistory(history);
         if (topSigmas.some(s => s.nickname === nickname)) {
-            sigmaRankingHistory.set(nickname, mapped);
+            sigmaRankingHistory[nickname] = mapped;
         }
         if (topCwele.some(c => c.nickname === nickname)) {
-            cwelRankingHistory.set(nickname, mapped);
+            cwelRankingHistory[nickname] = mapped;
         }
     }
 
@@ -135,9 +136,9 @@ export default async function WeeklySummaryPage({
         }),
     );
 
-    const playerRankingChangesCache = new Map<string, Map<string, number>>();
+    const playerRankingChangesCache: Record<string, Record<string, number>> = {};
     for (const { nickname, changes } of cacheHistories) {
-        playerRankingChangesCache.set(nickname, changes);
+        playerRankingChangesCache[nickname] = changes;
     }
 
     return (

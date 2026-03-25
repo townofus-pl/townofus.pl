@@ -39,26 +39,29 @@ export const RankingChart: FC<RankingChartProps> = ({ data, isFullscreen, weekDa
     weekEndDate.setDate(weekEndDate.getDate() + 7); // +7 dni na koniec tygodnia
 
     // Filtruj dane: weź ostatni punkt przed tygodniem + wszystkie punkty z tygodnia
-    const sortedData = [...data].sort((a, b) => a.date.getTime() - b.date.getTime());
+    const sortedData = [...data]
+        .map(p => ({ ...p, _date: new Date(p.dateString) }))
+        .sort((a, b) => a._date.getTime() - b._date.getTime());
     
     // Znajdź ostatni punkt przed początkiem tygodnia
-    const pointsBeforeWeek = sortedData.filter(p => p.date < weekStartDate);
+    const pointsBeforeWeek = sortedData.filter(p => p._date < weekStartDate);
     const lastPointBefore = pointsBeforeWeek.length > 0 
         ? pointsBeforeWeek[pointsBeforeWeek.length - 1] 
         : null;
     
     // Punkty z tygodnia
-    const pointsInWeek = sortedData.filter(p => p.date >= weekStartDate && p.date < weekEndDate);
+    const pointsInWeek = sortedData.filter(p => p._date >= weekStartDate && p._date < weekEndDate);
     
     // Połącz: punkt sprzed tygodnia (jeśli istnieje) + punkty z tygodnia
     // Jeśli nie ma punktu sprzed tygodnia i są punkty z tygodnia, dodaj punkt startowy 2000
-    let filteredData: RankingHistoryPoint[];
+    let filteredData: (typeof sortedData)[number][];
     if (lastPointBefore) {
         filteredData = [lastPointBefore, ...pointsInWeek];
     } else if (pointsInWeek.length > 0) {
         // Gracz nie miał wcześniej rankingu - dodaj punkt startowy 2000
-        const startPoint: RankingHistoryPoint = {
-            date: new Date(pointsInWeek[0].date.getTime() - 1000), // 1 sekundę przed pierwszą grą
+        const startPoint = {
+            dateString: new Date(pointsInWeek[0]._date.getTime() - 1000).toISOString(),
+            _date: new Date(pointsInWeek[0]._date.getTime() - 1000),
             rating: 2000,
             position: 0
         };
@@ -168,17 +171,17 @@ export const RankingChart: FC<RankingChartProps> = ({ data, isFullscreen, weekDa
 
                 {/* Etykiety osi X */}
                 {xAxisPoints.map((point) => {
-                    const originalIndex = filteredData.findIndex(d => d.date.getTime() === point.date.getTime());
+                    const originalIndex = filteredData.findIndex(d => d._date.getTime() === point._date.getTime());
                     return (
                         <text
-                            key={point.date.getTime()}
+                            key={point._date.getTime()}
                             x={scaleX(originalIndex)}
                             y={chartHeight + 20}
                             fill="rgb(161, 161, 170)"
                             fontSize={isFullscreen ? "12" : "10"}
                             textAnchor="middle"
                         >
-                            {formatDate(point.date)}
+                            {formatDate(point._date)}
                         </text>
                     );
                 })}

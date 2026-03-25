@@ -8,7 +8,7 @@ interface PodiumSlideProps {
     isFullscreen: boolean;
     weeklyStats: WeeklyPlayerStats[];
     topPlayerGames: UIGameData[];
-    playerRankingChanges: Map<string, number>;
+    playerRankingChanges: Record<string, number>;
     date: string;
     currentStep: number;
 }
@@ -522,18 +522,6 @@ export default function PodiumSlide({
                     </div>
                 </div>
             </div>
-
-            {/* Animacja keyframes dla napisów */}
-            <style jsx>{`
-                @keyframes fadeIn {
-                    from {
-                        opacity: 0;
-                    }
-                    to {
-                        opacity: 1;
-                    }
-                }
-            `}</style>
 
             {/* Overlay z historią gier */}
             {hasThirdPlaceTie ? (

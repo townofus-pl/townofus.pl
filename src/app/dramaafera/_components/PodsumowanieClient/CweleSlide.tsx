@@ -11,9 +11,9 @@ interface CweleSlideProps {
     isTransitioning: boolean;
     topCwele: SigmaPlayer[];
     weeklyStats: WeeklyPlayerStats[];
-    cwelRankingHistory: Map<string, RankingHistoryPoint[]>;
+    cwelRankingHistory: Record<string, RankingHistoryPoint[]>;
     topPlayerGames: UIGameData[];
-    playerRankingChanges: Map<string, number>;
+    playerRankingChanges: Record<string, number>;
     date: string;
 }
 
@@ -63,7 +63,7 @@ export default function CweleSlide({ isFullscreen, currentStep, isTransitioning,
     // Kroki 1-3: Normalne wyświetlanie cweli
     const cwelIndex = 3 - currentStep; // 2, 1, 0 dla kroków 1, 2, 3
     const cwel = topCwele[cwelIndex];
-    const rankingHistory = cwelRankingHistory.get(cwel.nickname) || [];
+    const rankingHistory = cwelRankingHistory[cwel.nickname] || [];
 
     // Normalny widok cwela
     return (

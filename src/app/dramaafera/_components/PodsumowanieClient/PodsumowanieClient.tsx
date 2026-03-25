@@ -29,14 +29,14 @@ export default function PodsumowanieClient({
     const [currentSlide, setCurrentSlide] = useState(0);
     const [currentStep, setCurrentStep] = useState(0);
     const [isPresentationFullscreen, setIsPresentationFullscreen] = useState(false);
-    const [playerRankingChanges, setPlayerRankingChanges] = useState<Map<string, number>>(() => {
+    const [playerRankingChanges, setPlayerRankingChanges] = useState<Record<string, number>>(() => {
         // Inicjalizuj z cache dla TOP1 gracza
         const sortedStats = [...weeklyStats].sort((a, b) => b.totalPoints - a.totalPoints);
         const topPlayer = sortedStats[0];
         if (topPlayer) {
-            return playerRankingChangesCache.get(topPlayer.nickname) ?? new Map();
+            return playerRankingChangesCache[topPlayer.nickname] ?? {};
         }
-        return new Map();
+        return {};
     });
     const [isTransitioning, setIsTransitioning] = useState(false);
     const [showConfetti, setShowConfetti] = useState(false);
@@ -239,49 +239,20 @@ export default function PodsumowanieClient({
             // Uruchom muzykę w tle - używamy Ref zamiast state żeby uniknąć cleanup
             // Muzyka uruchamia się PO kliknięciu, więc przeglądarka już nie blokuje autoplay
             if (!backgroundMusicRef.current) {
-                console.log('🎵 Tworzę nowy obiekt Audio...');
                 const audio = new Audio('/sounds/among us DRAMA AFERA.mp3');
                 audio.loop = true;
-                audio.volume = 1.0; // Pełna głośność
-                
-                console.log('🎵 Audio stworzone:', audio.src);
-                console.log('🎵 Volume ustawione na:', audio.volume);
-                console.log('🎵 Loop ustawiony na:', audio.loop);
-                
-                // Dodaj event listenery dla debugowania
-                audio.addEventListener('loadstart', () => console.log('🔄 Audio: loadstart'));
-                audio.addEventListener('loadedmetadata', () => console.log('📊 Audio: loadedmetadata'));
-                audio.addEventListener('canplay', () => console.log('✅ Audio: canplay'));
-                audio.addEventListener('playing', () => console.log('▶️ Audio: playing'));
-                audio.addEventListener('pause', () => {
-                    console.log('⏸️ Audio: pause');
-                    console.trace('⏸️ PAUSE WYWOŁANE - STACK TRACE:');
-                });
-                audio.addEventListener('ended', () => console.log('🛑 Audio: ended'));
-                audio.addEventListener('error', (e) => console.error('❌ Audio error:', e));
+                audio.volume = 1.0;
                 
                 // Zapisz audio NAJPIERW, potem play
                 backgroundMusicRef.current = audio;
                 
                 // Opóźniamy play() o 100ms żeby przeglądarka nie myślała że to autoplay
-                console.log('🎵 Wywołuję audio.play() za 100ms...');
                 setTimeout(() => {
-                    audio.play()
-                        .then(() => {
-                            console.log('✅ audio.play() Promise RESOLVED - muzyka powinna grać!');
-                            console.log('🎵 Aktualny czas:', audio.currentTime);
-                            console.log('🎵 Czy paused?:', audio.paused);
-                            console.log('🎵 Volume:', audio.volume);
-                        })
-                        .catch(err => {
-                            console.error('❌ audio.play() Promise REJECTED:', err);
-                            console.error('❌ Błąd:', err.message);
-                        });
+                    audio.play().catch(() => {
+                        // Autoplay zablokowany — ignorujemy
+                    });
                 }, 100);
                 // NIE USTAWIAMY STATE - tylko Ref! State triggeruje re-render i cleanup
-                console.log('🎵 Audio zapisane w Ref (BEZ setState)');
-            } else {
-                console.log('⚠️ Audio już istnieje w Ref!');
             }
             
             return;
@@ -314,12 +285,8 @@ export default function PodsumowanieClient({
         else if (currentSlide < totalSlides - 1) {
             const nextSlideConfig = slides[currentSlide + 1];
             
-            console.log('🔍 DEBUG: currentSlide=', currentSlide, 'currentSlideId=', currentSlideConfig.id, 'hasAudio=', !!backgroundMusicRef.current);
-            
             // Ścisz muzykę po przejściu z intro (teraz już audio istnieje!) - płynne przejście
             if (currentSlideConfig.id === 'intro' && backgroundMusicRef.current) {
-                console.log('🔉 PRZED ściszeniem - volume:', backgroundMusicRef.current.volume);
-                
                 const audio = backgroundMusicRef.current;
                 const startVolume = audio.volume;
                 const targetVolume = 0.15; // 13% głośności
@@ -328,23 +295,18 @@ export default function PodsumowanieClient({
                 const stepDuration = fadeDuration / fadeSteps;
                 const volumeStep = (startVolume - targetVolume) / fadeSteps;
                 
-                let currentStep = 0;
+                let fadeStep = 0;
                 const fadeInterval = setInterval(() => {
-                    currentStep++;
-                    const newVolume = startVolume - (volumeStep * currentStep);
+                    fadeStep++;
+                    const newVolume = startVolume - (volumeStep * fadeStep);
                     
-                    if (currentStep >= fadeSteps || newVolume <= targetVolume) {
+                    if (fadeStep >= fadeSteps || newVolume <= targetVolume) {
                         audio.volume = targetVolume;
                         clearInterval(fadeInterval);
-                        console.log('🔉 PO ściszeniu - volume:', audio.volume);
                     } else {
                         audio.volume = newVolume;
                     }
                 }, stepDuration);
-            } else if (currentSlideConfig.id === 'intro') {
-                console.log('⚠️ Intro ale brak audio w Ref!');
-            } else {
-                console.log('⚠️ Nie intro, pomijam ściszenie. SlideId:', currentSlideConfig.id);
             }
             
             // Fade transition przy przejściu z 'intro', 'remaining', 'sigmas', 'cwele', lub 'emperor-history' do następnego slajdu
@@ -370,7 +332,6 @@ export default function PodsumowanieClient({
         }
         // Jeśli to ostatni slajd i ostatni krok, zresetuj
         else {
-            console.log('🔴 RESET PREZENTACJI - zatrzymuję muzykę');
             setCurrentSlide(0);
             setCurrentStep(0);
             setIntroBlackOverlay(true); // Przywróć czarną warstwę dla restartu
@@ -432,15 +393,15 @@ export default function PodsumowanieClient({
         }
 
         if (playerToShow) {
-            const changes = playerRankingChangesCache.get(playerToShow);
+            const changes = playerRankingChangesCache[playerToShow];
             if (changes) {
                 setPlayerRankingChanges(changes);
             } else {
-                setPlayerRankingChanges(new Map());
+                setPlayerRankingChanges({});
             }
         } else {
             // Wyczyść mapę jeśli nie wyświetlamy historii gracza
-            setPlayerRankingChanges(new Map());
+            setPlayerRankingChanges({});
         }
     }, [currentSlide, currentStep, weeklyStats, topPlayerGames, slides, topSigmas, topCwele, playerRankingChangesCache]);
 
@@ -470,8 +431,6 @@ export default function PodsumowanieClient({
         const handleFullscreenChange = () => {
             const isFullscreenNow = !!document.fullscreenElement;
             
-            console.log('🖥️ Fullscreen change:', { isFullscreenNow, hasAudio: !!backgroundMusicRef.current });
-            
             // NIE PAUSUJ AUDIO PODCZAS WEJŚCIA DO FULLSCREEN!
             // Muzyka ma grać cały czas - tylko przy WYJŚCIU zatrzymujemy
             
@@ -481,31 +440,21 @@ export default function PodsumowanieClient({
             if (isFullscreenNow) {
                 document.body.style.overflow = 'hidden';
                 document.documentElement.style.overflow = 'hidden';
-                console.log('✅ Wejście w fullscreen - muzyka gra dalej');
             } else {
                 document.body.style.overflow = '';
                 document.documentElement.style.overflow = '';
                 
                 // Zatrzymaj muzykę TYLKO przy wyjściu z pełnego ekranu
-                console.log('🔴 WYJŚCIE Z FULLSCREEN - zatrzymuję muzykę');
-                console.log('🔴 Audio exists?', !!backgroundMusicRef.current);
                 if (backgroundMusicRef.current) {
-                    console.log('🔴 Audio paused przed:', backgroundMusicRef.current.paused);
-                    console.log('🔴 Audio currentTime przed:', backgroundMusicRef.current.currentTime);
-                    
                     try {
                         backgroundMusicRef.current.pause();
-                        console.log('🔴 pause() wywołane!');
-                    } catch (e) {
-                        console.error('🔴 Błąd przy pause():', e);
+                    } catch {
+                        // Ignorujemy błędy przy zatrzymywaniu
                     }
                     
                     backgroundMusicRef.current.currentTime = 0;
                     backgroundMusicRef.current = null;
-                    console.log('🔴 Audio wyczyszczone!');
                     // NIE USTAWIAMY STATE - już niepotrzebny
-                } else {
-                    console.log('🔴 Audio Ref jest null - muzyka już zatrzymana?');
                 }
             }
         };
@@ -538,7 +487,6 @@ export default function PodsumowanieClient({
     // useEffect do cleanup przy unmount komponentu
     useEffect(() => {
         return () => {
-            console.log('🧹 UNMOUNT KOMPONENTU - cleanup audio');
             if (backgroundMusicRef.current) {
                 backgroundMusicRef.current.pause();
                 backgroundMusicRef.current.currentTime = 0;
@@ -561,6 +509,7 @@ export default function PodsumowanieClient({
         );
     }
 
+    // TODO: Remove isFullscreen prop from child components or implement actual fullscreen detection
     const isFullscreen = true;
 
     return (
@@ -819,49 +768,7 @@ export default function PodsumowanieClient({
                 </div>,
                 document.body // Renderuje bezpośrednio w body, poza layout Next.js
             )}
-            
-            {/* Globalne style dla animacji */}
-            <style jsx global>{`
-                @keyframes confettiFall {
-                    0% {
-                        transform: translateY(0) rotate(0deg);
-                        opacity: 1;
-                    }
-                    100% {
-                        transform: translateY(110vh) rotate(720deg);
-                        opacity: 0;
-                    }
-                }
-                
-                @keyframes glow {
-                    0% {
-                        text-shadow: 0 0 20px rgba(239, 68, 68, 0.8), 0 0 40px rgba(239, 68, 68, 0.6), 0 0 60px rgba(239, 68, 68, 0.4);
-                    }
-                    100% {
-                        text-shadow: 0 0 30px rgba(239, 68, 68, 1), 0 0 60px rgba(239, 68, 68, 0.8), 0 0 90px rgba(239, 68, 68, 0.6);
-                    }
-                }
-                
-                @keyframes slideInLeft {
-                    from {
-                        opacity: 0;
-                        transform: translateX(-50px);
-                    }
-                    to {
-                        opacity: 1;
-                        transform: translateX(0);
-                    }
-                }
-                
-                @keyframes pulseShadow {
-                    0%, 100% {
-                        filter: drop-shadow(0 0 10px rgba(239, 68, 68, 0.8));
-                    }
-                    50% {
-                        filter: drop-shadow(0 0 10px rgba(245, 148, 148, 1));
-                    }
-                }
-            `}</style>
+
         </>
     );
 }

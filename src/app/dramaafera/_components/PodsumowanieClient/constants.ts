@@ -33,17 +33,23 @@ export const formatDate = (dateStr: string): string => {
     return `${day}.${month}.${year}`;
 };
 
+// Canonical tier definitions — sorted by minRating descending
+export const RANK_TIERS: readonly { minRating: number; name: string; color: string }[] = [
+    { minRating: 2500, name: 'PIERDOLONA LEGENDA', color: 'rgb(114, 5, 14)' },
+    { minRating: 2400, name: 'CELESTIAL OVERLORD', color: 'rgb(147, 112, 219)' },
+    { minRating: 2300, name: 'GRANDMASTER', color: 'rgb(255, 215, 0)' },
+    { minRating: 2200, name: 'MASTER', color: 'rgb(220, 220, 220)' },
+    { minRating: 2150, name: 'VIRTUOSO', color: 'rgb(0, 0, 0)' },
+    { minRating: 2100, name: 'THE SPECIALIST', color: 'rgb(0, 0, 0)' },
+    { minRating: 2050, name: 'THE CAPTAIN', color: 'rgb(0, 0, 0)' },
+    { minRating: 1975, name: 'THE CREWMATE', color: 'rgb(0, 0, 0)' },
+    { minRating: 1875, name: 'THE CADET', color: 'rgb(0, 0, 0)' },
+    { minRating: 1750, name: 'THE PISSLOW', color: 'rgb(0, 0, 0)' },
+    { minRating: 0, name: 'CWEL', color: 'rgb(0, 0, 0)' },
+];
+
 // Ranking tier name from rating
 export function getRankName(rating: number): string {
-    if (rating >= 2500) return 'PIERDOLONA LEGENDA';
-    if (rating >= 2400) return 'CELESTIAL OVERLORD';
-    if (rating >= 2300) return 'GRANDMASTER';
-    if (rating >= 2200) return 'MASTER';
-    if (rating >= 2150) return 'VIRTUOSO';
-    if (rating >= 2100) return 'THE SPECIALIST';
-    if (rating >= 2050) return 'THE CAPTAIN';
-    if (rating >= 1975) return 'THE CREWMATE';
-    if (rating >= 1875) return 'THE CADET';
-    if (rating >= 1750) return 'THE PISSLOW';
-    return 'CWEL';
+    const tier = RANK_TIERS.find(t => rating >= t.minRating);
+    return tier?.name ?? 'CWEL';
 }

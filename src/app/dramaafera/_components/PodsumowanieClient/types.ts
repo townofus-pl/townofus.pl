@@ -35,7 +35,7 @@ export interface SigmaPlayer {
 }
 
 export interface RankingHistoryPoint {
-    date: Date;
+    dateString: string;
     rating: number;
     position: number;
 }
@@ -59,11 +59,11 @@ export interface PodsumowanieClientProps {
     weeklyStats: WeeklyPlayerStats[];
     emperorPoll: EmperorPoll | null;
     topSigmas: SigmaPlayer[];
-    sigmaRankingHistory: Map<string, RankingHistoryPoint[]>;
+    sigmaRankingHistory: Record<string, RankingHistoryPoint[]>;
     topCwele: SigmaPlayer[];
-    cwelRankingHistory: Map<string, RankingHistoryPoint[]>;
+    cwelRankingHistory: Record<string, RankingHistoryPoint[]>;
     emperorHistory: EmperorHistoryEntry[];
     rankingAfterSession: PlayerRankingAfterSession[];
     topPlayerGames: UIGameData[];
-    playerRankingChangesCache: Map<string, Map<string, number>>;
+    playerRankingChangesCache: Record<string, Record<string, number>>;
 }

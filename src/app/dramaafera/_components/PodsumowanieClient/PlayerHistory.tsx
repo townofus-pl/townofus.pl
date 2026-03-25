@@ -6,7 +6,7 @@ interface PlayerHistoryProps {
     nickname: string;
     isFullscreen: boolean;
     topPlayerGames: UIGameData[];
-    playerRankingChanges: Map<string, number>;
+    playerRankingChanges: Record<string, number>;
     date: string;
 }
 
@@ -71,11 +71,7 @@ export default function PlayerHistory({ nickname, isFullscreen, topPlayerGames, 
                                 const actualIndex = startIdx + index;
                                 
                                 // Pobierz zmianę punktów rankingowych dla tej gry
-                                const rankingChange = playerRankingChanges.get(game.id);
-                                
-                                if (actualIndex === 0) {
-                                    console.log('🎮 Game ID:', game.id, 'Ranking change:', rankingChange, 'Map size:', playerRankingChanges.size);
-                                }
+                                const rankingChange = playerRankingChanges[game.id];
 
                                 return (
                                     <div key={actualIndex} className="flex flex-col items-center">

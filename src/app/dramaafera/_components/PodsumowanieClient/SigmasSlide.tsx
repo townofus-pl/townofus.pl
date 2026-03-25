@@ -11,9 +11,9 @@ interface SigmasSlideProps {
     isTransitioning: boolean;
     topSigmas: SigmaPlayer[];
     weeklyStats: WeeklyPlayerStats[];
-    sigmaRankingHistory: Map<string, RankingHistoryPoint[]>;
+    sigmaRankingHistory: Record<string, RankingHistoryPoint[]>;
     topPlayerGames: UIGameData[];
-    playerRankingChanges: Map<string, number>;
+    playerRankingChanges: Record<string, number>;
     date: string;
 }
 
@@ -73,7 +73,7 @@ export default function SigmasSlide({
     // Kroki 1-3: Normalne wyświetlanie sigm
     const sigmaIndex = 3 - currentStep; // 2, 1, 0 dla kroków 1, 2, 3
     const sigma = topSigmas[sigmaIndex];
-    const rankingHistory = sigmaRankingHistory.get(sigma.nickname) || [];
+    const rankingHistory = sigmaRankingHistory[sigma.nickname] || [];
 
     // Normalny widok sigmy
     return (

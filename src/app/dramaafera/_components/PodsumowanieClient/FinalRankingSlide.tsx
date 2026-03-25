@@ -1,5 +1,5 @@
 import { PlayerRankingAfterSession, WeeklyPlayerStats } from './types';
-import { formatDate } from './constants';
+import { formatDate, RANK_TIERS } from './constants';
 
 interface FinalRankingSlideProps {
     isFullscreen: boolean;
@@ -9,18 +9,17 @@ interface FinalRankingSlideProps {
     date: string;
 }
 
-function getRankTier(rating: number): { name: string; color: string; range: string } {
-    if (rating >= 2500) return { name: 'PIERDOLONA LEGENDA', color: 'rgb(114, 5, 14)', range: '2500+' };
-    if (rating >= 2400) return { name: 'CELESTIAL OVERLORD', color: 'rgb(147, 112, 219)', range: '2400-2500' };
-    if (rating >= 2300) return { name: 'GRANDMASTER', color: 'rgb(255, 215, 0)', range: '2300-2400' };
-    if (rating >= 2200) return { name: 'MASTER', color: 'rgb(220, 220, 220)', range: '2200-2300' };
-    if (rating >= 2150) return { name: 'VIRTUOSO', color: 'rgb(0, 0, 0)', range: '2150-2200' };
-    if (rating >= 2100) return { name: 'THE SPECIALIST', color: 'rgb(0, 0, 0)', range: '2100-2150' };
-    if (rating >= 2050) return { name: 'THE CAPTAIN', color: 'rgb(0, 0, 0)', range: '2050-2100' };
-    if (rating >= 1975) return { name: 'THE CREWMATE', color: 'rgb(0, 0, 0)', range: '1975-2050' };
-    if (rating >= 1875) return { name: 'THE CADET', color: 'rgb(0, 0, 0)', range: '1875-1975' };
-    if (rating >= 1750) return { name: 'THE PISSLOW', color: 'rgb(0, 0, 0)', range: '1750-1875' };
-    return { name: 'CWEL', color: 'rgb(0, 0, 0)', range: '<1750' };
+function getTierRange(tier: typeof RANK_TIERS[number], index: number): string {
+    if (index === 0) return `${tier.minRating}+`;
+    if (index === RANK_TIERS.length - 1) return `<${RANK_TIERS[index - 1].minRating}`;
+    return `${tier.minRating}-${RANK_TIERS[index - 1].minRating}`;
+}
+
+function getRankTier(rating: number) {
+    const index = RANK_TIERS.findIndex(t => rating >= t.minRating);
+    const tier = index !== -1 ? RANK_TIERS[index] : RANK_TIERS[RANK_TIERS.length - 1];
+    const tierIndex = index !== -1 ? index : RANK_TIERS.length - 1;
+    return { name: tier.name, color: tier.color, range: getTierRange(tier, tierIndex) };
 }
 
 export default function FinalRankingSlide({ isFullscreen, currentStep, rankingAfterSession, weeklyStats, date }: FinalRankingSlideProps) {
@@ -45,20 +44,11 @@ export default function FinalRankingSlide({ isFullscreen, currentStep, rankingAf
     // Krok 1: Pokazywanie całej tabeli (wszyscy gracze)
     const allPlayers = rankingAfterSession;
 
-    // Definicja wszystkich tierów w kolejności
-    const allTiers = [
-        { name: 'PIERDOLONA LEGENDA', color: 'rgb(114, 5, 14)', range: '2500+', minRating: 2500 },
-        { name: 'CELESTIAL OVERLORD', color: 'rgb(147, 112, 219)', range: '2400-2500', minRating: 2400 },
-        { name: 'GRANDMASTER', color: 'rgb(255, 215, 0)', range: '2300-2400', minRating: 2300 },
-        { name: 'MASTER', color: 'rgb(220, 220, 220)', range: '2200-2300', minRating: 2200 },
-        { name: 'VIRTUOSO', color: 'rgb(0, 0, 0)', range: '2150-2200', minRating: 2150 },
-        { name: 'THE SPECIALIST', color: 'rgb(0, 0, 0)', range: '2100-2150', minRating: 2100 },
-        { name: 'THE CAPTAIN', color: 'rgb(0, 0, 0)', range: '2050-2100', minRating: 2050 },
-        { name: 'THE CREWMATE', color: 'rgb(0, 0, 0)', range: '1975-2050', minRating: 1975 },
-        { name: 'THE CADET', color: 'rgb(0, 0, 0)', range: '1875-1975', minRating: 1875 },
-        { name: 'THE PISSLOW', color: 'rgb(0, 0, 0)', range: '1750-1875', minRating: 1750 },
-        { name: 'CWEL', color: 'rgb(0, 0, 0)', range: '<1750', minRating: 0 },
-    ];
+    // Definicja wszystkich tierów w kolejności (derived from RANK_TIERS)
+    const allTiers = RANK_TIERS.map((tier, index) => ({
+        ...tier,
+        range: getTierRange(tier, index),
+    }));
 
     // Grupuj graczy po tierach
     const tierGroups = new Map<string, PlayerRankingAfterSession[]>();

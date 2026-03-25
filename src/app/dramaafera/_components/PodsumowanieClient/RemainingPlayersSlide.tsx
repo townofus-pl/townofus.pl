@@ -1,3 +1,6 @@
+'use client';
+
+import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { WeeklyPlayerStats } from './types';
 
@@ -8,6 +11,12 @@ interface RemainingPlayersSlideProps {
 }
 
 export default function RemainingPlayersSlide({ isFullscreen, weeklyStats, step }: RemainingPlayersSlideProps) {
+    const [screenHeight, setScreenHeight] = useState(800);
+
+    useEffect(() => {
+        setScreenHeight(window.innerHeight);
+    }, []);
+
     // Sortuj według punktów DAP (malejąco) - tak samo jak w hostinfo
     const sortedStats = [...weeklyStats].sort((a, b) => b.totalPoints - a.totalPoints);
     
@@ -48,7 +57,6 @@ export default function RemainingPlayersSlide({ isFullscreen, weeklyStats, step 
     
     // Automatyczne skalowanie do wysokości ekranu - bazując na liczbie graczy w KOLUMNIE
     const maxPlayers = playersPerColumn; // Używamy liczby graczy w kolumnie, nie całkowitej
-    const screenHeight = typeof window !== 'undefined' ? window.innerHeight : 800;
     
     // 82% wysokości ekranu dostępne dla listy (zostawiamy 18% na marginesy)
     const availableHeight = screenHeight * 0.82;
@@ -375,17 +383,6 @@ export default function RemainingPlayersSlide({ isFullscreen, weeklyStats, step 
                 </div>
             </div>
 
-            {/* Animacja keyframes */}
-            <style jsx>{`
-                @keyframes fadeInSlide {
-                    from {
-                        opacity: 0;
-                    }
-                    to {
-                        opacity: 1;
-                    }
-                }
-            `}</style>
         </div>
     );
 }

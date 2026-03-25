@@ -35,10 +35,7 @@ export default function EmperorHistorySlide({ isFullscreen, currentStep, isTrans
     }
 
     // Krok 1: Pokazanie całej listy
-    // Dodaj sztuczne wpisy user1 i user2 tylko do wyświetlania (dla testu layoutu)
-    const displayEmperorHistory = [
-        ...emperorHistory,       
-    ];
+    const displayEmperorHistory = emperorHistory;
 
     return (
         <div 
@@ -84,11 +81,6 @@ export default function EmperorHistorySlide({ isFullscreen, currentStep, isTrans
                         : displayEmperorHistory.length > 4 
                         ? (isFullscreen ? 'text-4xl' : 'text-2xl')
                         : (isFullscreen ? 'text-5xl' : 'text-3xl');
-                    const _starSize = displayEmperorHistory.length > 6
-                        ? (isFullscreen ? 'text-5xl' : 'text-3xl')
-                        : displayEmperorHistory.length > 4 
-                        ? (isFullscreen ? 'text-6xl' : 'text-4xl')
-                        : (isFullscreen ? 'text-7xl' : 'text-5xl');
                     
                     return (
                         <div
@@ -135,9 +127,6 @@ export default function EmperorHistorySlide({ isFullscreen, currentStep, isTrans
                                 {Array.from({ length: emperor.count }).map((_, starIndex) => {
                                     // Ostatnia gwiazdka jest "nowa" jeśli to najnowszy emperor
                                     const isNewStar = emperor.isLatest && starIndex === emperor.count - 1;
-                                    const _starSizePx = displayEmperorHistory.length > 4 
-                                        ? (isFullscreen ? 60 : 40)
-                                        : (isFullscreen ? 70 : 50);
                                     
                                     return (
                                         <div
