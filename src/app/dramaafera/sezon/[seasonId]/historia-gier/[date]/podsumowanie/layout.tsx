@@ -1,5 +1,6 @@
 import type { Metadata } from 'next';
 import { buildSeasonUrl } from '@/app/dramaafera/_utils/seasonHelpers';
+import { formatDisplayDate } from '@/app/dramaafera/_utils/gameUtils';
 
 interface PodsumowanieLayoutProps {
     params: Promise<{
@@ -7,13 +8,6 @@ interface PodsumowanieLayoutProps {
         date: string;
     }>;
     children: React.ReactNode;
-}
-
-function formatDisplayDate(dateString: string): string {
-    const year = dateString.substring(0, 4);
-    const month = dateString.substring(4, 6);
-    const day = dateString.substring(6, 8);
-    return `${day}.${month}.${year}`;
 }
 
 export async function generateMetadata({ params }: PodsumowanieLayoutProps): Promise<Metadata> {

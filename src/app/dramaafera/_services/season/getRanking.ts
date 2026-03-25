@@ -37,7 +37,11 @@ export async function getRanking(
   // przed pierwszą grą sezonu ranking jest pusty (reset jeszcze nie nastąpił).
   if (targetSeason === CURRENT_SEASON) {
     const players = await prisma.player.findMany({
-      where: { ...withoutDeleted, currentRanking: { season: targetSeason } },
+      where: {
+        ...withoutDeleted,
+        currentRanking: { season: targetSeason, deletedAt: null },
+        gamePlayerStatistics: { some: { game: { ...withoutDeleted, season: targetSeason } } },
+      },
       include: {
         currentRanking: true,
         gamePlayerStatistics: {
@@ -75,7 +79,11 @@ export async function getRanking(
     });
 
     const total = await prisma.player.count({
-      where: { ...withoutDeleted, currentRanking: { season: targetSeason } },
+      where: {
+        ...withoutDeleted,
+        currentRanking: { season: targetSeason, deletedAt: null },
+        gamePlayerStatistics: { some: { game: { ...withoutDeleted, season: targetSeason } } },
+      },
     });
 
     return { ranking, total };
@@ -90,6 +98,7 @@ export async function getRanking(
       player: withoutDeleted,
     },
     orderBy: [{ playerId: 'asc' }, { createdAt: 'desc' }],
+    take: 2000,
     select: {
       playerId: true,
       score: true,
@@ -137,22 +146,25 @@ export async function getRanking(
     ]),
   );
 
-  // Złóż wyniki, posortuj po wyniku malejąco, paginuj w kodzie
-  const entries: RankingPlayer[] = latestPerPlayer.map((row) => {
+  // Złóż wyniki — tylko gracze z co najmniej jedną rozegraną grą w sezonie
+  const entries: RankingPlayer[] = latestPerPlayer.flatMap((row) => {
     const stats = statsMap.get(row.playerId) ?? { totalGames: 0, wins: 0 };
-    const winRate = stats.totalGames > 0 ? (stats.wins / stats.totalGames) * 100 : 0;
+    if (stats.totalGames === 0) return [];
+    const winRate = (stats.wins / stats.totalGames) * 100;
 
-    return {
-      rank: 0, // zostanie przypisany po sortowaniu
-      playerId: row.playerId,
-      playerName: row.player.name,
-      currentRating: row.score,
-      totalGames: stats.totalGames,
-      wins: stats.wins,
-      losses: stats.totalGames - stats.wins,
-      winRate: Math.round(winRate * 100) / 100,
-      lastUpdated: row.createdAt.toISOString(),
-    };
+    return [
+      {
+        rank: 0, // zostanie przypisany po sortowaniu
+        playerId: row.playerId,
+        playerName: row.player.name,
+        currentRating: row.score,
+        totalGames: stats.totalGames,
+        wins: stats.wins,
+        losses: stats.totalGames - stats.wins,
+        winRate: Math.round(winRate * 100) / 100,
+        lastUpdated: row.createdAt.toISOString(),
+      },
+    ];
   });
 
   entries.sort((a, b) => b.currentRating - a.currentRating);

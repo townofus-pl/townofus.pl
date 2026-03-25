@@ -38,6 +38,10 @@ export default function HostClient({ initialDates, seasonId }: HostClientProps) 
     const [credentials, setCredentials] = useState({ username: '', password: '' });
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
+    // Admin: resetuj ranking sezonu
+    const [resetConfirm, setResetConfirm] = useState(false);
+    const [resetStatus, setResetStatus] = useState<{ status: 'idle' | 'loading' | 'success' | 'error'; message?: string }>({ status: 'idle' });
+
     // Pobierz dane hosta dla wybranej daty (przez server action)
     const fetchHostInfo = async (date: string) => {
         try {
@@ -135,6 +139,29 @@ export default function HostClient({ initialDates, seasonId }: HostClientProps) 
                 status: 'error',
                 message: 'Wystąpił błąd połączenia podczas wgrywania gry. Spróbuj ponownie później.',
             });
+        }
+    };
+
+    const handleResetRanking = async () => {
+        setResetStatus({ status: 'loading' });
+        try {
+            const auth = btoa(`${credentials.username}:${credentials.password}`);
+            const response = await fetch('/api/ranking/reset', {
+                method: 'POST',
+                headers: { 'Authorization': `Basic ${auth}` },
+            });
+            const data = await response.json() as { success: boolean; data?: { deletedRankingEntries?: number; playersReset?: number }; error?: string };
+            if (response.ok) {
+                setResetStatus({
+                    status: 'success',
+                    message: `Reset zakończony. Usunięto ${data.data?.deletedRankingEntries ?? 0} wpisów, zresetowano ${data.data?.playersReset ?? 0} graczy.`,
+                });
+                setResetConfirm(false);
+            } else {
+                setResetStatus({ status: 'error', message: `Błąd: ${data.error ?? 'Nie udało się zresetować rankingu'}` });
+            }
+        } catch {
+            setResetStatus({ status: 'error', message: 'Błąd połączenia. Spróbuj ponownie.' });
         }
     };
 
@@ -239,6 +266,57 @@ export default function HostClient({ initialDates, seasonId }: HostClientProps) 
                                 </div>
                             )}
                         </div>
+                    </div>
+                )}
+
+                {/* Strefa niebezpieczna — reset rankingu sezonu */}
+                {seasonId === CURRENT_SEASON && (
+                    <div className="max-w-2xl mx-auto mb-8 bg-red-950/30 rounded-xl border border-red-800/50 p-6">
+                        <details className="mt-3">
+                            <summary className="cursor-pointer font-bold text-2xl text-red-300 hover:text-red-200 select-none list-none flex items-center gap-2 font-brook">
+                                <span className="text-4xl">&#9888;</span> Resetuj ranking sezonu
+                            </summary>
+                            <div className="mt-5 pb-6">
+                                <p className="text-red-200 text-sm mb-5">
+                                    Ta operacja <strong>nieodwracalnie usuwa</strong> wszystkie wpisy rankingowe bieżącego sezonu
+                                    i ustawia wszystkim graczom wynik startowy ({2000} pkt). Używaj tylko na początku nowego sezonu.
+                                </p>
+                                {!resetConfirm ? (
+                                    <button
+                                        onClick={() => setResetConfirm(true)}
+                                        className="bg-red-600 hover:bg-red-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold px-5 py-2 rounded-lg transition-colors"
+                                    >
+                                        Resetuj ranking
+                                    </button>
+                                ) : (
+                                    <div className="flex gap-3 items-center">
+                                        <span className="text-red-300 text-sm font-semibold">Na pewno?</span>
+                                        <button
+                                            onClick={handleResetRanking}
+                                            disabled={resetStatus.status === 'loading'}
+                                            className="bg-red-600 hover:bg-red-500 disabled:opacity-50 disabled:cursor-not-allowed text-white font-bold px-5 py-2 rounded-lg transition-colors"
+                                        >
+                                            {resetStatus.status === 'loading' ? 'Resetowanie...' : 'Tak, resetuj'}
+                                        </button>
+                                        <button
+                                            onClick={() => setResetConfirm(false)}
+                                            className="bg-zinc-700 hover:bg-zinc-600 text-white font-bold px-4 py-2 rounded-lg transition-colors"
+                                        >
+                                            Anuluj
+                                        </button>
+                                    </div>
+                                )}
+                                {resetStatus.message && (
+                                    <div className={`mt-4 p-3 rounded-lg text-sm ${
+                                        resetStatus.status === 'success'
+                                            ? 'bg-green-900/30 border border-green-700/50 text-green-300'
+                                            : 'bg-red-900/30 border border-red-800/50 text-red-200'
+                                    }`}>
+                                        {resetStatus.message}
+                                    </div>
+                                )}
+                            </div>
+                        </details>
                     </div>
                 )}
 

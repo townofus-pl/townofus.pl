@@ -21,16 +21,16 @@ function computeRankingChanges(
         new Date(a.date).getTime() - new Date(b.date).getTime()
     );
     const changes: Record<string, number> = {};
-    for (let i = 0; i < sorted.length; i++) {
-        const current = sorted[i];
-        if (current.gameIdentifier && current.gameIdentifier.startsWith(date)) {
-            // Skip initial/base ranking entries — they aren't real game results
-            if (current.reason === 'initial_value' || current.reason === 'base_value') {
-                continue;
-            }
-            const previous = i > 0 ? sorted[i - 1] : null;
-            const change = previous ? current.score - previous.score : 0;
+    let lastRealEntry: ServiceRankingHistoryPoint | null = null;
+    for (const current of sorted) {
+        const isSkippable =
+            current.reason === 'initial_value' || current.reason === 'base_value';
+        if (current.gameIdentifier?.startsWith(date) && !isSkippable) {
+            const change = lastRealEntry ? current.score - lastRealEntry.score : 0;
             changes[current.gameIdentifier] = change;
+        }
+        if (!isSkippable) {
+            lastRealEntry = current;
         }
     }
     return changes;
