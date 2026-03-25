@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import type { RankingHistoryPoint } from "../_services";
+import { buildSeasonUrl } from "../_utils/seasonHelpers";
 
 // Typy krzywych dostępne w wykresie
 type CurveType = 'linear' | 'smooth' | 'step' | 'cardinal' | 'monotone';
@@ -12,13 +13,15 @@ export function RankingChart({
     playerName: _playerName, 
     curveType = 'cardinal',
     smoothness = 1,
-    includeStartingPoint = true
+    includeStartingPoint = true,
+    seasonId
 }: { 
     data: RankingHistoryPoint[]; 
     playerName?: string; 
     curveType?: CurveType; // typ krzywej: 'linear', 'smooth', 'step', 'cardinal', 'monotone'
     smoothness?: number; // parametr gładkości (tylko dla 'smooth' i 'cardinal')
     includeStartingPoint?: boolean; // czy dodawać punkt startowy 2000
+    seasonId: number;
 }) {
     const [hoveredPoint, setHoveredPoint] = useState<{ index: number; point: RankingHistoryPoint; mouseX: number; mouseY: number } | null>(null);
 
@@ -156,7 +159,7 @@ export function RankingChart({
     const handlePointClick = (point: RankingHistoryPoint) => {
         if (point.gameIdentifier) {
             const dateStr = formatDateForUrl(point.date);
-            window.open(`/dramaafera/historia-gier/${dateStr}/${point.gameIdentifier}`, '_blank');
+            window.open(buildSeasonUrl(`/historia-gier/${dateStr}/${point.gameIdentifier}`, seasonId), '_blank');
         }
     };
 

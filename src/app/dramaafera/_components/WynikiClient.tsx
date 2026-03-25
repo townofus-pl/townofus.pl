@@ -155,6 +155,7 @@ export default function WynikiClient({ initialDates, initialResults, seasonId }:
                         detailedGames={resultsData.detailedGames}
                         date={selectedDate}
                         hideZeroStats={true}
+                        seasonId={seasonId}
                     />
 
                     {/* Tabela ról */}
@@ -165,6 +166,7 @@ export default function WynikiClient({ initialDates, initialResults, seasonId }:
                         detailedGames={resultsData.detailedGames}
                         date={selectedDate}
                         hideZeroStats={true}
+                        seasonId={seasonId}
                     />
 
                     {/* Statystyki zwycięstw */}

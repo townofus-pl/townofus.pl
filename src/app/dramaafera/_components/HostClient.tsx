@@ -5,6 +5,7 @@ import Image from "next/image";
 import type { GameDateEntry, HostInfoResult } from "@/app/dramaafera/_services";
 import { CURRENT_SEASON } from "@/app/dramaafera/_constants/seasons";
 import { getHostInfoAction, getGameDatesAction } from "@/app/dramaafera/_actions/seasonActions";
+import { buildSeasonUrl } from "@/app/dramaafera/_utils/seasonHelpers";
 
 type UploadStatus = {
     status: 'idle' | 'uploading' | 'success' | 'error';
@@ -283,10 +284,10 @@ export default function HostClient({ initialDates, seasonId }: HostClientProps) 
                 {/* Wyświetlanie danych hosta */}
                 {hostInfo && !dataLoading && (
                     <div className="max-w-4xl mx-auto">
-                        {/* Przycisk do podsumowania — seasonId potrzebny dla Phase 7 link fixes */}
+                        {/* Przycisk do podsumowania */}
                         <div className="text-center mb-6">
                             <a
-                                href={`/dramaafera/historia-gier/${selectedDate}/podsumowanie`}
+                                href={buildSeasonUrl(`/historia-gier/${selectedDate}/podsumowanie`, seasonId)}
                                 target="_blank"
                                 rel="noopener noreferrer"
                                 className="inline-block bg-yellow-500 hover:bg-yellow-600 text-black font-bold px-6 py-3 rounded-lg shadow transition-colors text-lg"

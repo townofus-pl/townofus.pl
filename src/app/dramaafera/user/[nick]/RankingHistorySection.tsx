@@ -7,9 +7,10 @@ import { RankingChart } from '../../_components/RankingChart';
 interface RankingHistorySectionProps {
   rankingHistory: RankingHistoryPoint[];
   playerName: string;
+  seasonId: number;
 }
 
-export function RankingHistorySection({ rankingHistory, playerName }: RankingHistorySectionProps) {
+export function RankingHistorySection({ rankingHistory, playerName, seasonId }: RankingHistorySectionProps) {
   const [dateFrom, setDateFrom] = useState<string>('');
   const [dateTo, setDateTo] = useState<string>('');
 
@@ -113,7 +114,8 @@ export function RankingHistorySection({ rankingHistory, playerName }: RankingHis
         <RankingChart 
           data={filteredData} 
           playerName={playerName} 
-          includeStartingPoint={!dateFrom && !dateTo} 
+          includeStartingPoint={!dateFrom && !dateTo}
+          seasonId={seasonId}
         />
       </div>
       

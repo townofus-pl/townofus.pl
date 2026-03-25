@@ -6,32 +6,16 @@ import Image from "next/image";
 import { TeamColors } from "@/constants/teams";
 import type { UIPlayerData } from '../../../_services/games/types';
 import { formatPlayerStatsWithColors } from '@/app/dramaafera/_utils/formatPlayerStats';
-import { getRoleColor, convertRoleNameForDisplay } from '@/app/dramaafera/_utils/gameUtils';
+import { getRoleColor, convertRoleNameForDisplay, convertNickToUrlSlug, convertRoleToUrlSlug, getPlayerAvatarPath } from '@/app/dramaafera/_utils/gameUtils';
+import { buildSeasonUrl } from '@/app/dramaafera/_utils/seasonHelpers';
 
-// Funkcja pomocnicza do generowania ścieżki avatara
-function getPlayerAvatarPath(playerName: string): string {
-    return `/images/avatars/${playerName}.png`;
-}
-
-// Funkcja pomocnicza do konwersji nicku na format URL-friendly
-function convertNickToUrlSlug(nick: string): string {
-    return nick.replace(/\s+/g, '-').toLowerCase();
-}
-
-// Funkcja pomocnicza do konwersji nazwy roli na format URL-friendly
-function convertRoleToUrlSlug(role: string): string {
-    return role.toLowerCase()
-        .replace(/\s+/g, '-')
-        .replace(/[^\w\-]/g, '');
-}
-
-function renderRoleHistory(roleHistory: string[] | undefined) {
+function renderRoleHistory(roleHistory: string[] | undefined, seasonId: number) {
     if (!roleHistory || roleHistory.length <= 1) {
         const role = roleHistory?.[roleHistory.length - 1] || 'Unknown';
         const displayRoleName = convertRoleNameForDisplay(role);
         const roleColor = getRoleColor(displayRoleName);
         return (
-            <Link href={`/dramaafera/role/${convertRoleToUrlSlug(displayRoleName)}`}>
+            <Link href={buildSeasonUrl(`/role/${convertRoleToUrlSlug(displayRoleName)}`, seasonId)}>
                 <span 
                     className="px-3 py-1 rounded-lg text-base font-semibold hover:opacity-80 transition-opacity cursor-pointer inline-flex items-center h-8"
                     style={{ 
@@ -53,7 +37,7 @@ function renderRoleHistory(roleHistory: string[] | undefined) {
                 const roleColor = getRoleColor(displayRoleName);
                 return (
                     <span key={roleIndex} className="flex items-center">
-                        <Link href={`/dramaafera/role/${convertRoleToUrlSlug(displayRoleName)}`}>
+                        <Link href={buildSeasonUrl(`/role/${convertRoleToUrlSlug(displayRoleName)}`, seasonId)}>
                             <span 
                                 className="px-3 py-1 rounded-lg text-base font-semibold hover:opacity-80 transition-opacity cursor-pointer inline-flex items-center h-8"
                                 style={{ 
@@ -78,11 +62,12 @@ function renderRoleHistory(roleHistory: string[] | undefined) {
 interface PlayerStatsSectionProps {
     playersData: UIPlayerData[];
     maxTasks: number;
+    seasonId: number;
 }
 
 type SortType = 'points' | 'alphabetical';
 
-export function PlayerStatsSection({ playersData, maxTasks }: PlayerStatsSectionProps) {
+export function PlayerStatsSection({ playersData, maxTasks, seasonId }: PlayerStatsSectionProps) {
     const [sortType, setSortType] = useState<SortType>('points');
 
     const sortedPlayers = [...playersData].sort((a, b) => {
@@ -141,7 +126,7 @@ export function PlayerStatsSection({ playersData, maxTasks }: PlayerStatsSection
                                 />
                                 <div className="flex items-center space-x-3">
                                     <Link 
-                                        href={`/dramaafera/user/${convertNickToUrlSlug(player.nickname)}`}
+                                        href={buildSeasonUrl(`/user/${convertNickToUrlSlug(player.nickname)}`, seasonId)}
                                         className="text-xl font-bold text-white hover:text-orange-300 transition-colors"
                                     >
                                         {player.nickname}
@@ -165,7 +150,7 @@ export function PlayerStatsSection({ playersData, maxTasks }: PlayerStatsSection
                             
                             {/* Rola i modyfikatory */}
                             <div className="flex flex-wrap items-center gap-2">
-                                {renderRoleHistory(player.roleHistory)}
+                                {renderRoleHistory(player.roleHistory, seasonId)}
                                 
                                 {player.modifiers.length > 0 && player.modifiers.map((modifier, modIndex) => (
                                     <span 
@@ -184,23 +169,26 @@ export function PlayerStatsSection({ playersData, maxTasks }: PlayerStatsSection
                             
                             {/* Statystyki jako tekst */}
                             <div className="text-base leading-relaxed flex flex-wrap items-center gap-1">
-                                {formatPlayerStatsWithColors(player, maxTasks).length > 0 ? (
-                                    formatPlayerStatsWithColors(player, maxTasks).map((stat, statIndex) => (
-                                        <span key={statIndex}>
-                                            <span 
-                                                style={{ color: stat.color || '#D1D5DB' }}
-                                                className="font-medium"
-                                            >
-                                                {stat.text}
+                                {(() => {
+                                    const stats = formatPlayerStatsWithColors(player, maxTasks);
+                                    return stats.length > 0 ? (
+                                        stats.map((stat, statIndex) => (
+                                            <span key={statIndex}>
+                                                <span 
+                                                    style={{ color: stat.color || '#D1D5DB' }}
+                                                    className="font-medium"
+                                                >
+                                                    {stat.text}
+                                                </span>
+                                                {statIndex < stats.length - 1 && (
+                                                    <span className="text-gray-400 mx-1">•</span>
+                                                )}
                                             </span>
-                                            {statIndex < formatPlayerStatsWithColors(player, maxTasks).length - 1 && (
-                                                <span className="text-gray-400 mx-1">•</span>
-                                            )}
-                                        </span>
-                                    ))
-                                ) : (
-                                    <span className="text-gray-400">No additional statistics</span>
-                                )}
+                                        ))
+                                    ) : (
+                                        <span className="text-gray-400">No additional statistics</span>
+                                    );
+                                })()}
                             </div>
                         </div>
                     </div>

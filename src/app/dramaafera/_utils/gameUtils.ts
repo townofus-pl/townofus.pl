@@ -51,8 +51,10 @@ export function convertRoleNameForDisplay(roleName: string): string {
 }
 
 export function normalizeRoleName(roleName: string): string {
+  const displayName = convertRoleNameForDisplay(roleName);
   const role = Roles.find(r =>
     r.id.toLowerCase() === roleName.toLowerCase() ||
+    r.name.toLowerCase() === displayName.toLowerCase() ||
     r.name.toLowerCase() === roleName.toLowerCase()
   );
   if (role) {
@@ -137,6 +139,43 @@ export function getModifierColor(modifierName: string): string {
     return modifier.color;
   }
   return "#FFFFFF";
+}
+
+// ---------------------------------------------------------------------------
+// URL slug helpers
+// ---------------------------------------------------------------------------
+
+// Generate a player avatar image path from their nickname
+export function getPlayerAvatarPath(playerName: string): string {
+  return `/images/avatars/${playerName}.png`;
+}
+
+// Convert a role name (possibly PascalCase from DB) to a URL-friendly slug (e.g. "SoulCollector" → "soul-collector")
+export function convertRoleToUrlSlug(role: string): string {
+  return convertRoleNameForDisplay(role).toLowerCase()
+    .replace(/\s+/g, '-')
+    .replace(/[^\w\-]/g, '');
+}
+
+// Convert a URL slug back to a display role name by matching against known roles
+export function convertUrlSlugToRole(slug: string, allRoles: string[]): string {
+  const slugLower = slug.toLowerCase();
+
+  for (const role of allRoles) {
+    const normalizedRole = convertRoleNameForDisplay(role);
+    if (convertRoleToUrlSlug(normalizedRole) === slugLower) {
+      return normalizedRole;
+    }
+  }
+
+  // Fallback - konwertuj myślniki na spacje i kapitalizuj pierwsze litery słów
+  const words = decodeURIComponent(slug.replace(/-/g, ' ')).split(' ');
+  return words.map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
+}
+
+// Convert a player nickname to a URL-friendly slug (e.g. "Some Player" → "some-player")
+export function convertNickToUrlSlug(nick: string): string {
+  return nick.replace(/\s+/g, '-').toLowerCase();
 }
 
 // ---------------------------------------------------------------------------
