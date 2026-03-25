@@ -2,6 +2,7 @@ import { getPrismaClient } from '../../_database';
 import { withoutDeleted } from '../../schema/common';
 import type { GameData } from '../../schema/games';
 import { calculateRankingForGame } from '../../_utils/rankingCalculator';
+import { getSeasonForDate } from '@/app/dramaafera/_constants/seasons';
 
 export interface CreateGameResult {
   gameId: number;
@@ -108,7 +109,8 @@ export async function createGameFromData(
         map: metadata.map,
         maxTasks: metadata.maxTasks || null,
         winnerTeam,
-        winCondition
+        winCondition,
+        season: getSeasonForDate(startTime)
       }
     });
 

@@ -32,7 +32,7 @@ model Game {
     // Computed winner information (cached for performance)
     winnerTeam      String?  // 'Crewmate', 'Impostor', 'Neutral'
     winCondition    String?  // Description of how the game was won
-    season          Int      @default(1)
+    season          Int
 
     // Timestamps
     createdAt       DateTime @default(now())
@@ -314,7 +314,7 @@ model PlayerRanking {
     gameId   Int? // Optional - null for base values, penalties, rewards
     score    Float   // Ranking points
     reason   String? // Optional description: "base_value", "game_result", "penalty", "reward"
-    season   Int     @default(1)
+    season   Int
 
     // Timestamps
     createdAt DateTime @default(now())
