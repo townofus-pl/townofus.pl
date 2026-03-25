@@ -15,7 +15,7 @@ interface WynikiClientProps {
 }
 
 export default function WynikiClient({ initialDates, initialResults, seasonId }: WynikiClientProps) {
-    const availableDates = initialDates;
+    const [availableDates] = useState<GameDateEntry[]>(initialDates);
     const [selectedDate, setSelectedDate] = useState<string>(
         initialResults?.date ?? (initialDates.length > 0 ? initialDates[0].date : "")
     );
@@ -55,7 +55,7 @@ export default function WynikiClient({ initialDates, initialResults, seasonId }:
                 setLastUpdateTime(new Date());
             }
         } catch (err) {
-            console.error('Error fetching results:', err);
+            console.error('Błąd pobierania wyników:', err);
             setError(err instanceof Error ? err.message : 'Błąd pobierania wyników');
             setResultsData(null);
         } finally {
@@ -146,7 +146,7 @@ export default function WynikiClient({ initialDates, initialResults, seasonId }:
                     <PlayerTable
                         players={resultsData.players}
                         reversedGames={resultsData.games}
-                        detailedGames={resultsData.detailedGames as (UIGameData | null)[]}
+                        detailedGames={resultsData.detailedGames as unknown as (UIGameData | null)[]}
                         date={selectedDate}
                         hideZeroStats={true}
                     />
@@ -156,7 +156,7 @@ export default function WynikiClient({ initialDates, initialResults, seasonId }:
                     <RoleTable
                         roles={resultsData.roles}
                         reversedGames={resultsData.games}
-                        detailedGames={resultsData.detailedGames as (UIGameData | null)[]}
+                        detailedGames={resultsData.detailedGames as unknown as (UIGameData | null)[]}
                         date={selectedDate}
                         hideZeroStats={true}
                     />

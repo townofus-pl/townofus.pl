@@ -94,6 +94,9 @@ export default function HostClient({ initialDates, seasonId }: HostClientProps) 
             // Utwórz nagłówek autoryzacji Basic Auth
             const auth = btoa(`${credentials.username}:${credentials.password}`);
 
+            // Użycie fetch zamiast server action — konieczne do przesłania multipart/form-data
+            // z nagłówkiem Basic Auth. Server actions nie obsługują tego scenariusza
+            // (nie można przekazać formData z własnym nagłówkiem Authorization przez "use server").
             const response = await fetch('/api/games/upload', {
                 method: 'POST',
                 headers: {

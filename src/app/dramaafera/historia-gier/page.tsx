@@ -59,7 +59,7 @@ export default async function HistoriaGierPage() {
                                             <span className="text-3xl font-bold text-blue-400">📅</span>
                                             <span className="text-2xl font-bold text-white">{dateGroup.displayDate}</span>
                                             <span className="bg-blue-600/30 text-blue-300 px-3 py-1 rounded text-sm">
-                                                {dateGroup.totalGames} {dateGroup.totalGames === 1 ? 'gra' : 'gier'}
+                                                {dateGroup.totalGames} {dateGroup.totalGames === 1 ? 'gra' : dateGroup.totalGames < 5 ? 'gry' : 'gier'}
                                             </span>
                                             <span className="bg-green-600/30 text-green-300 px-3 py-1 rounded text-sm">
                                                 {getUniquePlayersFromDate(dateGroup).length} graczy

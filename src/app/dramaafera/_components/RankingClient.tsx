@@ -35,8 +35,8 @@ function convertNickToUrlSlug(nick: string): string {
 function sortPlayers(players: RankingPlayer[], sortBy: keyof RankingPlayer, sortOrder: "asc" | "desc") {
     const sorted = [...players];
     sorted.sort((a, b) => {
-        let valA: string | number | Date = a[sortBy];
-        let valB: string | number | Date = b[sortBy];
+        let valA: string | number = a[sortBy];
+        let valB: string | number = b[sortBy];
         if (sortBy === "winRate") {
             valA = parseFloat(String(valA ?? 0));
             valB = parseFloat(String(valB ?? 0));
@@ -132,8 +132,12 @@ export default function RankingClient({ initialData, seasonId }: RankingClientPr
     }
 
     // Wyznacz top rankingujących graczy (najwyższy ranking)
-    const topRanking = Math.max(...playerStats.map(p => typeof p.currentRating === "number" ? p.currentRating : -Infinity));
-    const topPlayerNames = playerStats.filter(p => p.currentRating === topRanking && typeof p.currentRating === "number").map(p => p.playerName);
+    const topRanking = playerStats.length > 0
+        ? Math.max(...playerStats.map(p => typeof p.currentRating === "number" ? p.currentRating : -Infinity))
+        : null;
+    const topPlayerNames = topRanking !== null
+        ? playerStats.filter(p => p.currentRating === topRanking && typeof p.currentRating === "number").map(p => p.playerName)
+        : [];
 
     return (
         <div className="min-h-screen rounded-xl bg-zinc-900/50 text-white">
@@ -185,6 +189,7 @@ export default function RankingClient({ initialData, seasonId }: RankingClientPr
                                                 </div>
                                             </td>
                                             <td className="py-2 px-2">
+                                                {/* TODO Phase 7: make season-aware */}
                                                 <Link href={`/dramaafera/user/${convertNickToUrlSlug(player.playerName)}`}>
                                                     <div className="flex items-center space-x-3 hover:bg-gray-700/30 rounded-lg p-2 transition-colors cursor-pointer">
                                                         <Image
