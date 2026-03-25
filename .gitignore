@@ -51,3 +51,6 @@ next-env.d.ts
 /src/generated
 !/src/generated/.gitkeep
 dev.db
+
+# AI / LLM
+.opencode/

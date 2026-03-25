@@ -3,8 +3,8 @@ import { withoutDeleted } from '../schema/common';
 import type { PrismaClient, Player, GamePlayerStatistics, PlayerRanking } from '@prisma/client';
 import { PlayerRankingReason } from '../_constants/rankingTypes';
 
-// Stałe systemu rankingowego
-const RANKING_CONSTANTS = {
+// Stałe systemu rankingowego (eksportowane — używane też w serwisach rankingowych)
+export const RANKING_CONSTANTS = {
   W: 9,              // Współczynnik wpływu gry na ranking
   PEN: 5,            // Kara za nieobecność
   START_RATING: 2000 // Startowy ranking dla nowych graczy
