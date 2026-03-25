@@ -62,6 +62,22 @@ export function normalizeRoleName(roleName: string): string {
   return roleName.charAt(0).toUpperCase() + roleName.slice(1).toLowerCase();
 }
 
+// Returns the icon path for a role given its DB name (e.g. "GuardianAngel" → "/images/roles/guardian_angel.png").
+// Uses the role registry so multi-word roles with spaces are handled correctly.
+export function getRoleIconPath(roleName: string): string {
+  const displayName = convertRoleNameForDisplay(roleName);
+  const role = Roles.find(r =>
+    r.id.toLowerCase() === roleName.toLowerCase() ||
+    r.name.toLowerCase() === displayName.toLowerCase() ||
+    r.name.toLowerCase() === roleName.toLowerCase()
+  );
+  if (role) {
+    return `/images/roles/${role.id}.png`;
+  }
+  // Fallback: naive camelCase → snake_case conversion
+  return `/images/roles/${roleName.replace(/([a-z])([A-Z])/g, '$1_$2').toLowerCase()}.png`;
+}
+
 // ---------------------------------------------------------------------------
 // Color helpers
 // ---------------------------------------------------------------------------

@@ -6,25 +6,11 @@ import Image from "next/image";
 import type { RankingPlayer } from "@/app/dramaafera/_services";
 import { CURRENT_SEASON } from "@/app/dramaafera/_constants/seasons";
 import { getRankingAction } from "@/app/dramaafera/_actions/seasonActions";
+import { getRankName } from "@/app/dramaafera/_constants/rankTiers";
 
 type NumericRankingKey = {
     [K in keyof RankingPlayer]: RankingPlayer[K] extends number ? K : never;
 }[keyof RankingPlayer];
-
-// Funkcja do wyznaczania rangi na podstawie punktów rankingowych
-function getRankTitle(points: number): string {
-    if (points >= 2500) return "PIERDOLONA LEGENDA";
-    if (points >= 2400) return "CELESTIAL OVERLORD";
-    if (points >= 2300) return "GRANDMASTER";
-    if (points >= 2200) return "MASTER";
-    if (points >= 2150) return "VIRTUOSO";
-    if (points >= 2100) return "THE SPECIALIST";
-    if (points >= 2050) return "THE CAPTAIN";
-    if (points >= 1975) return "THE CREWMATE";
-    if (points >= 1875) return "THE CADET";
-    if (points >= 1750) return "THE PISSLOW";
-    return "CWEL";
-}
 
 // Funkcja pomocnicza do generowania ścieżki avatara
 function getPlayerAvatarPath(playerName: string): string {
@@ -200,7 +186,7 @@ export default function RankingClient({ initialData, seasonId }: RankingClientPr
                                                             {player.playerName}
                                                             {hasRanking && (
                                                                 <span className="italic font-normal text-base text-gray-400 ml-2">
-                                                                    ({getRankTitle(Math.round(player.currentRating))})
+                                                                    ({getRankName(Math.round(player.currentRating))})
                                                                 </span>
                                                             )}
                                                         </span>
