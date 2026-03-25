@@ -89,32 +89,24 @@ export async function getRanking(
     return { ranking, total };
   }
 
-  // Miniony sezon: currentRankingId wskazuje na bieżący sezon, więc szukamy
-  // ostatniego wpisu PlayerRanking dla danego sezonu per gracz
-  const rankingRows = await prisma.playerRanking.findMany({
-    where: {
-      season: targetSeason,
-      deletedAt: null,
-      player: withoutDeleted,
-    },
-    orderBy: [{ playerId: 'asc' }, { createdAt: 'desc' }],
-    take: 2000,
-    select: {
-      playerId: true,
-      score: true,
-      createdAt: true,
-      player: { select: { id: true, name: true } },
-    },
-  });
-
-  // Deduplikacja: zachowaj tylko najnowszy wpis per gracz
-  // (wyniki posortowane po playerId ASC, createdAt DESC — pierwszy = najnowszy)
-  const seenPlayerIds = new Set<number>();
-  const latestPerPlayer = rankingRows.filter((row) => {
-    if (seenPlayerIds.has(row.playerId)) return false;
-    seenPlayerIds.add(row.playerId);
-    return true;
-  });
+  // Miniony sezon: pobieramy najnowszy wpis rankingowy per gracz via raw SQL
+  // (MAX(id) per playerId — unikamy take: N, które przy wielu wpisach per gracz
+  //  ucinałoby graczy z wyższymi playerId)
+  const latestPerPlayer = await prisma.$queryRaw<
+    Array<{ playerId: number; playerName: string; score: number; createdAt: string }>
+  >`
+    SELECT pr.playerId, p.name AS playerName, pr.score, pr.createdAt
+    FROM player_rankings pr
+    JOIN players p ON p.id = pr.playerId
+    WHERE pr.id IN (
+      SELECT MAX(id)
+      FROM player_rankings
+      WHERE season = ${targetSeason}
+        AND deletedAt IS NULL
+      GROUP BY playerId
+    )
+    AND p.deletedAt IS NULL
+  `;
 
   if (latestPerPlayer.length === 0) {
     return { ranking: [], total: 0 };
@@ -156,13 +148,13 @@ export async function getRanking(
       {
         rank: 0, // zostanie przypisany po sortowaniu
         playerId: row.playerId,
-        playerName: row.player.name,
+        playerName: row.playerName,
         currentRating: row.score,
         totalGames: stats.totalGames,
         wins: stats.wins,
         losses: stats.totalGames - stats.wins,
         winRate: Math.round(winRate * 100) / 100,
-        lastUpdated: row.createdAt.toISOString(),
+        lastUpdated: row.createdAt,
       },
     ];
   });
