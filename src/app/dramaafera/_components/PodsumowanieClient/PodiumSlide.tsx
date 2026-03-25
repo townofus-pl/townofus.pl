@@ -3,6 +3,7 @@ import { WeeklyPlayerStats } from './types';
 import { UIGameData } from '@/app/dramaafera/_services/games/types';
 import { videotext, PODIUM_STANDARD_STEPS, PODIUM_TIE_STEPS } from './constants';
 import PlayerHistory from './PlayerHistory';
+import { AvatarImageFill } from './AvatarImage';
 
 interface PodiumSlideProps {
     isFullscreen: boolean;
@@ -152,16 +153,7 @@ export default function PodiumSlide({
                                                 backgroundColor: 'rgba(0, 0, 0, 0.6)'
                                             }}
                                         >
-                                            <Image
-                                                src={`/images/avatars/${sortedStats[2].nickname}.png`}
-                                                alt={sortedStats[2].nickname}
-                                                fill
-                                                className="object-cover"
-                                                onError={(e) => {
-                                                    const target = e.target as HTMLImageElement;
-                                                    target.src = '/images/avatars/placeholder.png';
-                                                }}
-                                            />
+                                             <AvatarImageFill nickname={sortedStats[2].nickname} />
                                             <div 
                                                 className="absolute inset-0 pointer-events-none"
                                                 style={{
@@ -219,16 +211,7 @@ export default function PodiumSlide({
                                                 backgroundColor: 'rgba(0, 0, 0, 0.6)'
                                             }}
                                         >
-                                            <Image
-                                                src={`/images/avatars/${sortedStats[3].nickname}.png`}
-                                                alt={sortedStats[3].nickname}
-                                                fill
-                                                className="object-cover"
-                                                onError={(e) => {
-                                                    const target = e.target as HTMLImageElement;
-                                                    target.src = '/images/avatars/placeholder.png';
-                                                }}
-                                            />
+                                             <AvatarImageFill nickname={sortedStats[3].nickname} />
                                             <div 
                                                 className="absolute inset-0 pointer-events-none"
                                                 style={{
@@ -311,16 +294,7 @@ export default function PodiumSlide({
                                             backgroundColor: 'rgba(0, 0, 0, 0.6)'
                                         }}
                                     >
-                                        <Image
-                                            src={`/images/avatars/${sortedStats[2].nickname}.png`}
-                                            alt={sortedStats[2].nickname}
-                                            fill
-                                            className="object-cover"
-                                            onError={(e) => {
-                                                const target = e.target as HTMLImageElement;
-                                                target.src = '/images/avatars/placeholder.png';
-                                            }}
-                                        />
+                                         <AvatarImageFill nickname={sortedStats[2].nickname} />
                                         {/* Overlay z cieniem wewnętrznym */}
                                         <div 
                                             className="absolute inset-0 pointer-events-none"
@@ -396,16 +370,7 @@ export default function PodiumSlide({
                                             backgroundColor: 'rgba(0, 0, 0, 0.6)'
                                         }}
                                     >
-                                        <Image
-                                            src={`/images/avatars/${sortedStats[1].nickname}.png`}
-                                            alt={sortedStats[1].nickname}
-                                            fill
-                                            className="object-cover"
-                                            onError={(e) => {
-                                                const target = e.target as HTMLImageElement;
-                                                target.src = '/images/avatars/placeholder.png';
-                                            }}
-                                        />
+                                        <AvatarImageFill nickname={sortedStats[1].nickname} />
                                         {/* Overlay z cieniem wewnętrznym */}
                                         <div 
                                             className="absolute inset-0 pointer-events-none"
@@ -494,16 +459,7 @@ export default function PodiumSlide({
                                             backgroundColor: 'rgba(0, 0, 0, 0.6)'
                                         }}
                                     >
-                                        <Image
-                                            src={`/images/avatars/${sortedStats[0].nickname}.png`}
-                                            alt={sortedStats[0].nickname}
-                                            fill
-                                            className="object-cover"
-                                            onError={(e) => {
-                                                const target = e.target as HTMLImageElement;
-                                                target.src = '/images/avatars/placeholder.png';
-                                            }}
-                                        />
+                                        <AvatarImageFill nickname={sortedStats[0].nickname} />
                                         {/* Overlay z cieniem wewnętrznym */}
                                         <div 
                                             className="absolute inset-0 pointer-events-none"

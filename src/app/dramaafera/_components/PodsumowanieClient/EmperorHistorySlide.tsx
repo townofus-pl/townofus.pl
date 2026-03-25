@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import { EmperorHistoryEntry } from './types';
 import { videotext } from './constants';
+import { AvatarImageFill } from './AvatarImage';
 
 interface EmperorHistorySlideProps {
     isFullscreen: boolean;
@@ -96,16 +97,7 @@ export default function EmperorHistorySlide({ isFullscreen, currentStep, isTrans
                                     backgroundColor: 'rgba(0, 0, 0, 0.6)'
                                 }}
                             >
-                                <Image
-                                    src={`/images/avatars/${emperor.nickname}.png`}
-                                    alt={emperor.nickname}
-                                    fill
-                                    className="object-cover"
-                                    onError={(e) => {
-                                        const target = e.target as HTMLImageElement;
-                                        target.src = '/images/avatars/placeholder.png';
-                                    }}
-                                />
+                                <AvatarImageFill nickname={emperor.nickname} />
                                 {/* Warstwa wewnętrznego cienia */}
                                 <div 
                                     className="absolute inset-0 pointer-events-none"

@@ -1,3 +1,4 @@
+import { notFound } from 'next/navigation';
 import { CURRENT_SEASON } from '@/app/dramaafera/_constants/seasons';
 import {
     getWeeklyStats,
@@ -65,6 +66,10 @@ export default async function WeeklySummaryPage({
         ]);
 
     const weeklyStats = weeklyStatsResult.players;
+
+    if (weeklyStats.length === 0) {
+        notFound();
+    }
 
     // Extract top sigmas and cwele from the result (getTopSigmas already returns 3)
     const topSigmas: SigmaPlayer[] = topSigmasResult?.topGainers ?? [];

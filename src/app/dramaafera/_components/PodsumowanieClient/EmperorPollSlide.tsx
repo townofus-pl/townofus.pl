@@ -1,6 +1,6 @@
-import Image from 'next/image';
 import { EmperorPoll } from './types';
 import { videotext } from './constants';
+import { AvatarImageSized } from './AvatarImage';
 
 interface EmperorPollSlideProps {
     isFullscreen: boolean;
@@ -31,7 +31,7 @@ export default function EmperorPollSlide({ isFullscreen, step, emperorPoll }: Em
 
     // Krok 1: Wykres słupkowy - posortowany od najwyższego do najniższego
     const sortedVotes = [...emperorPoll.votes].sort((a, b) => b.votes - a.votes);
-    const maxVotes = Math.max(...sortedVotes.map(v => v.votes));
+    const maxVotes = sortedVotes.length > 0 ? Math.max(...sortedVotes.map(v => v.votes)) : 0;
     const chartHeight = isFullscreen ? 400 : 250;
     const barWidth = isFullscreen ? 120 : 80;
     const gap = isFullscreen ? 40 : 20;
@@ -114,17 +114,11 @@ export default function EmperorPollSlide({ isFullscreen, step, emperorPoll }: Em
                                             backgroundColor: 'rgba(0, 0, 0, 0.6)'
                                         }}
                                     >
-                                        <Image
-                                            src={`/images/avatars/${vote.nickname}.png`}
-                                            alt={vote.nickname}
-                                            width={avatarSize}
-                                            height={avatarSize}
+                                        <AvatarImageSized
+                                            nickname={vote.nickname}
+                                            size={avatarSize}
                                             className="object-cover"
                                             priority
-                                            onError={(e) => {
-                                                const target = e.target as HTMLImageElement;
-                                                target.src = '/images/avatars/placeholder.png';
-                                            }}
                                         />
                                         {/* Warstwa wewnętrznego cienia */}
                                         <div 

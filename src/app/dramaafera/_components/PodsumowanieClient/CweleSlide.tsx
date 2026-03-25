@@ -1,9 +1,9 @@
-import Image from 'next/image';
 import { SigmaPlayer, WeeklyPlayerStats, RankingHistoryPoint } from './types';
 import { UIGameData } from '@/app/dramaafera/_services/games/types';
 import { getRankName, videotext } from './constants';
 import PlayerHistory from './PlayerHistory';
 import { RankingChart } from './RankingChart';
+import { AvatarImageFill } from './AvatarImage';
 
 interface CweleSlideProps {
     isFullscreen: boolean;
@@ -96,16 +96,7 @@ export default function CweleSlide({ isFullscreen, currentStep, isTransitioning,
                                 backgroundColor: 'rgba(0, 0, 0, 0.6)'
                             }}
                         >
-                            <Image
-                                src={`/images/avatars/${cwel.nickname}.png`}
-                                alt={cwel.nickname}
-                                fill
-                                className="object-cover"
-                                onError={(e) => {
-                                    const target = e.target as HTMLImageElement;
-                                    target.src = '/images/avatars/placeholder.png';
-                                }}
-                            />
+                            <AvatarImageFill nickname={cwel.nickname} />
                             {/* Overlay z cieniem wewnętrznym */}
                             <div 
                                 className="absolute inset-0 pointer-events-none"

@@ -34,9 +34,8 @@ export const RankingChart: FC<RankingChartProps> = ({ data, isFullscreen, weekDa
     const year = parseInt(weekDate.substring(0, 4));
     const month = parseInt(weekDate.substring(4, 6)) - 1; // miesiące są 0-indeksowane
     const day = parseInt(weekDate.substring(6, 8));
-    const weekStartDate = new Date(year, month, day);
-    const weekEndDate = new Date(weekStartDate);
-    weekEndDate.setDate(weekEndDate.getDate() + 7); // +7 dni na koniec tygodnia
+    const weekStartDate = new Date(Date.UTC(year, month, day));
+    const weekEndDate = new Date(Date.UTC(year, month, day + 7));
 
     // Filtruj dane: weź ostatni punkt przed tygodniem + wszystkie punkty z tygodnia
     const sortedData = [...data]

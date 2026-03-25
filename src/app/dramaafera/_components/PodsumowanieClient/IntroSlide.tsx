@@ -1,5 +1,6 @@
 import Image from 'next/image';
 import { videotext } from './constants';
+import { AvatarImageFill } from './AvatarImage';
 
 interface IntroSlideProps {
     isFullscreen: boolean;
@@ -55,17 +56,7 @@ function renderFinalIntro(isFullscreen: boolean, randomAvatars: string[]) {
                                     <div className="relative w-[48rem] h-full overflow-hidden shadow-2xl" style={{ clipPath: 'polygon(25% 0%, 100% 0%, 75% 100%, 0% 100%)' }}>
                                         {/* Szare tło pod avatarem (wypełnia przezroczystość) */}
                                         <div className="absolute inset-0" style={{ backgroundColor: '#303030' }}></div>
-                                        <Image
-                                            src={`/images/avatars/${player}.png`}
-                                            alt={player}
-                                            fill
-                                            className="object-cover"
-                                            style={{ objectPosition: 'center' }}
-                                            onError={(e) => {
-                                                const target = e.target as HTMLImageElement;
-                                                target.src = '/images/avatars/placeholder.png';
-                                            }}
-                                        />
+                                     <AvatarImageFill nickname={player} className="object-cover" style={{ objectPosition: 'center' }} />
                                     </div>
                                 </div>
                             ))}

@@ -1,9 +1,9 @@
-import Image from 'next/image';
 import { SigmaPlayer, WeeklyPlayerStats, RankingHistoryPoint } from './types';
 import { UIGameData } from '@/app/dramaafera/_services/games/types';
 import { getRankName, videotext } from './constants';
 import PlayerHistory from './PlayerHistory';
 import { RankingChart } from './RankingChart';
+import { AvatarImageFill } from './AvatarImage';
 
 interface SigmasSlideProps {
     isFullscreen: boolean;
@@ -106,16 +106,7 @@ export default function SigmasSlide({
                                 backgroundColor: 'rgba(0, 0, 0, 0.6)'
                             }}
                         >
-                            <Image
-                                src={`/images/avatars/${sigma.nickname}.png`}
-                                alt={sigma.nickname}
-                                fill
-                                className="object-cover"
-                                onError={(e) => {
-                                    const target = e.target as HTMLImageElement;
-                                    target.src = '/images/avatars/placeholder.png';
-                                }}
-                            />
+                            <AvatarImageFill nickname={sigma.nickname} />
                             {/* Overlay z cieniem wewnętrznym */}
                             <div 
                                 className="absolute inset-0 pointer-events-none"

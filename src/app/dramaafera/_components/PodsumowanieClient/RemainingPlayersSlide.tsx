@@ -1,8 +1,7 @@
-'use client';
-
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { WeeklyPlayerStats } from './types';
+import { AvatarImageFill } from './AvatarImage';
 
 interface RemainingPlayersSlideProps {
     isFullscreen: boolean;
@@ -242,7 +241,7 @@ export default function RemainingPlayersSlide({ isFullscreen, weeklyStats, step 
                                         #{actualPosition}
                                     </div>
                                     <div className="relative rounded-lg overflow-hidden border-amber-400 shadow-xl flex-shrink-0" style={{ width: `${avatarSize}px`, height: `${avatarSize}px`, borderWidth: calculatedItemHeight < 60 ? '2px' : '3px' }}>
-                                        <Image src={`/images/avatars/${player.nickname}.png`} alt={player.nickname} fill className="object-cover" onError={(e) => { const target = e.target as HTMLImageElement; target.src = '/images/avatars/placeholder.png'; }} />
+                                        <AvatarImageFill nickname={player.nickname} />
                                     </div>
                                     <div className="flex-grow">
                                         <div className={`font-bold text-white ${fontSize} leading-tight mb-1`}>{player.nickname}</div>
@@ -353,16 +352,7 @@ export default function RemainingPlayersSlide({ isFullscreen, weeklyStats, step 
                                         borderWidth: calculatedItemHeight < 60 ? '2px' : '3px'
                                     }}
                                 >
-                                    <Image
-                                        src={`/images/avatars/${player.nickname}.png`}
-                                        alt={player.nickname}
-                                        fill
-                                        className="object-cover"
-                                        onError={(e) => {
-                                            const target = e.target as HTMLImageElement;
-                                            target.src = '/images/avatars/placeholder.png';
-                                        }}
-                                    />
+                                    <AvatarImageFill nickname={player.nickname} />
                                 </div>
 
                                 {/* Nick i punkty */}
