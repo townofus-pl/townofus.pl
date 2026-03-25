@@ -1,17 +1,11 @@
 import Link from "next/link";
 import Image from "next/image";
 import { getGameData } from "../../../_services";
-import { formatDisplayDate } from "@/app/dramaafera/_utils/gameUtils";
+import { formatDisplayDate, getPlayerAvatarPath } from "@/app/dramaafera/_utils/gameUtils";
 import { buildSeasonUrl } from "@/app/dramaafera/_utils/seasonHelpers";
 import { TeamColors } from "@/constants/teams";
 import { notFound } from "next/navigation";
 import { PlayerStatsSection } from "./PlayerStatsSection";
-
-// Funkcja pomocnicza do generowania ścieżki avatara
-function getPlayerAvatarPath(playerName: string): string {
-    // Każdy gracz ma swój avatar na podstawie nicku
-    return `/images/avatars/${playerName}.png`;
-}
 
 interface GameDetailContentProps {
     date: string;

@@ -174,23 +174,26 @@ export function PlayerStatsSection({ playersData, maxTasks, seasonId }: PlayerSt
                             
                             {/* Statystyki jako tekst */}
                             <div className="text-base leading-relaxed flex flex-wrap items-center gap-1">
-                                {formatPlayerStatsWithColors(player, maxTasks).length > 0 ? (
-                                    formatPlayerStatsWithColors(player, maxTasks).map((stat, statIndex) => (
-                                        <span key={statIndex}>
-                                            <span 
-                                                style={{ color: stat.color || '#D1D5DB' }}
-                                                className="font-medium"
-                                            >
-                                                {stat.text}
+                                {(() => {
+                                    const stats = formatPlayerStatsWithColors(player, maxTasks);
+                                    return stats.length > 0 ? (
+                                        stats.map((stat, statIndex) => (
+                                            <span key={statIndex}>
+                                                <span 
+                                                    style={{ color: stat.color || '#D1D5DB' }}
+                                                    className="font-medium"
+                                                >
+                                                    {stat.text}
+                                                </span>
+                                                {statIndex < stats.length - 1 && (
+                                                    <span className="text-gray-400 mx-1">•</span>
+                                                )}
                                             </span>
-                                            {statIndex < formatPlayerStatsWithColors(player, maxTasks).length - 1 && (
-                                                <span className="text-gray-400 mx-1">•</span>
-                                            )}
-                                        </span>
-                                    ))
-                                ) : (
-                                    <span className="text-gray-400">No additional statistics</span>
-                                )}
+                                        ))
+                                    ) : (
+                                        <span className="text-gray-400">No additional statistics</span>
+                                    );
+                                })()}
                             </div>
                         </div>
                     </div>

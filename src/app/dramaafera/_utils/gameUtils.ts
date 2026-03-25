@@ -51,8 +51,10 @@ export function convertRoleNameForDisplay(roleName: string): string {
 }
 
 export function normalizeRoleName(roleName: string): string {
+  const displayName = convertRoleNameForDisplay(roleName);
   const role = Roles.find(r =>
     r.id.toLowerCase() === roleName.toLowerCase() ||
+    r.name.toLowerCase() === displayName.toLowerCase() ||
     r.name.toLowerCase() === roleName.toLowerCase()
   );
   if (role) {
@@ -143,9 +145,14 @@ export function getModifierColor(modifierName: string): string {
 // URL slug helpers
 // ---------------------------------------------------------------------------
 
-// Convert a role display name to a URL-friendly slug (e.g. "Soul Collector" → "soul-collector")
+// Generate a player avatar image path from their nickname
+export function getPlayerAvatarPath(playerName: string): string {
+  return `/images/avatars/${playerName}.png`;
+}
+
+// Convert a role name (possibly PascalCase from DB) to a URL-friendly slug (e.g. "SoulCollector" → "soul-collector")
 export function convertRoleToUrlSlug(role: string): string {
-  return role.toLowerCase()
+  return convertRoleNameForDisplay(role).toLowerCase()
     .replace(/\s+/g, '-')
     .replace(/[^\w\-]/g, '');
 }

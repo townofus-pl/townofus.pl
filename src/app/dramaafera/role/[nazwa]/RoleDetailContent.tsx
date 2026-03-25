@@ -3,7 +3,7 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import { RoleImage } from "../_components/RoleImage";
 import { getAllGamesData } from "../../_services";
-import { getRoleColor, convertRoleNameForDisplay, convertUrlSlugToRole, convertNickToUrlSlug } from "@/app/dramaafera/_utils/gameUtils";
+import { getRoleColor, convertRoleNameForDisplay, convertUrlSlugToRole, convertNickToUrlSlug, getPlayerAvatarPath } from "@/app/dramaafera/_utils/gameUtils";
 import { buildSeasonUrl } from "@/app/dramaafera/_utils/seasonHelpers";
 import type { UIGameData, UIPlayerData } from "../../_services";
 import { Roles } from "@/roles";
@@ -731,7 +731,7 @@ export async function RoleDetailContent({ nazwa, seasonId }: RoleDetailContentPr
                                                     className="flex items-center space-x-3 hover:text-gray-300 transition-colors"
                                                 >
                                                     <Image
-                                                        src={`/images/avatars/${playerStats.name}.png`}
+                                                        src={getPlayerAvatarPath(playerStats.name)}
                                                         alt={playerStats.name}
                                                         width={32}
                                                         height={32}

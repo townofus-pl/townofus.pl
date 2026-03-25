@@ -1,15 +1,10 @@
 import Link from "next/link";
 import Image from "next/image";
 import { getGamesListByDate } from "../../_services";
-import { formatDisplayDate } from "@/app/dramaafera/_utils/gameUtils";
+import { formatDisplayDate, getPlayerAvatarPath } from "@/app/dramaafera/_utils/gameUtils";
 import { buildSeasonUrl } from "@/app/dramaafera/_utils/seasonHelpers";
 import { TeamColors } from "@/constants/teams";
 import { notFound } from "next/navigation";
-
-// Funkcja pomocnicza do generowania ścieżki avatara
-function getPlayerAvatarPath(playerName: string): string {
-    return `/images/avatars/${playerName}.png`;
-}
 
 // Funkcja pomocnicza do generowania chronologicznego numeru partii (odwrócona numeracja)
 function getChronologicalGameNumber(index: number, totalGames: number): string {
@@ -51,15 +46,16 @@ export async function DateGamesContent({ date, seasonId }: DateGamesContentProps
                         >
                             <div className="bg-zinc-900/50 rounded-xl p-6 border border-gray-700/50 hover:border-gray-600/50 hover:bg-zinc-900/70 transition-all duration-200 cursor-pointer">
                                 <div className="flex flex-col lg:flex-row lg:items-center lg:justify-between">
-                                    <div className="flex-1">                        <div className="flex items-center space-x-4 mb-3">
-                            <span className="text-2xl font-bold text-blue-400">{getChronologicalGameNumber(index, games.length)} partia</span>
-                            <span className="text-gray-400">{game.date}</span>
-                            <span className="bg-gray-700 px-2 py-1 rounded text-sm">{game.duration}</span>
-                            <span className="bg-blue-600/30 text-blue-300 px-2 py-1 rounded text-sm">
-                                {game.players} graczy
-                            </span>
-                        </div>
-                                        
+                                    <div className="flex-1">
+                                        <div className="flex items-center space-x-4 mb-3">
+                                            <span className="text-2xl font-bold text-blue-400">{getChronologicalGameNumber(index, games.length)} partia</span>
+                                            <span className="text-gray-400">{game.date}</span>
+                                            <span className="bg-gray-700 px-2 py-1 rounded text-sm">{game.duration}</span>
+                                            <span className="bg-blue-600/30 text-blue-300 px-2 py-1 rounded text-sm">
+                                                {game.players} graczy
+                                            </span>
+                                        </div>
+                                         
                                         <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                             <div>
                                                 <div className="flex items-center space-x-2 mb-2">

@@ -1,18 +1,13 @@
 import Link from "next/link";
 import Image from "next/image";
 import { getUserProfileStats, getPlayersList, getPlayerRankingHistory, getPlayerTopGames, getPlayerVotingStats, getPlayerStars } from "../../_services";
-import { convertNickToUrlSlug } from "@/app/dramaafera/_utils/gameUtils";
+import { convertNickToUrlSlug, getPlayerAvatarPath } from "@/app/dramaafera/_utils/gameUtils";
 import { buildSeasonUrl } from "@/app/dramaafera/_utils/seasonHelpers";
 import { notFound } from "next/navigation";
 import CollapsibleSection from "./CollapsibleSection";
 import TopGamesDisplay from "./TopGamesDisplay";
 import VotingStatsDisplay from "./VotingStatsDisplay";
 import RankingHistorySection from "./RankingHistorySection";
-
-// Funkcja pomocnicza do generowania ścieżki avatara
-function getPlayerAvatarPath(playerName: string): string {
-    return `/images/avatars/${playerName}.png`;
-}
 
 // Funkcja pomocnicza do konwersji URL slug z powrotem na nick
 function convertUrlSlugToNick(slug: string, allPlayerNames: string[]): string {
