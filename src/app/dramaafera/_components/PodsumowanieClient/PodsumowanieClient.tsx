@@ -42,6 +42,8 @@ export default function PodsumowanieClient({
     const [showConfetti, setShowConfetti] = useState(false);
     const [introBlackOverlay, setIntroBlackOverlay] = useState(true);
     const backgroundMusicRef = useRef<HTMLAudioElement | null>(null); // Ref zamiast state - nie triggeruje re-render
+    const fadeIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null); // Ref dla interwału fade audio
+    const pendingTimersRef = useRef<ReturnType<typeof setTimeout>[]>([]); // Ref dla oczekujących timerów
     const [introInitialDelayPassed, setIntroInitialDelayPassed] = useState(false); // Czy minęło początkowe opóźnienie intro
 
     // Konfiguracja automatycznej sekwencji intro
@@ -57,8 +59,8 @@ export default function PodsumowanieClient({
         290  // FE
     ], []);
 
-    // Pre-compute confetti random values so they don't change on re-render
-    const confettiPieces = useMemo(() => {
+    // Pre-compute confetti random values - regenerowane przy każdym włączeniu confetti
+    const generateConfettiPieces = () => {
         const CONFETTI_COLORS = ['#fbbf24', '#f59e0b', '#d97706', '#ef4444', '#ec4899'];
         return [...Array(50)].map(() => ({
             left: Math.random() * 100,
@@ -67,8 +69,8 @@ export default function PodsumowanieClient({
             delay: Math.random() * 0.5,
             rotation: Math.random() * 360,
         }));
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    }, [showConfetti]);
+    };
+    const [confettiPieces, setConfettiPieces] = useState(generateConfettiPieces);
 
     // Sprawdź czy jest remis na 3. miejscu (dwóch graczy z takimi samymi punktami)
     const sortedStatsForTieCheck = [...weeklyStats].sort((a, b) => b.totalPoints - a.totalPoints);
@@ -221,7 +223,7 @@ export default function PodsumowanieClient({
         const currentSlideConfig = slides[currentSlide];
         
         // Specjalna obsługa pierwszego slajdu intro - usuń czarną warstwę i uruchom muzykę
-        // UWAGA: Kroki 0-6 są automatyczne, nie reagują na kliknięcie
+        // Kroki 0-6 są automatyczne — kliknięcia nie powinny ich przyspieszać
         if (currentSlideConfig.id === 'intro' && introBlackOverlay) {
             setIntroBlackOverlay(false);
             
@@ -247,6 +249,11 @@ export default function PodsumowanieClient({
             return;
         }
         
+        // Kroki 0-6 intro są automatyczne - ignoruj kliknięcia podczas ich trwania
+        if (currentSlideConfig.id === 'intro' && !introBlackOverlay && currentStep < 7) {
+            return;
+        }
+        
         // Jeśli są jeszcze kroki w bieżącym slajdzie
         if (currentStep < currentSlideConfig.steps - 1) {
             const sortedStats = [...weeklyStats].sort((a, b) => b.totalPoints - a.totalPoints);
@@ -256,16 +263,20 @@ export default function PodsumowanieClient({
                 ((hasThirdPlaceTie && currentStep === PODIUM_TIE_STEPS.firstPlaceReveal - 1) ||
                  (!hasThirdPlaceTie && currentStep === PODIUM_STANDARD_STEPS.firstPlaceReveal - 1))) {
                 setShowConfetti(true);
-                setTimeout(() => setShowConfetti(false), 5000); // Confetti przez 5 sekund
+                setConfettiPieces(generateConfettiPieces());
+                const confettiTimer = setTimeout(() => setShowConfetti(false), 5000); // Confetti przez 5 sekund
+                pendingTimersRef.current.push(confettiTimer);
             }
             
             // Fade transition między sigmami, cwelami i emperor-history (każdy krok od kroku 0)
             if ((currentSlideConfig.id === 'sigmas' || currentSlideConfig.id === 'cwele' || currentSlideConfig.id === 'emperor-history') && currentStep >= 0) {
                 setIsTransitioning(true);
-                setTimeout(() => {
-                    setCurrentStep(currentStep + 1);
-                    setTimeout(() => setIsTransitioning(false), 100);
+                const t1 = setTimeout(() => {
+                    setCurrentStep(prev => prev + 1);
+                    const t2 = setTimeout(() => setIsTransitioning(false), 100);
+                    pendingTimersRef.current.push(t2);
                 }, 500);
+                pendingTimersRef.current.push(t1);
             } else {
                 setCurrentStep(currentStep + 1);
             }
@@ -285,13 +296,17 @@ export default function PodsumowanieClient({
                 const volumeStep = (startVolume - targetVolume) / fadeSteps;
                 
                 let fadeStep = 0;
-                const fadeInterval = setInterval(() => {
+                if (fadeIntervalRef.current) clearInterval(fadeIntervalRef.current);
+                fadeIntervalRef.current = setInterval(() => {
                     fadeStep++;
                     const newVolume = startVolume - (volumeStep * fadeStep);
                     
                     if (fadeStep >= fadeSteps || newVolume <= targetVolume) {
                         audio.volume = targetVolume;
-                        clearInterval(fadeInterval);
+                        if (fadeIntervalRef.current) {
+                            clearInterval(fadeIntervalRef.current);
+                            fadeIntervalRef.current = null;
+                        }
                     } else {
                         audio.volume = newVolume;
                     }
@@ -309,11 +324,13 @@ export default function PodsumowanieClient({
                 // Specjalne opóźnienie dla przejścia z intro - 1 sekunda zamiast 0.5s
                 const transitionDelay = currentSlideConfig.id === 'intro' ? 1000 : 500;
                 
-                setTimeout(() => {
-                    setCurrentSlide(currentSlide + 1);
+                const t3 = setTimeout(() => {
+                    setCurrentSlide(prev => prev + 1);
                     setCurrentStep(0);
-                    setTimeout(() => setIsTransitioning(false), 100);
+                    const t4 = setTimeout(() => setIsTransitioning(false), 100);
+                    pendingTimersRef.current.push(t4);
                 }, transitionDelay);
+                pendingTimersRef.current.push(t3);
             } else {
                 setCurrentSlide(currentSlide + 1);
                 setCurrentStep(0);
@@ -479,6 +496,12 @@ export default function PodsumowanieClient({
                 backgroundMusicRef.current.currentTime = 0;
                 backgroundMusicRef.current = null;
             }
+            if (fadeIntervalRef.current) {
+                clearInterval(fadeIntervalRef.current);
+                fadeIntervalRef.current = null;
+            }
+            pendingTimersRef.current.forEach(t => clearTimeout(t));
+            pendingTimersRef.current = [];
         };
     }, []); // Puste dependencies - cleanup tylko przy unmount
 
@@ -496,8 +519,7 @@ export default function PodsumowanieClient({
         );
     }
 
-    // TODO: Remove isFullscreen prop from child components or implement actual fullscreen detection
-    const isFullscreen = true;
+    const isFullscreen = isPresentationFullscreen;
 
     return (
         <>
@@ -584,7 +606,7 @@ export default function PodsumowanieClient({
                                         filter: 'none'
                                     }}
                                     frameBorder="0"
-                                    title="Among Us background video"
+                                     title="Wideo w tle Among Us"
                                     allow="autoplay; encrypted-media"
                                     allowFullScreen
                                 />

@@ -120,7 +120,7 @@ export default function FinalRankingSlide({ isFullscreen, currentStep, rankingAf
                                                 👑
                                             </td>
                                             <td className={`py-3 px-4 text-center text-white font-bold ${isFullscreen ? 'text-3xl' : 'text-2xl'}`} style={{ borderRight: '2px dotted rgba(200, 200, 200, 0.5)', width: '1%', whiteSpace: 'nowrap' }}>
-                                                THE EMPEROR
+                                                EMPEROR TYGODNIA
                                             </td>
                                             <td className={`py-3 px-4 text-center text-white font-bold ${isFullscreen ? 'text-3xl' : 'text-lg'}`}>
                                                 {emperor.nickname}

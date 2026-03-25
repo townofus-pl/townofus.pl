@@ -33,23 +33,6 @@ export const formatDate = (dateStr: string): string => {
     return `${day}.${month}.${year}`;
 };
 
-// Canonical tier definitions — sorted by minRating descending
-export const RANK_TIERS: readonly { minRating: number; name: string; color: string }[] = [
-    { minRating: 2500, name: 'PIERDOLONA LEGENDA', color: 'rgb(114, 5, 14)' },
-    { minRating: 2400, name: 'CELESTIAL OVERLORD', color: 'rgb(147, 112, 219)' },
-    { minRating: 2300, name: 'GRANDMASTER', color: 'rgb(255, 215, 0)' },
-    { minRating: 2200, name: 'MASTER', color: 'rgb(220, 220, 220)' },
-    { minRating: 2150, name: 'VIRTUOSO', color: 'rgb(0, 0, 0)' },
-    { minRating: 2100, name: 'THE SPECIALIST', color: 'rgb(0, 0, 0)' },
-    { minRating: 2050, name: 'THE CAPTAIN', color: 'rgb(0, 0, 0)' },
-    { minRating: 1975, name: 'THE CREWMATE', color: 'rgb(0, 0, 0)' },
-    { minRating: 1875, name: 'THE CADET', color: 'rgb(0, 0, 0)' },
-    { minRating: 1750, name: 'THE PISSLOW', color: 'rgb(0, 0, 0)' },
-    { minRating: 0, name: 'CWEL', color: 'rgb(0, 0, 0)' },
-];
+// Re-export tier definitions from the font-free canonical source
+export { RANK_TIERS, getRankName } from '@/app/dramaafera/_constants/rankTiers';
 
-// Ranking tier name from rating
-export function getRankName(rating: number): string {
-    const tier = RANK_TIERS.find(t => rating >= t.minRating);
-    return tier?.name ?? 'CWEL';
-}

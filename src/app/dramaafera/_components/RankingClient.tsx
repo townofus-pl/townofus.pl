@@ -6,7 +6,7 @@ import Image from "next/image";
 import type { RankingPlayer } from "@/app/dramaafera/_services";
 import { CURRENT_SEASON } from "@/app/dramaafera/_constants/seasons";
 import { getRankingAction } from "@/app/dramaafera/_actions/seasonActions";
-import { getRankName } from "@/app/dramaafera/_components/PodsumowanieClient/constants";
+import { getRankName } from "@/app/dramaafera/_constants/rankTiers";
 
 type NumericRankingKey = {
     [K in keyof RankingPlayer]: RankingPlayer[K] extends number ? K : never;

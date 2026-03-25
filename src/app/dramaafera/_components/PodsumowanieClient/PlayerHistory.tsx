@@ -150,79 +150,79 @@ export default function PlayerHistory({ nickname, isFullscreen, topPlayerGames, 
                                     <div className={`text-center mt-2 ${isFullscreen ? 'text-sm' : 'text-xs'} leading-tight`}>
                                         {/* Kills */}
                                         {playerData.originalStats.correctKills > 0 && (
-                                            <div className="text-green-500">{playerData.originalStats.correctKills} CORRECT KILL{playerData.originalStats.correctKills > 1 ? 'S' : ''}</div>
+                                            <div className="text-green-500">{playerData.originalStats.correctKills} POPRAWNE ZABÓJSTWO{playerData.originalStats.correctKills > 1 ? 'A' : ''}</div>
                                         )}
                                         {playerData.originalStats.incorrectKills > 0 && (
-                                            <div className="text-red-500">{playerData.originalStats.incorrectKills} INCORRECT KILL{playerData.originalStats.incorrectKills > 1 ? 'S' : ''}</div>
+                                            <div className="text-red-500">{playerData.originalStats.incorrectKills} BŁĘDNE ZABÓJSTWO{playerData.originalStats.incorrectKills > 1 ? 'A' : ''}</div>
                                         )}
                                         
                                         {/* Guesses */}
                                         {playerData.originalStats.correctGuesses > 0 && (
-                                            <div className="text-green-500">{playerData.originalStats.correctGuesses} CORRECT GUESS{playerData.originalStats.correctGuesses > 1 ? 'ES' : ''}</div>
+                                            <div className="text-green-500">{playerData.originalStats.correctGuesses} POPRAWNE TRAFIENIE{playerData.originalStats.correctGuesses > 1 ? 'A' : ''}</div>
                                         )}
                                         {playerData.originalStats.incorrectGuesses > 0 && (
-                                            <div className="text-red-500">{playerData.originalStats.incorrectGuesses} INCORRECT GUESS{playerData.originalStats.incorrectGuesses > 1 ? 'ES' : ''}</div>
+                                            <div className="text-red-500">{playerData.originalStats.incorrectGuesses} BŁĘDNE TRAFIENIE{playerData.originalStats.incorrectGuesses > 1 ? 'A' : ''}</div>
                                         )}
                                         
                                         {/* Medic Shields */}
                                         {playerData.originalStats.correctMedicShields > 0 && (
-                                            <div className="text-green-500">{playerData.originalStats.correctMedicShields} CORRECT SHIELD{playerData.originalStats.correctMedicShields > 1 ? 'S' : ''}</div>
+                                            <div className="text-green-500">{playerData.originalStats.correctMedicShields} POPRAWNA TARCZA{playerData.originalStats.correctMedicShields > 1 ? 'E' : ''}</div>
                                         )}
                                         {playerData.originalStats.incorrectMedicShields > 0 && (
-                                            <div className="text-red-500">{playerData.originalStats.incorrectMedicShields} INCORRECT SHIELD{playerData.originalStats.incorrectMedicShields > 1 ? 'S' : ''}</div>
+                                            <div className="text-red-500">{playerData.originalStats.incorrectMedicShields} BŁĘDNA TARCZA{playerData.originalStats.incorrectMedicShields > 1 ? 'E' : ''}</div>
                                         )}
                                         
                                         {/* Warden Fortifies */}
                                         {playerData.originalStats.correctWardenFortifies > 0 && (
-                                            <div className="text-green-500">{playerData.originalStats.correctWardenFortifies} CORRECT FORTIF{playerData.originalStats.correctWardenFortifies > 1 ? 'IES' : 'Y'}</div>
+                                            <div className="text-green-500">{playerData.originalStats.correctWardenFortifies} POPRAWNE UMOCNIENIE{playerData.originalStats.correctWardenFortifies > 1 ? 'A' : ''}</div>
                                         )}
                                         {playerData.originalStats.incorrectWardenFortifies > 0 && (
-                                            <div className="text-red-500">{playerData.originalStats.incorrectWardenFortifies} INCORRECT FORTIF{playerData.originalStats.incorrectWardenFortifies > 1 ? 'IES' : 'Y'}</div>
+                                            <div className="text-red-500">{playerData.originalStats.incorrectWardenFortifies} BŁĘDNE UMOCNIENIE{playerData.originalStats.incorrectWardenFortifies > 1 ? 'A' : ''}</div>
                                         )}
                                         
                                         {/* Jailor Executes */}
                                         {playerData.originalStats.correctJailorExecutes > 0 && (
-                                            <div className="text-green-500">{playerData.originalStats.correctJailorExecutes} CORRECT EXECUTE{playerData.originalStats.correctJailorExecutes > 1 ? 'S' : ''}</div>
+                                            <div className="text-green-500">{playerData.originalStats.correctJailorExecutes} POPRAWNA EGZEKUCJA{playerData.originalStats.correctJailorExecutes > 1 ? 'E' : ''}</div>
                                         )}
                                         {playerData.originalStats.incorrectJailorExecutes > 0 && (
-                                            <div className="text-red-500">{playerData.originalStats.incorrectJailorExecutes} INCORRECT EXECUTE{playerData.originalStats.incorrectJailorExecutes > 1 ? 'S' : ''}</div>
+                                            <div className="text-red-500">{playerData.originalStats.incorrectJailorExecutes} BŁĘDNA EGZEKUCJA{playerData.originalStats.incorrectJailorExecutes > 1 ? 'E' : ''}</div>
                                         )}
                                         
                                         {/* Prosecutor Prosecutes */}
                                         {playerData.originalStats.correctProsecutes > 0 && (
-                                            <div className="text-green-500">{playerData.originalStats.correctProsecutes} CORRECT PROSECUTE{playerData.originalStats.correctProsecutes > 1 ? 'S' : ''}</div>
+                                            <div className="text-green-500">{playerData.originalStats.correctProsecutes} POPRAWNE OSKARŻENIE{playerData.originalStats.correctProsecutes > 1 ? 'A' : ''}</div>
                                         )}
                                         {playerData.originalStats.incorrectProsecutes > 0 && (
-                                            <div className="text-red-500">{playerData.originalStats.incorrectProsecutes} INCORRECT PROSECUTE{playerData.originalStats.incorrectProsecutes > 1 ? 'S' : ''}</div>
+                                            <div className="text-red-500">{playerData.originalStats.incorrectProsecutes} BŁĘDNE OSKARŻENIE{playerData.originalStats.incorrectProsecutes > 1 ? 'A' : ''}</div>
                                         )}
                                         
                                         {/* Deputy Shoots */}
                                         {playerData.originalStats.correctDeputyShoots > 0 && (
-                                            <div className="text-green-500">{playerData.originalStats.correctDeputyShoots} CORRECT SHOT{playerData.originalStats.correctDeputyShoots > 1 ? 'S' : ''}</div>
+                                            <div className="text-green-500">{playerData.originalStats.correctDeputyShoots} POPRAWNY STRZAŁ{playerData.originalStats.correctDeputyShoots > 1 ? 'Y' : ''}</div>
                                         )}
                                         {playerData.originalStats.incorrectDeputyShoots > 0 && (
-                                            <div className="text-red-500">{playerData.originalStats.incorrectDeputyShoots} INCORRECT SHOT{playerData.originalStats.incorrectDeputyShoots > 1 ? 'S' : ''}</div>
+                                            <div className="text-red-500">{playerData.originalStats.incorrectDeputyShoots} BŁĘDNY STRZAŁ{playerData.originalStats.incorrectDeputyShoots > 1 ? 'Y' : ''}</div>
                                         )}
                                         
                                         {/* Altruist Revives */}
                                         {playerData.originalStats.correctAltruistRevives > 0 && (
-                                            <div className="text-green-500">{playerData.originalStats.correctAltruistRevives} CORRECT REVIVE{playerData.originalStats.correctAltruistRevives > 1 ? 'S' : ''}</div>
+                                            <div className="text-green-500">{playerData.originalStats.correctAltruistRevives} POPRAWNE WSKRZESZENIE{playerData.originalStats.correctAltruistRevives > 1 ? 'A' : ''}</div>
                                         )}
                                         {playerData.originalStats.incorrectAltruistRevives > 0 && (
-                                            <div className="text-red-500">{playerData.originalStats.incorrectAltruistRevives} INCORRECT REVIVE{playerData.originalStats.incorrectAltruistRevives > 1 ? 'S' : ''}</div>
+                                            <div className="text-red-500">{playerData.originalStats.incorrectAltruistRevives} BŁĘDNE WSKRZESZENIE{playerData.originalStats.incorrectAltruistRevives > 1 ? 'A' : ''}</div>
                                         )}
                                         
                                         {/* Swaps */}
                                         {playerData.originalStats.correctSwaps > 0 && (
-                                            <div className="text-green-500">{playerData.originalStats.correctSwaps} CORRECT SWAP{playerData.originalStats.correctSwaps > 1 ? 'S' : ''}</div>
+                                            <div className="text-green-500">{playerData.originalStats.correctSwaps} POPRAWNA ZAMIANA{playerData.originalStats.correctSwaps > 1 ? 'Y' : ''}</div>
                                         )}
                                         {playerData.originalStats.incorrectSwaps > 0 && (
-                                            <div className="text-red-500">{playerData.originalStats.incorrectSwaps} INCORRECT SWAP{playerData.originalStats.incorrectSwaps > 1 ? 'S' : ''}</div>
+                                            <div className="text-red-500">{playerData.originalStats.incorrectSwaps} BŁĘDNA ZAMIANA{playerData.originalStats.incorrectSwaps > 1 ? 'Y' : ''}</div>
                                         )}
                                         
                                         {/* Janitor Cleans */}
                                         {playerData.originalStats.janitorCleans > 0 && (
-                                            <div className="text-gray-400">{playerData.originalStats.janitorCleans} CLEAN{playerData.originalStats.janitorCleans > 1 ? 'S' : ''}</div>
+                                            <div className="text-gray-400">{playerData.originalStats.janitorCleans} SPRZĄTANIE{playerData.originalStats.janitorCleans > 1 ? 'A' : ''}</div>
                                         )}
                                     </div>
                                 )}
