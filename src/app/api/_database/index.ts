@@ -83,14 +83,20 @@ export async function checkDatabaseConnection(d1Database: D1Database): Promise<b
 }
 
 /**
- * Database transaction helper
+ * Execute multiple raw SQL statements atomically using D1's batch() API.
+ *
+ * D1 does not support Prisma interactive transactions ($transaction callback style).
+ * For atomic multi-statement operations, use env.DB.batch() with raw prepared statements.
+ *
+ * Example:
+ *   await batchStatements(env.DB, [
+ *     env.DB.prepare('UPDATE players SET rating = ? WHERE id = ?').bind(newRating, playerId),
+ *     env.DB.prepare('INSERT INTO player_rankings (player_id, ...) VALUES (?, ...)').bind(playerId, ...),
+ *   ]);
  */
-export async function withTransaction<T>(
+export async function batchStatements(
   d1Database: D1Database,
-  callback: (prisma: PrismaClient) => Promise<T>
-): Promise<T> {
-  const client = getPrismaClient(d1Database);
-  return await client.$transaction(async (tx) => {
-    return callback(tx as PrismaClient);
-  });
+  statements: D1PreparedStatement[]
+): Promise<D1Result[]> {
+  return d1Database.batch(statements);
 }
