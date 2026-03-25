@@ -157,6 +157,16 @@ soft-deleted rows, use `findFirst` instead:
   prisma.game.findFirst({ where: { id, ...withoutDeleted } })
 Performance is identical on PK lookups (SQLite uses the unique index either way).
 
+**`GamePlayerStatistics` has no soft-delete**: The `game_player_statistics` table was NOT included
+in the soft-delete migration (`0002_soft_delete_and_indexes.sql`). Never add `deletedAt: null`
+directly to a `gamePlayerStatistics` where clause — the column does not exist and TypeScript will
+catch it at build time. To exclude stats for soft-deleted players, use the relation filter:
+  // Wrong — GamePlayerStatistics has no deletedAt:
+  gamePlayerStatistics: { where: { deletedAt: null, player: withoutDeleted } }
+
+  // Correct — filter via the relation to players:
+  gamePlayerStatistics: { where: { player: withoutDeleted } }
+
 **D1 SQL variable limit**: D1 enforces a strict limit on bound parameters per SQL statement
 (much lower than SQLite's default 999). Avoid `where: { id: { in: largeArray } }` — even
 batching at 100 entries can fail once Prisma adds variables for joins/includes. Instead use
