@@ -85,7 +85,7 @@ export const RankingChart: FC<RankingChartProps> = ({ data, isFullscreen, weekDa
     const scorePadding = scoreRange * 0.1; // 10% padding
 
     // Funkcje skalowania
-    const scaleX = (index: number) => (index / (filteredData.length - 1)) * chartWidth;
+    const scaleX = (index: number) => (index / Math.max(filteredData.length - 1, 1)) * chartWidth;
     const scaleY = (score: number) => 
         chartHeight - ((score - (minScore - scorePadding)) / (scoreRange + 2 * scorePadding)) * chartHeight;
 

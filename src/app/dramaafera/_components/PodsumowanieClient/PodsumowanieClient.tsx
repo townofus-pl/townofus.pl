@@ -43,11 +43,6 @@ export default function PodsumowanieClient({
     const [introBlackOverlay, setIntroBlackOverlay] = useState(true);
     const backgroundMusicRef = useRef<HTMLAudioElement | null>(null); // Ref zamiast state - nie triggeruje re-render
     const [introInitialDelayPassed, setIntroInitialDelayPassed] = useState(false); // Czy minęło początkowe opóźnienie intro
-    const [isVideoPlaying, _setIsVideoPlaying] = useState(false); // Czy film mamika jest odtwarzany
-    
-    // Hooki dla filmu mamika (muszą być zawsze, nawet jeśli nie są używane)
-    const [_videoOpacity, setVideoOpacity] = useState(1);
-    const videoRef = useRef<HTMLVideoElement>(null);
 
     // Konfiguracja automatycznej sekwencji intro
     const INTRO_INITIAL_DELAY = 760; // ms - opóźnienie przed pierwszym tekstem po zniknięciu czarnego ekranu
@@ -61,6 +56,19 @@ export default function PodsumowanieClient({
         225, // A
         290  // FE
     ], []);
+
+    // Pre-compute confetti random values so they don't change on re-render
+    const confettiPieces = useMemo(() => {
+        const CONFETTI_COLORS = ['#fbbf24', '#f59e0b', '#d97706', '#ef4444', '#ec4899'];
+        return [...Array(50)].map(() => ({
+            left: Math.random() * 100,
+            color: CONFETTI_COLORS[Math.floor(Math.random() * 5)],
+            duration: 2 + Math.random() * 3,
+            delay: Math.random() * 0.5,
+            rotation: Math.random() * 360,
+        }));
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, [showConfetti]);
 
     // Sprawdź czy jest remis na 3. miejscu (dwóch graczy z takimi samymi punktami)
     const sortedStatsForTieCheck = [...weeklyStats].sort((a, b) => b.totalPoints - a.totalPoints);
@@ -207,25 +215,6 @@ export default function PodsumowanieClient({
             // Krok 7: Finalne intro - czeka na kliknięcie użytkownika
         }
     }, [currentSlide, currentStep, introBlackOverlay, isPresentationFullscreen, introInitialDelayPassed, slides, INTRO_STEP_DURATIONS]);
-
-    // Obsługa fadeout dla filmu mamika (dla daty 20251203)
-    useEffect(() => {
-        const video = videoRef.current;
-        if (!video || date !== '20251203' || currentSlide !== slides.findIndex(s => s.id === 'podium') || currentStep !== 2) {
-            return;
-        }
-        
-        const handleTimeUpdate = () => {
-            const timeRemaining = video.duration - video.currentTime;
-            // Rozpocznij fadeout 1 sekundę przed końcem
-            if (timeRemaining <= 1 && timeRemaining > 0) {
-                setVideoOpacity(timeRemaining);
-            }
-        };
-        
-        video.addEventListener('timeupdate', handleTimeUpdate);
-        return () => video.removeEventListener('timeupdate', handleTimeUpdate);
-    }, [date, currentSlide, currentStep, slides]);
 
     // Funkcja do przejścia do kolejnego kroku/slajdu
     const handleNext = useCallback(() => {
@@ -409,20 +398,18 @@ export default function PodsumowanieClient({
     // STARE: const maxSteps = weeklyStats.length > 0 ? (weeklyStats.length > 3 ? 5 : 4) : 1;
 
     const handleClick = useCallback(() => {
-        // Blokuj kliknięcia podczas odtwarzania filmu
-        if (isVideoPlaying) {
-            return;
-        }
         handleNext();
-    }, [handleNext, isVideoPlaying]);
+    }, [handleNext]);
 
-    const togglePresentationFullscreen = () => {
-        if (!isPresentationFullscreen) {
-            // Wejście w pełny ekran
-            document.documentElement.requestFullscreen();
-        } else {
-            // Wyjście z pełnego ekranu
-            document.exitFullscreen();
+    const togglePresentationFullscreen = async () => {
+        try {
+            if (!isPresentationFullscreen) {
+                await document.documentElement.requestFullscreen();
+            } else {
+                await document.exitFullscreen();
+            }
+        } catch {
+            // Fullscreen API may be unavailable or denied — ignore
         }
     };
 
@@ -597,7 +584,8 @@ export default function PodsumowanieClient({
                                         filter: 'none'
                                     }}
                                     frameBorder="0"
-                                    allow=""
+                                    title="Among Us background video"
+                                    allow="autoplay; encrypted-media"
                                     allowFullScreen
                                 />
                             </div>
@@ -605,19 +593,19 @@ export default function PodsumowanieClient({
                             {/* Confetti Effect */}
                             {showConfetti && (
                                 <div className="absolute inset-0 z-40 pointer-events-none overflow-hidden">
-                                    {[...Array(50)].map((_, i) => (
+                                    {confettiPieces.map((piece, i) => (
                                         <div
                                             key={i}
                                             className="absolute"
                                             style={{
-                                                left: `${Math.random() * 100}%`,
+                                                left: `${piece.left}%`,
                                                 top: '-10%',
                                                 width: '10px',
                                                 height: '10px',
-                                                backgroundColor: ['#fbbf24', '#f59e0b', '#d97706', '#ef4444', '#ec4899'][Math.floor(Math.random() * 5)],
-                                                animation: `confettiFall ${2 + Math.random() * 3}s linear forwards`,
-                                                animationDelay: `${Math.random() * 0.5}s`,
-                                                transform: `rotate(${Math.random() * 360}deg)`
+                                                backgroundColor: piece.color,
+                                                animation: `confettiFall ${piece.duration}s linear forwards`,
+                                                animationDelay: `${piece.delay}s`,
+                                                transform: `rotate(${piece.rotation}deg)`
                                             }}
                                         />
                                     ))}

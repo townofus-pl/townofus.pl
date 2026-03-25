@@ -79,8 +79,8 @@ export default function FinalRankingSlide({ isFullscreen, currentStep, rankingAf
         <div className="relative w-full h-full flex flex-col py-6" style={{ overflow: 'hidden' }}>
             {/* Nagłówek */}
             <div 
-                className={`text-center mt-10 mb-6 ${isFullscreen ? 'text-6xl' : 'text-5xl'} px-100 font-bold text-amber-400`}
-                style={{ textShadow: '0 0 40px rgba(251, 191, 36, 0.9), 0 0 80px rgba(251, 191, 36, 0.6)', whiteSpace: 'nowrap' }}
+                className={`text-center mt-10 mb-6 ${isFullscreen ? 'text-6xl' : 'text-5xl'} font-bold text-amber-400`}
+                style={{ textShadow: '0 0 40px rgba(251, 191, 36, 0.9), 0 0 80px rgba(251, 191, 36, 0.6)', whiteSpace: 'nowrap', paddingLeft: '100px', paddingRight: '100px' }}
             >
                 AMONG US RANKING AFERA PO {formatDate(date)}
             </div>

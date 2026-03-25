@@ -24,8 +24,12 @@ function computeRankingChanges(
     for (let i = 0; i < sorted.length; i++) {
         const current = sorted[i];
         if (current.gameIdentifier && current.gameIdentifier.startsWith(date)) {
+            // Skip initial/base ranking entries — they aren't real game results
+            if (current.reason === 'initial_value' || current.reason === 'base_value') {
+                continue;
+            }
             const previous = i > 0 ? sorted[i - 1] : null;
-            const change = previous ? current.score - previous.score : current.score;
+            const change = previous ? current.score - previous.score : 0;
             changes[current.gameIdentifier] = change;
         }
     }
@@ -62,9 +66,9 @@ export default async function WeeklySummaryPage({
 
     const weeklyStats = weeklyStatsResult.players;
 
-    // Extract top sigmas and cwele from the result
-    const topSigmas: SigmaPlayer[] = topSigmasResult?.topGainers.slice(0, 3) ?? [];
-    const topCwele: SigmaPlayer[] = topSigmasResult?.topLosers.slice(0, 3) ?? [];
+    // Extract top sigmas and cwele from the result (getTopSigmas already returns 3)
+    const topSigmas: SigmaPlayer[] = topSigmasResult?.topGainers ?? [];
+    const topCwele: SigmaPlayer[] = topSigmasResult?.topLosers ?? [];
 
     // Fetch ranking history for sigmas and cwele in parallel
     const allHistoryNicknames = [

@@ -35,8 +35,6 @@ export default function EmperorHistorySlide({ isFullscreen, currentStep, isTrans
     }
 
     // Krok 1: Pokazanie całej listy
-    const displayEmperorHistory = emperorHistory;
-
     return (
         <div 
             className="relative w-full h-full flex flex-col items-center justify-center px-8"
@@ -59,10 +57,10 @@ export default function EmperorHistorySlide({ isFullscreen, currentStep, isTrans
             <div 
                 className="w-full max-w-4xl flex flex-col"
                 style={{ 
-                    gap: displayEmperorHistory.length > 9 ? '0.3rem' : displayEmperorHistory.length > 8 ? '0.75rem' : displayEmperorHistory.length > 7 ? '0.75rem' : '1rem',
+                    gap: emperorHistory.length > 9 ? '0.3rem' : emperorHistory.length > 8 ? '0.75rem' : emperorHistory.length > 7 ? '0.75rem' : '1rem',
                 }}
             >
-                {[...displayEmperorHistory]
+                {[...emperorHistory]
                     .sort((a, b) => {
                         // Najpierw sortuj według liczby gwiazdek (malejąco)
                         if (a.count !== b.count) {
@@ -74,11 +72,11 @@ export default function EmperorHistorySlide({ isFullscreen, currentStep, isTrans
                         return bLatestDate.localeCompare(aLatestDate);
                     })
                     .map((emperor) => {
-                    const scaleFactor = displayEmperorHistory.length > 9 ? 0.7 : displayEmperorHistory.length > 7 ? 0.75 : displayEmperorHistory.length > 6 ? 0.85 : displayEmperorHistory.length > 3 ? 1 : 1.3;
+                    const scaleFactor = emperorHistory.length > 9 ? 0.7 : emperorHistory.length > 7 ? 0.75 : emperorHistory.length > 6 ? 0.85 : emperorHistory.length > 3 ? 1 : 1.3;
                     const avatarSize = isFullscreen ? 100 * scaleFactor : 80 * scaleFactor;
-                    const fontSize = displayEmperorHistory.length > 6
+                    const fontSize = emperorHistory.length > 6
                         ? (isFullscreen ? 'text-3xl' : 'text-xl')
-                        : displayEmperorHistory.length > 4 
+                        : emperorHistory.length > 4 
                         ? (isFullscreen ? 'text-4xl' : 'text-2xl')
                         : (isFullscreen ? 'text-5xl' : 'text-3xl');
                     
@@ -86,7 +84,7 @@ export default function EmperorHistorySlide({ isFullscreen, currentStep, isTrans
                         <div
                             key={emperor.nickname}
                             className="flex items-center"
-                            style={{ padding: displayEmperorHistory.length > 6 ? '0.5rem' : displayEmperorHistory.length > 4 ? '1rem' : '1.5rem' }}
+                            style={{ padding: emperorHistory.length > 6 ? '0.5rem' : emperorHistory.length > 4 ? '1rem' : '1.5rem' }}
                         >
                             {/* Avatar */}
                             <div 

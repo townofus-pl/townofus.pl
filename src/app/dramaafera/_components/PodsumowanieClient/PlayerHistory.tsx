@@ -147,7 +147,7 @@ export default function PlayerHistory({ nickname, isFullscreen, topPlayerGames, 
 
                                 {/* Statystyki pod kwadratem */}
                                 {played && playerData && (
-                                    <div className={`text-center mt-2 ${isFullscreen ? 'text-s' : 'text-xs'} leading-tight`}>
+                                    <div className={`text-center mt-2 ${isFullscreen ? 'text-sm' : 'text-xs'} leading-tight`}>
                                         {/* Kills */}
                                         {playerData.originalStats.correctKills > 0 && (
                                             <div className="text-green-500">{playerData.originalStats.correctKills} CORRECT KILL{playerData.originalStats.correctKills > 1 ? 'S' : ''}</div>
