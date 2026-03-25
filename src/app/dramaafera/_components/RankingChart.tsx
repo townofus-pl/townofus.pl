@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import type { RankingHistoryPoint } from "../_services/gameDataService";
+import type { RankingHistoryPoint } from "../_services";
 
 // Typy krzywych dostępne w wykresie
 type CurveType = 'linear' | 'smooth' | 'step' | 'cardinal' | 'monotone';

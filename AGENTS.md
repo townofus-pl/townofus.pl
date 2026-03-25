@@ -44,7 +44,19 @@ src/
 │       ├── _constants/           # seasons.ts (SEASONS, CURRENT_SEASON, season helpers)
 │       ├── _hooks/               # useSeason.ts
 │       ├── _utils/               # seasonHelpers.ts (extractDramaAferaSubPath, buildSeasonUrl)
-│       └── _services/            # gameDataService.ts (~2100 lines) — RSC data layer
+│       │                         # gameUtils.ts (getRoleColor, formatDisplayDate, normalizeRoleName, determineTeam, etc.)
+│       └── _services/            # RSC data layer — domain-grouped subdirectories:
+                                  #   index.ts                  — slim barrel re-exporting everything
+                                  #   db.ts                     — getDatabaseClient, buildSeasonGameWhere
+                                  #   games/                    — getGamesList, getGameData, getAllGamesData, getGameDatesList
+                                  #                               types.ts (GameSummary, UIGameData, UIPlayerData, etc.)
+                                  #                               winCalculator.ts (calculateWinnerFromStats)
+                                  #   players/                  — getPlayerStats, getPlayersList, getUserProfileStats, etc.
+                                  #                               types.ts (PlayerStats, UserProfileStats, etc.)
+                                  #                               formatPlayerStats.ts (formatPlayerStatsWithColors)
+                                  #   rankings/                 — generatePlayerRankingStats, generateRoleRankingStats
+                                  #                               types.ts (PlayerRankingStats, RoleRankingStats)
+                                  #   season/                   — getRanking, getGameDatesLightweight, getSessionSummaryByDate, etc.
 ├── constants/                    # Teams, RoleOrModifierTypes, SettingTypes, abilities
 ├── roles/                        # 62 role definitions (snake_case filenames), exported from index.ts
 └── modifiers/                    # 24 modifier definitions, same structure as roles
@@ -81,8 +93,23 @@ ALWAYS include soft-delete filter on all models (every model has deletedAt DateT
 
 ### React / Next.js
 - Default: Server Components. Add 'use client' only for state/effects/browser APIs/event handlers
-- gameDataService.ts is Server-Component-only — never call from client components
+- All `_services/` files are Server-Component-only — never call from client components:
+  all domain subdirectory files and `_services/index.ts`
+- Utility functions (`getRoleColor`, `formatDisplayDate`, `normalizeRoleName`, `determineTeam`, etc.)
+  live in `src/app/dramaafera/_utils/gameUtils.ts` — import directly from there, NOT from `_services`
 - Universal components → src/app/_components/; page-local → co-locate in page directory
+
+### Splitting large service files
+
+When splitting a large service file into a domain subdirectory, create an `index.ts` barrel
+inside the subdirectory that re-exports everything so existing import paths via the parent
+barrel (`_services/index.ts`) continue to work without changes to consumers:
+```
+  // _services/games/index.ts
+  export * from './getGamesList';
+  export * from './getGameData';
+  export type { GameSummary, UIGameData } from './types';
+```
 
 ### Roles & Modifiers
 New role: src/roles/<snake_case_name>.ts, add to src/roles/index.ts

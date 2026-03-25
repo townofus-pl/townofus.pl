@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAllGamesData } from '@/app/dramaafera/_services/gameDataService';
+import { getAllGamesData } from '@/app/dramaafera/_services';
 
 // Type for game with players data  
 interface GameWithPlayersData {

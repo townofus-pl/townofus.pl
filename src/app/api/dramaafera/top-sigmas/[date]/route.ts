@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getGamesListByDate } from '@/app/dramaafera/_services/gameDataService';
+import { getGamesListByDate } from '@/app/dramaafera/_services';
 import { getCloudflareContext } from '@opennextjs/cloudflare';
 import { getPrismaClient } from '../../../_database';
 

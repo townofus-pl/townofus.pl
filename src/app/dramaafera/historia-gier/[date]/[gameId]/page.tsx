@@ -1,7 +1,8 @@
 import Link from "next/link";
 import Image from "next/image";
 import type { Metadata } from "next";
-import { getGameData, formatDisplayDate, getGamesListByDate } from "../../../_services/gameDataService";
+import { getGameData, getGamesListByDate } from "../../../_services";
+import { formatDisplayDate } from "@/app/dramaafera/_utils/gameUtils";
 import { TeamColors } from "@/constants/teams";
 import { notFound } from "next/navigation";
 import { PlayerStatsSection } from "./PlayerStatsSection";

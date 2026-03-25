@@ -21,8 +21,8 @@ applyTo: "src/app/**/*.tsx,src/app/**/*.ts"
 
 ## Data fetching in Server Components
 
-gameDataService functions are the RSC data layer — call them directly in server components:
-  import { getGamesList } from '@/app/dramaafera/_services/gameDataService';
+_services/ functions are the RSC data layer — call them directly in server components:
+  import { getGamesList } from '@/app/dramaafera/_services';
   const games = await getGamesList();  // handles build-time gracefully
 
 ## Fonts and colors

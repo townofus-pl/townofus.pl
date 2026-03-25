@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useMemo } from 'react';
-import type { RankingHistoryPoint } from '../../_services/gameDataService';
+import type { RankingHistoryPoint } from '../../_services';
 import { RankingChart } from '../../_components/RankingChart';
 
 interface RankingHistorySectionProps {

@@ -4,8 +4,9 @@ import { useState } from 'react';
 import Link from "next/link";
 import Image from "next/image";
 import { TeamColors } from "@/constants/teams";
-import type { UIPlayerData } from '../../../_services/gameDataService';
-import { formatPlayerStatsWithColors, getRoleColor } from '../../../_services/gameDataService';
+import type { UIPlayerData } from '../../../_services';
+import { formatPlayerStatsWithColors } from '../../../_services';
+import { getRoleColor } from '@/app/dramaafera/_utils/gameUtils';
 
 // Funkcja pomocnicza do generowania ścieżki avatara
 function getPlayerAvatarPath(playerName: string): string {

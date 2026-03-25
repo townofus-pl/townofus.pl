@@ -1,5 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getPlayerRankingHistory } from '@/app/dramaafera/_services/gameDataService';
+import { getPlayerRankingHistory } from '@/app/dramaafera/_services';
 
 export async function GET(
     request: NextRequest,

@@ -1,6 +1,6 @@
 "use client";
 
-import type { RankingHistoryPoint } from "../../_services/gameDataService";
+import type { RankingHistoryPoint } from "../../_services";
 
 // Komponent wykresu rankingu
 export function RankingChart({ data, playerName }: { data: RankingHistoryPoint[]; playerName?: string }) {

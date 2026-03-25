@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import type { Metadata } from "next";
-import { getUserProfileStats, getPlayersList, getPlayerRankingHistory, getPlayerTopGames, getPlayerVotingStats, getPlayerStars } from "../../_services/gameDataService";
+import { getUserProfileStats, getPlayersList, getPlayerRankingHistory, getPlayerTopGames, getPlayerVotingStats, getPlayerStars } from "../../_services";
 import { notFound } from "next/navigation";
 import CollapsibleSection from "./CollapsibleSection";
 import TopGamesDisplay from "./TopGamesDisplay";
