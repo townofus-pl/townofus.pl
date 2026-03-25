@@ -126,7 +126,7 @@ export default function SigmasSlide({
                             className={`${videotext.className} font-semibold mb-6 ${isFullscreen ? 'text-3xl' : 'text-sm'}`}
                             style={{ color: 'rgba(245, 216, 122, 1)' }}
                         >
-                            {getRankName(sigma.ratingAfter)}
+                            {getRankName(Math.round(sigma.ratingAfter))}
                         </div>
 
                         {/* Statystyki wzrostu */}
