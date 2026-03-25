@@ -146,19 +146,24 @@ export default function HostClient({ initialDates, seasonId }: HostClientProps) 
         setResetStatus({ status: 'loading' });
         try {
             const auth = btoa(`${credentials.username}:${credentials.password}`);
-            const response = await fetch('/api/ranking/reset', {
+            const response = await fetch('/api/season/reset', {
                 method: 'POST',
                 headers: { 'Authorization': `Basic ${auth}` },
             });
-            const data = await response.json() as { success: boolean; data?: { deletedRankingEntries?: number; playersReset?: number }; error?: string };
+            const data = await response.json() as { success: boolean; data?: { message?: string; resetCount?: number }; error?: string };
             if (response.ok) {
                 setResetStatus({
                     status: 'success',
-                    message: `Reset zakończony. Usunięto ${data.data?.deletedRankingEntries ?? 0} wpisów, zresetowano ${data.data?.playersReset ?? 0} graczy.`,
+                    message: data.data?.message ?? 'Ranking został zresetowany.',
                 });
                 setResetConfirm(false);
             } else {
-                setResetStatus({ status: 'error', message: `Błąd: ${data.error ?? 'Nie udało się zresetować rankingu'}` });
+                setResetStatus({
+                    status: 'error',
+                    message: response.status === 401
+                        ? 'Błędne dane logowania. Sprawdź użytkownika i hasło.'
+                        : `Błąd: ${data.error ?? 'Nie udało się zresetować rankingu'}`,
+                });
             }
         } catch {
             setResetStatus({ status: 'error', message: 'Błąd połączenia. Spróbuj ponownie.' });

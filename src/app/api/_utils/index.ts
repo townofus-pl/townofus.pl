@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 
 // Re-export ranking calculator
-export { calculateRankingForGame } from './rankingCalculator';
+export { calculateRankingForGame, RANKING_CONSTANTS } from './rankingCalculator';
 
 /**
  * Standard API response structure
