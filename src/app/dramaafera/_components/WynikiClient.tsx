@@ -21,7 +21,14 @@ export default function WynikiClient({ initialDates, initialResults, seasonId }:
     const [resultsData, setResultsData] = useState<SessionSummary | null>(initialResults);
     const [dataLoading, setDataLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
-    const [lastUpdateHash, setLastUpdateHash] = useState<string>("");
+    const [lastUpdateHash, setLastUpdateHash] = useState<string>(() =>
+        initialResults
+            ? JSON.stringify({
+                  players: initialResults.players.map(p => ({ name: p.name, wins: p.wins, loses: p.loses })),
+                  games: initialResults.games.length,
+              })
+            : ""
+    );
     const [lastUpdateTime, setLastUpdateTime] = useState<Date | null>(null);
     const [isRefreshing, setIsRefreshing] = useState(false);
 
@@ -55,7 +62,7 @@ export default function WynikiClient({ initialDates, initialResults, seasonId }:
             }
         } catch (err) {
             console.error('Błąd pobierania wyników:', err);
-            setError(err instanceof Error ? err.message : 'Błąd pobierania wyników');
+            setError("Nie udało się pobrać wyników. Spróbuj ponownie później.");
             setResultsData(null);
         } finally {
             setDataLoading(false);

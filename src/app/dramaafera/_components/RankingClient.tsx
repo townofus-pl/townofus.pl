@@ -64,7 +64,13 @@ export default function RankingClient({ initialData, seasonId }: RankingClientPr
     const [playerStats, setPlayerStats] = useState<RankingPlayer[]>(initialData);
     const [sortBy, setSortBy] = useState<NumericRankingKey>("currentRating");
     const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
-    const [lastUpdateHash, setLastUpdateHash] = useState<string>("");
+    const [lastUpdateHash, setLastUpdateHash] = useState<string>(() =>
+        JSON.stringify(initialData.map(p => ({
+            id: p.playerId,
+            rating: p.currentRating,
+            games: p.totalGames,
+        })))
+    );
     const [lastUpdateTime, setLastUpdateTime] = useState<Date | null>(null);
     const [isRefreshing, setIsRefreshing] = useState(false);
 

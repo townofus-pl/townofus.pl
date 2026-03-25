@@ -47,7 +47,7 @@ export default function HostClient({ initialDates, seasonId }: HostClientProps) 
             setHostInfo(data);
         } catch (err) {
             console.error('Error fetching host info:', err);
-            setError(err instanceof Error ? err.message : 'Błąd pobierania danych hosta');
+            setError('Nie udało się pobrać danych hosta. Spróbuj ponownie później.');
             setHostInfo(null);
         } finally {
             setDataLoading(false);
@@ -112,19 +112,27 @@ export default function HostClient({ initialDates, seasonId }: HostClientProps) 
                     status: 'success',
                     message: `Gra została pomyślnie wgrana: ${data.data?.gameId || ''}`
                 });
+                setCredentials({ username: '', password: '' });
+                setSelectedFile(null);
                 // Odśwież listę dat przez server action, żeby zachować filtr sezonu
                 const updatedDates = await getGameDatesAction(seasonId);
                 setAvailableDates(updatedDates.dates);
             } else {
+                console.error('Błąd podczas uploadu gry:', {
+                    status: response.status,
+                    statusText: response.statusText,
+                    body: data,
+                });
                 setUploadStatus({
                     status: 'error',
-                    message: `Błąd: ${data.error?.message || 'Nie udało się wgrać gry'}`
+                    message: 'Nie udało się wgrać gry. Sprawdź dane pliku i spróbuj ponownie.',
                 });
             }
         } catch (err) {
+            console.error('Błąd połączenia podczas uploadu gry:', err);
             setUploadStatus({
                 status: 'error',
-                message: `Błąd połączenia: ${err instanceof Error ? err.message : 'Nieznany błąd'}`
+                message: 'Wystąpił błąd połączenia podczas wgrywania gry. Spróbuj ponownie później.',
             });
         }
     };
