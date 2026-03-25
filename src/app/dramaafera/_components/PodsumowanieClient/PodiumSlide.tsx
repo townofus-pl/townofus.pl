@@ -32,8 +32,8 @@ export default function PodiumSlide({
     // Określenie opacity podium na podstawie kroku (overlay histori gier)
     // Przy remisie: krok 2=historia 1. z remisu, 3=historia 2. z remisu, 6=historia 2., 9=historia 1.
     // Normalnie: krok 2=historia 3., 5=historia 2., 8=historia 1.
-    const showHistorySteps = hasThirdPlaceTie 
-        ? [2, 3, PODIUM_TIE_STEPS.secondPlaceHistory, PODIUM_TIE_STEPS.firstPlaceHistory]
+    const showHistorySteps: number[] = hasThirdPlaceTie 
+        ? [PODIUM_TIE_STEPS.tiedThirdPlaceHistory1, PODIUM_TIE_STEPS.tiedThirdPlaceHistory2, PODIUM_TIE_STEPS.secondPlaceHistory, PODIUM_TIE_STEPS.firstPlaceHistory]
         : [PODIUM_STANDARD_STEPS.thirdPlaceHistory, PODIUM_STANDARD_STEPS.secondPlaceHistory, PODIUM_STANDARD_STEPS.firstPlaceHistory];
     const podiumOpacity = showHistorySteps.includes(currentStep) ? 0 : 1;
     const secondPlaceStyle = {
@@ -483,8 +483,8 @@ export default function PodiumSlide({
             {hasThirdPlaceTie ? (
                 // Przy remisie: krok 2=historia 1. z remisu, 3=historia 2. z remisu, 6=historia 2., 9=historia 1.
                 <>
-                    {currentStep === 2 && sortedStats[2] && topPlayerGames.length > 0 && <PlayerHistory nickname={sortedStats[2].nickname} isFullscreen={isFullscreen} topPlayerGames={topPlayerGames} playerRankingChanges={playerRankingChanges} date={date} />}
-                    {currentStep === 3 && sortedStats[3] && topPlayerGames.length > 0 && <PlayerHistory nickname={sortedStats[3].nickname} isFullscreen={isFullscreen} topPlayerGames={topPlayerGames} playerRankingChanges={playerRankingChanges} date={date} />}
+                    {currentStep === PODIUM_TIE_STEPS.tiedThirdPlaceHistory1 && sortedStats[2] && topPlayerGames.length > 0 && <PlayerHistory nickname={sortedStats[2].nickname} isFullscreen={isFullscreen} topPlayerGames={topPlayerGames} playerRankingChanges={playerRankingChanges} date={date} />}
+                    {currentStep === PODIUM_TIE_STEPS.tiedThirdPlaceHistory2 && sortedStats[3] && topPlayerGames.length > 0 && <PlayerHistory nickname={sortedStats[3].nickname} isFullscreen={isFullscreen} topPlayerGames={topPlayerGames} playerRankingChanges={playerRankingChanges} date={date} />}
                     {currentStep === PODIUM_TIE_STEPS.secondPlaceHistory && sortedStats[1] && topPlayerGames.length > 0 && <PlayerHistory nickname={sortedStats[1].nickname} isFullscreen={isFullscreen} topPlayerGames={topPlayerGames} playerRankingChanges={playerRankingChanges} date={date} />}
                     {currentStep === PODIUM_TIE_STEPS.firstPlaceHistory && sortedStats[0] && topPlayerGames.length > 0 && <PlayerHistory nickname={sortedStats[0].nickname} isFullscreen={isFullscreen} topPlayerGames={topPlayerGames} playerRankingChanges={playerRankingChanges} date={date} />}
                 </>

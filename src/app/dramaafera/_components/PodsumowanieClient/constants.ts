@@ -17,6 +17,8 @@ export const PODIUM_STANDARD_STEPS = {
 } as const;
 
 export const PODIUM_TIE_STEPS = {
+    tiedThirdPlaceHistory1: 2,
+    tiedThirdPlaceHistory2: 3,
     secondPlaceReveal: 5,
     secondPlaceHistory: 6,
     firstPlaceReveal: 8,

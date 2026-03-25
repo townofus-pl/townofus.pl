@@ -31,7 +31,8 @@ export default function EmperorPollSlide({ isFullscreen, step, emperorPoll }: Em
 
     // Krok 1: Wykres słupkowy - posortowany od najwyższego do najniższego
     const sortedVotes = [...emperorPoll.votes].sort((a, b) => b.votes - a.votes);
-    const maxVotes = sortedVotes.length > 0 ? Math.max(...sortedVotes.map(v => v.votes)) : 0;
+    const maxVotes = Math.max(1, sortedVotes.length > 0 ? Math.max(...sortedVotes.map(v => v.votes)) : 0);
+    const safeTotalVotes = Math.max(1, emperorPoll.totalVotes);
     const chartHeight = isFullscreen ? 400 : 250;
     const barWidth = isFullscreen ? 120 : 80;
     const gap = isFullscreen ? 40 : 20;
@@ -55,7 +56,7 @@ export default function EmperorPollSlide({ isFullscreen, step, emperorPoll }: Em
                 <div className="flex items-end justify-center" style={{ gap: `${gap}px`, minHeight: `${chartHeight + 150}px` }}>
                     {sortedVotes.map((vote, index) => {
                         const barHeight = Math.max(50, (vote.votes / maxVotes) * chartHeight);
-                        const percentage = Math.round((vote.votes / emperorPoll.totalVotes) * 100);
+                        const percentage = Math.round((vote.votes / safeTotalVotes) * 100);
 
                         return (
                             <div 

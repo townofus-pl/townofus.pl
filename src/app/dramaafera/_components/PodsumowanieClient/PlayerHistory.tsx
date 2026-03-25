@@ -1,6 +1,7 @@
 import Image from 'next/image';
 import { UIGameData } from '@/app/dramaafera/_services/games/types';
 import { videotext, formatDate } from './constants';
+import { getRoleIconPath } from '@/app/dramaafera/_utils/gameUtils';
 
 interface PlayerHistoryProps {
     nickname: string;
@@ -114,7 +115,7 @@ export default function PlayerHistory({ nickname, isFullscreen, topPlayerGames, 
                                 >
                                     {played && playerData && (
                                         <Image
-                                            src={`/images/roles/${playerData.role.replace(/([a-z])([A-Z])/g, '$1_$2').toLowerCase()}.png`}
+                                            src={getRoleIconPath(playerData.role)}
                                             alt={playerData.role}
                                             width={squareSize}
                                             height={squareSize}
