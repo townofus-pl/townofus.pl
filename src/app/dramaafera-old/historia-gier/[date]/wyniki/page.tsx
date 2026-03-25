@@ -5,6 +5,7 @@ export async function generateStaticParams() {
 }
 import { getGameDatesList, getGamesListByDate, getGameData } from '@/data/games';
 import { normalizeRoleName, getRoleColor, determineTeam, UIGameData, UIPlayerData } from '@/data/games/converter';
+import type { UIGameData as ServicesUIGameData } from '@/app/dramaafera/_services/games/types';
 import PlayerTable from '@/app/_components/PlayerTable';
 import RoleTable from '@/app/_components/RoleTable';
 
@@ -148,7 +149,12 @@ export default async function WynikiDniaPage({ params }: { params: Promise<{ dat
       <PlayerTable 
         players={players}
         reversedGames={reversedGames}
-        detailedGames={detailedGames}
+        // Legacy path (dramaafera-old) — this page will be deleted once migration is complete.
+        // The old UIGameData type from @/data/games/converter is structurally compatible with
+        // the fields PlayerTable actually reads, but lacks service-layer-only fields (e.g.
+        // gameNumber, startTime). The cast is safe as long as no new field accesses are added
+        // to PlayerTable before this page is removed.
+        detailedGames={detailedGames as unknown as (ServicesUIGameData | null)[]}
         date={date}
         hideZeroStats={true}
       />
@@ -158,7 +164,8 @@ export default async function WynikiDniaPage({ params }: { params: Promise<{ dat
       <RoleTable 
         roles={roles}
         reversedGames={reversedGames}
-        detailedGames={detailedGames}
+        // Same legacy cast as PlayerTable above — safe until this page is deleted.
+        detailedGames={detailedGames as unknown as (ServicesUIGameData | null)[]}
         date={date}
         hideZeroStats={true}
       />

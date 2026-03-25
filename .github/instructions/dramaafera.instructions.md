@@ -87,7 +87,7 @@ Phase 3 complete:
 - createGame.ts — sets season: getSeasonForDate(startTime) on prisma.game.create()
 - @default(1) removed from Game.season and PlayerRanking.season via migration 0004
 - TODO comments in user/[nick]/page.tsx and role/[nazwa]/page.tsx flagging deferred
-  seasonId pass-through (Phase 5)
+  seasonId pass-through (Phase 7)
 
 Phase 4 complete:
 - 8 season service functions extracted: getRanking, getGameDatesLightweight,
@@ -100,9 +100,28 @@ Phase 4 complete:
 - _services/ monolith eliminated — split into domain subdirectories (see Data layer above)
 - _utils/gameUtils.ts created — utility functions NOT re-exported from _services
 
+Phase 5 complete (staged, pending commit):
+- historia-gier/page.tsx — full server component; calls getGameDatesLightweight(true, CURRENT_SEASON)
+- ranking/page.tsx — server shell + _components/RankingClient.tsx ('use client');
+  server calls getRanking(CURRENT_SEASON)
+- wyniki/page.tsx — server shell + _components/WynikiClient.tsx ('use client');
+  server calls getGameDatesLightweight + getSessionSummaryByDate
+- host/page.tsx — server shell + _components/HostClient.tsx ('use client');
+  server calls getGameDatesLightweight; file upload continues to POST /api/games/upload
+- _actions/seasonActions.ts ('use server') — exports getSessionResults, getHostInfoAction,
+  getRankingAction, getGameDatesAction (all accept seasonId)
+- RankingClient auto-refresh uses getRankingAction(seasonId) server action — NOT fetch('/api/ranking').
+  The API route has no season filter; using it would silently return cross-season totals after 30s.
+- WynikiClient date-switching and auto-refresh use getSessionResults server action
+- HostClient date-switching uses getHostInfoAction server action
+- seasonId from URL params: bare-path pages still use CURRENT_SEASON — season wrappers (Phase 8)
+  are what pass seasonId from params; no extra work needed on the bare pages
+
 ## Component structure
 
   dramaafera/
+  ├── _actions/             # Server actions ('use server') for client components
+  │                         # seasonActions.ts — getSessionResults, getHostInfoAction, getRankingAction, getGameDatesAction
   ├── _components/          # Shared across Dramaafera pages
   ├── _constants/           # seasons.ts
   ├── _hooks/               # useSeason.ts

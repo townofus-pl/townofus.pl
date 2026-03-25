@@ -11,7 +11,7 @@ export interface RankingPlayer {
   wins: number;
   losses: number;
   winRate: number;
-  lastUpdated: Date;
+  lastUpdated: string;
 }
 
 export interface RankingResult {
@@ -64,7 +64,7 @@ export async function getRanking(
       wins,
       losses: totalGames - wins,
       winRate: Math.round(winRate * 100) / 100,
-      lastUpdated: player.currentRanking?.createdAt ?? player.createdAt,
+      lastUpdated: (player.currentRanking?.createdAt ?? player.createdAt).toISOString(),
     };
   });
 

@@ -1,30 +1,16 @@
-"use client";
-
-import { useState, useEffect } from "react";
 import Link from "next/link";
 import Image from "next/image";
-
-// Typy dla danych gier i grupy dat
-type GameSummary = {
-    id: number;
-    gameIdentifier: string;
-    allPlayerNames?: string[];
-};
-type DateGroup = {
-    date: string;
-    displayDate: string;
-    totalGames: number;
-    games: GameSummary[];
-    allPlayerNames?: string[];
-};
+import { getGameDatesLightweight } from "@/app/dramaafera/_services";
+import type { GameDateEntry } from "@/app/dramaafera/_services";
+import { CURRENT_SEASON } from "@/app/dramaafera/_constants/seasons";
+import { buildSeasonUrl } from "@/app/dramaafera/_utils/seasonHelpers";
 
 // Funkcja pomocnicza do zbierania unikalnych nicków graczy z danej daty
-function getUniquePlayersFromDate(dateGroup: DateGroup): string[] {
-    // Używamy allPlayerNames jeśli jest dostępne (zostało obliczone przez API)
+function getUniquePlayersFromDate(dateGroup: GameDateEntry): string[] {
     if (dateGroup.allPlayerNames) {
         return dateGroup.allPlayerNames;
     }
-    
+
     // Fallback - zbieramy z indywidualnych gier
     const allPlayers = new Set<string>();
     dateGroup.games.forEach((game) => {
@@ -40,56 +26,9 @@ function getPlayerAvatarPath(playerName: string): string {
     return `/images/avatars/${playerName}.png`;
 }
 
-export default function HistoriaGierPage() {
-    const [dates, setDates] = useState<DateGroup[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
-
-    useEffect(() => {
-        const fetchDates = async () => {
-            try {
-                setLoading(true);
-                const response = await fetch('/api/games/dates?includePlayers=true');
-                
-                if (!response.ok) {
-                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
-                }
-                
-                const responseData = await response.json() as { data: { dates: DateGroup[] } };
-                setDates(responseData.data.dates);
-            } catch (err) {
-                console.error('Error fetching dates:', err);
-                setError(err instanceof Error ? err.message : 'Błąd pobierania danych');
-            } finally {
-                setLoading(false);
-            }
-        };
-
-        fetchDates();
-    }, []);
-
-    if (loading) {
-        return (
-            <div className="min-h-screen rounded-xl bg-zinc-900/50 text-white flex items-center justify-center">
-                <div className="text-center">
-                    <div className="animate-spin rounded-full h-32 w-32 border-b-2 border-blue-400 mx-auto mb-4"></div>
-                    <p className="text-xl text-gray-300">Ładowanie historii gier...</p>
-                </div>
-            </div>
-        );
-    }
-
-    if (error) {
-        return (
-            <div className="min-h-screen rounded-xl bg-zinc-900/50 text-white flex items-center justify-center">
-                <div className="text-center">
-                    <div className="text-6xl mb-4">⚠️</div>
-                    <h1 className="text-2xl font-bold text-red-400 mb-4">Błąd ładowania</h1>
-                    <p className="text-gray-300">{error}</p>
-                </div>
-            </div>
-        );
-    }
+export default async function HistoriaGierPage() {
+    const seasonId = CURRENT_SEASON;
+    const { dates } = await getGameDatesLightweight(true, seasonId);
 
     return (
         <div className="min-h-screen rounded-xl bg-zinc-900/50 text-white">
@@ -110,7 +49,7 @@ export default function HistoriaGierPage() {
                     {dates.map((dateGroup) => (
                         <Link 
                             key={dateGroup.date}
-                            href={`/dramaafera/historia-gier/${dateGroup.date}`}
+                            href={buildSeasonUrl(`/historia-gier/${dateGroup.date}`, seasonId)}
                             className="block"
                         >
                             <div className="bg-zinc-900/50 rounded-xl p-6 border border-gray-700/50 hover:border-gray-600/50 hover:bg-zinc-900/70 transition-all duration-200 cursor-pointer">
@@ -120,7 +59,7 @@ export default function HistoriaGierPage() {
                                             <span className="text-3xl font-bold text-blue-400">📅</span>
                                             <span className="text-2xl font-bold text-white">{dateGroup.displayDate}</span>
                                             <span className="bg-blue-600/30 text-blue-300 px-3 py-1 rounded text-sm">
-                                                {dateGroup.totalGames} {dateGroup.totalGames === 1 ? 'gra' : 'gier'}
+                                                {dateGroup.totalGames} {dateGroup.totalGames === 1 ? 'gra' : dateGroup.totalGames < 5 ? 'gry' : 'gier'}
                                             </span>
                                             <span className="bg-green-600/30 text-green-300 px-3 py-1 rounded text-sm">
                                                 {getUniquePlayersFromDate(dateGroup).length} graczy
