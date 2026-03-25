@@ -1,9 +1,10 @@
 "use client";
 
 import type { RankingHistoryPoint } from "../../_services";
+import { buildSeasonUrl } from "../../_utils/seasonHelpers";
 
 // Komponent wykresu rankingu
-export function RankingChart({ data, playerName }: { data: RankingHistoryPoint[]; playerName?: string }) {
+export function RankingChart({ data, playerName, seasonId }: { data: RankingHistoryPoint[]; playerName?: string; seasonId: number }) {
     if (data.length === 0) return null;
 
     const margin = { top: 10, right: 10, bottom: 10, left: 10 };
@@ -50,7 +51,7 @@ export function RankingChart({ data, playerName }: { data: RankingHistoryPoint[]
     const handlePointClick = (point: RankingHistoryPoint) => {
         if (point.gameIdentifier) {
             const dateStr = formatDateForUrl(point.date);
-            window.open(`/dramaafera/historia-gier/${dateStr}/${point.gameIdentifier}`, '_blank');
+            window.open(buildSeasonUrl(`/historia-gier/${dateStr}/${point.gameIdentifier}`, seasonId), '_blank');
         }
     };
 

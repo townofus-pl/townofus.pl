@@ -4,6 +4,8 @@ import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import type { UIGameData, UIPlayerData } from '@/app/dramaafera/_services/games/types';
+import { buildSeasonUrl } from '@/app/dramaafera/_utils/seasonHelpers';
+import { CURRENT_SEASON } from '@/app/dramaafera/_constants/seasons';
 
 interface PlayerDayStats {
   name: string;
@@ -21,9 +23,10 @@ interface PlayerTableProps {
   detailedGames: (UIGameData | null)[];
   date: string;
   hideZeroStats?: boolean; // Nowy prop do kontrolowania wyświetlania statystyk równych 0
+  seasonId?: number;
 }
 
-export default function PlayerTable({ players, reversedGames, detailedGames, date, hideZeroStats = false }: PlayerTableProps) {
+export default function PlayerTable({ players, reversedGames, detailedGames, date, hideZeroStats = false, seasonId = CURRENT_SEASON }: PlayerTableProps) {
   const [expandedPlayers, setExpandedPlayers] = useState<Set<string>>(new Set());
 
   // Funkcja pomocnicza do konwersji nicku na format URL-friendly
@@ -165,7 +168,7 @@ export default function PlayerTable({ players, reversedGames, detailedGames, dat
                 style={{ minWidth: '2.5rem', width: '2.5rem', maxWidth: '3.5rem' }}
               >
                 <Link
-                  href={`/dramaafera/historia-gier/${date}/${g.id}`}
+                  href={buildSeasonUrl(`/historia-gier/${date}/${g.id}`, seasonId)}
                   className="block w-full h-full py-2 hover:underline hover:text-blue-400 text-center"
                   style={{ minWidth: '2.5rem', minHeight: '2.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                 >
@@ -192,7 +195,7 @@ export default function PlayerTable({ players, reversedGames, detailedGames, dat
                   <td className="px-2 py-1 flex items-center gap-2">
                     <Image src={player.avatar} alt={player.name} width={32} height={32} className="rounded-full border border-zinc-600" />
                     <Link 
-                      href={`/dramaafera/user/${convertNickToUrlSlug(player.name)}`}
+                      href={buildSeasonUrl(`/user/${convertNickToUrlSlug(player.name)}`, seasonId)}
                       className="font-bold text-orange-300 hover:text-orange-200 transition-colors"
                     >
                       {player.name}

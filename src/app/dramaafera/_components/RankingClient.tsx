@@ -7,6 +7,7 @@ import type { RankingPlayer } from "@/app/dramaafera/_services";
 import { CURRENT_SEASON } from "@/app/dramaafera/_constants/seasons";
 import { getRankingAction } from "@/app/dramaafera/_actions/seasonActions";
 import { getRankName } from "@/app/dramaafera/_constants/rankTiers";
+import { buildSeasonUrl } from "@/app/dramaafera/_utils/seasonHelpers";
 
 type NumericRankingKey = {
     [K in keyof RankingPlayer]: RankingPlayer[K] extends number ? K : never;
@@ -172,8 +173,8 @@ export default function RankingClient({ initialData, seasonId }: RankingClientPr
                                                 </div>
                                             </td>
                                             <td className="py-2 px-2">
-                                                {/* TODO Phase 7: make season-aware */}
-                                                <Link href={`/dramaafera/user/${convertNickToUrlSlug(player.playerName)}`}>
+                                            {/* TODO Phase 7: make season-aware */}
+                                            <Link href={buildSeasonUrl(`/user/${convertNickToUrlSlug(player.playerName)}`, seasonId)}>
                                                     <div className="flex items-center space-x-3 hover:bg-gray-700/30 rounded-lg p-2 transition-colors cursor-pointer">
                                                         <Image
                                                             src={getPlayerAvatarPath(player.playerName)}

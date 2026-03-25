@@ -2,12 +2,14 @@
 
 import type { PlayerTopGame } from '../../_services';
 import Link from 'next/link';
+import { buildSeasonUrl } from '../../_utils/seasonHelpers';
 
 interface TopGamesDisplayProps {
   bestGames: PlayerTopGame[];
+  seasonId: number;
 }
 
-export function TopGamesDisplay({ bestGames }: TopGamesDisplayProps) {
+export function TopGamesDisplay({ bestGames, seasonId }: TopGamesDisplayProps) {
   const games = bestGames;
 
   const formatDate = (date: Date) => {
@@ -51,7 +53,7 @@ export function TopGamesDisplay({ bestGames }: TopGamesDisplayProps) {
       {games.map((game, index) => (
           <Link
             key={game.gameIdentifier}
-            href={`/dramaafera/historia-gier/${formatDateForUrl(game.date)}/${game.gameIdentifier}`}
+            href={buildSeasonUrl(`/historia-gier/${formatDateForUrl(game.date)}/${game.gameIdentifier}`, seasonId)}
             className="block"
           >
             <div className={`bg-gradient-to-r ${getMedalColor(index)} rounded-xl border p-4 hover:scale-[1.02] transition-all duration-200 cursor-pointer`}>
