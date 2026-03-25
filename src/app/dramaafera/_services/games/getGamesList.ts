@@ -22,8 +22,6 @@ export async function getGamesList(seasonId?: number): Promise<GameSummary[]> {
     where: buildSeasonGameWhere(seasonId),
     include: {
       gamePlayerStatistics: {
-        // Intentional: historical game summaries include soft-deleted players so that
-        // winner/player counts remain accurate for games played before the player was removed.
         where: { player: withoutDeleted },
         include: {
           player: true,
@@ -44,7 +42,7 @@ export async function getGamesList(seasonId?: number): Promise<GameSummary[]> {
     // Determine winner colors based on roles
     const winnerColors: Record<string, string> = {};
     winners.forEach(winner => {
-      const roleHistory = winner.roleHistory.sort((a, b) => a.order - b.order);
+      const roleHistory = [...winner.roleHistory].sort((a, b) => a.order - b.order);
       const finalRole = roleHistory[roleHistory.length - 1]?.roleName || '';
       const displayRoleName = convertRoleNameForDisplay(finalRole);
       winnerColors[winner.player.name] = getRoleColor(displayRoleName);
@@ -102,7 +100,6 @@ export async function getGamesListByDate(date: string, seasonId?: number): Promi
     },
     include: {
       gamePlayerStatistics: {
-        // Intentional: same as getGamesList — keep soft-deleted players for historical accuracy.
         where: { player: withoutDeleted },
         include: {
           player: true,

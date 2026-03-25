@@ -2,8 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getGamesListByDate } from '@/app/dramaafera/_services';
 import { getCloudflareContext } from '@opennextjs/cloudflare';
 import { getPrismaClient } from '../../../_database';
-
-const withoutDeleted = { deletedAt: null } as const;
+import { withoutDeleted } from '@/app/api/schema/common';
 
 interface PlayerRankingChange {
     nickname: string;
@@ -25,7 +24,7 @@ export async function GET(
 
         if (!games || games.length === 0) {
             return NextResponse.json(
-                { success: false, error: 'Brak gier w tym tygodniu' },
+                { success: false, error: 'Brak gier w tym dniu' },
                 { status: 404 }
             );
         }

@@ -6,7 +6,7 @@ import Image from "next/image";
 import { TeamColors } from "@/constants/teams";
 import type { UIPlayerData } from '../../../_services/games/types';
 import { formatPlayerStatsWithColors } from '@/app/dramaafera/_utils/formatPlayerStats';
-import { getRoleColor } from '@/app/dramaafera/_utils/gameUtils';
+import { getRoleColor, convertRoleNameForDisplay } from '@/app/dramaafera/_utils/gameUtils';
 
 // Funkcja pomocnicza do generowania ścieżki avatara
 function getPlayerAvatarPath(playerName: string): string {
@@ -23,17 +23,6 @@ function convertRoleToUrlSlug(role: string): string {
     return role.toLowerCase()
         .replace(/\s+/g, '-')
         .replace(/[^\w\-]/g, '');
-}
-
-// Helper function to convert database role names to display names
-function convertRoleNameForDisplay(roleName: string): string {
-    const roleNameMapping: Record<string, string> = {
-        'SoulCollector': 'Soul Collector',
-        'Soul Collector': 'Soul Collector',
-        'GuardianAngel': 'Guardian Angel',
-        'Guardian Angel': 'Guardian Angel',
-    };
-    return roleNameMapping[roleName] || roleName;
 }
 
 function renderRoleHistory(roleHistory: string[] | undefined) {

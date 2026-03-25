@@ -62,8 +62,10 @@ export async function getWeeklyStats(
     include: {
       gamePlayerStatistics: {
         where: { player: withoutDeleted },
-        include: {
-          player: true,
+        select: {
+          player: { select: { name: true } },
+          win: true,
+          totalPoints: true,
         },
       },
     },

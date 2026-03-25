@@ -428,11 +428,6 @@ export default async function RoleStatsPage({ params }: RolePageProps) {
         roleDefinition = Roles.find(r => r.name.toLowerCase().replace(/\s+/g, '') === normalizedRoleName);
     }
     
-    // Debug - wypisz czy znaleziono definicję
-    console.log('Role name:', roleName);
-    console.log('Role definition found:', !!roleDefinition);
-    console.log('Available roles:', Roles.map(r => r.name));
-
     // Wczytaj plik dramaafera.txt i zaktualizuj wartości ustawień
     let roleDefinitionWithSettings = roleDefinition;
     if (roleDefinition) {

@@ -34,6 +34,7 @@ export async function getPlayerStars(nick: string, seasonId?: number): Promise<n
         id: true,
         startTime: true,
         gamePlayerStatistics: {
+          where: { player: withoutDeleted },
           select: {
             playerId: true,
             totalPoints: true

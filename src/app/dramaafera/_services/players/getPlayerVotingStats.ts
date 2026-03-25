@@ -76,11 +76,6 @@ export async function getPlayerVotingStats(
       },
     });
 
-    const meetingIdsSet = new Set<number>();
-    votesCast.forEach(v => meetingIdsSet.add(v.meetingId));
-    votesReceived.forEach(v => meetingIdsSet.add(v.meetingId));
-    skipVotesData.forEach(s => meetingIdsSet.add(s.meetingId));
-
     // Fetch all meetings for this player in the season via relation filters.
     // Avoids IN (...) clauses which exceed D1's SQL variable limit.
     const allMeetings = await prisma.meeting.findMany({
@@ -97,11 +92,7 @@ export async function getPlayerVotingStats(
       }
     });
 
-    const meetingsParticipated = new Set<number>();
-    votesCast.forEach(v => meetingsParticipated.add(v.meetingId));
-    skipVotesData.forEach(s => meetingsParticipated.add(s.meetingId));
-
-    const totalMeetings = meetingsParticipated.size;
+    const totalMeetings = allMeetings.length;
     const skipVotes = skipVotesData.length;
     const skipRate = totalMeetings > 0 ? (skipVotes / totalMeetings) * 100 : 0;
 

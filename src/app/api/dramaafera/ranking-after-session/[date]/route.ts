@@ -2,8 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getGamesListByDate } from '@/app/dramaafera/_services';
 import { getCloudflareContext } from '@opennextjs/cloudflare';
 import { getPrismaClient } from '../../../_database';
-
-const withoutDeleted = { deletedAt: null } as const;
+import { withoutDeleted } from '@/app/api/schema/common';
 
 interface PlayerRanking {
     nickname: string;

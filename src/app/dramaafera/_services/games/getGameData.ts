@@ -81,7 +81,7 @@ export async function getGameData(gameId: string): Promise<UIGameData | null> {
   const winnerNames = winners.map(winner => winner.player.name);
   const winnerColors: Record<string, string> = {};
   winners.forEach(winner => {
-    const roleHistory = winner.roleHistory.sort((a, b) => a.order - b.order);
+    const roleHistory = [...winner.roleHistory].sort((a, b) => a.order - b.order);
     const finalRole = roleHistory[roleHistory.length - 1]?.roleName || '';
     const displayRoleName = convertRoleNameForDisplay(finalRole);
     winnerColors[winner.player.name] = getRoleColor(displayRoleName);
