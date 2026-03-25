@@ -1,6 +1,6 @@
 "use client";
 
-import type { VotingStatistics } from '../../_services/gameDataService';
+import type { VotingStatistics } from '../../_services';
 
 interface VotingStatsDisplayProps {
   votingStats: VotingStatistics;

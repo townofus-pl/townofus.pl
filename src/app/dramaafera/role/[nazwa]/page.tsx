@@ -3,13 +3,13 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import type { Metadata } from "next";
 import { RoleImage } from "../_components/RoleImage";
-import { getAllGamesData, getRoleColor } from "../../_services/gameDataService";
-import type { UIGameData, UIPlayerData } from "../../_services/gameDataService";
+import { getAllGamesData } from "../../_services";
+import { getRoleColor } from "@/app/dramaafera/_utils/gameUtils";
+import type { UIGameData, UIPlayerData } from "../../_services";
 import { Roles } from "@/roles";
 import type { Role } from "@/constants/rolesAndModifiers";
 import { SettingsList } from "@/app/_components/RolesList/RoleCard/SettingsList";
-import { promises as fs } from 'fs';
-import path from 'path';
+import { getCloudflareContext } from '@opennextjs/cloudflare';
 import { parseSettingsFile, getMatchingFileName, updateSettingValue } from '../../_utils/settingsParser';
 
 // Funkcja pomocnicza do normalizacji nazw ról z bazy danych
@@ -32,14 +32,14 @@ function convertRoleToUrlSlug(role: string): string {
 function convertUrlSlugToRole(slug: string, allRoles: string[]): string {
     // Najpierw spróbuj znaleźć dokładne dopasowanie przez konwersję wszystkich ról
     const slugLower = slug.toLowerCase();
-    
+
     for (const role of allRoles) {
         const normalizedRole = normalizeRoleName(role);
         if (convertRoleToUrlSlug(normalizedRole) === slugLower) {
             return normalizedRole;
         }
     }
-    
+
     // Fallback - konwertuj myślniki na spacje i kapitalizuj pierwsze litery słów
     const words = decodeURIComponent(slug.replace(/-/g, ' ')).split(' ');
     return words.map(word => word.charAt(0).toUpperCase() + word.slice(1)).join(' ');
@@ -55,7 +55,7 @@ export async function generateMetadata({ params }: RolePageProps): Promise<Metad
     const { nazwa } = await params;
     const allRoles = Roles.map(r => r.name);
     const roleName = convertUrlSlugToRole(nazwa, allRoles);
-    
+
     return {
         title: `Drama Afera - ${roleName}`
     };
@@ -114,7 +114,7 @@ interface PlayerRoleStats {
 function isKillerRole(roleName: string): boolean {
     const killerRoles = [
         // Impostorzy (wszyscy mogą zabijać)
-        'Impostor', 'Miner', 'Shapeshifter', 'Camouflager', 'Morphling', 'Swooper', 
+        'Impostor', 'Miner', 'Shapeshifter', 'Camouflager', 'Morphling', 'Swooper',
         'Escapist', 'Grenadier', 'Venerer', 'Blackmailer', 'Janitor', 'Bomber',
         'Warlock', 'Hypnotist', 'Eclipsal', 'Undertaker', 'Scavenger',
         // Neutralne role zabijające
@@ -155,7 +155,7 @@ function generateRoleStats(allGames: UIGameData[], targetRole: string): RoleStat
     let incorrectAltruistRevives = 0;
     let correctSwaps = 0;
     let incorrectSwaps = 0;
-    
+
     const isKiller = isKillerRole(targetRole);
 
     const playerStats = new Map<string, {
@@ -178,18 +178,18 @@ function generateRoleStats(allGames: UIGameData[], targetRole: string): RoleStat
             // Normalizuj nazwy ról podczas porównywania
             const normalizedPlayerRole = normalizeRoleName(player.role);
             const normalizedRoleHistory = player.roleHistory?.map(r => normalizeRoleName(r));
-            
+
             // Sprawdź wystąpienia roli w całej historii (dla totalAppearances)
             const hasRoleInHistory = normalizedPlayerRole === targetRole ||
                 (normalizedRoleHistory && normalizedRoleHistory.includes(targetRole));
-            
+
             if (hasRoleInHistory) {
                 totalAppearances++;
             }
-            
+
             // Sprawdź czy gracz miał tę rolę tylko jako pierwotną rolę
-            const originalRole = normalizedRoleHistory && normalizedRoleHistory.length > 0 
-                ? normalizedRoleHistory[0] 
+            const originalRole = normalizedRoleHistory && normalizedRoleHistory.length > 0
+                ? normalizedRoleHistory[0]
                 : normalizedPlayerRole;
             const hasRole = originalRole === targetRole;
 
@@ -353,19 +353,19 @@ interface RolePageProps {
 export async function generateStaticParams() {
     const games = await getAllGamesData(); // TODO: przekazać seasonId, gdy strony ról będą obsługiwać routowanie po sezonach (Faza 4)
     const allRoles = new Set<string>();
-    
+
     games.forEach(game => {
         game.detailedStats.playersData.forEach(player => {
             // Dodaj końcową rolę
             allRoles.add(player.role);
-            
+
             // Dodaj wszystkie role z historii
             if (player.roleHistory) {
                 player.roleHistory.forEach(role => allRoles.add(role));
             }
         });
     });
-    
+
     return Array.from(allRoles).map(role => ({
         nazwa: convertRoleToUrlSlug(role),
     }));
@@ -373,10 +373,10 @@ export async function generateStaticParams() {
 
 export default async function RoleStatsPage({ params }: RolePageProps) {
     const {nazwa} = await params;
-    
+
     // Pobierz wszystkie gry z bazy danych
     const games = await getAllGamesData(); // TODO: przekazać seasonId, gdy strony ról będą obsługiwać routowanie po sezonach (Faza 4) — tymczasowo domyślnie używa CURRENT_SEASON
-    
+
     // Pobierz listę wszystkich ról
     const allRoles: string[] = [];
     games.forEach(game => {
@@ -393,22 +393,22 @@ export default async function RoleStatsPage({ params }: RolePageProps) {
             }
         });
     });
-    
+
     const roleName = convertUrlSlugToRole(nazwa, allRoles);
-    
+
     // Wygeneruj statystyki dla roli
     const roleStats = generateRoleStats(games, roleName);
-    
+
     if (roleStats.gamesPlayed === 0) {
         notFound();
     }
-    
+
     const roleColor = getRoleColor(roleName);
-    
+
     // Znajdź definicję roli z @/roles
     // Próbuj różnych wariantów nazwy
     let roleDefinition: Role | undefined = Roles.find(r => r.name === roleName);
-    
+
     // Jeśli nie znaleziono, spróbuj dopasować role ze złożonymi nazwami (np. "Plaguebearer / Pestilence")
     if (!roleDefinition) {
         roleDefinition = Roles.find(r => {
@@ -420,25 +420,24 @@ export default async function RoleStatsPage({ params }: RolePageProps) {
             return false;
         });
     }
-    
+
     // Jeśli nadal nie znaleziono, spróbuj bez spacji i case-insensitive
     if (!roleDefinition) {
         const normalizedRoleName = roleName.toLowerCase().replace(/\s+/g, '');
         roleDefinition = Roles.find(r => r.name.toLowerCase().replace(/\s+/g, '') === normalizedRoleName);
     }
-    
-    // Debug - wypisz czy znaleziono definicję
-    console.log('Role name:', roleName);
-    console.log('Role definition found:', !!roleDefinition);
-    console.log('Available roles:', Roles.map(r => r.name));
 
     // Wczytaj plik dramaafera.txt i zaktualizuj wartości ustawień
     let roleDefinitionWithSettings = roleDefinition;
     if (roleDefinition) {
         try {
-            const filePath = path.join(process.cwd(), 'public', 'settings', 'dramaafera.txt');
-            const fileContent = await fs.readFile(filePath, 'utf-8');
-            
+            const { env } = await getCloudflareContext();
+            if (!env.ASSETS) throw new Error('ASSETS binding not available');
+            // "localhost" zadziała - https://developers.cloudflare.com/workers/static-assets/binding/
+            const response = await env.ASSETS.fetch(new Request('http://localhost/settings/dramaafera.txt'));
+            if (!response.ok) throw new Error(`Failed to fetch settings: ${response.status}`);
+            const fileContent = await response.text();
+
             // Parsowanie pliku
             const { fileContentMap, cleanedFileContentMap } = parseSettingsFile(fileContent);
 
@@ -505,13 +504,13 @@ export default async function RoleStatsPage({ params }: RolePageProps) {
 
                         {/* Informacje o roli */}
                         <div className="flex-1 text-center md:text-left">
-                            <h2 
+                            <h2
                                 className="text-5xl font-bold mb-4"
                                 style={{ color: roleColor }}
                             >
                                 {roleName}
                             </h2>
-                            
+
                             {/* Podstawowe statystyki roli */}
                             <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
                                 {/* Wystąpienia */}
@@ -566,7 +565,7 @@ export default async function RoleStatsPage({ params }: RolePageProps) {
                             <div className="bg-zinc-900/50 rounded-xl p-4 flex flex-col gap-10 justify-between">
                                 <div className="text-xl">{roleDefinitionWithSettings.description}</div>
                                 <SettingsList settings={roleDefinitionWithSettings.settings}/>
-                            </div>  
+                            </div>
                             <div className="bg-zinc-900/50 rounded-xl p-4">
                                 <h5 className="font-brook text-5xl mb-5">Umiejętności</h5>
                                 <ul className="text-xl">
@@ -592,10 +591,10 @@ export default async function RoleStatsPage({ params }: RolePageProps) {
                 <div className="bg-zinc-900/50 backdrop-blur-md rounded-xl border border-zinc-700/50 p-6 mb-6">
                     <h3 className="text-2xl font-bold mb-3 text-center">Szczegółowe statystyki</h3>
                     <div className="text-xs text-zinc-400 tracking-wide mb-4 text-center"> Widzisz statystykę niepasującą do roli? To kwestia zmiany roli w trakcie gry.</div>
-                    
+
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
                         {/* Wyświetl tylko statystyki różne od zera */}
-                        
+
                         {/* Statystyki zabójstw dla ról zabijających */}
                         {roleStats.isKillerRole && (roleStats.totalCorrectKills! > 0 || roleStats.totalIncorrectKills! > 0) && (
                             <>
@@ -840,7 +839,7 @@ export default async function RoleStatsPage({ params }: RolePageProps) {
                     <h3 className="text-2xl font-bold mb-4 text-center">
                         Gracze którzy grali jako {roleName}
                     </h3>
-                    
+
                     {roleStats.players.length > 0 ? (
                         <div className="overflow-x-auto">
                             <table className="w-full table-auto">
@@ -887,10 +886,10 @@ export default async function RoleStatsPage({ params }: RolePageProps) {
                                                 </span>
                                             </td>
                                             <td className="py-3 px-4">
-                                                <span 
+                                                <span
                                                     className="font-bold text-lg"
-                                                    style={{ 
-                                                        color: playerStats.winRateWithRole >= 70 ? '#10B981' : 
+                                                    style={{
+                                                        color: playerStats.winRateWithRole >= 70 ? '#10B981' :
                                                                playerStats.winRateWithRole >= 50 ? '#F59E0B' : '#EF4444'
                                                     }}
                                                 >
@@ -907,7 +906,7 @@ export default async function RoleStatsPage({ params }: RolePageProps) {
                             <p className="text-gray-400 text-lg">Nikt jeszcze nie grał tą rolą</p>
                         </div>
                     )}
-                    
+
                     <div className="mt-4 text-center text-zinc-400">
                         Łącznie {roleStats.players.length} różnych graczy grało tą rolą
                     </div>

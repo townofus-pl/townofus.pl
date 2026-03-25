@@ -1,6 +1,6 @@
 "use client";
 
-import type { PlayerTopGame } from '../../_services/gameDataService';
+import type { PlayerTopGame } from '../../_services';
 import Link from 'next/link';
 
 interface TopGamesDisplayProps {
