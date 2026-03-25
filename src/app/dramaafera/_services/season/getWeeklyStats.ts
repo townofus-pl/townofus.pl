@@ -1,5 +1,5 @@
-import { getDatabaseClient } from '../db';
-import { CURRENT_SEASON } from '@/app/dramaafera/_constants/seasons';
+import { getDatabaseClient, buildSeasonGameWhere } from '../db';
+import { withoutDeleted } from '@/app/api/schema/common';
 
 export interface WeeklyPlayerStats {
   nickname: string;
@@ -57,11 +57,11 @@ export async function getWeeklyStats(
         gte: startOfWeek,
         lt: endOfWeek,
       },
-      deletedAt: null,
-      season: seasonId ?? CURRENT_SEASON,
+      ...buildSeasonGameWhere(seasonId),
     },
     include: {
       gamePlayerStatistics: {
+        where: { player: withoutDeleted },
         include: {
           player: true,
         },

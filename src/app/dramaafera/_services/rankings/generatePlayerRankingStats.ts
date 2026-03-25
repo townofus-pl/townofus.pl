@@ -1,22 +1,6 @@
 import type { PlayerRankingStats } from './types';
 import { getAllGamesData } from '../games/getAllGamesData';
 
-// Player ranking points data (manually maintained)
-const playerRankingPoints: Record<string, number> = {
-  "Cleopatrie": 2303,
-  "ziomson": 2224,
-  "brubel": 2165,
-  "Dziekansqr": 2133,
-  "DawDu": 2122,
-  "Mamika": 2077,
-  "Jakubeq": 2016,
-  "Nudna": 1983,
-  "QukaVadi": 1969,
-  "Zieloony": 1961,
-  "Miras": 1926,
-  "Budyn": 1907,
-};
-
 // Generate player ranking statistics
 export async function generatePlayerRankingStats(seasonId?: number): Promise<PlayerRankingStats[]> {
   const allGames = await getAllGamesData(seasonId);
@@ -41,7 +25,6 @@ export async function generatePlayerRankingStats(seasonId?: number): Promise<Pla
     gamesPlayed: stats.played,
     wins: stats.won,
     winRate: stats.played > 0 ? Math.round((stats.won / stats.played) * 100) : 0,
-    rankingPoints: playerRankingPoints[playerName]
   }));
 
   rankingStats.sort((a, b) => {

@@ -18,7 +18,7 @@ export async function getGameData(gameId: string): Promise<UIGameData | null> {
     return null;
   }
 
-  const game = await prisma.game.findUnique({
+  const game = await prisma.game.findFirst({
     where: {
       gameIdentifier: gameId,
       ...withoutDeleted

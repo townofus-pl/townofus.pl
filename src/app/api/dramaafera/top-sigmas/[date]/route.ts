@@ -40,10 +40,10 @@ export async function GET(
         const lastGameIdentifier = sortedGames[sortedGames.length - 1]?.id;
 
         // Pobierz gry z bazy, żeby mieć ich ID numeryczne
-        const firstGameDb = await prisma.game.findUnique({
+        const firstGameDb = await prisma.game.findFirst({
             where: { gameIdentifier: firstGameIdentifier, ...withoutDeleted }
         });
-        const lastGameDb = await prisma.game.findUnique({
+        const lastGameDb = await prisma.game.findFirst({
             where: { gameIdentifier: lastGameIdentifier, ...withoutDeleted }
         });
 

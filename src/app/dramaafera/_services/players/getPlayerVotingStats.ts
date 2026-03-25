@@ -36,6 +36,8 @@ export async function getPlayerVotingStats(
       }
     });
 
+    console.log('[VOTING DEBUG] player:', player?.id, player?.name, 'season:', seasonId ?? CURRENT_SEASON);
+
     if (!player) {
       return emptyResult;
     }
@@ -98,28 +100,23 @@ export async function getPlayerVotingStats(
     votesReceived.forEach(v => meetingIdsSet.add(v.meetingId));
     skipVotesData.forEach(s => meetingIdsSet.add(s.meetingId));
 
-    const meetingIds = Array.from(meetingIdsSet);
+    console.log('[VOTING DEBUG] votesCast:', votesCast.length, 'votesReceived:', votesReceived.length, 'skipVotes:', skipVotesData.length, 'meetingIds:', meetingIdsSet.size);
 
-    const BATCH_SIZE = 100;
-    type MeetingWithVotes = Awaited<ReturnType<typeof prisma.meeting.findMany<{
-      include: { meetingVotes: true };
-    }>>>[number];
-    const allMeetings: MeetingWithVotes[] = [];
-
-    for (let i = 0; i < meetingIds.length; i += BATCH_SIZE) {
-      const batchIds = meetingIds.slice(i, i + BATCH_SIZE);
-      const batchMeetings = await prisma.meeting.findMany({
-        where: {
-          id: { in: batchIds },
-          ...withoutDeleted,
-          game: { season: seasonId ?? CURRENT_SEASON, ...withoutDeleted }
-        },
-        include: {
-          meetingVotes: true
-        }
-      });
-      allMeetings.push(...batchMeetings);
-    }
+    // Fetch all meetings for this player in the season via relation filters.
+    // Avoids IN (...) clauses which exceed D1's SQL variable limit.
+    const allMeetings = await prisma.meeting.findMany({
+      where: {
+        ...withoutDeleted,
+        game: { season: seasonId ?? CURRENT_SEASON, ...withoutDeleted },
+        OR: [
+          { meetingVotes: { some: { voterId: player.id } } },
+          { skipVotes:    { some: { playerId: player.id } } },
+        ]
+      },
+      include: {
+        meetingVotes: true
+      }
+    });
 
     const meetingsParticipated = new Set<number>();
     votesCast.forEach(v => meetingsParticipated.add(v.meetingId));
@@ -205,7 +202,7 @@ export async function getPlayerVotingStats(
       }))
       .sort((a, b) => b.voteCount - a.voteCount);
 
-    return {
+    const result = {
       totalVotesCast: votesCast.length,
       totalVotesReceived: votesReceived.length,
       timesVotedOut,
@@ -217,8 +214,12 @@ export async function getPlayerVotingStats(
       votedByPlayers
     };
 
+    console.log('[VOTING DEBUG] returning result:', JSON.stringify({ totalMeetings: result.totalMeetings, totalVotesCast: result.totalVotesCast, totalVotesReceived: result.totalVotesReceived }));
+
+    return result;
+
   } catch (error) {
-    console.error('Error fetching player voting stats:', error);
+    console.error('[VOTING DEBUG] Error fetching player voting stats:', error);
     return emptyResult;
   }
 }

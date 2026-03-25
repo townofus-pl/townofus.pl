@@ -1,4 +1,5 @@
 import { getDatabaseClient, buildSeasonGameWhere } from '../db';
+import { withoutDeleted } from '@/app/api/schema/common';
 import type { GameSummary, DateWithGames } from './types';
 import {
   formatDuration,
@@ -21,6 +22,7 @@ export async function getGamesList(seasonId?: number): Promise<GameSummary[]> {
     where: buildSeasonGameWhere(seasonId),
     include: {
       gamePlayerStatistics: {
+        where: { player: withoutDeleted },
         include: {
           player: true,
           roleHistory: {

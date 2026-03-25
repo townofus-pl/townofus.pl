@@ -45,6 +45,7 @@ src/
 │       ├── _hooks/               # useSeason.ts
 │       ├── _utils/               # seasonHelpers.ts (extractDramaAferaSubPath, buildSeasonUrl)
 │       │                         # gameUtils.ts (getRoleColor, formatDisplayDate, normalizeRoleName, determineTeam, etc.)
+│       │                         # formatPlayerStats.ts (formatPlayerStatsWithColors — safe for client components)
 │       └── _services/            # RSC data layer — domain-grouped subdirectories:
                                   #   index.ts                  — slim barrel re-exporting everything
                                   #   db.ts                     — getDatabaseClient, buildSeasonGameWhere
@@ -53,7 +54,6 @@ src/
                                   #                               winCalculator.ts (calculateWinnerFromStats)
                                   #   players/                  — getPlayerStats, getPlayersList, getUserProfileStats, etc.
                                   #                               types.ts (PlayerStats, UserProfileStats, etc.)
-                                  #                               formatPlayerStats.ts (formatPlayerStatsWithColors)
                                   #   rankings/                 — generatePlayerRankingStats, generateRoleRankingStats
                                   #                               types.ts (PlayerRankingStats, RoleRankingStats)
                                   #   season/                   — getRanking, getGameDatesLightweight, getSessionSummaryByDate, etc.
@@ -93,10 +93,13 @@ ALWAYS include soft-delete filter on all models (every model has deletedAt DateT
 
 ### React / Next.js
 - Default: Server Components. Add 'use client' only for state/effects/browser APIs/event handlers
-- All `_services/` files are Server-Component-only — never call from client components:
+- All `_services/` files are Server-Component-only — never call from **client components**;
+  calling from Server Components or API route handlers is fine.
   all domain subdirectory files and `_services/index.ts`
 - Utility functions (`getRoleColor`, `formatDisplayDate`, `normalizeRoleName`, `determineTeam`, etc.)
   live in `src/app/dramaafera/_utils/gameUtils.ts` — import directly from there, NOT from `_services`
+- `formatPlayerStatsWithColors` lives in `src/app/dramaafera/_utils/formatPlayerStats.ts` — safe for
+  client components; import directly from there, NOT from `_services`
 - Universal components → src/app/_components/; page-local → co-locate in page directory
 
 ### Splitting large service files
@@ -153,6 +156,24 @@ it does not support `{ ...withoutDeleted }`. To find a single record by PK and e
 soft-deleted rows, use `findFirst` instead:
   prisma.game.findFirst({ where: { id, ...withoutDeleted } })
 Performance is identical on PK lookups (SQLite uses the unique index either way).
+
+**D1 SQL variable limit**: D1 enforces a strict limit on bound parameters per SQL statement
+(much lower than SQLite's default 999). Avoid `where: { id: { in: largeArray } }` — even
+batching at 100 entries can fail once Prisma adds variables for joins/includes. Instead use
+relation filters to let the DB handle the join:
+  // Wrong — hits D1 variable limit when array is large:
+  prisma.meeting.findMany({ where: { id: { in: meetingIds } }, include: { meetingVotes: true } })
+
+  // Correct — no IN clause, no variable limit:
+  prisma.meeting.findMany({
+    where: {
+      meetingVotes: { some: { voterId: player.id } }
+      // or OR: [{ meetingVotes: ... }, { skipVotes: ... }]
+    },
+    include: { meetingVotes: true }
+  })
+Failures from this limit are caught by try/catch and silently return empty results — making
+them very hard to debug. When a query returns unexpectedly empty data, check for IN clauses.
 
 ## Proposing New Rules
 

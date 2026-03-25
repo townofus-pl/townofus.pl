@@ -107,12 +107,13 @@ Phase 4 complete:
   ├── _constants/           # seasons.ts
   ├── _hooks/               # useSeason.ts
   ├── _utils/               # seasonHelpers.ts, gameUtils.ts
+  │                         # formatPlayerStats.ts (formatPlayerStatsWithColors — safe for client components)
   ├── _services/            # index.ts (barrel), db.ts
   │   ├── db.ts             # getDatabaseClient, buildSeasonGameWhere
   │   ├── games/            # getGamesList, getGameData, getAllGamesData, getGameDatesList
   │   │                     # types.ts (UIGameData, UIPlayerData, etc.), winCalculator.ts
   │   ├── players/          # getPlayerStats, getPlayersList, getUserProfileStats, etc.
-  │   │                     # types.ts (PlayerStats, UserProfileStats, etc.), formatPlayerStats.ts
+  │   │                     # types.ts (PlayerStats, UserProfileStats, etc.)
   │   ├── rankings/         # generatePlayerRankingStats, generateRoleRankingStats
   │   │                     # types.ts (PlayerRankingStats, RoleRankingStats)
   │   └── season/           # getRanking, getGameDatesLightweight, getSessionSummaryByDate, etc.

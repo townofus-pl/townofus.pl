@@ -41,7 +41,7 @@ export type StatWithRolesAndModifiers = {
 export type BuildPlayerStatsOptions = {
   /** Set to true (getGameData) to use disconnected for deaths; false/absent (getAllGamesData) → 0 */
   useDisconnectedForDeaths?: boolean;
-  /** Pass the game's maxTasks as-is (undefined keeps undefined, 0 becomes 0) */
+  /** Pass the game's maxTasks as-is (undefined keeps undefined; 0 is treated as undefined/no limit due to `|| undefined`) */
   maxTasks?: number | null;
   /** Set to true (getGameData) to leave meetings as undefined; false/absent → 0 */
   meetingsUndefined?: boolean;

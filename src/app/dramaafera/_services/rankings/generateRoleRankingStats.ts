@@ -77,7 +77,7 @@ export async function generateRoleRankingStats(seasonId?: number): Promise<RoleR
 
     return {
       name: roleName,
-      displayName: roleName,
+      displayName: displayRoleName,
       color: roleColor,
       team: teamName,
       gamesPlayed: data.gamesPlayed,

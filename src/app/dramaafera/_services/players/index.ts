@@ -1,5 +1,4 @@
 export * from './types';
-export * from './formatPlayerStats';
 export { getPlayerStats } from './getPlayerStats';
 export { getPlayersList } from './getPlayersList';
 export { getUserProfileStats } from './getUserProfileStats';

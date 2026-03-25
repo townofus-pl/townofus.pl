@@ -4,8 +4,8 @@ import { useState } from 'react';
 import Link from "next/link";
 import Image from "next/image";
 import { TeamColors } from "@/constants/teams";
-import type { UIPlayerData } from '../../../_services';
-import { formatPlayerStatsWithColors } from '../../../_services';
+import type { UIPlayerData } from '../../../_services/games/types';
+import { formatPlayerStatsWithColors } from '@/app/dramaafera/_utils/formatPlayerStats';
 import { getRoleColor } from '@/app/dramaafera/_utils/gameUtils';
 
 // Funkcja pomocnicza do generowania ścieżki avatara
