@@ -61,7 +61,7 @@ export default function FinalRankingSlide({ isFullscreen, currentStep, rankingAf
 
     // Przypisz graczy do tierów
     allPlayers.forEach(player => {
-        const tier = getRankTier(player.rating);
+        const tier = getRankTier(Math.round(player.rating));
         const tierKey = `${tier.name}|${tier.color}|${tier.range}`;
         tierGroups.get(tierKey)!.push(player);
     });

@@ -238,11 +238,12 @@ export default function PodsumowanieClient({
                 backgroundMusicRef.current = audio;
                 
                 // Opóźniamy play() o 100ms żeby przeglądarka nie myślała że to autoplay
-                setTimeout(() => {
+                const audioTimerId = setTimeout(() => {
                     audio.play().catch(() => {
                         // Autoplay zablokowany — ignorujemy
                     });
                 }, 100);
+                pendingTimersRef.current.push(audioTimerId);
                 // NIE USTAWIAMY STATE - tylko Ref! State triggeruje re-render i cleanup
             }
             

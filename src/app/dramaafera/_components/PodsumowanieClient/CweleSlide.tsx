@@ -116,7 +116,7 @@ export default function CweleSlide({ isFullscreen, currentStep, isTransitioning,
                             className={`${videotext.className} font-semibold mb-6 ${isFullscreen ? 'text-3xl' : 'text-sm'}`}
                             style={{ color: 'rgb(202, 15, 15)' }}
                         >
-                            {getRankName(cwel.ratingAfter)}
+                            {getRankName(Math.round(cwel.ratingAfter))}
                         </div>
 
                         {/* Statystyki spadku */}

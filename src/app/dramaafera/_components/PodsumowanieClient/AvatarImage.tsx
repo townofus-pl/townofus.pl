@@ -2,11 +2,12 @@
 
 import Image from 'next/image';
 import { useState } from 'react';
+import type { CSSProperties } from 'react';
 
 interface AvatarImageFillProps {
     nickname: string;
     className?: string;
-    style?: React.CSSProperties;
+    style?: CSSProperties;
 }
 
 /**
@@ -32,7 +33,7 @@ interface AvatarImageSizedProps {
     size: number;
     className?: string;
     priority?: boolean;
-    style?: React.CSSProperties;
+    style?: CSSProperties;
 }
 
 /**
