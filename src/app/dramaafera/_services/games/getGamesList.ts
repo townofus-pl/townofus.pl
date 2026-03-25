@@ -27,6 +27,9 @@ export async function getGamesList(seasonId?: number): Promise<GameSummary[]> {
           player: true,
           roleHistory: {
             orderBy: { order: 'asc' }
+          },
+          modifiers: {
+            select: { modifierName: true }
           }
         }
       }
@@ -105,6 +108,9 @@ export async function getGamesListByDate(date: string, seasonId?: number): Promi
           player: true,
           roleHistory: {
             orderBy: { order: 'asc' }
+          },
+          modifiers: {
+            select: { modifierName: true }
           }
         }
       }

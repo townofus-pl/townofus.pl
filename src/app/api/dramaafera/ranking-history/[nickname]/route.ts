@@ -1,7 +1,8 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getPlayerRankingHistory } from '@/app/dramaafera/_services';
+import { withCors } from '@/app/api/_middlewares';
 
-export async function GET(
+async function getHandler(
     request: NextRequest,
     { params }: { params: Promise<{ nickname: string }> }
 ) {
@@ -41,3 +42,5 @@ export async function GET(
         );
     }
 }
+
+export const GET = withCors(getHandler);

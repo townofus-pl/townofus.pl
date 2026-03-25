@@ -38,27 +38,32 @@ export async function getGameData(gameId: string): Promise<UIGameData | null> {
         where: { ...withoutDeleted },
         include: {
           meetingVotes: {
+            where: { target: withoutDeleted, voter: withoutDeleted },
             include: {
               target: true,
               voter: true
             }
           },
           skipVotes: {
+            where: { player: withoutDeleted },
             include: {
               player: true
             }
           },
           noVotes: {
+            where: { player: withoutDeleted },
             include: {
               player: true
             }
           },
           blackmailedPlayers: {
+            where: { player: withoutDeleted },
             include: {
               player: true
             }
           },
           jailedPlayers: {
+            where: { player: withoutDeleted },
             include: {
               player: true
             }
