@@ -44,10 +44,13 @@ src/
 │       ├── _constants/           # seasons.ts (SEASONS, CURRENT_SEASON, season helpers)
 │       ├── _hooks/               # useSeason.ts
 │       ├── _utils/               # seasonHelpers.ts (extractDramaAferaSubPath, buildSeasonUrl)
-│       │                         # gameUtils.ts (getRoleColor, formatDisplayDate, normalizeRoleName, determineTeam, etc.)
+│       │                         # gameUtils.ts (getRoleColor, formatDisplayDate, normalizeRoleName, determineTeam,
+│       │                         #   convertRoleNameForDisplay, convertRoleToUrlSlug, convertUrlSlugToRole,
+│       │                         #   convertNickToUrlSlug, getRoleIconPath, getTeamColor, getModifierColor,
+│       │                         #   formatDuration, extractDateFromGameId)
 │       │                         # formatPlayerStats.ts (formatPlayerStatsWithColors — safe for client components)
 │       └── _services/            # RSC data layer — domain-grouped subdirectories:
-                                  #   index.ts                  — slim barrel re-exporting everything
+                                  #   index.ts                  — slim 4-line barrel (does NOT re-export db.ts)
                                   #   db.ts                     — getDatabaseClient, buildSeasonGameWhere
                                   #   games/                    — getGamesList, getGameData, getAllGamesData, getGameDatesList
                                   #                               types.ts (GameSummary, UIGameData, UIPlayerData, etc.)
@@ -96,7 +99,9 @@ ALWAYS include soft-delete filter on all models (every model has deletedAt DateT
 - All `_services/` files are Server-Component-only — never call from **client components**;
   calling from Server Components or API route handlers is fine.
   all domain subdirectory files and `_services/index.ts`
-- Utility functions (`getRoleColor`, `formatDisplayDate`, `normalizeRoleName`, `determineTeam`, etc.)
+- Utility functions (`getRoleColor`, `formatDisplayDate`, `normalizeRoleName`, `determineTeam`,
+  `convertRoleNameForDisplay`, `convertRoleToUrlSlug`, `convertUrlSlugToRole`, `convertNickToUrlSlug`,
+  `getRoleIconPath`, `getTeamColor`, `getModifierColor`, `formatDuration`, `extractDateFromGameId`)
   live in `src/app/dramaafera/_utils/gameUtils.ts` — import directly from there, NOT from `_services`
 - `formatPlayerStatsWithColors` lives in `src/app/dramaafera/_utils/formatPlayerStats.ts` — safe for
   client components; import directly from there, NOT from `_services`

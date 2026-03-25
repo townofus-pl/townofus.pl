@@ -10,7 +10,8 @@ server-component-only — never call from client components:
 
 - `src/app/dramaafera/_utils/gameUtils.ts` — domain-agnostic utility functions
   (`formatDuration`, `formatDisplayDate`, `extractDateFromGameId`, `convertRoleNameForDisplay`,
-  `normalizeRoleName`, `getTeamColor`, `getRoleColor`, `getModifierColor`, `determineTeam`).
+  `normalizeRoleName`, `getRoleIconPath`, `getTeamColor`, `getRoleColor`, `getModifierColor`,
+  `determineTeam`, `convertRoleToUrlSlug`, `convertUrlSlugToRole`, `convertNickToUrlSlug`).
   **Consumers import directly from here — NOT from `_services`.**
 - `src/app/dramaafera/_services/index.ts` — slim barrel; re-exports everything from
   db, games, players, rankings, season. Primary import path for consumers.
@@ -100,7 +101,7 @@ Phase 4 complete:
 - _services/ monolith eliminated — split into domain subdirectories (see Data layer above)
 - _utils/gameUtils.ts created — utility functions NOT re-exported from _services
 
-Phase 5 complete (staged, pending commit):
+Phase 5 complete:
 - historia-gier/page.tsx — full server component; calls getGameDatesLightweight(true, CURRENT_SEASON)
 - ranking/page.tsx — server shell + _components/RankingClient.tsx ('use client');
   server calls getRanking(CURRENT_SEASON)
@@ -117,12 +118,33 @@ Phase 5 complete (staged, pending commit):
 - seasonId from URL params: bare-path pages still use CURRENT_SEASON — season wrappers (Phase 8)
   are what pass seasonId from params; no extra work needed on the bare pages
 
+Phase 6 complete:
+- historia-gier/[date]/podsumowanie/page.tsx — server shell fetching all data upfront
+- PodsumowanieClient/ — 'use client' directory (~15 sub-component files) for the slide engine;
+  receives all data as props, no client-side fetching
+- Emperor poll data read via env.ASSETS.fetch() (Cloudflare Workers), not fs.readFile
+
+Phase 7 complete:
+- Shared content components co-located with pages (not in _components/):
+  user/[nick]/UserProfileContent.tsx, role/[nazwa]/RoleDetailContent.tsx,
+  historia-gier/[date]/DateGamesContent.tsx
+- historia-gier/[date]/[gameId]/page.tsx NOT extracted — small enough to stay as-is
+- All hardcoded links converted to buildSeasonUrl() in both server and client components
+- PlayerTable/RoleTable: seasonId is required (not optional) — all callers pass it explicitly
+- Duplicate helpers (convertRoleToUrlSlug, convertUrlSlugToRole, convertNickToUrlSlug,
+  convertRoleNameForDisplay) deduplicated into _utils/gameUtils.ts across ~10 files
+- Dead file user/[nick]/RankingChart.tsx deleted (never imported)
+- Phase 3 TODOs in user/[nick]/page.tsx and role/[nazwa]/page.tsx resolved
+
 ## Component structure
 
   dramaafera/
   ├── _actions/             # Server actions ('use server') for client components
   │                         # seasonActions.ts — getSessionResults, getHostInfoAction, getRankingAction, getGameDatesAction
   ├── _components/          # Shared across Dramaafera pages
+  │                         # RankingClient.tsx, WynikiClient.tsx, HostClient.tsx,
+  │                         # PodsumowanieClient/ (directory with ~15 sub-components),
+  │                         # PlayerStatsSection.tsx, RankingChart.tsx, etc.
   ├── _constants/           # seasons.ts
   ├── _hooks/               # useSeason.ts
   ├── _utils/               # seasonHelpers.ts, gameUtils.ts
@@ -137,3 +159,6 @@ Phase 5 complete (staged, pending commit):
   │   │                     # types.ts (PlayerRankingStats, RoleRankingStats)
   │   └── season/           # getRanking, getGameDatesLightweight, getSessionSummaryByDate, etc.
   └── (pages)/              # Page-local components co-located in page directory
+                            # user/[nick]/UserProfileContent.tsx — shared RSC content for user profile
+                            # role/[nazwa]/RoleDetailContent.tsx — shared RSC content for role detail
+                            # historia-gier/[date]/DateGamesContent.tsx — shared RSC content for date games

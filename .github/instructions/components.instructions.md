@@ -42,6 +42,12 @@ applyTo: "src/app/_components/**,src/app/dramaafera/_components/**"
       useFilters.ts
       useRolesListContext.ts
 
+  PodsumowanieClient/
+    PodsumowanieClient.tsx  // Main slide engine component
+    WeeklyStatsSlide.tsx    // Sub-component per slide type
+    SigmaSlide.tsx          // ...~15 sub-component files total
+    types.ts                // Shared prop types
+
   // Simple component → flat file
   YouTubeEmbed.tsx
   SlotsDisplay.tsx
