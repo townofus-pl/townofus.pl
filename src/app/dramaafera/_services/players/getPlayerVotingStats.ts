@@ -36,8 +36,6 @@ export async function getPlayerVotingStats(
       }
     });
 
-    console.log('[VOTING DEBUG] player:', player?.id, player?.name, 'season:', seasonId ?? CURRENT_SEASON);
-
     if (!player) {
       return emptyResult;
     }
@@ -52,11 +50,6 @@ export async function getPlayerVotingStats(
       },
       include: {
         target: true,
-        meeting: {
-          include: {
-            game: true
-          }
-        }
       }
     });
 
@@ -70,11 +63,6 @@ export async function getPlayerVotingStats(
       },
       include: {
         voter: true,
-        meeting: {
-          include: {
-            game: true
-          }
-        }
       }
     });
 
@@ -86,21 +74,12 @@ export async function getPlayerVotingStats(
           game: { ...withoutDeleted, season: seasonId ?? CURRENT_SEASON }
         }
       },
-      include: {
-        meeting: {
-          include: {
-            game: true
-          }
-        }
-      }
     });
 
     const meetingIdsSet = new Set<number>();
     votesCast.forEach(v => meetingIdsSet.add(v.meetingId));
     votesReceived.forEach(v => meetingIdsSet.add(v.meetingId));
     skipVotesData.forEach(s => meetingIdsSet.add(s.meetingId));
-
-    console.log('[VOTING DEBUG] votesCast:', votesCast.length, 'votesReceived:', votesReceived.length, 'skipVotes:', skipVotesData.length, 'meetingIds:', meetingIdsSet.size);
 
     // Fetch all meetings for this player in the season via relation filters.
     // Avoids IN (...) clauses which exceed D1's SQL variable limit.
@@ -214,12 +193,10 @@ export async function getPlayerVotingStats(
       votedByPlayers
     };
 
-    console.log('[VOTING DEBUG] returning result:', JSON.stringify({ totalMeetings: result.totalMeetings, totalVotesCast: result.totalVotesCast, totalVotesReceived: result.totalVotesReceived }));
-
     return result;
 
   } catch (error) {
-    console.error('[VOTING DEBUG] Error fetching player voting stats:', error);
+    console.error('Error fetching player voting stats:', error);
     return emptyResult;
   }
 }

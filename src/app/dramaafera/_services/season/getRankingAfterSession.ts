@@ -21,6 +21,11 @@ async function getRankingTableAtSession(
   const season = seasonId ?? CURRENT_SEASON;
 
   // Pobierz ranking przed pierwszą grą
+  // NOTE: (pr.gameId < firstGameDbId OR pr.gameId IS NULL) intentionally includes
+  // season_reset entries (which have gameId = NULL). This is by design — a season_reset
+  // row represents the player's starting rating for the season. SQLite sorts NULLs last
+  // in DESC order, so if a player has both game entries and a season_reset entry before
+  // firstGameDbId, the most recent game entry wins (higher gameId takes precedence).
   const playersBeforeQuery = await prisma.$queryRaw<
     Array<{ playerId: number; playerName: string; score: number }>
   >`

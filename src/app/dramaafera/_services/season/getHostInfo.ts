@@ -62,6 +62,7 @@ export async function getHostInfo(
     },
     include: {
       gamePlayerStatistics: {
+        where: { player: withoutDeleted },
         include: {
           player: { select: { id: true, name: true } },
           roleHistory: true,

@@ -25,6 +25,7 @@ export async function getGameData(gameId: string): Promise<UIGameData | null> {
     },
     include: {
       gamePlayerStatistics: {
+        where: { player: withoutDeleted },
         include: {
           player: true,
           roleHistory: {
@@ -34,6 +35,7 @@ export async function getGameData(gameId: string): Promise<UIGameData | null> {
         }
       },
       meetings: {
+        where: { ...withoutDeleted },
         include: {
           meetingVotes: {
             include: {
@@ -65,6 +67,7 @@ export async function getGameData(gameId: string): Promise<UIGameData | null> {
         orderBy: { meetingNumber: 'asc' }
       },
       gameEvents: {
+        where: { ...withoutDeleted },
         orderBy: { timestamp: 'asc' }
       }
     }

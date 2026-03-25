@@ -3,7 +3,6 @@ import { withoutDeleted } from '@/app/api/schema/common';
 import { CURRENT_SEASON } from '@/app/dramaafera/_constants/seasons';
 import { Teams } from '@/constants/teams';
 import type { PlayerRole } from '@prisma/client';
-import type { GamePlayerStatisticsWithRelations } from '../games/types';
 import type { UserProfileStats } from './types';
 import { determineTeam } from '@/app/dramaafera/_utils/gameUtils';
 
@@ -33,7 +32,10 @@ export async function getUserProfileStats(playerName: string, seasonId?: number)
             roleHistory: {
               orderBy: { order: 'asc' }
             },
-            modifiers: true
+            modifiers: true,
+            game: {
+              select: { maxTasks: true }
+            }
           }
         }
       }
@@ -49,7 +51,7 @@ export async function getUserProfileStats(playerName: string, seasonId?: number)
     let crewmateGames = 0;
     let neutralGames = 0;
     let totalTasks = 0;
-    const maxTasks = 0;
+    let maxTasks = 0;
     let correctKills = 0;
     let incorrectKills = 0;
     let correctGuesses = 0;
@@ -72,7 +74,7 @@ export async function getUserProfileStats(playerName: string, seasonId?: number)
     let correctSwaps = 0;
     let incorrectSwaps = 0;
 
-    player.gamePlayerStatistics.forEach((stat: GamePlayerStatisticsWithRelations) => {
+    player.gamePlayerStatistics.forEach((stat) => {
       gamesPlayed++;
 
       if (stat.win) wins++;
@@ -85,6 +87,7 @@ export async function getUserProfileStats(playerName: string, seasonId?: number)
       else crewmateGames++;
 
       totalTasks += stat.completedTasks || 0;
+      maxTasks += stat.game?.maxTasks ?? 0;
       correctKills += stat.correctKills || 0;
       incorrectKills += stat.incorrectKills || 0;
       correctGuesses += stat.correctGuesses || 0;

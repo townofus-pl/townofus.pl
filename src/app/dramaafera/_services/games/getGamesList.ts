@@ -22,6 +22,8 @@ export async function getGamesList(seasonId?: number): Promise<GameSummary[]> {
     where: buildSeasonGameWhere(seasonId),
     include: {
       gamePlayerStatistics: {
+        // Intentional: historical game summaries include soft-deleted players so that
+        // winner/player counts remain accurate for games played before the player was removed.
         where: { player: withoutDeleted },
         include: {
           player: true,
@@ -85,12 +87,66 @@ export async function getGamesList(seasonId?: number): Promise<GameSummary[]> {
   return games;
 }
 
-// Fetch games by specific date
+// Fetch games by specific date — direct DB query to avoid loading all games
 export async function getGamesListByDate(date: string, seasonId?: number): Promise<GameSummary[]> {
-  const allGames = await getGamesList(seasonId);
-  return allGames
-    .filter(game => extractDateFromGameId(game.id) === date)
-    .sort((a, b) => b.id.localeCompare(a.id));
+  const prisma = await getDatabaseClient();
+
+  if (!prisma) {
+    return [];
+  }
+
+  const dbGames = await prisma.game.findMany({
+    where: {
+      ...buildSeasonGameWhere(seasonId),
+      gameIdentifier: { startsWith: date },
+    },
+    include: {
+      gamePlayerStatistics: {
+        // Intentional: same as getGamesList — keep soft-deleted players for historical accuracy.
+        where: { player: withoutDeleted },
+        include: {
+          player: true,
+          roleHistory: {
+            orderBy: { order: 'asc' }
+          }
+        }
+      }
+    },
+    orderBy: { startTime: 'asc' }
+  });
+
+  const games = dbGames.map((game, index) => {
+    const playerNames = game.gamePlayerStatistics.map(stat => stat.player.name);
+    const winners = game.gamePlayerStatistics.filter(stat => stat.win);
+    const winnerNames = winners.map(winner => winner.player.name);
+
+    const winnerColors: Record<string, string> = {};
+    winners.forEach(winner => {
+      const roleHistory = [...winner.roleHistory].sort((a, b) => a.order - b.order);
+      const finalRole = roleHistory[roleHistory.length - 1]?.roleName || '';
+      const displayRoleName = convertRoleNameForDisplay(finalRole);
+      winnerColors[winner.player.name] = getRoleColor(displayRoleName);
+    });
+
+    const winnerInfo = calculateWinnerFromStats(game.gamePlayerStatistics);
+
+    return {
+      id: game.gameIdentifier,
+      date: extractDateFromGameId(game.gameIdentifier),
+      gameNumber: index + 1,
+      duration: formatDuration(game.startTime, game.endTime),
+      players: game.gamePlayerStatistics.length,
+      winner: winnerInfo.winner,
+      winnerColor: winnerInfo.winnerColor,
+      winCondition: winnerInfo.winCondition,
+      map: game.map || 'Unknown',
+      winnerNames,
+      winnerColors,
+      allPlayerNames: playerNames
+    };
+  });
+
+  return games;
 }
 
 // Fetch list of dates with games

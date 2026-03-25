@@ -53,7 +53,8 @@ export async function getPlayerTopGames(playerName: string, limit: number = 3, s
       },
       orderBy: {
         totalPoints: 'desc'
-      }
+      },
+      take: limit
     });
 
     const mapGame = (stat: typeof playerGames[0]): PlayerTopGame => {
@@ -75,7 +76,7 @@ export async function getPlayerTopGames(playerName: string, limit: number = 3, s
       };
     };
 
-    const best = playerGames.slice(0, limit).map(mapGame);
+    const best = playerGames.map(mapGame);
     return { best };
 
   } catch (error) {

@@ -1,4 +1,5 @@
 import { getDatabaseClient, buildSeasonGameWhere } from '../db';
+import { withoutDeleted } from '@/app/api/schema/common';
 
 export interface GameDateGameEntry {
   id: number;
@@ -36,6 +37,7 @@ export async function getGameDatesLightweight(
           gameIdentifier: true,
           startTime: true,
           gamePlayerStatistics: {
+            where: { player: withoutDeleted },
             include: {
               player: {
                 select: { name: true },

@@ -1,7 +1,14 @@
 import { getDatabaseClient } from '../db';
 import { CURRENT_SEASON } from '@/app/dramaafera/_constants/seasons';
 
-// Internal helper: get ranking snapshots before/after a session
+// Internal helper: get ranking snapshots before/after a session.
+//
+// NOTE: This implementation intentionally differs from getRankingTableAtSession in
+// getRankingAfterSession.ts. This version covers ALL players using COALESCE(…, 2000)
+// so that even players who have never played a game still appear (needed for top-sigmas
+// and host-info ranking-change displays). getRankingAfterSession only covers players who
+// already have at least one ranking row, using an INNER JOIN — which is what the
+// session ranking table needs (no phantom 2000-rated entries for absent players).
 export async function getRankingSnapshots(
   firstGameDbId: number,
   lastGameDbId: number,

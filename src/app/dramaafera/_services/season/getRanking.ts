@@ -37,7 +37,7 @@ export async function getRanking(
     include: {
       currentRanking: true,
       gamePlayerStatistics: {
-        where: { game: withoutDeleted },
+        where: { game: { ...withoutDeleted, season: seasonId ?? CURRENT_SEASON } },
         select: { win: true },
       },
     },

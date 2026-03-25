@@ -7,7 +7,6 @@ interface VotingStatsDisplayProps {
 }
 
 export function VotingStatsDisplay({ votingStats }: VotingStatsDisplayProps) {
-  console.log('[VOTING CLIENT] received props:', JSON.stringify({ totalMeetings: votingStats.totalMeetings, totalVotesCast: votingStats.totalVotesCast, totalVotesReceived: votingStats.totalVotesReceived }));
   if (votingStats.totalMeetings === 0) return null;
 
   return (

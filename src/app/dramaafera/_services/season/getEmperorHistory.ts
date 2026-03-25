@@ -1,4 +1,5 @@
 import { getDatabaseClient, buildSeasonGameWhere } from '../db';
+import { withoutDeleted } from '@/app/api/schema/common';
 
 export interface EmperorEntry {
   nickname: string;
@@ -19,6 +20,7 @@ export async function getEmperorHistory(
       id: true,
       startTime: true,
       gamePlayerStatistics: {
+        where: { player: withoutDeleted },
         select: {
           playerId: true,
           totalPoints: true,
@@ -47,7 +49,9 @@ export async function getEmperorHistory(
 
   const emperorsByDate: Array<{ date: string; nickname: string }> = [];
 
-  for (let i = 0; i < allDates.length; i++) {
+  // Stop one before the last date: the emperor "title" only appears once the next session's
+  // games have been played (consistent with getPlayerStars.ts which uses the same convention).
+  for (let i = 0; i < allDates.length - 1; i++) {
     const dateKey = allDates[i];
     const gamesOnDate = gamesByDate.get(dateKey)!;
 

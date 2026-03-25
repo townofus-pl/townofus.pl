@@ -72,8 +72,8 @@ export interface UIPlayerData {
     playerName: string;
     roleHistory: string[];
     modifiers: string[];
-    win: number;
-    disconnected?: number;
+    win: boolean;
+    disconnected?: boolean;
     initialRolePoints: number;
     correctKills: number;
     incorrectKills: number;

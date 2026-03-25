@@ -52,11 +52,11 @@ export function formatPlayerStatsWithColors(player: UIPlayerData, maxTasks?: num
     statParts.push({ text: `Przeżyte rundy: ${stats.survivedRounds}`, color: '#06B6D4' });
   }
 
-  if (stats.disconnected === 1) {
+  if (stats.disconnected) {
     statParts.push({ text: '🔌 Rozłączony', color: '#EF4444' });
   }
 
-  if (stats.win > 0) {
+  if (stats.win) {
     statParts.push({ text: '🏆 Zwycięzca', color: '#FFD700' });
   }
 

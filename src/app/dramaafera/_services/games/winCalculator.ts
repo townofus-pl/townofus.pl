@@ -28,7 +28,7 @@ export function calculateWinnerFromStats(gameStats: GameStatWithWin[]): { winner
   // PRIORITY 1: Impostors
   const impostorWinners = winners.filter(stat => {
     if (!stat.roleHistory || stat.roleHistory.length === 0) return false;
-    const finalRole = stat.roleHistory.sort((a, b) => a.order - b.order)[stat.roleHistory.length - 1]?.roleName || '';
+    const finalRole = [...stat.roleHistory].sort((a, b) => a.order - b.order)[stat.roleHistory.length - 1]?.roleName || '';
     return determineTeam(finalRole) === Teams.Impostor;
   });
   if (impostorWinners.length > 0) {
@@ -38,7 +38,7 @@ export function calculateWinnerFromStats(gameStats: GameStatWithWin[]): { winner
   // PRIORITY 2: Crewmates
   const crewmateWinners = winners.filter(stat => {
     if (!stat.roleHistory || stat.roleHistory.length === 0) return false;
-    const finalRole = stat.roleHistory.sort((a, b) => a.order - b.order)[stat.roleHistory.length - 1]?.roleName || '';
+    const finalRole = [...stat.roleHistory].sort((a, b) => a.order - b.order)[stat.roleHistory.length - 1]?.roleName || '';
     return determineTeam(finalRole) === Teams.Crewmate;
   });
   if (crewmateWinners.length > 0) {
@@ -48,7 +48,7 @@ export function calculateWinnerFromStats(gameStats: GameStatWithWin[]): { winner
   // PRIORITY 3: Neutrals
   const neutralWinners = winners.filter(stat => {
     if (!stat.roleHistory || stat.roleHistory.length === 0) return false;
-    const finalRole = stat.roleHistory.sort((a, b) => a.order - b.order)[stat.roleHistory.length - 1]?.roleName || '';
+    const finalRole = [...stat.roleHistory].sort((a, b) => a.order - b.order)[stat.roleHistory.length - 1]?.roleName || '';
     return determineTeam(finalRole) === Teams.Neutral;
   });
   if (neutralWinners.length > 0) {
@@ -56,7 +56,7 @@ export function calculateWinnerFromStats(gameStats: GameStatWithWin[]): { winner
     if (!firstNeutral.roleHistory || firstNeutral.roleHistory.length === 0) {
       return { winner: 'Neutral', winnerColor: getTeamColor('Neutral'), winCondition: 'Wygrał Neutral' };
     }
-    const finalRole = firstNeutral.roleHistory.sort((a, b) => a.order - b.order)[firstNeutral.roleHistory.length - 1]?.roleName || 'Neutral';
+    const finalRole = [...firstNeutral.roleHistory].sort((a, b) => a.order - b.order)[firstNeutral.roleHistory.length - 1]?.roleName || 'Neutral';
     const displayRoleName = convertRoleNameForDisplay(finalRole);
     const roleColor = getRoleColor(displayRoleName);
     return { winner: displayRoleName, winnerColor: roleColor, winCondition: `Wygrał ${displayRoleName}` };
