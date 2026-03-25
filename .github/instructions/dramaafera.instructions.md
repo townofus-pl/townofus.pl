@@ -6,7 +6,7 @@ applyTo: "src/app/dramaafera/**"
 ## Data layer
 
 The `_services/` directory is organized into domain-grouped subdirectories. All functions are
-server-component-only — never call from client components or API routes:
+server-component-only — never call from client components:
 
 - `src/app/dramaafera/_utils/gameUtils.ts` — domain-agnostic utility functions
   (`formatDuration`, `formatDisplayDate`, `extractDateFromGameId`, `convertRoleNameForDisplay`,

@@ -126,7 +126,7 @@ export async function getGameData(gameId: string): Promise<UIGameData | null> {
   const events: UIGameEvent[] = game.gameEvents.map(event => ({
     timestamp: event.timestamp.toString(),
     type: (event.eventType || 'other') as UIGameEvent['type'],
-    player: 'Unknown',
+    player: 'Nieznany',
     target: undefined,
     description: event.description
   }));
@@ -140,7 +140,7 @@ export async function getGameData(gameId: string): Promise<UIGameData | null> {
     startTime: game.startTime.toISOString(),
     endTime: game.endTime.toISOString(),
     duration: formatDuration(game.startTime, game.endTime),
-    map: game.map || 'Unknown',
+    map: game.map || 'Nieznana mapa',
     winner: winnerInfo.winner,
     winnerColor: winnerInfo.winnerColor,
     // Prefer the stored DB value; fall back to the stat-derived value if absent

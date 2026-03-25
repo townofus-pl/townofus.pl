@@ -1,30 +1,51 @@
 import type { PlayerRankingStats } from './types';
-import { getAllGamesData } from '../games/getAllGamesData';
+import { getDatabaseClient } from '../db';
+import { withoutDeleted } from '@/app/api/schema/common';
+import { CURRENT_SEASON } from '@/app/dramaafera/_constants/seasons';
 
 // Generate player ranking statistics
 export async function generatePlayerRankingStats(seasonId?: number): Promise<PlayerRankingStats[]> {
-  const allGames = await getAllGamesData(seasonId);
-  const playerStats = new Map<string, { played: number; won: number }>();
+  const prisma = await getDatabaseClient();
+  if (!prisma) return [];
 
-  allGames.forEach(game => {
-    game.detailedStats.playersData.forEach(player => {
-      const playerName = player.nickname;
-      if (!playerStats.has(playerName)) {
-        playerStats.set(playerName, { played: 0, won: 0 });
-      }
-      const stats = playerStats.get(playerName)!;
-      stats.played += 1;
-      if (player.win) {
-        stats.won += 1;
-      }
-    });
+  const season = seasonId ?? CURRENT_SEASON;
+
+  const stats = await prisma.gamePlayerStatistics.findMany({
+    where: {
+      player: withoutDeleted,
+      game: {
+        ...withoutDeleted,
+        season,
+      },
+    },
+    select: {
+      win: true,
+      player: {
+        select: { name: true },
+      },
+    },
   });
 
-  const rankingStats: PlayerRankingStats[] = Array.from(playerStats.entries()).map(([playerName, stats]) => ({
+  const playerStats = new Map<string, { played: number; won: number }>();
+
+  stats.forEach(stat => {
+    const playerName = stat.player?.name;
+    if (!playerName) return;
+    if (!playerStats.has(playerName)) {
+      playerStats.set(playerName, { played: 0, won: 0 });
+    }
+    const entry = playerStats.get(playerName)!;
+    entry.played += 1;
+    if (stat.win) {
+      entry.won += 1;
+    }
+  });
+
+  const rankingStats: PlayerRankingStats[] = Array.from(playerStats.entries()).map(([playerName, s]) => ({
     name: playerName,
-    gamesPlayed: stats.played,
-    wins: stats.won,
-    winRate: stats.played > 0 ? Math.round((stats.won / stats.played) * 100) : 0,
+    gamesPlayed: s.played,
+    wins: s.won,
+    winRate: s.played > 0 ? Math.round((s.won / s.played) * 100) : 0,
   }));
 
   rankingStats.sort((a, b) => {

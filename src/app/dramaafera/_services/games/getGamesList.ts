@@ -59,7 +59,7 @@ export async function getGamesList(seasonId?: number): Promise<GameSummary[]> {
       winner: winnerInfo.winner,
       winnerColor: winnerInfo.winnerColor,
       winCondition: winnerInfo.winCondition,
-      map: game.map || 'Unknown',
+      map: game.map || 'Nieznana mapa',
       winnerNames,
       winnerColors,
       allPlayerNames: playerNames
@@ -136,7 +136,7 @@ export async function getGamesListByDate(date: string, seasonId?: number): Promi
       winner: winnerInfo.winner,
       winnerColor: winnerInfo.winnerColor,
       winCondition: winnerInfo.winCondition,
-      map: game.map || 'Unknown',
+      map: game.map || 'Nieznana mapa',
       winnerNames,
       winnerColors,
       allPlayerNames: playerNames

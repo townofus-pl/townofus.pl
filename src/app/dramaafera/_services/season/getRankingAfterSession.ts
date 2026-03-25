@@ -45,6 +45,7 @@ async function getRankingTableAtSession(
         WHERE pr2.playerId = pr1.playerId
           AND (pr2.gameId < ${firstGameDbId} OR pr2.gameId IS NULL)
           AND pr2.season = ${season}
+          AND pr2.deletedAt IS NULL
         ORDER BY pr2.gameId DESC, pr2.createdAt DESC
         LIMIT 1
       )
@@ -100,12 +101,16 @@ export async function getRankingAfterSession(
   const firstGameIdentifier = sortedGames[0]?.id;
   const lastGameIdentifier = sortedGames[sortedGames.length - 1]?.id;
 
-  const firstGameDb = await prisma.game.findFirst({
-    where: { gameIdentifier: firstGameIdentifier, ...withoutDeleted },
+  // Fetch both boundary games in a single query (only 2 values — safe for D1 variable limit)
+  const boundaryGames = await prisma.game.findMany({
+    where: {
+      gameIdentifier: { in: [firstGameIdentifier, lastGameIdentifier] },
+      ...withoutDeleted,
+    },
   });
-  const lastGameDb = await prisma.game.findFirst({
-    where: { gameIdentifier: lastGameIdentifier, ...withoutDeleted },
-  });
+
+  const firstGameDb = boundaryGames.find(g => g.gameIdentifier === firstGameIdentifier);
+  const lastGameDb = boundaryGames.find(g => g.gameIdentifier === lastGameIdentifier);
 
   if (!firstGameDb || !lastGameDb) return null;
 

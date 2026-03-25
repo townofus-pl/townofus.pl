@@ -5,11 +5,38 @@ import {
   getRoleColor,
   determineTeam,
 } from '@/app/dramaafera/_utils/gameUtils';
-import { getAllGamesData } from '../games/getAllGamesData';
+import { getDatabaseClient } from '../db';
+import { withoutDeleted } from '@/app/api/schema/common';
+import { CURRENT_SEASON } from '@/app/dramaafera/_constants/seasons';
 
 // Generate role ranking statistics
 export async function generateRoleRankingStats(seasonId?: number): Promise<RoleRankingStats[]> {
-  const allGames = await getAllGamesData(seasonId);
+  const prisma = await getDatabaseClient();
+  if (!prisma) return [];
+
+  const season = seasonId ?? CURRENT_SEASON;
+
+  const stats = await prisma.gamePlayerStatistics.findMany({
+    where: {
+      player: withoutDeleted,
+      game: {
+        ...withoutDeleted,
+        season,
+      },
+    },
+    select: {
+      win: true,
+      totalPoints: true,
+      player: {
+        select: { name: true },
+      },
+      roleHistory: {
+        orderBy: { order: 'asc' },
+        select: { roleName: true, order: true },
+      },
+    },
+  });
+
   const roleStats = new Map<string, {
     gamesPlayed: number;
     wins: number;
@@ -17,37 +44,37 @@ export async function generateRoleRankingStats(seasonId?: number): Promise<RoleR
     players: Map<string, { gamesPlayed: number; wins: number; totalPoints: number }>;
   }>();
 
-  allGames.forEach(game => {
-    game.detailedStats.playersData.forEach(player => {
-      const roleName = player.role;
-      const playerName = player.nickname;
+  stats.forEach(stat => {
+    // Primary role = first entry in ascending order
+    const roleName = stat.roleHistory[0]?.roleName ?? 'Nieznana rola';
+    const playerName = stat.player?.name;
+    if (!playerName) return;
 
-      if (!roleStats.has(roleName)) {
-        roleStats.set(roleName, {
-          gamesPlayed: 0,
-          wins: 0,
-          totalPoints: 0,
-          players: new Map()
-        });
-      }
+    if (!roleStats.has(roleName)) {
+      roleStats.set(roleName, {
+        gamesPlayed: 0,
+        wins: 0,
+        totalPoints: 0,
+        players: new Map()
+      });
+    }
 
-      const roleData = roleStats.get(roleName)!;
-      roleData.gamesPlayed += 1;
-      roleData.totalPoints += player.totalPoints;
-      if (player.win) {
-        roleData.wins += 1;
-      }
+    const roleData = roleStats.get(roleName)!;
+    roleData.gamesPlayed += 1;
+    roleData.totalPoints += stat.totalPoints;
+    if (stat.win) {
+      roleData.wins += 1;
+    }
 
-      if (!roleData.players.has(playerName)) {
-        roleData.players.set(playerName, { gamesPlayed: 0, wins: 0, totalPoints: 0 });
-      }
-      const playerRoleData = roleData.players.get(playerName)!;
-      playerRoleData.gamesPlayed += 1;
-      playerRoleData.totalPoints += player.totalPoints;
-      if (player.win) {
-        playerRoleData.wins += 1;
-      }
-    });
+    if (!roleData.players.has(playerName)) {
+      roleData.players.set(playerName, { gamesPlayed: 0, wins: 0, totalPoints: 0 });
+    }
+    const playerRoleData = roleData.players.get(playerName)!;
+    playerRoleData.gamesPlayed += 1;
+    playerRoleData.totalPoints += stat.totalPoints;
+    if (stat.win) {
+      playerRoleData.wins += 1;
+    }
   });
 
   const roleRankingStats: RoleRankingStats[] = Array.from(roleStats.entries()).map(([roleName, data]) => {

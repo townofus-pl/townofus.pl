@@ -3,7 +3,6 @@ import { withoutDeleted } from '@/app/api/schema/common';
 import type { UIPlayerData, UIGameData, UIGameEvent, UIMeetingData } from './types';
 import {
   formatDuration,
-  formatDisplayDate,
   extractDateFromGameId,
   convertRoleNameForDisplay,
   getRoleColor,
@@ -50,7 +49,6 @@ export async function getAllGamesData(seasonId?: number): Promise<UIGameData[]> 
   const result = games.map(game => {
     const duration = formatDuration(game.startTime || new Date(), game.endTime || new Date());
     const gameDate = extractDateFromGameId(game.gameIdentifier || '');
-    const displayDate = formatDisplayDate(gameDate);
 
     const playersData: UIPlayerData[] = (game.gamePlayerStatistics || []).map(stat =>
       buildPlayerStats(stat, {
@@ -65,14 +63,14 @@ export async function getAllGamesData(seasonId?: number): Promise<UIGameData[]> 
 
     const winners = game.gamePlayerStatistics.filter(s => s.win);
     const winnerNames = winners.map(w => {
-      const stat = playersData.find(p => p.nickname === (w.player?.name || 'Unknown'));
-      return stat?.nickname ?? (w.player?.name || 'Unknown');
+      const stat = playersData.find(p => p.nickname === (w.player?.name || 'Nieznany'));
+      return stat?.nickname ?? (w.player?.name || 'Nieznany');
     });
     const winnerColors: Record<string, string> = {};
     winners.forEach(w => {
       const roleHistory = [...w.roleHistory].sort((a, b) => a.order - b.order);
       const finalRole = roleHistory[roleHistory.length - 1]?.roleName || '';
-      winnerColors[w.player?.name || 'Unknown'] = getRoleColor(convertRoleNameForDisplay(finalRole));
+      winnerColors[w.player?.name || 'Nieznany'] = getRoleColor(convertRoleNameForDisplay(finalRole));
     });
 
     const events: UIGameEvent[] = [];
@@ -80,12 +78,12 @@ export async function getAllGamesData(seasonId?: number): Promise<UIGameData[]> 
 
     return {
       id: game.gameIdentifier || String(game.id),
-      date: displayDate,
+      date: gameDate,
       gameNumber: 0, // computed below
       startTime: game.startTime?.toISOString() || '',
       endTime: game.endTime?.toISOString() || '',
       duration,
-      map: game.map || 'Unknown',
+      map: game.map || 'Nieznana mapa',
       winner: winnerInfo.winner,
       winnerColor: winnerInfo.winnerColor,
       winCondition: game.winCondition || winnerInfo.winCondition,

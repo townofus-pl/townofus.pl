@@ -17,7 +17,11 @@ export function calculateWinnerFromStats(gameStats: GameStatWithWin[]): { winner
     return { winner: 'Nieznany', winnerColor: '#808080', winCondition: 'Brak zwycięzcy' };
   }
 
-  // Check for Lovers special case first
+  // Check for Lovers special case first.
+  // NOTE: The `winners.length > 1` guard is intentional — if only one Lover survives,
+  // they are classified by their base role (e.g. Crewmate/Impostor), not as Zakochani.
+  // This matches the game's own win logic: a solo surviving Lover does not trigger
+  // the Lovers win condition.
   const allHaveLoverModifier = winners.length > 1 && winners.every(stat =>
     stat.modifiers && stat.modifiers.some((mod) => mod.modifierName.toLowerCase() === 'lover')
   );

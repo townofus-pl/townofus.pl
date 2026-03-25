@@ -27,8 +27,8 @@ async function getHandler(
         return NextResponse.json(
             {
                 success: false,
-                error: 'Failed to fetch ranking',
-                details: error instanceof Error ? error.message : 'Unknown error'
+                error: 'Nie udało się pobrać rankingu',
+                details: error instanceof Error ? error.message : 'Nieznany błąd'
             },
             { status: 500 }
         );

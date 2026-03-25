@@ -50,8 +50,8 @@ export type BuildPlayerStatsOptions = {
 export function buildPlayerStats(stat: StatWithRolesAndModifiers, opts: BuildPlayerStatsOptions = {}): UIPlayerData {
   const roleHistorySorted = [...stat.roleHistory].sort((a, b) => a.order - b.order);
   const roleHistoryNames = roleHistorySorted.map(r => r.roleName);
-  const primaryRole = roleHistorySorted[0]?.roleName || 'Unknown';
-  const finalRole = roleHistorySorted[roleHistorySorted.length - 1]?.roleName || 'Unknown';
+  const primaryRole = roleHistorySorted[0]?.roleName || 'Nieznana rola';
+  const finalRole = roleHistorySorted[roleHistorySorted.length - 1]?.roleName || 'Nieznana rola';
   const displayRoleName = convertRoleNameForDisplay(finalRole);
 
   const modifierNames = stat.modifiers
@@ -61,7 +61,7 @@ export function buildPlayerStats(stat: StatWithRolesAndModifiers, opts: BuildPla
   const team = determineTeam(roleHistoryNames);
   const teamStr = team === Teams.Impostor ? 'Impostor' : team === Teams.Neutral ? 'Neutral' : 'Crewmate';
 
-  const playerName = stat.player?.name || 'Unknown';
+  const playerName = stat.player?.name || 'Nieznany';
 
   return {
     nickname: playerName,

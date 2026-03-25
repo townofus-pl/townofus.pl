@@ -19,7 +19,7 @@ async function getHandler(
 
         return NextResponse.json({
             success: true,
-            data: result
+            data: result.all
         });
 
     } catch (error) {

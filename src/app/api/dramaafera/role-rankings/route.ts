@@ -1,104 +1,34 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { getAllGamesData } from '@/app/dramaafera/_services';
+import { generateRoleRankingStats } from '@/app/dramaafera/_services';
+import { withCors } from '@/app/api/_middlewares';
 
-// Type for game with players data  
-interface GameWithPlayersData {
-  detailedStats: {
-    playersData: Array<{
-      role: string;
-      win: boolean;
-      won?: boolean;
-      team?: string;
-      roleColor?: string;
-      roleDisplayName?: string;
-      roleImage?: string;
-    }>;
-  };
-}
-
-interface RoleRankingData {
-    role: string;
-    displayName: string;
-    team: string;
-    color: string;
-    winRate: number;
-    gamesPlayed: number;
-    wins: number;
-    image?: string;
-}
-
-// Funkcja do generowania statystyk ról z bazy danych
-function generateRoleRankingStats(games: GameWithPlayersData[]): RoleRankingData[] {
-    const roleStats: Map<string, {
-        wins: number;
-        total: number;
-        team: string;
-        color: string;
-        displayName: string;
-        image?: string;
-    }> = new Map();
-
-    // Zliczanie statystyk dla każdej roli
-    games.forEach(game => {
-        game.detailedStats.playersData.forEach((player) => {
-            const role = player.role;
-            if (!role) return;
-
-            if (!roleStats.has(role)) {
-                roleStats.set(role, {
-                    wins: 0,
-                    total: 0,
-                    team: player.team || 'Unknown',
-                    color: player.roleColor || '#808080',
-                    displayName: player.roleDisplayName || role,
-                    image: player.roleImage
-                });
-            }
-
-            const stats = roleStats.get(role)!;
-            stats.total++;
-            
-            if (player.win) {
-                stats.wins++;
-            }
-        });
-    });
-
-    // Konwertowanie na format finalny
-    return Array.from(roleStats.entries())
-        .map(([role, stats]) => ({
-            role,
-            displayName: stats.displayName,
-            team: stats.team,
-            color: stats.color,
-            winRate: stats.total > 0 ? (stats.wins / stats.total) * 100 : 0,
-            gamesPlayed: stats.total,
-            wins: stats.wins,
-            image: stats.image
-        }))
-        .filter(role => role.gamesPlayed > 0); // Tylko role które były grane
-}
-
-export async function GET(request: NextRequest) {
+async function getHandler(request: NextRequest): Promise<Response> {
     try {
         const { searchParams } = new URL(request.url);
         const sortField = searchParams.get('sortField') || 'winRate';
         const sortDirection = searchParams.get('sortDirection') || 'desc';
         const teamFilter = searchParams.get('teamFilter') || 'all';
 
-        // Pobierz dane z bazy danych
-        const games = await getAllGamesData();
-        
-        // Generuj statystyki ról
-        let roleStats = generateRoleRankingStats(games);
+        const roleStats = await generateRoleRankingStats();
 
-        // Filtrowanie według drużyny
+        // Map service type to response format (name → role for backwards compatibility)
+        let data = roleStats.map(r => ({
+            role: r.name,
+            displayName: r.displayName,
+            team: r.team,
+            color: r.color,
+            winRate: r.winRate,
+            gamesPlayed: r.gamesPlayed,
+            wins: r.wins,
+        }));
+
+        // Filter by team
         if (teamFilter !== 'all') {
-            roleStats = roleStats.filter(role => role.team === teamFilter);
+            data = data.filter(r => r.team === teamFilter);
         }
 
-        // Sortowanie
-        roleStats.sort((a, b) => {
+        // Sort
+        data.sort((a, b) => {
             let valueA: string | number;
             let valueB: string | number;
 
@@ -131,16 +61,15 @@ export async function GET(request: NextRequest) {
             }
         });
 
-        return NextResponse.json({
-            success: true,
-            data: roleStats
-        });
+        return NextResponse.json({ success: true, data });
 
     } catch (error) {
         console.error('Error fetching role rankings:', error);
         return NextResponse.json(
-            { success: false, error: 'Failed to fetch role rankings' },
+            { success: false, error: 'Błąd pobierania rankingu ról' },
             { status: 500 }
         );
     }
 }
+
+export const GET = withCors(getHandler);
