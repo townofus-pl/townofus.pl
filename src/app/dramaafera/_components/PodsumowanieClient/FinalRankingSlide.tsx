@@ -29,7 +29,7 @@ export default function FinalRankingSlide({ isFullscreen, currentStep, rankingAf
     if (currentStep === 0) {
         return (
             <div className="relative w-full h-full flex items-center justify-center">
-                <h1 
+                <h1
                     className={`font-bold text-amber-400 text-center ${isFullscreen ? 'text-7xl' : 'text-5xl'}`}
                     style={{
                         textShadow: '0 0 40px rgba(251, 191, 36, 0.7)'
@@ -52,7 +52,7 @@ export default function FinalRankingSlide({ isFullscreen, currentStep, rankingAf
 
     // Grupuj graczy po tierach
     const tierGroups = new Map<string, PlayerRankingAfterSession[]>();
-    
+
     // Inicjalizuj wszystkie tiery pustymi tablicami
     allTiers.forEach(tier => {
         const tierKey = `${tier.name}|${tier.color}|${tier.range}`;
@@ -78,7 +78,7 @@ export default function FinalRankingSlide({ isFullscreen, currentStep, rankingAf
     return (
         <div className="relative w-full h-full flex flex-col py-6" style={{ overflow: 'hidden' }}>
             {/* Nagłówek */}
-            <div 
+            <div
                 className={`text-center mt-10 mb-6 ${isFullscreen ? 'text-6xl' : 'text-5xl'} font-bold text-amber-400`}
                 style={{ textShadow: '0 0 40px rgba(251, 191, 36, 0.9), 0 0 80px rgba(251, 191, 36, 0.6)', whiteSpace: 'nowrap', paddingLeft: '100px', paddingRight: '100px' }}
             >
@@ -108,9 +108,9 @@ export default function FinalRankingSlide({ isFullscreen, currentStep, rankingAf
                                 <>
                                     {/* Emperor row */}
                                     {emperor && (
-                                        <tr 
+                                        <tr
                                             className="animate-[fadeIn_0.3s_ease-in]"
-                                            style={{ 
+                                            style={{
                                                 backgroundColor: 'rgb(239, 68, 68)',
                                                 animationDelay: `${rowIndex++ * 0.05}s`,
                                                 borderBottom: '2px dotted rgba(200, 200, 200, 0.5)'
@@ -120,7 +120,7 @@ export default function FinalRankingSlide({ isFullscreen, currentStep, rankingAf
                                                 👑
                                             </td>
                                             <td className={`py-3 px-4 text-center text-white font-bold ${isFullscreen ? 'text-3xl' : 'text-2xl'}`} style={{ borderRight: '2px dotted rgba(200, 200, 200, 0.5)', width: '1%', whiteSpace: 'nowrap' }}>
-                                                EMPEROR TYGODNIA
+                                                THE EMPEROR
                                             </td>
                                             <td className={`py-3 px-4 text-center text-white font-bold ${isFullscreen ? 'text-3xl' : 'text-lg'}`}>
                                                 {emperor.nickname}
@@ -135,10 +135,10 @@ export default function FinalRankingSlide({ isFullscreen, currentStep, rankingAf
                                         const textColor = (tierName === 'MASTER' || tierName === 'GRANDMASTER') ? 'text-black' : 'text-white';
 
                                         return (
-                                            <tr 
+                                            <tr
                                                 key={tierKey}
                                                 className="animate-[fadeIn_0.3s_ease-in]"
-                                                style={{ 
+                                                style={{
                                                     backgroundColor: tierColor,
                                                     animationDelay: `${rowIndex++ * 0.05}s`,
                                                     borderBottom: '2px dotted rgba(200, 200, 200, 0.5)'
@@ -156,7 +156,7 @@ export default function FinalRankingSlide({ isFullscreen, currentStep, rankingAf
                                                             <span key={player.nickname}>
                                                                 {idx > 0 && ', '}
                                                                 {player.nickname}&nbsp;
-                                                                <span 
+                                                                <span
                                                                     style={{
                                                                         color: player.ratingChange > 0 ? '#22c55e' : player.ratingChange < 0 ? '#ef4444' : 'inherit'
                                                                     }}
