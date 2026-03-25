@@ -68,6 +68,10 @@ DELETE FROM "player_rankings";
 -- DROP TABLE "games" will trigger CASCADE into nothing.
 
 -- ─── Step 3: Redefine games (no DEFAULT on season) ───────────────────────────
+-- Note: unlike child tables, "games" is NOT backed up into a _bak_games table.
+-- Its rows were NOT deleted in step 2 (only child rows were cleared), so the
+-- live "games" table still holds all data when the INSERT below runs. Reading
+-- directly from the live table avoids a redundant backup/restore round-trip.
 
 CREATE TABLE "new_games" (
     "id"             INTEGER  NOT NULL PRIMARY KEY AUTOINCREMENT,

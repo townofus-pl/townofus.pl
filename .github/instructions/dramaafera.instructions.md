@@ -34,11 +34,9 @@ Phase 1 complete:
 - SEASONS array + getSeasonById(id) + getSeasonForDate(date) in seasons.ts
 - extractDramaAferaSubPath(pathname) + buildSeasonUrl(path, seasonId) in _utils/seasonHelpers.ts
 - useSeason() hook in _hooks/useSeason.ts — reads params.seasonId, falls back to CURRENT_SEASON
-- Game.season and PlayerRanking.season columns (Int, default 1) added via migration 0003
-  NOTE: @default(1) is temporary for migration backfill — Phase 3 removes it via a
-  second migration (0004) after all create code sets season explicitly
-- rankingCalculator.ts — selects game.season and sets PlayerRanking.season on create (pulled forward from Phase 3)
-- players/post.ts — sets PlayerRanking.season = CURRENT_SEASON on initial ranking create (pulled forward from Phase 3)
+- Game.season and PlayerRanking.season columns (Int, no default) added via migrations 0003+0004
+- rankingCalculator.ts — selects game.season and sets PlayerRanking.season on create
+- players/post.ts — sets PlayerRanking.season = CURRENT_SEASON on initial ranking create
 
 Phase 2 complete:
 - SeasonSwitcher.tsx in _components/Header/ — 'use client' dropdown, uses useSeason() +
@@ -50,6 +48,15 @@ Phase 2 complete:
 - Navigation.tsx updated: seasonDependent flag per nav item, buildSeasonUrl() applied to
   season-dependent links (/ranking, /wyniki, /historia-gier), currentPage detection uses
   extractDramaAferaSubPath() + prefix matching instead of exact path comparison
+
+Phase 3 complete:
+- gameDataService.ts — all exported query functions accept optional seasonId?: number,
+  default to CURRENT_SEASON via buildSeasonGameWhere() helper; PlayerRanking queries
+  filter by season column directly
+- createGame.ts — sets season: getSeasonForDate(startTime) on prisma.game.create()
+- @default(1) removed from Game.season and PlayerRanking.season via migration 0004
+- TODO comments in user/[nick]/page.tsx and role/[nazwa]/page.tsx flagging deferred
+  seasonId pass-through (Phase 4)
 
 ## Component structure
 

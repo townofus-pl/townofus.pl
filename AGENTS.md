@@ -118,7 +118,6 @@ PlayerRanking.reason values defined in src/app/api/_constants/rankingTypes.ts as
 Every PlayerRanking write MUST include an explicit season:
   rankingCalculator.ts  — reads game.season and passes it to playerRanking.create()
   players/post.ts       — uses CURRENT_SEASON for the initial ranking row on player creation
-  (Phase 3 will remove @default(1) from schema once all write paths set season explicitly)
 
 ### Database gotchas
 

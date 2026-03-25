@@ -2065,7 +2065,7 @@ export async function getPlayerStars(nick: string, seasonId?: number): Promise<n
     // Pobierz wszystkie gry pogrupowane po dacie
     const allGames = await prisma.game.findMany({
       where: {
-        deletedAt: null,
+        ...withoutDeleted,
         season: seasonId ?? CURRENT_SEASON
       },
       select: {
