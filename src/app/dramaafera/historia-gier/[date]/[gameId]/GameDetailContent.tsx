@@ -132,29 +132,26 @@ export async function GameDetailContent({ date, gameId, seasonId }: GameDetailCo
                 <div className="mb-8">
                     <h2 className="text-3xl font-bold mb-4">⏰ Przebieg Gry</h2>
                     <div className="space-y-3">
-                        {gameData.detailedStats.events.map((event, index) => (
+                        {gameData.detailedStats.events.map((event, index) => {
+                            const eventIcon =
+                                event.type === 'kill' ? '🗡️' :
+                                event.type === 'meeting' ? '🔔' :
+                                event.type === 'vote' ? '🗳️' :
+                                event.type === 'task' ? '✅' :
+                                event.type === 'sabotage' ? '💥' :
+                                '🔧';
+                            return (
                             <div key={index} className="bg-gray-800/50 rounded-lg p-4 border border-gray-700/50 flex items-center space-x-4">
                                 <span className="bg-blue-600/30 text-blue-300 px-3 py-1 rounded font-mono text-sm min-w-16 text-center">
                                     {event.timestamp}
                                 </span>
-                                <span className={`text-lg ${
-                                    event.type === 'kill' ? '🗡️' :
-                                    event.type === 'meeting' ? '🔔' :
-                                    event.type === 'vote' ? '🗳️' :
-                                    event.type === 'task' ? '✅' :
-                                    event.type === 'sabotage' ? '💥' :
-                                    '🔧'
-                                }`}>
-                                    {event.type === 'kill' ? '🗡️' :
-                                     event.type === 'meeting' ? '🔔' :
-                                     event.type === 'vote' ? '🗳️' :
-                                     event.type === 'task' ? '✅' :
-                                     event.type === 'sabotage' ? '💥' :
-                                     '🔧'}
+                                <span className="text-lg">
+                                    {eventIcon}
                                 </span>
                                 <span className="text-gray-300 flex-1">{event.description}</span>
                             </div>
-                        ))}
+                            );
+                        })}
                     </div>
                 </div>
 

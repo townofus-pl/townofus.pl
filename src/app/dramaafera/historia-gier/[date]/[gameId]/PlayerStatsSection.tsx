@@ -6,13 +6,8 @@ import Image from "next/image";
 import { TeamColors } from "@/constants/teams";
 import type { UIPlayerData } from '../../../_services/games/types';
 import { formatPlayerStatsWithColors } from '@/app/dramaafera/_utils/formatPlayerStats';
-import { getRoleColor, convertRoleNameForDisplay, convertNickToUrlSlug, convertRoleToUrlSlug } from '@/app/dramaafera/_utils/gameUtils';
+import { getRoleColor, convertRoleNameForDisplay, convertNickToUrlSlug, convertRoleToUrlSlug, getPlayerAvatarPath } from '@/app/dramaafera/_utils/gameUtils';
 import { buildSeasonUrl } from '@/app/dramaafera/_utils/seasonHelpers';
-
-// Funkcja pomocnicza do generowania ścieżki avatara
-function getPlayerAvatarPath(playerName: string): string {
-    return `/images/avatars/${playerName}.png`;
-}
 
 function renderRoleHistory(roleHistory: string[] | undefined, seasonId: number) {
     if (!roleHistory || roleHistory.length <= 1) {
