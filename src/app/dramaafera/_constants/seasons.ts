@@ -11,7 +11,7 @@ export const SEASONS: Season[] = [
   { id: 2, startDate: '2026-03-23', endDate: null },
 ];
 
-export const CURRENT_SEASON = 2;
+export const CURRENT_SEASON = 1;
 
 export function getSeasonById(id: number): Season | undefined {
   return SEASONS.find((s) => s.id === id);

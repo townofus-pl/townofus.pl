@@ -3,7 +3,6 @@
 import { useState, useEffect, useCallback, useRef } from "react";
 import PlayerTable from "@/app/_components/PlayerTable";
 import RoleTable from "@/app/_components/RoleTable";
-import type { UIGameData } from "@/data/games/converter";
 import type { GameDateEntry, SessionSummary } from "@/app/dramaafera/_services";
 import { CURRENT_SEASON } from "@/app/dramaafera/_constants/seasons";
 import { getSessionResults } from "@/app/dramaafera/_actions/seasonActions";
@@ -146,7 +145,7 @@ export default function WynikiClient({ initialDates, initialResults, seasonId }:
                     <PlayerTable
                         players={resultsData.players}
                         reversedGames={resultsData.games}
-                        detailedGames={resultsData.detailedGames as unknown as (UIGameData | null)[]}
+                        detailedGames={resultsData.detailedGames}
                         date={selectedDate}
                         hideZeroStats={true}
                     />
@@ -156,7 +155,7 @@ export default function WynikiClient({ initialDates, initialResults, seasonId }:
                     <RoleTable
                         roles={resultsData.roles}
                         reversedGames={resultsData.games}
-                        detailedGames={resultsData.detailedGames as unknown as (UIGameData | null)[]}
+                        detailedGames={resultsData.detailedGames}
                         date={selectedDate}
                         hideZeroStats={true}
                     />

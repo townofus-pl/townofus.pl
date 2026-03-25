@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { UIGameData, UIPlayerData } from '@/data/games/converter';
+import type { UIGameData, UIPlayerData } from '@/app/dramaafera/_services/games/types';
 
 interface PlayerDayStats {
   name: string;

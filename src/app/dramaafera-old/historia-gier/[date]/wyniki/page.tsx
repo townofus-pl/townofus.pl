@@ -5,6 +5,7 @@ export async function generateStaticParams() {
 }
 import { getGameDatesList, getGamesListByDate, getGameData } from '@/data/games';
 import { normalizeRoleName, getRoleColor, determineTeam, UIGameData, UIPlayerData } from '@/data/games/converter';
+import type { UIGameData as ServicesUIGameData } from '@/app/dramaafera/_services/games/types';
 import PlayerTable from '@/app/_components/PlayerTable';
 import RoleTable from '@/app/_components/RoleTable';
 
@@ -148,7 +149,7 @@ export default async function WynikiDniaPage({ params }: { params: Promise<{ dat
       <PlayerTable 
         players={players}
         reversedGames={reversedGames}
-        detailedGames={detailedGames}
+        detailedGames={detailedGames as unknown as (ServicesUIGameData | null)[]}
         date={date}
         hideZeroStats={true}
       />
@@ -158,7 +159,7 @@ export default async function WynikiDniaPage({ params }: { params: Promise<{ dat
       <RoleTable 
         roles={roles}
         reversedGames={reversedGames}
-        detailedGames={detailedGames}
+        detailedGames={detailedGames as unknown as (ServicesUIGameData | null)[]}
         date={date}
         hideZeroStats={true}
       />

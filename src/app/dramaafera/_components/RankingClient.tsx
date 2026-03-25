@@ -7,6 +7,10 @@ import type { RankingPlayer } from "@/app/dramaafera/_services";
 import { CURRENT_SEASON } from "@/app/dramaafera/_constants/seasons";
 import { getRankingAction } from "@/app/dramaafera/_actions/seasonActions";
 
+type NumericRankingKey = {
+    [K in keyof RankingPlayer]: RankingPlayer[K] extends number ? K : never;
+}[keyof RankingPlayer];
+
 // Funkcja do wyznaczania rangi na podstawie punktów rankingowych
 function getRankTitle(points: number): string {
     if (points >= 2500) return "PIERDOLONA LEGENDA";
@@ -32,11 +36,11 @@ function convertNickToUrlSlug(nick: string): string {
     return nick.replace(/\s+/g, '-').toLowerCase();
 }
 
-function sortPlayers(players: RankingPlayer[], sortBy: keyof RankingPlayer, sortOrder: "asc" | "desc") {
+function sortPlayers(players: RankingPlayer[], sortBy: NumericRankingKey, sortOrder: "asc" | "desc") {
     const sorted = [...players];
     sorted.sort((a, b) => {
-        let valA: string | number = a[sortBy];
-        let valB: string | number = b[sortBy];
+        let valA: number = a[sortBy];
+        let valB: number = b[sortBy];
         if (sortBy === "winRate") {
             valA = parseFloat(String(valA ?? 0));
             valB = parseFloat(String(valB ?? 0));
@@ -58,7 +62,7 @@ interface RankingClientProps {
 
 export default function RankingClient({ initialData, seasonId }: RankingClientProps) {
     const [playerStats, setPlayerStats] = useState<RankingPlayer[]>(initialData);
-    const [sortBy, setSortBy] = useState<keyof RankingPlayer>("currentRating");
+    const [sortBy, setSortBy] = useState<NumericRankingKey>("currentRating");
     const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
     const [lastUpdateHash, setLastUpdateHash] = useState<string>("");
     const [lastUpdateTime, setLastUpdateTime] = useState<Date | null>(null);
@@ -107,7 +111,7 @@ export default function RankingClient({ initialData, seasonId }: RankingClientPr
     }, [seasonId, fetchRankingData]);
 
     // Sortowanie z obsługą currentRating
-    const sortPlayersWithRanking = (players: RankingPlayer[], sortKey: keyof RankingPlayer, order: "asc" | "desc") => {
+    const sortPlayersWithRanking = (players: RankingPlayer[], sortKey: NumericRankingKey, order: "asc" | "desc") => {
         if (sortKey === "currentRating") {
             return [...players].sort((a, b) => {
                 const valA = typeof a.currentRating === "number" ? a.currentRating : 0;
@@ -122,7 +126,7 @@ export default function RankingClient({ initialData, seasonId }: RankingClientPr
 
     const sortedStats = sortPlayersWithRanking(playerStats, sortBy, sortOrder);
 
-    function handleSort(column: keyof RankingPlayer) {
+    function handleSort(column: NumericRankingKey) {
         if (sortBy === column) {
             setSortOrder(sortOrder === "asc" ? "desc" : "asc");
         } else {
@@ -150,11 +154,11 @@ export default function RankingClient({ initialData, seasonId }: RankingClientPr
                         Najlepsi gracze Drama Afera Among Us
                     </p>
                     {/* Informacja o auto-odświeżaniu (tylko bieżący sezon) */}
-                    {seasonId === CURRENT_SEASON && lastUpdateTime && (
+                    {seasonId === CURRENT_SEASON && (
                         <div className="text-center mt-3 flex items-center justify-center gap-2">
                             <span className={`inline-block w-2 h-2 rounded-full ${isRefreshing ? 'bg-yellow-400 animate-pulse' : 'bg-green-400'}`}></span>
                             <span className="text-sm text-gray-400">
-                                {isRefreshing ? 'Sprawdzanie aktualizacji...' : `Ostatnia aktualizacja: ${lastUpdateTime.toLocaleTimeString('pl-PL')}`}
+                                {isRefreshing ? 'Sprawdzanie aktualizacji...' : lastUpdateTime ? `Ostatnia aktualizacja: ${lastUpdateTime.toLocaleTimeString('pl-PL')}` : 'Auto-odświeżanie włączone'}
                             </span>
                         </div>
                     )}
