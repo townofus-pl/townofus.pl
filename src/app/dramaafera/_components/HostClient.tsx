@@ -6,6 +6,7 @@ import type { GameDateEntry, HostInfoResult } from "@/app/dramaafera/_services";
 import { CURRENT_SEASON } from "@/app/dramaafera/_constants/seasons";
 import { getHostInfoAction, getGameDatesAction } from "@/app/dramaafera/_actions/seasonActions";
 import { buildSeasonUrl } from "@/app/dramaafera/_utils/seasonHelpers";
+import { RANKING_CONSTANTS } from "@/app/api/_utils/rankingCalculator";
 
 type UploadStatus = {
     status: 'idle' | 'uploading' | 'success' | 'error';
@@ -148,7 +149,8 @@ export default function HostClient({ initialDates, seasonId }: HostClientProps) 
             const auth = btoa(`${credentials.username}:${credentials.password}`);
             const response = await fetch('/api/season/reset', {
                 method: 'POST',
-                headers: { 'Authorization': `Basic ${auth}` },
+                headers: { 'Authorization': `Basic ${auth}`, 'Content-Type': 'application/json' },
+                body: JSON.stringify({ seasonId }),
             });
             const data = await response.json() as { success: boolean; data?: { message?: string; resetCount?: number }; error?: string };
             if (response.ok) {
@@ -284,7 +286,7 @@ export default function HostClient({ initialDates, seasonId }: HostClientProps) 
                             <div className="mt-5 pb-6">
                                 <p className="text-red-200 text-sm mb-5">
                                     Ta operacja <strong>nieodwracalnie usuwa</strong> wszystkie wpisy rankingowe bieżącego sezonu
-                                    i ustawia wszystkim graczom wynik startowy ({2000} pkt). Używaj tylko na początku nowego sezonu.
+                                     i ustawia wszystkim graczom wynik startowy ({RANKING_CONSTANTS.START_RATING} pkt). Używaj tylko na początku nowego sezonu.
                                 </p>
                                 {!resetConfirm ? (
                                     <button

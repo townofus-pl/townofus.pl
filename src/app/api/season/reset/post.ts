@@ -1,21 +1,40 @@
 import { NextRequest } from 'next/server';
+import { z } from 'zod';
 import { getCloudflareContext } from '@opennextjs/cloudflare';
-import { getPrismaClient } from '../../_database';
+import { getPrismaClient, batchStatements } from '../../_database';
 import { createSuccessResponse, createErrorResponse } from '../../_utils';
 import { RANKING_CONSTANTS } from '../../_utils/rankingCalculator';
 import { PlayerRankingReason } from '../../_constants/rankingTypes';
 import { withoutDeleted } from '../../schema/common';
-import { CURRENT_SEASON } from '@/app/dramaafera/_constants/seasons';
+import { getSeasonById } from '@/app/dramaafera/_constants/seasons';
+
+const ResetRequestSchema = z.object({
+  seasonId: z.number().int().positive(),
+});
 
 export async function POST(
-  _request: NextRequest,
+  request: NextRequest,
   _authContext: { user: { username: string } },
 ): Promise<Response> {
   try {
+    const body: unknown = await request.json();
+    const parsed = ResetRequestSchema.safeParse(body);
+    if (!parsed.success) {
+      return createErrorResponse(
+        'Nieprawidłowe dane: ' + parsed.error.issues.map((i) => i.message).join(', '),
+        400,
+      );
+    }
+    const { seasonId } = parsed.data;
+
+    if (!getSeasonById(seasonId)) {
+      return createErrorResponse(`Sezon ${seasonId} nie istnieje.`, 400);
+    }
+
+    const targetSeason = seasonId;
+
     const { env } = await getCloudflareContext();
     const prisma = getPrismaClient(env.DB);
-
-    const targetSeason = CURRENT_SEASON;
 
     // Pobierz wszystkich aktywnych graczy z ich aktualnym rankingiem
     const allPlayers = await prisma.player.findMany({
@@ -25,7 +44,7 @@ export async function POST(
       },
     });
 
-    // Option B guard: pomiń gracza jeśli currentRanking jest już season_reset dla bieżącego sezonu
+    // Option B guard: pomiń gracza jeśli currentRanking jest już season_reset dla docelowego sezonu
     const playersToReset = allPlayers.filter(
       (player) =>
         !(
@@ -36,41 +55,33 @@ export async function POST(
 
     if (playersToReset.length === 0) {
       return createSuccessResponse({
-        message: 'Wszyscy gracze mają już wpis season_reset dla bieżącego sezonu. Brak zmian.',
+        message: 'Wszyscy gracze mają już wpis season_reset dla docelowego sezonu. Brak zmian.',
         resetCount: 0,
         targetSeason,
         players: [],
       });
     }
 
-    // Utwórz wpisy season_reset dla każdego gracza
-    const resetResults: Array<{ playerName: string; oldSeason: number | null }> = [];
+    // Batch 1: wstaw wpisy season_reset atomowo dla wszystkich graczy
+    const insertStatements = playersToReset.map((player) =>
+      env.DB.prepare(
+        'INSERT INTO "player_rankings" ("playerId", "score", "reason", "gameId", "season", "createdAt") VALUES (?, ?, ?, NULL, ?, CURRENT_TIMESTAMP)',
+      ).bind(player.id, RANKING_CONSTANTS.START_RATING, PlayerRankingReason.SeasonReset, targetSeason),
+    );
+    await batchStatements(env.DB, insertStatements);
 
-    for (const player of playersToReset) {
-      const resetRanking = await prisma.playerRanking.create({
-        data: {
-          playerId: player.id,
-          score: RANKING_CONSTANTS.START_RATING,
-          reason: PlayerRankingReason.SeasonReset,
-          gameId: null,
-          season: targetSeason,
-        },
-      });
+    // Batch 2: zaktualizuj currentRankingId używając subquery do świeżo wstawionych wierszy
+    const updateStatements = playersToReset.map((player) =>
+      env.DB.prepare(
+        'UPDATE "players" SET "currentRankingId" = (SELECT MAX("id") FROM "player_rankings" WHERE "playerId" = ? AND "season" = ? AND "reason" = ? AND "deletedAt" IS NULL) WHERE "id" = ?',
+      ).bind(player.id, targetSeason, PlayerRankingReason.SeasonReset, player.id),
+    );
+    await batchStatements(env.DB, updateStatements);
 
-      await prisma.player.update({
-        where: { id: player.id },
-        data: { currentRankingId: resetRanking.id },
-      });
-
-      resetResults.push({
-        playerName: player.name,
-        oldSeason: player.currentRanking?.season ?? null,
-      });
-
-      console.log(
-        `🔄 Season reset for ${player.name}: S${player.currentRanking?.season ?? 'none'} → S${targetSeason}`,
-      );
-    }
+    const resetResults = playersToReset.map((player) => ({
+      playerName: player.name,
+      oldSeason: player.currentRanking?.season ?? null,
+    }));
 
     console.log(
       `✅ Season reset complete: ${resetResults.length} players reset to S${targetSeason}`,

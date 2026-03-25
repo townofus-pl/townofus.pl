@@ -10,7 +10,7 @@ export default async function SeasonRolePage({ params }: PageProps) {
     const { seasonId: seasonIdStr } = await params;
     const seasonId = parseInt(seasonIdStr, 10);
 
-    if (isNaN(seasonId) || !getSeasonById(seasonId)) {
+    if (!getSeasonById(seasonId)) {
         notFound();
     }
 
