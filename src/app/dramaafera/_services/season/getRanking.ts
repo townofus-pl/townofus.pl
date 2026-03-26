@@ -33,8 +33,9 @@ export async function getRanking(
   if (!prisma) return { ranking: [], total: 0 };
 
   // Aktualny sezon: używamy currentRankingId gracza (szybka ścieżka).
-  // Filtrujemy tylko graczy, których currentRanking należy do bieżącego sezonu —
-  // przed pierwszą grą sezonu ranking jest pusty (reset jeszcze nie nastąpił).
+  // Filtrujemy tylko graczy, których currentRanking należy do bieżącego sezonu
+  // i którzy mają statystyki z gier w tym sezonie — dopóki nie ma gier/statystyk,
+  // ranking pozostaje pusty.
   if (targetSeason === CURRENT_SEASON) {
     const players = await prisma.player.findMany({
       where: {

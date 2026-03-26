@@ -13,14 +13,14 @@ interface PodsumowanieLayoutProps {
 
 export async function generateMetadata({ params }: PodsumowanieLayoutProps): Promise<Metadata> {
     const { date, seasonId: seasonIdStr } = await params;
-    const seasonId = parseInt(seasonIdStr, 10);
+    const seasonId = /^\d+$/.test(seasonIdStr) ? parseInt(seasonIdStr, 10) : NaN;
     const formattedDate = formatDisplayDate(date);
 
     const base: Metadata = {
         title: `Drama Afera - Podsumowanie - ${formattedDate}`,
     };
 
-    if (!getSeasonById(seasonId)) {
+    if (!Number.isInteger(seasonId) || !getSeasonById(seasonId)) {
         return base;
     }
 

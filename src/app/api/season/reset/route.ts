@@ -1,17 +1,14 @@
 import { z } from 'zod';
 import { extendZodWithOpenApi } from '@asteasolutions/zod-to-openapi';
-import { POST } from './post';
-import { withAuth } from '../../_middlewares/auth';
-import { withCors } from '../../_middlewares/cors';
+import { POST as postHandler } from './post';
+import { withAuth, withCors } from '../../_middlewares';
 import { openApiRegistry } from '../../schema/registry';
 import { BaseResponseSchema, ErrorResponseSchema } from '../../schema/base';
 
 extendZodWithOpenApi(z);
 
 // Chroniony endpoint — wymaga Basic Auth
-const handler = withCors(withAuth(POST));
-
-export { handler as POST };
+export const POST = withCors(withAuth(postHandler));
 
 const SeasonResetRequestSchema = z.object({
   seasonId: z.number().int().positive().openapi({

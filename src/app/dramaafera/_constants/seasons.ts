@@ -21,7 +21,10 @@ export function getSeasonById(id: number): Season | undefined {
 }
 
 // Determine which season a game belongs to based on its start time.
-// Used when creating new games. Iterates SEASONS in reverse to find the most recent match.
+// Used when creating new games. Iterates SEASONS in reverse (newest first) so the
+// common case — a new game belonging to the latest season — is found on the first
+// iteration. SEASONS must remain sorted chronologically oldest-first; SEASONS[i + 1]
+// is always the chronologically next season regardless of iteration direction.
 export function getSeasonForDate(date: Date): number {
   for (let i = SEASONS.length - 1; i >= 0; i--) {
     const season = SEASONS[i];

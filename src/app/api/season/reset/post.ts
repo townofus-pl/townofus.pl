@@ -77,11 +77,11 @@ export async function POST(
     });
 
     // Option B guard: pomiń gracza jeśli currentRanking jest już season_reset dla docelowego sezonu.
-    // Dodatkowo sprawdzamy deletedAt == null — soft-deleted wpis nie powinien blokować resetu.
+    // Sprawdzamy deletedAt === null — soft-deleted wpis nie powinien blokować resetu.
     const playersToReset = allPlayers.filter(
       (player) =>
         !(
-          player.currentRanking?.deletedAt == null &&
+          player.currentRanking?.deletedAt === null &&
           player.currentRanking?.season === targetSeason &&
           player.currentRanking?.reason === PlayerRankingReason.SeasonReset
         ),

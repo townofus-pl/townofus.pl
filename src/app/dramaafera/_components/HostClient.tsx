@@ -6,7 +6,10 @@ import type { GameDateEntry, HostInfoResult } from "@/app/dramaafera/_services";
 import { CURRENT_SEASON } from "@/app/dramaafera/_constants/seasons";
 import { getHostInfoAction, getGameDatesAction } from "@/app/dramaafera/_actions/seasonActions";
 import { buildSeasonUrl } from "@/app/dramaafera/_utils/seasonHelpers";
-import { RANKING_CONSTANTS } from "@/app/api/_utils/rankingCalculator";
+
+// Stała lokalna — nie importujemy z rankingCalculator, żeby nie wciągać
+// zależności serwera (Zod, OpenAPI) do bundle'u klienta.
+const START_RATING = 2000;
 
 type UploadStatus = {
     status: 'idle' | 'uploading' | 'success' | 'error';
@@ -285,7 +288,7 @@ export default function HostClient({ initialDates, seasonId }: HostClientProps) 
                             </summary>
                             <div className="mt-5 pb-6">
                                 <p className="text-red-200 text-sm mb-5">
-                                    Ta operacja <strong>ustawia wszystkim graczom nowy wynik startowy</strong> ({RANKING_CONSTANTS.START_RATING} pkt) i dodaje techniczny wpis resetujący w historii rankingu bieżącego sezonu. Używaj tylko na początku nowego sezonu.
+                                    Ta operacja <strong>ustawia wszystkim graczom nowy wynik startowy</strong> ({START_RATING} pkt) i dodaje techniczny wpis resetujący w historii rankingu bieżącego sezonu. Używaj tylko na początku nowego sezonu.
                                 </p>
                                 {!resetConfirm ? (
                                     <button

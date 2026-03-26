@@ -9,8 +9,11 @@ import { getSeasonById } from '@/app/dramaafera/_constants/seasons';
  *   const seasonId = parseAndValidateSeasonId(seasonIdStr);
  */
 export function parseAndValidateSeasonId(seasonIdStr: string): number {
+    if (!/^\d+$/.test(seasonIdStr)) {
+        notFound();
+    }
     const seasonId = parseInt(seasonIdStr, 10);
-    if (isNaN(seasonId) || !getSeasonById(seasonId)) {
+    if (!getSeasonById(seasonId)) {
         notFound();
     }
     return seasonId;
