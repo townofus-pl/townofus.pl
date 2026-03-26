@@ -9,8 +9,8 @@
 -- therefore fires all ON DELETE CASCADE actions and wipes child table data.
 -- ALTER TABLE ADD COLUMN avoids DROP TABLE entirely, so cascade is never triggered.
 
-ALTER TABLE "games" ADD COLUMN "season" INTEGER NOT NULL DEFAULT 1;
-ALTER TABLE "player_rankings" ADD COLUMN "season" INTEGER NOT NULL DEFAULT 1;
+ALTER TABLE "games" ADD COLUMN "season" INTEGER NOT NULL DEFAULT 2;
+ALTER TABLE "player_rankings" ADD COLUMN "season" INTEGER NOT NULL DEFAULT 2;
 
 CREATE INDEX "games_season_idx" ON "games"("season");
 CREATE INDEX "games_season_deletedAt_idx" ON "games"("season", "deletedAt");

@@ -3,8 +3,8 @@ import { withoutDeleted } from '../schema/common';
 import type { PrismaClient, Player, GamePlayerStatistics, PlayerRanking } from '@prisma/client';
 import { PlayerRankingReason } from '../_constants/rankingTypes';
 
-// Stałe systemu rankingowego
-const RANKING_CONSTANTS = {
+// Stałe systemu rankingowego (eksportowane — używane też w serwisach rankingowych)
+export const RANKING_CONSTANTS = {
   W: 9,              // Współczynnik wpływu gry na ranking
   PEN: 5,            // Kara za nieobecność
   START_RATING: 2000 // Startowy ranking dla nowych graczy
@@ -122,7 +122,7 @@ export async function calculateRankingForGame(
     // 6. Oblicz zmienne wzoru
     const sumP = presentPlayers.reduce((sum, p) => sum + p.totalPoints, 0);
     const sumR = presentPlayers.reduce((sum, p) => sum + p.previousRating, 0);
-    const absentCount = absentPlayers.filter(p => p.previousRating > 2000).length;
+    const absentCount = absentPlayers.filter(p => p.previousRating > RANKING_CONSTANTS.START_RATING).length;
 
     console.log(`📈 Calculations: SumP=${sumP}, SumR=${sumR}, AbsentCount=${absentCount}`);
 
@@ -158,7 +158,7 @@ export async function calculateRankingForGame(
     for (const player of absentPlayers) {
       const { PEN } = RANKING_CONSTANTS;
       const Rs_i = player.previousRating;
-      const penalty = Rs_i > 2000 ? PEN : 0;
+      const penalty = Rs_i > RANKING_CONSTANTS.START_RATING ? PEN : 0;
       const newRating = Rs_i - penalty;
       
       newRankings.push({

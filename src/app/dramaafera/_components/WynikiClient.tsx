@@ -96,6 +96,16 @@ export default function WynikiClient({ initialDates, initialResults, seasonId }:
         }
     };
 
+    if (initialDates.length === 0) {
+        return (
+            <div className="min-h-screen rounded-xl bg-zinc-900/50 text-white container mx-auto px-4 py-8">
+                <div className="flex items-center justify-center py-12">
+                    <p className="text-gray-400 text-lg">Brak dostępnych wyników</p>
+                </div>
+            </div>
+        );
+    }
+
     return (
         <div className="min-h-screen rounded-xl bg-zinc-900/50 text-white container mx-auto px-4 py-8">
             {/* Nagłówek z wyborem daty — zawsze widoczny gdy są dostępne daty */}
