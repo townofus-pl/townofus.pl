@@ -91,81 +91,87 @@ export async function getRanking(
 
   // Miniony sezon: pobieramy najnowszy wpis rankingowy per gracz via raw SQL
   // (MAX(id) per playerId — unikamy take: N, które przy wielu wpisach per gracz
-  //  ucinałoby graczy z wyższymi playerId)
-  const latestPerPlayer = await prisma.$queryRaw<
-    Array<{ playerId: number; playerName: string; score: number; createdAt: string }>
-  >`
-    SELECT pr.playerId, p.name AS playerName, pr.score, pr.createdAt
-    FROM player_rankings pr
-    JOIN players p ON p.id = pr.playerId
-    WHERE pr.id IN (
-      SELECT MAX(id)
-      FROM player_rankings
-      WHERE season = ${targetSeason}
-        AND deletedAt IS NULL
-      GROUP BY playerId
-    )
-    AND p.deletedAt IS NULL
-  `;
+  //  ucinałoby graczy z wyższymi playerId).
+  // Sortowanie, filtrowanie graczy bez gier, paginacja i COUNT wykonywane są w SQL —
+  // unikamy ładowania całego rankingu do pamięci i sortowania O(n log n) w JS.
+  const [latestPerPlayer, countResult] = await Promise.all([
+    prisma.$queryRaw<
+      Array<{
+        playerId: number;
+        playerName: string;
+        score: number;
+        createdAt: string;
+        totalGames: number;
+        wins: number;
+      }>
+    >`
+      SELECT
+        pr.playerId,
+        p.name        AS playerName,
+        pr.score,
+        pr.createdAt,
+        COUNT(gps.id) AS totalGames,
+        SUM(CASE WHEN gps.win = 1 THEN 1 ELSE 0 END) AS wins
+      FROM player_rankings pr
+      JOIN players p ON p.id = pr.playerId AND p.deletedAt IS NULL
+      JOIN game_player_statistics gps ON gps.playerId = pr.playerId
+      JOIN games g ON g.id = gps.gameId AND g.season = ${targetSeason} AND g.deletedAt IS NULL
+      WHERE pr.id IN (
+        SELECT MAX(id)
+        FROM player_rankings
+        WHERE season = ${targetSeason}
+          AND deletedAt IS NULL
+        GROUP BY playerId
+      )
+      GROUP BY pr.playerId, p.name, pr.score, pr.createdAt
+      HAVING COUNT(gps.id) > 0
+      ORDER BY pr.score DESC
+      LIMIT ${limit} OFFSET ${offset}
+    `,
+    prisma.$queryRaw<Array<{ total: number }>>`
+      SELECT COUNT(*) AS total
+      FROM (
+        SELECT pr.playerId
+        FROM player_rankings pr
+        JOIN players p ON p.id = pr.playerId AND p.deletedAt IS NULL
+        JOIN game_player_statistics gps ON gps.playerId = pr.playerId
+        JOIN games g ON g.id = gps.gameId AND g.season = ${targetSeason} AND g.deletedAt IS NULL
+        WHERE pr.id IN (
+          SELECT MAX(id)
+          FROM player_rankings
+          WHERE season = ${targetSeason}
+            AND deletedAt IS NULL
+          GROUP BY playerId
+        )
+        GROUP BY pr.playerId
+        HAVING COUNT(gps.id) > 0
+      )
+    `,
+  ]);
 
   if (latestPerPlayer.length === 0) {
     return { ranking: [], total: 0 };
   }
 
-  // Pobierz statystyki wygranych/przegranych dla graczy z tego sezonu
-  // Używamy filtra relacji zamiast IN clause (ograniczenie D1)
-  const playersWithStats = await prisma.player.findMany({
-    where: {
-      ...withoutDeleted,
-      rankingHistory: { some: { season: targetSeason, deletedAt: null } },
-    },
-    select: {
-      id: true,
-      gamePlayerStatistics: {
-        where: { game: { ...withoutDeleted, season: targetSeason } },
-        select: { win: true },
-      },
-    },
+  const total = Number(countResult[0]?.total ?? 0);
+
+  const ranking: RankingPlayer[] = latestPerPlayer.map((row, index) => {
+    const totalGames = Number(row.totalGames);
+    const wins = Number(row.wins);
+    const winRate = totalGames > 0 ? (wins / totalGames) * 100 : 0;
+
+    return {
+      rank: offset + index + 1,
+      playerId: row.playerId,
+      playerName: row.playerName,
+      currentRating: row.score,
+      totalGames,
+      wins,
+      losses: totalGames - wins,
+      winRate: Math.round(winRate * 100) / 100,
+      lastUpdated: row.createdAt,
+    };
   });
 
-  const statsMap = new Map(
-    playersWithStats.map((p) => [
-      p.id,
-      {
-        totalGames: p.gamePlayerStatistics.length,
-        wins: p.gamePlayerStatistics.filter((s) => s.win).length,
-      },
-    ]),
-  );
-
-  // Złóż wyniki — tylko gracze z co najmniej jedną rozegraną grą w sezonie
-  const entries: RankingPlayer[] = latestPerPlayer.flatMap((row) => {
-    const stats = statsMap.get(row.playerId) ?? { totalGames: 0, wins: 0 };
-    if (stats.totalGames === 0) return [];
-    const winRate = (stats.wins / stats.totalGames) * 100;
-
-    return [
-      {
-        rank: 0, // zostanie przypisany po sortowaniu
-        playerId: row.playerId,
-        playerName: row.playerName,
-        currentRating: row.score,
-        totalGames: stats.totalGames,
-        wins: stats.wins,
-        losses: stats.totalGames - stats.wins,
-        winRate: Math.round(winRate * 100) / 100,
-        lastUpdated: row.createdAt,
-      },
-    ];
-  });
-
-  entries.sort((a, b) => b.currentRating - a.currentRating);
-
-  const total = entries.length;
-  const paginated = entries.slice(offset, offset + limit);
-  paginated.forEach((p, i) => {
-    p.rank = offset + i + 1;
-  });
-
-  return { ranking: paginated, total };
+  return { ranking, total };
 }

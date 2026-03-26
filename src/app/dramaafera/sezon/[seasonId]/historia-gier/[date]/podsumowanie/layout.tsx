@@ -1,4 +1,5 @@
 import type { Metadata } from 'next';
+import { getSeasonById } from '@/app/dramaafera/_constants/seasons';
 import { buildSeasonUrl } from '@/app/dramaafera/_utils/seasonHelpers';
 import { formatDisplayDate } from '@/app/dramaafera/_utils/gameUtils';
 
@@ -15,8 +16,16 @@ export async function generateMetadata({ params }: PodsumowanieLayoutProps): Pro
     const seasonId = parseInt(seasonIdStr, 10);
     const formattedDate = formatDisplayDate(date);
 
-    return {
+    const base: Metadata = {
         title: `Drama Afera - Podsumowanie - ${formattedDate}`,
+    };
+
+    if (!getSeasonById(seasonId)) {
+        return base;
+    }
+
+    return {
+        ...base,
         alternates: {
             canonical: buildSeasonUrl(`/historia-gier/${date}/podsumowanie`, seasonId),
         },

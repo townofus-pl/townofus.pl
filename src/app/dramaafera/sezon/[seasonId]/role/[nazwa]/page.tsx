@@ -17,6 +17,9 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
     const { seasonId: seasonIdStr, nazwa } = await params;
     const seasonId = parseInt(seasonIdStr, 10);
+    if (!getSeasonById(seasonId)) {
+        notFound();
+    }
     const allRoles = Roles.map(r => r.name);
     const roleName = convertUrlSlugToRole(nazwa, allRoles);
     return {

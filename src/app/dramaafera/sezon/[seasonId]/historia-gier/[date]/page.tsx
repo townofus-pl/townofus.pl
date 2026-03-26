@@ -16,6 +16,9 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
     const { seasonId: seasonIdStr, date } = await params;
     const seasonId = parseInt(seasonIdStr, 10);
+    if (!getSeasonById(seasonId)) {
+        notFound();
+    }
     const formattedDate = formatDisplayDate(date);
     return {
         title: `Drama Afera - ${formattedDate}`,

@@ -36,6 +36,33 @@ export async function POST(
     const { env } = await getCloudflareContext();
     const prisma = getPrismaClient(env.DB);
 
+    // Guard: jeśli istnieją już gry lub wpisy rankingowe (inne niż season_reset)
+    // dla docelowego sezonu, reset mógłby przekłamać historię — zwracamy 409.
+    const [existingGame, existingRankingEntry] = await Promise.all([
+      prisma.game.findFirst({
+        where: { season: targetSeason, deletedAt: null },
+        select: { id: true },
+      }),
+      prisma.playerRanking.findFirst({
+        where: {
+          season: targetSeason,
+          deletedAt: null,
+          OR: [
+            { reason: { not: PlayerRankingReason.SeasonReset } },
+            { reason: null },
+          ],
+        },
+        select: { id: true },
+      }),
+    ]);
+
+    if (existingGame ?? existingRankingEntry) {
+      return createErrorResponse(
+        `Sezon ${targetSeason} zawiera już gry lub wpisy rankingowe. Reset jest niedozwolony po rozpoczęciu sezonu.`,
+        409,
+      );
+    }
+
     // Pobierz wszystkich aktywnych graczy z ich aktualnym rankingiem
     const allPlayers = await prisma.player.findMany({
       where: withoutDeleted,

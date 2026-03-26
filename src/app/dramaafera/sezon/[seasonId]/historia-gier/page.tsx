@@ -11,6 +11,9 @@ interface PageProps {
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
     const { seasonId: seasonIdStr } = await params;
     const seasonId = parseInt(seasonIdStr, 10);
+    if (!getSeasonById(seasonId)) {
+        notFound();
+    }
     return {
         alternates: {
             canonical: buildSeasonUrl('/historia-gier', seasonId),

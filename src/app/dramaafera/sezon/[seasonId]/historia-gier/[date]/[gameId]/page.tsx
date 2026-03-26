@@ -17,6 +17,9 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
     const { seasonId: seasonIdStr, date, gameId } = await params;
     const seasonId = parseInt(seasonIdStr, 10);
+    if (!getSeasonById(seasonId)) {
+        notFound();
+    }
     const formattedDate = formatDisplayDate(date);
     const games = await getGamesListByDate(date, seasonId);
     const gameIndex = games.findIndex(g => g.id.toString() === gameId);

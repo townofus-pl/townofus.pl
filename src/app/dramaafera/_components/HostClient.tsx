@@ -285,8 +285,7 @@ export default function HostClient({ initialDates, seasonId }: HostClientProps) 
                             </summary>
                             <div className="mt-5 pb-6">
                                 <p className="text-red-200 text-sm mb-5">
-                                    Ta operacja <strong>nieodwracalnie usuwa</strong> wszystkie wpisy rankingowe bieżącego sezonu
-                                     i ustawia wszystkim graczom wynik startowy ({RANKING_CONSTANTS.START_RATING} pkt). Używaj tylko na początku nowego sezonu.
+                                    Ta operacja <strong>ustawia wszystkim graczom nowy wynik startowy</strong> ({RANKING_CONSTANTS.START_RATING} pkt) i dodaje techniczny wpis resetujący w historii rankingu bieżącego sezonu. Używaj tylko na początku nowego sezonu.
                                 </p>
                                 {!resetConfirm ? (
                                     <button
