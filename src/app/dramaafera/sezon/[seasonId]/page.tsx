@@ -1,6 +1,6 @@
-import { redirect, notFound } from 'next/navigation';
-import { getSeasonById } from '@/app/dramaafera/_constants/seasons';
+import { redirect } from 'next/navigation';
 import { buildSeasonUrl } from '@/app/dramaafera/_utils/seasonHelpers';
+import { parseAndValidateSeasonId } from '@/app/dramaafera/sezon/_utils/parseSeasonId';
 
 interface PageProps {
     params: Promise<{ seasonId: string }>;
@@ -8,11 +8,7 @@ interface PageProps {
 
 export default async function SeasonRootPage({ params }: PageProps) {
     const { seasonId: seasonIdStr } = await params;
-    const seasonId = parseInt(seasonIdStr, 10);
-
-    if (!getSeasonById(seasonId)) {
-        notFound();
-    }
+    const seasonId = parseAndValidateSeasonId(seasonIdStr);
 
     redirect(buildSeasonUrl('/ranking', seasonId));
 }

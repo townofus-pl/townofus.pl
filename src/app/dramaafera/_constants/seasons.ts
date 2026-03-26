@@ -5,6 +5,10 @@ export interface Season {
 
 // Date ranges used for auto-determining season on game creation.
 // A season ends when the next one begins — no explicit endDate needed.
+// Season 1 is intentionally excluded: it has no startDate boundary (predates
+// the season system) and all its data is accessible via the season=1 DB column.
+// Keeping it out of SEASONS avoids ambiguous date-range matching in getSeasonForDate().
+// Season 2 has startDate=null meaning "beginning of time up to season 3".
 export const SEASONS: Season[] = [
   { id: 2, startDate: null },
   { id: 3, startDate: '2026-03-23' },

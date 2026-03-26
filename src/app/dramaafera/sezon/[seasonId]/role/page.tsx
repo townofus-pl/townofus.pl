@@ -1,5 +1,4 @@
-import { notFound } from 'next/navigation';
-import { getSeasonById } from '@/app/dramaafera/_constants/seasons';
+import { parseAndValidateSeasonId } from '@/app/dramaafera/sezon/_utils/parseSeasonId';
 import InnePage from '../../../role/page';
 
 interface PageProps {
@@ -8,11 +7,9 @@ interface PageProps {
 
 export default async function SeasonRolePage({ params }: PageProps) {
     const { seasonId: seasonIdStr } = await params;
-    const seasonId = parseInt(seasonIdStr, 10);
+    parseAndValidateSeasonId(seasonIdStr);
 
-    if (!getSeasonById(seasonId)) {
-        notFound();
-    }
-
+    // TODO: Pass seasonId to InnePage once it supports season-scoped role listing
+    // (Phase 7+ — InnePage currently shows all roles regardless of season)
     return <InnePage />;
 }

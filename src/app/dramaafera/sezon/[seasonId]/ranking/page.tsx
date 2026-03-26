@@ -1,8 +1,7 @@
-import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
 import { getRanking } from '@/app/dramaafera/_services';
-import { getSeasonById } from '@/app/dramaafera/_constants/seasons';
 import { buildSeasonUrl } from '@/app/dramaafera/_utils/seasonHelpers';
+import { parseAndValidateSeasonId } from '@/app/dramaafera/sezon/_utils/parseSeasonId';
 import RankingClient from '@/app/dramaafera/_components/RankingClient';
 
 interface PageProps {
@@ -11,10 +10,7 @@ interface PageProps {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
     const { seasonId: seasonIdStr } = await params;
-    const seasonId = parseInt(seasonIdStr, 10);
-    if (!getSeasonById(seasonId)) {
-        notFound();
-    }
+    const seasonId = parseAndValidateSeasonId(seasonIdStr);
     return {
         alternates: {
             canonical: buildSeasonUrl('/ranking', seasonId),
@@ -24,11 +20,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function SeasonRankingPage({ params }: PageProps) {
     const { seasonId: seasonIdStr } = await params;
-    const seasonId = parseInt(seasonIdStr, 10);
-
-    if (!getSeasonById(seasonId)) {
-        notFound();
-    }
+    const seasonId = parseAndValidateSeasonId(seasonIdStr);
 
     const { ranking } = await getRanking(seasonId);
     return <RankingClient initialData={ranking} seasonId={seasonId} />;

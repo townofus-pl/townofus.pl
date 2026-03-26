@@ -169,7 +169,7 @@ export async function getRanking(
       wins,
       losses: totalGames - wins,
       winRate: Math.round(winRate * 100) / 100,
-      lastUpdated: row.createdAt,
+      lastUpdated: new Date(row.createdAt).toISOString(),
     };
   });
 

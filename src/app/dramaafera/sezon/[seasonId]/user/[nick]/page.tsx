@@ -1,7 +1,6 @@
-import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
-import { getSeasonById } from '@/app/dramaafera/_constants/seasons';
 import { buildSeasonUrl } from '@/app/dramaafera/_utils/seasonHelpers';
+import { parseAndValidateSeasonId } from '@/app/dramaafera/sezon/_utils/parseSeasonId';
 import { UserProfileContent } from '@/app/dramaafera/user/[nick]/UserProfileContent';
 
 interface PageProps {
@@ -14,10 +13,7 @@ export function generateStaticParams() {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
     const { seasonId: seasonIdStr, nick } = await params;
-    const seasonId = parseInt(seasonIdStr, 10);
-    if (!getSeasonById(seasonId)) {
-        notFound();
-    }
+    const seasonId = parseAndValidateSeasonId(seasonIdStr);
     const playerName = decodeURIComponent(nick.replace(/-/g, ' '));
     return {
         title: `Drama Afera - ${playerName}`,
@@ -30,11 +26,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function SeasonUserProfilePage({ params }: PageProps) {
     const { seasonId: seasonIdStr, nick } = await params;
-    const seasonId = parseInt(seasonIdStr, 10);
-
-    if (!getSeasonById(seasonId)) {
-        notFound();
-    }
+    const seasonId = parseAndValidateSeasonId(seasonIdStr);
 
     return <UserProfileContent nick={nick} seasonId={seasonId} />;
 }

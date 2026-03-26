@@ -1,7 +1,6 @@
-import { notFound } from 'next/navigation';
 import type { Metadata } from 'next';
-import { getSeasonById } from '@/app/dramaafera/_constants/seasons';
 import { buildSeasonUrl } from '@/app/dramaafera/_utils/seasonHelpers';
+import { parseAndValidateSeasonId } from '@/app/dramaafera/sezon/_utils/parseSeasonId';
 import { formatDisplayDate } from '@/app/dramaafera/_utils/gameUtils';
 import { DateGamesContent } from '@/app/dramaafera/historia-gier/[date]/DateGamesContent';
 
@@ -15,10 +14,7 @@ export function generateStaticParams() {
 
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
     const { seasonId: seasonIdStr, date } = await params;
-    const seasonId = parseInt(seasonIdStr, 10);
-    if (!getSeasonById(seasonId)) {
-        notFound();
-    }
+    const seasonId = parseAndValidateSeasonId(seasonIdStr);
     const formattedDate = formatDisplayDate(date);
     return {
         title: `Drama Afera - ${formattedDate}`,
@@ -30,11 +26,7 @@ export async function generateMetadata({ params }: PageProps): Promise<Metadata>
 
 export default async function SeasonDateGamesPage({ params }: PageProps) {
     const { seasonId: seasonIdStr, date } = await params;
-    const seasonId = parseInt(seasonIdStr, 10);
-
-    if (!getSeasonById(seasonId)) {
-        notFound();
-    }
+    const seasonId = parseAndValidateSeasonId(seasonIdStr);
 
     return <DateGamesContent date={date} seasonId={seasonId} />;
 }

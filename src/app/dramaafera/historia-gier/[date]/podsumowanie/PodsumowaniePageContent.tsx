@@ -12,7 +12,11 @@ import PodsumowanieClient from '@/app/dramaafera/_components/PodsumowanieClient'
 import type { EmperorPoll, SigmaPlayer, RankingHistoryPoint } from '@/app/dramaafera/_components/PodsumowanieClient';
 import type { RankingHistoryPoint as ServiceRankingHistoryPoint } from '@/app/dramaafera/_services/players/types';
 
-// Compute per-game ranking changes for a player from their ranking history
+// Compute per-game ranking changes for a player from their ranking history.
+// We track `lastRealEntry` (the last non-initial/base entry) rather than using
+// the immediately preceding entry (`sorted[i-1]`), because initial_value and
+// base_value entries represent resets/seeds — not real games. Skipping them
+// ensures deltas reflect actual rating movement from game to game.
 function computeRankingChanges(
     history: ServiceRankingHistoryPoint[],
     date: string,

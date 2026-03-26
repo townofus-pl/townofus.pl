@@ -17,7 +17,12 @@ export async function POST(
   _authContext: { user: { username: string } },
 ): Promise<Response> {
   try {
-    const body: unknown = await request.json();
+    let body: unknown;
+    try {
+      body = await request.json();
+    } catch {
+      return createErrorResponse('Nieprawidłowy format JSON w treści żądania.', 400);
+    }
     const parsed = ResetRequestSchema.safeParse(body);
     if (!parsed.success) {
       return createErrorResponse(
@@ -71,10 +76,12 @@ export async function POST(
       },
     });
 
-    // Option B guard: pomiń gracza jeśli currentRanking jest już season_reset dla docelowego sezonu
+    // Option B guard: pomiń gracza jeśli currentRanking jest już season_reset dla docelowego sezonu.
+    // Dodatkowo sprawdzamy deletedAt == null — soft-deleted wpis nie powinien blokować resetu.
     const playersToReset = allPlayers.filter(
       (player) =>
         !(
+          player.currentRanking?.deletedAt == null &&
           player.currentRanking?.season === targetSeason &&
           player.currentRanking?.reason === PlayerRankingReason.SeasonReset
         ),
@@ -89,21 +96,19 @@ export async function POST(
       });
     }
 
-    // Batch 1: wstaw wpisy season_reset atomowo dla wszystkich graczy
+    // Wstaw wpisy season_reset i zaktualizuj currentRankingId atomowo w jednym batch().
+    // D1 batch() jest atomowy — albo wszystkie instrukcje się powiodą, albo żadna.
     const insertStatements = playersToReset.map((player) =>
       env.DB.prepare(
         'INSERT INTO "player_rankings" ("playerId", "score", "reason", "gameId", "season", "createdAt") VALUES (?, ?, ?, NULL, ?, CURRENT_TIMESTAMP)',
       ).bind(player.id, RANKING_CONSTANTS.START_RATING, PlayerRankingReason.SeasonReset, targetSeason),
     );
-    await batchStatements(env.DB, insertStatements);
-
-    // Batch 2: zaktualizuj currentRankingId używając subquery do świeżo wstawionych wierszy
     const updateStatements = playersToReset.map((player) =>
       env.DB.prepare(
         'UPDATE "players" SET "currentRankingId" = (SELECT MAX("id") FROM "player_rankings" WHERE "playerId" = ? AND "season" = ? AND "reason" = ? AND "deletedAt" IS NULL) WHERE "id" = ?',
       ).bind(player.id, targetSeason, PlayerRankingReason.SeasonReset, player.id),
     );
-    await batchStatements(env.DB, updateStatements);
+    await batchStatements(env.DB, [...insertStatements, ...updateStatements]);
 
     const resetResults = playersToReset.map((player) => ({
       playerName: player.name,
