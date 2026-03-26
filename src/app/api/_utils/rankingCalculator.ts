@@ -1,9 +1,10 @@
 // Types for better type safety
 import { withoutDeleted } from '../schema/common';
 import type { PrismaClient, Player, GamePlayerStatistics, PlayerRanking } from '@prisma/client';
+import { PlayerRankingReason } from '../_constants/rankingTypes';
 
-// Stałe systemu rankingowego
-const RANKING_CONSTANTS = {
+// Stałe systemu rankingowego (eksportowane — używane też w serwisach rankingowych)
+export const RANKING_CONSTANTS = {
   W: 9,              // Współczynnik wpływu gry na ranking
   PEN: 5,            // Kara za nieobecność
   START_RATING: 2000 // Startowy ranking dla nowych graczy
@@ -42,12 +43,13 @@ export async function calculateRankingForGame(
   try {
     
     // 1. Pobierz dane gry
-    const game = await prisma.game.findUnique({
-      where: { id: gameId },
+    const game = await prisma.game.findFirst({
+      where: { id: gameId, ...withoutDeleted },
       select: { 
         id: true, 
         startTime: true, 
         gameIdentifier: true,
+        season: true,
         gamePlayerStatistics: {
           include: {
             player: true
@@ -120,7 +122,7 @@ export async function calculateRankingForGame(
     // 6. Oblicz zmienne wzoru
     const sumP = presentPlayers.reduce((sum, p) => sum + p.totalPoints, 0);
     const sumR = presentPlayers.reduce((sum, p) => sum + p.previousRating, 0);
-    const absentCount = absentPlayers.filter(p => p.previousRating > 2000).length;
+    const absentCount = absentPlayers.filter(p => p.previousRating > RANKING_CONSTANTS.START_RATING).length;
 
     console.log(`📈 Calculations: SumP=${sumP}, SumR=${sumR}, AbsentCount=${absentCount}`);
 
@@ -129,7 +131,7 @@ export async function calculateRankingForGame(
     }
 
     // 7. Oblicz nowe rankingi
-    const newRankings: Array<{ playerId: number; newRating: number; reason: string }> = [];
+    const newRankings: Array<{ playerId: number; newRating: number; reason: PlayerRankingReason }> = [];
 
     // Dla obecnych graczy
     for (const player of presentPlayers) {
@@ -146,7 +148,7 @@ export async function calculateRankingForGame(
       newRankings.push({
         playerId: player.id,
         newRating,
-        reason: 'game_result'
+        reason: PlayerRankingReason.GameResult
       });
 
       console.log(`🎮 ${player.name}: ${Rs_i} + ${ratingChange.toFixed(2)} = ${newRating.toFixed(2)}`);
@@ -156,13 +158,13 @@ export async function calculateRankingForGame(
     for (const player of absentPlayers) {
       const { PEN } = RANKING_CONSTANTS;
       const Rs_i = player.previousRating;
-      const penalty = Rs_i > 2000 ? PEN : 0;
+      const penalty = Rs_i > RANKING_CONSTANTS.START_RATING ? PEN : 0;
       const newRating = Rs_i - penalty;
       
       newRankings.push({
         playerId: player.id,
         newRating,
-        reason: penalty > 0 ? 'absence_penalty' : 'absence_no_penalty'
+        reason: penalty > 0 ? PlayerRankingReason.AbsencePenalty : PlayerRankingReason.AbsenceNoPenalty
       });
 
       if (penalty > 0) {
@@ -179,7 +181,8 @@ export async function calculateRankingForGame(
           playerId: ranking.playerId,
           gameId: gameId,
           score: ranking.newRating,
-          reason: ranking.reason
+          reason: ranking.reason,
+          season: game.season
         }
       });
       

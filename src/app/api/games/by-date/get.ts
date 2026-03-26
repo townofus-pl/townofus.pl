@@ -1,5 +1,6 @@
 import { NextRequest } from 'next/server';
-import { getGamesListByDate, getGameData, normalizeRoleName, getRoleColor, determineTeam, formatDisplayDate } from '../../../dramaafera/_services/gameDataService';
+import { getGamesListByDate, getGameData } from '@/app/dramaafera/_services';
+import { normalizeRoleName, getRoleColor, determineTeam, formatDisplayDate } from '@/app/dramaafera/_utils/gameUtils';
 import { createSuccessResponse, createErrorResponse } from '../../_utils';
 
 export async function GET(request: NextRequest) {

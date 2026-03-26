@@ -42,6 +42,12 @@ applyTo: "src/app/_components/**,src/app/dramaafera/_components/**"
       useFilters.ts
       useRolesListContext.ts
 
+  PodsumowanieClient/
+    PodsumowanieClient.tsx  // Main slide engine component
+    WeeklyStatsSlide.tsx    // Sub-component per slide type
+    SigmaSlide.tsx          // ...~15 sub-component files total
+    types.ts                // Shared prop types
+
   // Simple component → flat file
   YouTubeEmbed.tsx
   SlotsDisplay.tsx
@@ -112,6 +118,7 @@ applyTo: "src/app/_components/**,src/app/dramaafera/_components/**"
   grid-cols-2/1           // grid-template-columns: 2fr 1fr
   bg-discord-blurple      // Discord brand color #5865F2
   border-search           // rgb(51,51,51) — search/filter input borders
+  bg-chevron-gray         // gray SVG chevron-down for custom <select> arrows (use with appearance-none)
 
 ## Custom CSS classes (globals.css)
 

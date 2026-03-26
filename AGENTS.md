@@ -34,13 +34,32 @@ src/
 ├── app/
 │   ├── _components/              # Universal shared components (2+ pages)
 │   ├── api/                      # API routes
+│   │   ├── _constants/           # rankingTypes.ts (PlayerRankingReason)
 │   │   ├── _database/            # Prisma singleton, batchStatements, buildPaginationQuery
 │   │   ├── _middlewares/         # withAuth, withCors (barrel: @/app/api/_middlewares)
 │   │   ├── _utils/               # createSuccessResponse, createErrorResponse, rankingCalculator
 │   │   └── schema/               # Zod schemas, OpenAPI registry (openApiRegistry)
 │   └── dramaafera/               # Dramaafera section
 │       ├── _components/          # Dramaafera shared components
-│       └── _services/            # gameDataService.ts (~2100 lines) — RSC data layer
+│       ├── _constants/           # seasons.ts (SEASONS, CURRENT_SEASON, season helpers)
+│       ├── _hooks/               # useSeason.ts
+│       ├── _utils/               # seasonHelpers.ts (extractDramaAferaSubPath, buildSeasonUrl)
+│       │                         # gameUtils.ts (getRoleColor, formatDisplayDate, normalizeRoleName, determineTeam,
+│       │                         #   convertRoleNameForDisplay, convertRoleToUrlSlug, convertUrlSlugToRole,
+│       │                         #   convertNickToUrlSlug, getRoleIconPath, getTeamColor, getModifierColor,
+│       │                         #   formatDuration, extractDateFromGameId)
+│       │                         # formatPlayerStats.ts (formatPlayerStatsWithColors — safe for client components)
+│       └── _services/            # RSC data layer — domain-grouped subdirectories:
+                                  #   index.ts                  — slim 4-line barrel (does NOT re-export db.ts)
+                                  #   db.ts                     — getDatabaseClient, buildSeasonGameWhere
+                                  #   games/                    — getGamesList, getGameData, getAllGamesData, getGameDatesList
+                                  #                               types.ts (GameSummary, UIGameData, UIPlayerData, etc.)
+                                  #                               winCalculator.ts (calculateWinnerFromStats)
+                                  #   players/                  — getPlayerStats, getPlayersList, getUserProfileStats, etc.
+                                  #                               types.ts (PlayerStats, UserProfileStats, etc.)
+                                  #   rankings/                 — generatePlayerRankingStats, generateRoleRankingStats
+                                  #                               types.ts (PlayerRankingStats, RoleRankingStats)
+                                  #   season/                   — getRanking, getGameDatesLightweight, getSessionSummaryByDate, etc.
 ├── constants/                    # Teams, RoleOrModifierTypes, SettingTypes, abilities
 ├── roles/                        # 62 role definitions (snake_case filenames), exported from index.ts
 └── modifiers/                    # 24 modifier definitions, same structure as roles
@@ -77,8 +96,28 @@ ALWAYS include soft-delete filter on all models (every model has deletedAt DateT
 
 ### React / Next.js
 - Default: Server Components. Add 'use client' only for state/effects/browser APIs/event handlers
-- gameDataService.ts is Server-Component-only — never call from client components
+- All `_services/` files are Server-Component-only — never call from **client components**;
+  calling from Server Components or API route handlers is fine.
+  all domain subdirectory files and `_services/index.ts`
+- Utility functions (`getRoleColor`, `formatDisplayDate`, `normalizeRoleName`, `determineTeam`,
+  `convertRoleNameForDisplay`, `convertRoleToUrlSlug`, `convertUrlSlugToRole`, `convertNickToUrlSlug`,
+  `getRoleIconPath`, `getTeamColor`, `getModifierColor`, `formatDuration`, `extractDateFromGameId`)
+  live in `src/app/dramaafera/_utils/gameUtils.ts` — import directly from there, NOT from `_services`
+- `formatPlayerStatsWithColors` lives in `src/app/dramaafera/_utils/formatPlayerStats.ts` — safe for
+  client components; import directly from there, NOT from `_services`
 - Universal components → src/app/_components/; page-local → co-locate in page directory
+
+### Splitting large service files
+
+When splitting a large service file into a domain subdirectory, create an `index.ts` barrel
+inside the subdirectory that re-exports everything so existing import paths via the parent
+barrel (`_services/index.ts`) continue to work without changes to consumers:
+```
+  // _services/games/index.ts
+  export * from './getGamesList';
+  export * from './getGameData';
+  export type { GameSummary, UIGameData } from './types';
+```
 
 ### Roles & Modifiers
 New role: src/roles/<snake_case_name>.ts, add to src/roles/index.ts
@@ -105,7 +144,51 @@ Type: { type, name, id, color, team: Teams, icon, description: ReactNode, settin
 
 ELO-like: START_RATING=2000, W=9 (game influence), PEN=5 (absence penalty)
 Calculator: src/app/api/_utils/rankingCalculator.ts → calculateRankingForGame(prisma, gameId)
-PlayerRanking.reason values: base_value | game_result | absence_penalty | absence_no_penalty | penalty | reward | season_reset
+PlayerRanking.reason values defined in src/app/api/_constants/rankingTypes.ts as PlayerRankingReason:
+  `const` object + derived type (same identifier — valid TS value/type namespace split):
+  PlayerRankingReason.BaseValue | .InitialValue | .GameResult | .AbsencePenalty |
+  .AbsenceNoPenalty | .Penalty | .Reward | .SeasonReset
+  Always import as a value (not `import type`) when using the constants.
+
+Every PlayerRanking write MUST include an explicit season:
+  rankingCalculator.ts  — reads game.season and passes it to playerRanking.create()
+  players/post.ts       — uses CURRENT_SEASON for the initial ranking row on player creation
+
+### Database gotchas
+
+`prisma.model.findUnique()` cannot accept extra `where` conditions beyond the unique key —
+it does not support `{ ...withoutDeleted }`. To find a single record by PK and exclude
+soft-deleted rows, use `findFirst` instead:
+  prisma.game.findFirst({ where: { id, ...withoutDeleted } })
+Performance is identical on PK lookups (SQLite uses the unique index either way).
+
+**`GamePlayerStatistics` has no soft-delete**: The `game_player_statistics` table was NOT included
+in the soft-delete migration (`0002_soft_delete_and_indexes.sql`). Never add `deletedAt: null`
+directly to a `gamePlayerStatistics` where clause — the column does not exist and TypeScript will
+catch it at build time. To exclude stats for soft-deleted players, use the relation filter:
+  // Wrong — GamePlayerStatistics has no deletedAt:
+  gamePlayerStatistics: { where: { deletedAt: null, player: withoutDeleted } }
+
+  // Correct — filter via the relation to players:
+  gamePlayerStatistics: { where: { player: withoutDeleted } }
+
+**D1 SQL variable limit**: D1 enforces a strict limit on bound parameters per SQL statement
+(much lower than SQLite's default 999). Avoid `where: { id: { in: largeArray } }` — even
+batching at 100 entries can fail once Prisma adds variables for joins/includes. Instead use
+relation filters to let the DB handle the join:
+  // Wrong — hits D1 variable limit when array is large:
+  prisma.meeting.findMany({ where: { id: { in: meetingIds } }, include: { meetingVotes: true } })
+
+  // Correct — no IN clause, no variable limit:
+  prisma.meeting.findMany({
+    where: {
+      meetingVotes: { some: { voterId: player.id } }
+      // or OR: [{ meetingVotes: ... }, { skipVotes: ... }]
+    },
+    include: { meetingVotes: true }
+  })
+Failures from this limit are caught by try/catch and silently return empty results — making
+them very hard to debug. When a query returns unexpectedly empty data, check for IN clauses.
 
 ## Proposing New Rules
 

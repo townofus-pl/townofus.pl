@@ -3,7 +3,9 @@
 import { useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import { UIGameData, UIPlayerData } from '@/data/games/converter';
+import type { UIGameData, UIPlayerData } from '@/app/dramaafera/_services/games/types';
+import { buildSeasonUrl } from '@/app/dramaafera/_utils/seasonHelpers';
+import { convertRoleToUrlSlug } from '@/app/dramaafera/_utils/gameUtils';
 
 interface RoleDayStats {
   name: string;
@@ -23,16 +25,10 @@ interface RoleTableProps {
   detailedGames: (UIGameData | null)[];
   date: string;
   hideZeroStats?: boolean; // Nowy prop do kontrolowania wyświetlania statystyk równych 0
+  seasonId: number;
 }
 
-// Funkcja pomocnicza do konwersji nazwy roli na format URL-friendly
-function convertRoleToUrlSlug(role: string): string {
-  return role.toLowerCase()
-    .replace(/\s+/g, '-')
-    .replace(/[^\w\-]/g, '');
-}
-
-export default function RoleTable({ roles, reversedGames, detailedGames, date, hideZeroStats = false }: RoleTableProps) {
+export default function RoleTable({ roles, reversedGames, detailedGames, date, hideZeroStats = false, seasonId }: RoleTableProps) {
   const [expandedRoles, setExpandedRoles] = useState<Set<string>>(new Set());
 
   // Funkcja do pobierania ikony roli - przeniesiona z komponentu serwerowego
@@ -259,7 +255,7 @@ export default function RoleTable({ roles, reversedGames, detailedGames, date, h
                 style={{ minWidth: '2.5rem', width: '2.5rem', maxWidth: '3.5rem' }}
               >
                 <Link
-                  href={`/dramaafera/historia-gier/${date}/${g.id}`}
+                  href={buildSeasonUrl(`/historia-gier/${date}/${g.id}`, seasonId)}
                   className="block w-full h-full py-2 hover:underline hover:text-blue-400 text-center"
                   style={{ minWidth: '2.5rem', minHeight: '2.5rem', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                 >
@@ -293,7 +289,7 @@ export default function RoleTable({ roles, reversedGames, detailedGames, date, h
                       style={{ borderColor: role.color }}
                     />
                     <Link
-                      href={`/dramaafera/role/${convertRoleToUrlSlug(role.name)}`}
+                      href={buildSeasonUrl(`/role/${convertRoleToUrlSlug(role.name)}`, seasonId)}
                       className="font-bold hover:underline transition-colors"
                       style={{ color: role.color }}
                     >
@@ -341,7 +337,7 @@ export default function RoleTable({ roles, reversedGames, detailedGames, date, h
                       <div className="bg-zinc-800/80 rounded-lg p-4 border border-zinc-600">
                         <h4 className="text-lg font-bold text-yellow-400 mb-3">
                           Zsumowane statystyki roli <Link 
-                            href={`/dramaafera/role/${convertRoleToUrlSlug(role.name)}`}
+                            href={buildSeasonUrl(`/role/${convertRoleToUrlSlug(role.name)}`, seasonId)}
                             className="hover:underline"
                             style={{ color: role.color }}
                           >

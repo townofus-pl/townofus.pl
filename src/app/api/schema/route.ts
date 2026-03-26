@@ -30,6 +30,9 @@ async function importRouteHandlers() {
     // Utility endpoints
     await import('@/app/api/status/route');
     
+    // Season endpoints
+    await import('@/app/api/season/reset/route');
+    
   } catch (error) {
     console.error('Error importing route handlers:', error);
     throw error;
