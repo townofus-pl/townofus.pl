@@ -38,16 +38,18 @@ src/
 │   │   ├── _database/            # Prisma singleton, batchStatements, buildPaginationQuery
 │   │   ├── _middlewares/         # withAuth, withCors (barrel: @/app/api/_middlewares)
 │   │   ├── _utils/               # createSuccessResponse, createErrorResponse, rankingCalculator
-│   │   └── schema/               # Zod schemas, OpenAPI registry (openApiRegistry)
+│   │   ├── schema/               # Zod schemas, OpenAPI registry (openApiRegistry)
+│   │   └── season/reset/         # POST /api/season/reset — explicit season reset (protected)
 │   └── dramaafera/               # Dramaafera section
 │       ├── _components/          # Dramaafera shared components
+│       ├── _actions/             # Server actions (seasonActions.ts — getSessionResults, getHostInfoAction, etc.)
 │       ├── _constants/           # seasons.ts (SEASONS, CURRENT_SEASON, season helpers)
 │       ├── _hooks/               # useSeason.ts
 │       ├── _utils/               # seasonHelpers.ts (extractDramaAferaSubPath, buildSeasonUrl)
 │       │                         # gameUtils.ts (getRoleColor, formatDisplayDate, normalizeRoleName, determineTeam,
 │       │                         #   convertRoleNameForDisplay, convertRoleToUrlSlug, convertUrlSlugToRole,
 │       │                         #   convertNickToUrlSlug, getRoleIconPath, getTeamColor, getModifierColor,
-│       │                         #   formatDuration, extractDateFromGameId)
+│       │                         #   formatDuration, extractDateFromGameId, getPlayerAvatarPath)
 │       │                         # formatPlayerStats.ts (formatPlayerStatsWithColors — safe for client components)
 │       └── _services/            # RSC data layer — domain-grouped subdirectories:
                                   #   index.ts                  — slim 4-line barrel (does NOT re-export db.ts)
@@ -101,7 +103,8 @@ ALWAYS include soft-delete filter on all models (every model has deletedAt DateT
   all domain subdirectory files and `_services/index.ts`
 - Utility functions (`getRoleColor`, `formatDisplayDate`, `normalizeRoleName`, `determineTeam`,
   `convertRoleNameForDisplay`, `convertRoleToUrlSlug`, `convertUrlSlugToRole`, `convertNickToUrlSlug`,
-  `getRoleIconPath`, `getTeamColor`, `getModifierColor`, `formatDuration`, `extractDateFromGameId`)
+  `getRoleIconPath`, `getTeamColor`, `getModifierColor`, `formatDuration`, `extractDateFromGameId`,
+  `getPlayerAvatarPath`)
   live in `src/app/dramaafera/_utils/gameUtils.ts` — import directly from there, NOT from `_services`
 - `formatPlayerStatsWithColors` lives in `src/app/dramaafera/_utils/formatPlayerStats.ts` — safe for
   client components; import directly from there, NOT from `_services`
