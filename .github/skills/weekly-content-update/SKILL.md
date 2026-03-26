@@ -18,7 +18,7 @@ Gather the following from the user before starting:
 | Poll question    | No       | String (default below)           | —                         |
 | New settings     | Yes      | Full `dramaafera.txt` content    | User provides the file    |
 | YouTube video ID | Yes      | 11-char YT ID                    | `Y_OiRkVSDXI`            |
-| Week label       | Yes      | Season + week number             | `S2 WEEK 20`             |
+| Week label       | Yes      | Season + week number             | `S3 WEEK 2`              |
 
 ## Step 1: Create Emperor Poll JSON
 
@@ -72,13 +72,13 @@ Rules:
 Edit `src/app/dramaafera/playlista/page.tsx` — **prepend** a new entry to the beginning of the `weeks` array:
 
 ```typescript
-{ id: "s2week<N>", title: "S2 WEEK <N>", videoId: "<YOUTUBE_ID>" },
+{ id: "s3week<N>", title: "S3 WEEK <N>", videoId: "<YOUTUBE_ID>" },
 ```
 
 Rules:
 - Insert as the **first** element of the `weeks` array (newest week goes on top)
-- The `id` is lowercase with no spaces: `s2week20`
-- The `title` uses uppercase with spaces: `S2 WEEK 20`
+- The `id` is lowercase with no spaces: `s3week2`
+- The `title` uses uppercase with spaces: `S3 WEEK 2`
 - Do NOT remove or modify any existing entries
 - Preserve the existing formatting and trailing comma style
 
