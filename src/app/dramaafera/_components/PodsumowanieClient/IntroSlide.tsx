@@ -29,7 +29,7 @@ function renderFinalIntro(isFullscreen: boolean, randomAvatars: string[]) {
                     className={`text-amber-200 font-medium tracking-wider absolute left-1/2 top-1/2 -translate-x-1/2 z-30 text-center whitespace-nowrap ${isFullscreen ? 'text-4xl' : 'text-lg'}`}
                     style={{ marginTop: '-110px' }}
                 >
-                    POWERED BY ZIOMSON & MALKIZ
+                    POWERED BY ZIOMSON, MALKIZ & QUARTIES
                 </p>
             </div>
         );
@@ -89,7 +89,7 @@ function renderFinalIntro(isFullscreen: boolean, randomAvatars: string[]) {
                 className={`${videotext.className} text-amber-200 font-medium tracking-wider absolute left-1/2 top-1/2 -translate-x-1/2 z-30 text-center whitespace-nowrap ${isFullscreen ? 'text-4xl' : 'text-lg'}`}
                 style={{ marginTop: '420px', letterSpacing: '-0.02em' }}
             >
-                POWERED BY ZIOMSON & MALKIZ
+                POWERED BY ZIOMSON, MALKIZ & QUARTIES
             </p>
         </div>
     );
@@ -123,7 +123,6 @@ export default function IntroSlide({ isFullscreen, currentStep, introInitialDela
                             style={{
                                 color: 'rgb(240, 194, 42)',
                                 textShadow: '0 0 60px rgba(204, 169, 56, 0.8)',
-                                animation: 'fadeIn 0.5s ease-in',
                                 letterSpacing: isFullscreen ? '-0.11em' : '-0.05em'
                             }}
                         >

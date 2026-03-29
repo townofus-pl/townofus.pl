@@ -297,15 +297,15 @@ Radiate Colour Range
 Radiate Max Range
 1,25
 Sense Duration
-1
+2
 Examine Cooldown
 17,5
 Show Detective Reports
 True
 Time Where Detective Will Have Role
-7,5
+5
 Time Where Detective Will Have Faction
-22,5
+15
 Tasks Remaining When Haunter Can Be Clicked
 5
 Tasks Remaining When Alert Is Sent
@@ -317,9 +317,9 @@ Who Can Click Haunter
 Footprint Size
 4
 Footprint Interval
-0,10000001
+0,05000001
 Footprint Duration
-4,5
+6
 Anonymous Footprint
 False
 Footprint Vent Visible
@@ -331,7 +331,7 @@ True
 Maximum Number Of Players That Can Be Watched
 1
 Dead Body Arrow Duration
-0,49999988
+1
 Seer Cooldown
 12,5
 Crewmate Killing Roles Are Red
@@ -355,13 +355,13 @@ True
 Who Sees Dead Bodies On Admin
 1
 Arrow Update Interval
-1,5
+0,5
 Track Cooldown
 15
 Tracker Arrows Reset After Each Round
 True
 Maximum Number Of Tracks
-12
+13
 Min Amount Of Time In Trap To Register
 0
 Trap Cooldown
@@ -369,7 +369,7 @@ Trap Cooldown
 Traps Removed After Each Round
 True
 Maximum Number Of Traps
-2
+3
 Trap Size
 0,25
 Minimum Number Of Roles Required To Trigger Trap
@@ -377,7 +377,7 @@ Minimum Number Of Roles Required To Trigger Trap
 Hunter Kill Cooldown
 25
 Hunter Stalk Cooldown
-12
+15
 Hunter Stalk Duration
 7,5
 Maximum Stalk Uses
@@ -405,7 +405,7 @@ Alert Duration
 Maximum Number Of Alerts
 3
 Number Of Vigilante Kills
-3
+10
 Vigilante Can Kill More Than Once Per Meeting
 True
 Vigilante Can Guess Neutral Benign Roles
@@ -429,13 +429,13 @@ True
 Swapper Can Button
 True
 Altruist Revive Duration
-1
+2
 Revive Uses
 5
 Revive Radius
 1,25
 Barrier Cooldown
-30
+35
 Show Barriered Player
 2
 Cleric Gets Attack Notification
@@ -449,7 +449,7 @@ False
 Show Medic Reports
 True
 Time Where Medic Will Have Color Type
-30
+32,5
 Confess Cooldown
 20
 Initial Bless Cooldown
@@ -465,7 +465,7 @@ True
 Show Fortified Player
 2
 Maximum Number Of Fixes
-2
+1
 Mediate Cooldown
 5
 Reveal Appearance Of Mediate Target
@@ -551,15 +551,15 @@ Tasks Remaining When Phantom Can Be Clicked
 Phantom Win Ends Game
 True
 Douse Cooldown
-15
+10
 Ignite Radius
-0,74999994
+1
 Arsonist Can Vent
 True
 Mimic Cooldown
 25
 Mimic Duration
-8
+5
 Hack Cooldown
 15
 Hack Duration
@@ -609,11 +609,11 @@ True
 Blind Cooldown
 32,5
 Blind Duration
-12,5
+17,5
 Blind Radius
-1
+1,25
 Recall Cooldown
-10
+12,5
 Escapist Can Vent
 True
 Flash Grenade Cooldown
@@ -621,13 +621,13 @@ Flash Grenade Cooldown
 Flash Grenade Duration
 12
 Flash Radius
-1,75
+2
 Grenadier Can Vent
 True
 Morphling Cooldown
 27,5
 Morphling Duration
-15
+12
 Morphling Can Vent
 True
 Swoop Cooldown
@@ -637,7 +637,7 @@ Swoop Duration
 Swooper Can Vent
 True
 Ability Cooldown
-32,5
+35
 Ability Duration
 5
 Sprint Speed
@@ -645,13 +645,13 @@ Sprint Speed
 Minimum Freeze Speed
 0,7500001
 Freeze Radius
-0,5
+0,25
 Detonate Delay
 5
 Max Kills In Detonation
-15
+5
 Detonate Radius
-0,7500001
+0,50000006
 Bomber Can Vent
 True
 All Impostors See Bomb
@@ -681,7 +681,7 @@ Maximum People Alive Where Blackmailed Can Vote
 Hypnotize Cooldown
 40
 Mine Cooldown
-17,5
+15
 Drag Cooldown
 17,5
 Undertaker Drag Speed

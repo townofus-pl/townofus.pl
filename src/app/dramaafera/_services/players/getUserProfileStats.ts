@@ -86,7 +86,9 @@ export async function getUserProfileStats(playerName: string, seasonId?: number)
     else crewmateGames++;
 
     totalTasks += stat.completedTasks || 0;
-    maxTasks += stat.game?.maxTasks ?? 0;
+    if (teamName === Teams.Crewmate) {
+      maxTasks += stat.game?.maxTasks ?? 0;
+    }
     correctKills += stat.correctKills || 0;
     incorrectKills += stat.incorrectKills || 0;
     correctGuesses += stat.correctGuesses || 0;

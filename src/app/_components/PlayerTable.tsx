@@ -5,7 +5,8 @@ import Image from 'next/image';
 import Link from 'next/link';
 import type { UIGameData, UIPlayerData } from '@/app/dramaafera/_services/games/types';
 import { buildSeasonUrl } from '@/app/dramaafera/_utils/seasonHelpers';
-import { convertNickToUrlSlug } from '@/app/dramaafera/_utils/gameUtils';
+import { convertNickToUrlSlug, determineTeam } from '@/app/dramaafera/_utils/gameUtils';
+import { Teams } from '@/constants/teams';
 
 interface PlayerDayStats {
   name: string;
@@ -114,13 +115,16 @@ export default function PlayerTable({ players, reversedGames, detailedGames, dat
       // Dodaj przeżyte rundy dla tego gracza
       aggregatedStats.survivedRounds += stats.survivedRounds || 0;
 
-      // Specjalna logika dla tasków: użyj maxTasks z gry
-      if (stats.completedTasks && stats.completedTasks > 0) {
-        aggregatedStats.completedTasks += stats.completedTasks;
-        // Dodaj maxTasks z gry jeśli gracz wykonał jakieś zadania
-        if (game.maxTasks) {
-          aggregatedStats.totalTasks += game.maxTasks;
-        }
+      // Licznik tasków: suma wykonanych tasków niezależnie od roli.
+      aggregatedStats.completedTasks += stats.completedTasks || 0;
+
+      // Mianownik tasków: liczony tylko dla gier, gdzie rola pierwotna to Crewmate.
+      const primaryRole =
+        playerData.roleHistory && playerData.roleHistory.length > 0
+          ? playerData.roleHistory[0]
+          : playerData.role;
+      if (primaryRole && determineTeam(primaryRole) === Teams.Crewmate && game.maxTasks) {
+        aggregatedStats.totalTasks += game.maxTasks;
       }
 
       // Specjalna logika dla przeżytych rund: znajdź maksimum dla tej konkretnej gry

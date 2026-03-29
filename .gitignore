@@ -23,6 +23,7 @@
 
 # production
 /build
+*.sql
 
 # misc
 .DS_Store

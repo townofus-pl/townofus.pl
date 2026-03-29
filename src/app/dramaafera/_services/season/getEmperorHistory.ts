@@ -49,9 +49,8 @@ export async function getEmperorHistory(
 
   const emperorsByDate: Array<{ date: string; nickname: string }> = [];
 
-  // Stop one before the last date: the emperor "title" only appears once the next session's
-  // games have been played (consistent with getPlayerStars.ts which uses the same convention).
-  for (let i = 0; i < allDates.length - 1; i++) {
+  // Include all dates in the current season to show emperor history for the open season
+  for (let i = 0; i < allDates.length; i++) {
     const dateKey = allDates[i];
     const gamesOnDate = gamesByDate.get(dateKey)!;
 

@@ -52,21 +52,42 @@ async function getRankingTableAtSession(
     ORDER BY pr1.score DESC
   `;
 
-  // Pobierz ranking po ostatniej grze
+  // Pobierz ranking po ostatniej grze dla graczy aktywnych w sezonie.
+  // Używamy tej samej zasady co na stronie rankingu: gracz musi mieć
+  // co najmniej jedną statystykę gry w sezonie (tu: do końca tej sesji).
   const playersAfterQuery = await prisma.$queryRaw<
     Array<{ playerId: number; playerName: string; score: number }>
   >`
     SELECT
-      pr.playerId,
+      pr1.playerId,
       p.name as playerName,
-      pr.score
-    FROM player_rankings pr
-    INNER JOIN players p ON pr.playerId = p.id
-    WHERE pr.gameId = ${lastGameDbId}
-      AND pr.season = ${season}
-      AND pr.deletedAt IS NULL
+      pr1.score
+    FROM player_rankings pr1
+    INNER JOIN players p ON pr1.playerId = p.id
+    WHERE (pr1.gameId <= ${lastGameDbId} OR pr1.gameId IS NULL)
+      AND pr1.season = ${season}
+      AND pr1.deletedAt IS NULL
       AND p.deletedAt IS NULL
-    ORDER BY pr.score DESC
+      AND EXISTS (
+        SELECT 1
+        FROM game_player_statistics gps
+        INNER JOIN games g ON g.id = gps.gameId
+        WHERE gps.playerId = pr1.playerId
+          AND g.season = ${season}
+          AND g.deletedAt IS NULL
+          AND g.id <= ${lastGameDbId}
+      )
+      AND pr1.id = (
+        SELECT pr2.id
+        FROM player_rankings pr2
+        WHERE pr2.playerId = pr1.playerId
+          AND (pr2.gameId <= ${lastGameDbId} OR pr2.gameId IS NULL)
+          AND pr2.season = ${season}
+          AND pr2.deletedAt IS NULL
+        ORDER BY pr2.gameId DESC, pr2.createdAt DESC
+        LIMIT 1
+      )
+    ORDER BY pr1.score DESC
   `;
 
   const beforeMap = new Map<number, number>();
