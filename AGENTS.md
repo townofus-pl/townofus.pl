@@ -27,6 +27,29 @@ npm run preview                      # Build + preview on Cloudflare
 npm run deploy                       # Build + deploy to production
 ```
 
+## AI Tools
+
+### Skills
+
+Reusable workflows for complex tasks. Primary location: `.github/skills/<name>/SKILL.md`
+Claude Code CLI accesses the same skills via `.claude/skills/` (symlinks to `.github/skills/`).
+
+| Skill                    | Description                                                    |
+|--------------------------|----------------------------------------------------------------|
+| `create-api-route`       | Scaffold a new API route with handler, route.ts, and schemas   |
+| `create-migration`       | Create and apply a Prisma + D1 migration                       |
+| `create-role-or-modifier`| Add a new role or modifier with icon, types, and registration  |
+| `plan-feature`           | Plan a new feature: design decisions, tasks, and phased impl   |
+| `weekly-content-update`  | Weekly game data and ranking content update workflow           |
+
+### Slash Commands
+
+Available in OpenCode (`.opencode/commands/`) and Claude Code CLI (`.claude/commands/`):
+
+| Command         | File                             | Description                      |
+|-----------------|----------------------------------|----------------------------------|
+| `/plan-feature` | `.opencode/commands/plan-feature.md` | Run the plan-feature skill   |
+
 ## Structure
 
 ```
@@ -40,30 +63,38 @@ src/
 │   │   ├── _utils/               # createSuccessResponse, createErrorResponse, rankingCalculator
 │   │   ├── schema/               # Zod schemas, OpenAPI registry (openApiRegistry)
 │   │   └── season/reset/         # POST /api/season/reset — explicit season reset (protected)
-│   └── dramaafera/               # Dramaafera section
-│       ├── _components/          # Dramaafera shared components
-│       ├── _actions/             # Server actions (seasonActions.ts — getSessionResults, getHostInfoAction, etc.)
-│       ├── _constants/           # seasons.ts (SEASONS, CURRENT_SEASON, season helpers)
-│       ├── _hooks/               # useSeason.ts
-│       ├── _utils/               # seasonHelpers.ts (extractDramaAferaSubPath, buildSeasonUrl)
-│       │                         # gameUtils.ts (getRoleColor, formatDisplayDate, normalizeRoleName, determineTeam,
-│       │                         #   convertRoleNameForDisplay, convertRoleToUrlSlug, convertUrlSlugToRole,
-│       │                         #   convertNickToUrlSlug, getRoleIconPath, getTeamColor, getModifierColor,
-│       │                         #   formatDuration, extractDateFromGameId, getPlayerAvatarPath)
-│       │                         # formatPlayerStats.ts (formatPlayerStatsWithColors — safe for client components)
-│       └── _services/            # RSC data layer — domain-grouped subdirectories:
-                                  #   index.ts                  — slim 4-line barrel (does NOT re-export db.ts)
-                                  #   db.ts                     — getDatabaseClient, buildSeasonGameWhere
-                                  #   games/                    — getGamesList, getGameData, getAllGamesData, getGameDatesList
-                                  #                               types.ts (GameSummary, UIGameData, UIPlayerData, etc.)
-                                  #                               winCalculator.ts (calculateWinnerFromStats)
-                                  #   players/                  — getPlayerStats, getPlayersList, getUserProfileStats, etc.
-                                  #                               types.ts (PlayerStats, UserProfileStats, etc.)
-                                  #   rankings/                 — generatePlayerRankingStats, generateRoleRankingStats
-                                  #                               types.ts (PlayerRankingStats, RoleRankingStats)
-                                  #   season/                   — getRanking, getGameDatesLightweight, getSessionSummaryByDate, etc.
+│   ├── dramaafera/               # Dramaafera section
+│   │   ├── _components/          # Dramaafera shared components
+│   │   ├── _actions/             # Server actions (seasonActions.ts — getSessionResults, getHostInfoAction, etc.)
+│   │   ├── _constants/           # seasons.ts (SEASONS, CURRENT_SEASON, season helpers)
+│   │   │                         # rankTiers.ts (getRankName, ELO tier definitions — client-safe)
+│   │   ├── _hooks/               # useSeason.ts
+│   │   ├── _roles/               # Dramaafera role list (mod_settings.ts, impostor_settings.ts)
+│   │   │                         # extends src/roles/ with ModSettings, ImpostorSettings types
+│   │   ├── _utils/               # seasonHelpers.ts (extractDramaAferaSubPath, buildSeasonUrl)
+│   │   │                         # gameUtils.ts (getRoleColor, formatDisplayDate, normalizeRoleName, determineTeam,
+│   │   │                         #   convertRoleNameForDisplay, convertRoleToUrlSlug, convertUrlSlugToRole,
+│   │   │                         #   convertNickToUrlSlug, getRoleIconPath, getTeamColor, getModifierColor,
+│   │   │                         #   formatDuration, extractDateFromGameId, getPlayerAvatarPath)
+│   │   │                         # formatPlayerStats.ts (formatPlayerStatsWithColors — safe for client components)
+│   │   │                         # settingsParser.ts (host upload settings parser)
+│   │   └── _services/            # RSC data layer — domain-grouped subdirectories:
+│                                 #   index.ts                  — slim 4-line barrel (does NOT re-export db.ts)
+│                                 #   db.ts                     — getDatabaseClient, buildSeasonGameWhere
+│                                 #   games/                    — getGamesList, getGamesListByDate, getGameData, getAllGamesData, getGameDatesList
+│                                 #                               types.ts (GameSummary, UIGameData, UIPlayerData, etc.)
+│                                 #                               winCalculator.ts (calculateWinnerFromStats)
+│                                 #   players/                  — getPlayerStats, getPlayersList, getUserProfileStats, etc.
+│                                 #                               types.ts (PlayerStats, UserProfileStats, etc.)
+│                                 #   rankings/                 — generatePlayerRankingStats, generateRoleRankingStats
+│                                 #                               types.ts (PlayerRankingStats, RoleRankingStats)
+│                                 #   season/                   — getRanking, getGameDatesLightweight, getSessionSummaryByDate, etc.
+│   ├── dramaafera-old/           # LEGACY — do not modify
+│   ├── tajemniczy/               # Tajemniczy Pasażer mini-game page
+│   └── custom/                   # Custom roles page
 ├── constants/                    # Teams, RoleOrModifierTypes, SettingTypes, abilities
-├── roles/                        # 62 role definitions (snake_case filenames), exported from index.ts
+├── data/games/                   # LEGACY static game data — superseded by D1, do not modify
+├── roles/                        # 60 role definitions (snake_case filenames), exported from index.ts
 └── modifiers/                    # 24 modifier definitions, same structure as roles
 ```
 

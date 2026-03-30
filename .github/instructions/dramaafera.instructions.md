@@ -171,7 +171,9 @@ unavailable at build time — pages rendered on-demand).
   ├── _components/          # Shared across Dramaafera pages
   │                         # RankingClient.tsx, WynikiClient.tsx, HostClient.tsx,
   │                         # PodsumowanieClient/ (directory with ~15 sub-components),
-  │                         # PlayerStatsSection.tsx, RankingChart.tsx, etc.
+  │                         # RankingChart.tsx, etc.
+  │                         # NOTE: PlayerStatsSection.tsx is page-local, not here —
+  │                         #   lives at historia-gier/[date]/[gameId]/PlayerStatsSection.tsx
   ├── _constants/           # seasons.ts
   ├── _hooks/               # useSeason.ts
   ├── _utils/               # seasonHelpers.ts, gameUtils.ts
