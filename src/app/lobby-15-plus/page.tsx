@@ -1,5 +1,52 @@
 import Image from "next/image";
-export default function Lobby15Plus() {
+
+interface LatestReleaseInfo {
+  version: string;
+  downloadUrl: string;
+}
+
+const DEFAULT_RELEASE: LatestReleaseInfo = {
+  version: "v1.0.6",
+  downloadUrl: "https://github.com/townofus-pl/AleLuduMod/releases/download/v1.0.6/AleLuduMod.dll",
+};
+
+async function getLatestAleLuduModRelease(): Promise<LatestReleaseInfo> {
+  try {
+    const response = await fetch("https://api.github.com/repos/townofus-pl/AleLuduMod/releases/latest", {
+      headers: {
+        Accept: "application/vnd.github+json",
+      },
+      next: { revalidate: 3600 },
+    });
+
+    if (!response.ok) {
+      return DEFAULT_RELEASE;
+    }
+
+    const releaseData = (await response.json()) as {
+      tag_name?: string;
+      name?: string;
+      html_url?: string;
+      assets?: Array<{
+        name?: string;
+        browser_download_url?: string;
+      }>;
+    };
+
+    const dllAsset = releaseData.assets?.find((asset) => asset.name?.toLowerCase() === "aleludumod.dll");
+
+    return {
+      version: releaseData.tag_name ?? releaseData.name ?? DEFAULT_RELEASE.version,
+      downloadUrl: dllAsset?.browser_download_url ?? releaseData.html_url ?? DEFAULT_RELEASE.downloadUrl,
+    };
+  } catch {
+    return DEFAULT_RELEASE;
+  }
+}
+
+export default async function Lobby15Plus() {
+  const latestRelease = await getLatestAleLuduModRelease();
+
   return (
     <div className="grid grid-cols-1 gap-6 bg-zinc-900/50 rounded-xl mb-5 p-4">
       <div className="relative w-full rounded-xl">
@@ -31,12 +78,12 @@ export default function Lobby15Plus() {
 
                 <div className="flex flex-col sm:flex-row gap-4 justify-center">
                   <a
-                    href="https://github.com/townofus-pl/AleLuduMod/releases/download/v1.0.6/AleLuduMod.dll"
+                    href={latestRelease.downloadUrl}
                     rel="noopener noreferrer"
                     className="px-4 py-3 bg-[rgba(0,167,0)] hover:bg-[rgba(0,167,0,0.85)] text-white text-lg font-sans font-semibold rounded-lg transition duration-300 inline-flex items-center justify-center"
                   >
                     <Image src="/images/download-button.svg" width={16} height={16} alt="download" />
-                    <span className="ml-2">Download v1.0.6</span>
+                    <span className="ml-2">Download {latestRelease.version}</span>
                   </a>
                   <a
                     href="https://github.com/townofus-pl/AleLuduMod/"
