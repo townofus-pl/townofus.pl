@@ -6,7 +6,7 @@ interface LatestReleaseInfo {
 }
 
 const DEFAULT_RELEASE: LatestReleaseInfo = {
-  version: "v1.0.6",
+  version: "v1.1.2",
   downloadUrl: "https://github.com/townofus-pl/AleLuduMod/releases/download/v1.0.6/AleLuduMod.dll",
 };
 
