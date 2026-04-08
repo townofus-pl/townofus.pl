@@ -9,16 +9,26 @@ This skill automates the recurring weekly content update that happens after each
 
 ## Prerequisites
 
+**Before starting, check available player avatars** in `public/images/avatars/` directory. These file names are the source of truth for correct player nicknames (with proper capitalization). The screenshot from discord polls is always in ALL CAPS, so you must normalize nicks by comparing against available avatar files.
+
+Example: If screenshot shows `ZIOMSON` and you see `ziomson.png` in avatars folder, use `ziomson` (lowercase).
+
 Gather the following from the user before starting:
 
 | Data             | Required | Format                          | Example                   |
 |------------------|----------|---------------------------------|---------------------------|
-| Session date     | Yes      | `YYYYMMDD`                      | `20260318`                |
-| Emperor poll     | Yes      | Nickname + vote count per player | See template below        |
+| Session date     | Yes      | `YYYYMMDD`                      | `20260401`                |
+| Emperor poll     | Yes      | Nickname (from avatars) + vote count | See mapping below        |
 | Poll question    | No       | String (default below)           | —                         |
 | New settings     | Yes      | Full `dramaafera.txt` content    | User provides the file    |
-| YouTube video ID | Yes      | 11-char YT ID                    | `Y_OiRkVSDXI`            |
-| Week label       | Yes      | Season + week number             | `S3 WEEK 2`              |
+| YouTube video ID | Yes      | 11-char YT ID                    | `bnMarasYTpU`            |
+| Week label       | Yes      | Season + week number             | `S3 WEEK 1`              |
+
+**Nickname mapping from screenshot to avatars:**
+- Screenshot shows names in ALL CAPS (e.g., `SZYMONIX18`, `ZIOMSON`, `BARTEK`)
+- Match each ALL CAPS name against files in `public/images/avatars/` directory
+- Use the avatar file name (with original capitalization) as the canonical nickname
+- Example conversion: `SZYMONIX18` (screenshot) → `szymonix18.png` (file) → `szymonix18` (use in JSON)
 
 ## Step 1: Create Emperor Poll JSON
 
