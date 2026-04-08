@@ -3,16 +3,14 @@ import { CURRENT_SEASON } from '@/app/dramaafera/_constants/seasons';
 
 // Internal helper: get ranking snapshots before/after a session.
 //
-// NOTE: This implementation intentionally differs from getRankingTableAtSession in
-// getRankingAfterSession.ts. This version covers ALL players using COALESCE(…, 2000)
-// so that even players who have never played a game still appear (needed for top-sigmas
-// and host-info ranking-change displays). getRankingAfterSession only covers players who
-// already have at least one ranking row, using an INNER JOIN — which is what the
-// session ranking table needs (no phantom 2000-rated entries for absent players).
+// NOTE: By default this implementation covers ALL players using COALESCE(…, 2000)
+// so that even players who have never played a game can appear.
+// Callers may opt into season-active filtering to match /ranking behavior.
 export async function getRankingSnapshots(
   firstGameDbId: number,
   lastGameDbId: number,
   seasonId?: number,
+  options?: { onlySeasonActivePlayers?: boolean },
 ): Promise<{ before: Map<string, number>; after: Map<string, number> }> {
   const prisma = await getDatabaseClient();
   if (!prisma) {
@@ -20,6 +18,7 @@ export async function getRankingSnapshots(
   }
 
   const season = seasonId ?? CURRENT_SEASON;
+  const onlySeasonActivePlayers = options?.onlySeasonActivePlayers === true;
 
   const beforeQuery = await prisma.$queryRaw<
     Array<{ playerId: number; playerName: string; score: number }>
@@ -70,7 +69,37 @@ export async function getRankingSnapshots(
     afterQuery.map((r) => [r.playerName, Number(r.score)]),
   );
 
-  return { before, after };
+  if (!onlySeasonActivePlayers) {
+    return { before, after };
+  }
+
+  // Mirror /ranking eligibility: include only players with a ranking row in the season
+  // and at least one game stat in that season.
+  const seasonActiveRows = await prisma.$queryRaw<Array<{ playerName: string }>>`
+    SELECT DISTINCT p.name AS playerName
+    FROM players p
+    INNER JOIN player_rankings pr
+      ON pr.playerId = p.id
+      AND pr.season = ${season}
+      AND pr.deletedAt IS NULL
+    INNER JOIN game_player_statistics gps
+      ON gps.playerId = p.id
+    INNER JOIN games g
+      ON g.id = gps.gameId
+      AND g.season = ${season}
+      AND g.deletedAt IS NULL
+    WHERE p.deletedAt IS NULL
+  `;
+
+  const seasonActiveNames = new Set(seasonActiveRows.map((r) => r.playerName));
+  const filteredBefore = new Map(
+    Array.from(before.entries()).filter(([name]) => seasonActiveNames.has(name)),
+  );
+  const filteredAfter = new Map(
+    Array.from(after.entries()).filter(([name]) => seasonActiveNames.has(name)),
+  );
+
+  return { before: filteredBefore, after: filteredAfter };
 }
 
 // Internal helper: convert a score map to a rank-position map (1-based, highest score = rank 1)
