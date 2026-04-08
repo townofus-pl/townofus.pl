@@ -13,11 +13,12 @@ export const RANK_TIERS: readonly { minRating: number; name: string; color: stri
     { minRating: 1975, name: 'CREWMATE', color: 'rgb(0, 0, 0)' },
     { minRating: 1925, name: 'CADET', color: 'rgb(0, 0, 0)' },
     { minRating: 1850, name: 'PISSLOW', color: 'rgb(0, 0, 0)' },
-    { minRating: 0, name: 'CWEL', color: 'rgb(0, 0, 0)' },
+    { minRating: 1767, name: 'CWEL', color: 'rgb(0, 0, 0)' },
+    { minRating: 0, name: 'BAROX', color: 'rgb(95, 49, 22)' },
 ];
 
 // Ranking tier name from rating
 export function getRankName(rating: number): string {
     const tier = RANK_TIERS.find(t => rating >= t.minRating);
-    return tier?.name ?? 'CWEL';
+    return tier?.name ?? 'BAROX';
 }
