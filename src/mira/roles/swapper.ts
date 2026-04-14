@@ -2,7 +2,7 @@ import {Role, RoleOrModifierTypes} from '@/constants/rolesAndModifiers';
 import {ModSource} from '@/constants/modSources';
 import {RoleSubgroups} from '@/constants/roleSubgroups';
 import {Teams} from '@/constants/teams';
-import {probabilityOfAppearing, SettingTypes} from '@/constants/settings';
+import {probabilityOfAppearing} from '@/constants/settings';
 
 export const MiraSwapperAbilities = {
     Swap: {

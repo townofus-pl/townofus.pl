@@ -79,6 +79,7 @@ export const MiraRoles = [
     MiraAmbassador,
     MiraAmbusher,
     MiraArsonist,
+    MiraBlackmailer,
     MiraCleric,
     MiraChef,
     MiraDoomsayer,
