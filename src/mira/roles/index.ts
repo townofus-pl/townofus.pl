@@ -1,6 +1,7 @@
 import {MiraAurial} from './aurial';
 import {MiraAltruist} from './altruist';
 import {MiraAmnesiac} from './amnesiac';
+import {MiraWarlock} from './warlock';
 import {MiraAmbassador} from './ambassador';
 import {MiraAmbusher} from './ambusher';
 import {MiraArsonist} from './arsonist';
@@ -146,4 +147,5 @@ export const MiraRoles = [
     MiraVenerer,
     MiraVeteran,
     MiraVigilante,
+    MiraWarlock,
 ];
