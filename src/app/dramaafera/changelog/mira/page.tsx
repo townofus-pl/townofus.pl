@@ -162,18 +162,6 @@ function formatValue(value: string | number | boolean, type: SettingTypes, descr
     }
 }
 
-function resolveSettingDefinition(entity: MiraEntity, rawSettingKey: string): { label: string; setting: Setting } | null {
-    const normalizedKey = normalizeLookupKey(rawSettingKey);
-
-    for (const [label, setting] of Object.entries(entity.settings)) {
-        if (normalizeLookupKey(label) === normalizedKey) {
-            return { label, setting };
-        }
-    }
-
-    return null;
-}
-
 function getSectionLabel(sectionName: string): string {
     const lastToken = sectionName.split(".").at(-1) ?? sectionName;
     return humanizeIdentifier(stripConfigAffixes(lastToken));
