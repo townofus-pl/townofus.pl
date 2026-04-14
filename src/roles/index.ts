@@ -58,6 +58,7 @@ import {Vigilante} from "./vigilante";
 import {Warden} from "./warden";
 import {Warlock} from "./warlock";
 import {Werewolf} from "./werewolf";
+import {roleSubgroupById} from "./subgroups";
 
 export const Roles = [
     Altruist,
@@ -120,4 +121,7 @@ export const Roles = [
     Warden,
     Warlock,
     Werewolf,
-].sort((a, b) => a.name.localeCompare(b.name));
+].map(role => ({
+    ...role,
+    subgroup: roleSubgroupById[role.id],
+})).sort((a, b) => a.name.localeCompare(b.name));

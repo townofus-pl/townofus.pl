@@ -1,25 +1,34 @@
 'use client';
 
 import {type FC, useMemo} from "react";
-import {type Modifier, type Role} from "@/constants/rolesAndModifiers";
+import {RoleOrModifierTypes, type Modifier, type Role, type RoleOrModifier} from "@/constants/rolesAndModifiers";
 import {Teams} from "@/constants/teams";
 import {RolesListContext, TeamFilters, TypeFilters, useFilters, useSearch} from "./hooks";
 import {Search} from "./Search";
 import {Filters} from "./Filters";
 import {RoleCard} from "./RoleCard/RoleCard";
 
+const sortRolesAndModifiers = (a: RoleOrModifier, b: RoleOrModifier): number => {
+    if (a.type !== b.type) {
+        return a.type === RoleOrModifierTypes.Role ? -1 : 1;
+    }
+
+    return a.name.localeCompare(b.name, 'pl');
+};
+
 export const RolesList: FC<{
     roles: Role[],
     modifiers: Modifier[],
     hideSettings?: boolean
     hideTips?: boolean
-}> = ({roles, modifiers, hideSettings = false, hideTips = false}) => {
+    scaleRoleIcons?: boolean
+}> = ({roles, modifiers, hideSettings = false, hideTips = false, scaleRoleIcons = true}) => {
     const { searchValue, search } = useSearch();
     const { typeFilterValue, teamFilterValue, filter } = useFilters();
 
     const results = useMemo(
         () => {
-            let rolesAndModifiers;
+            let rolesAndModifiers: RoleOrModifier[];
 
             switch (typeFilterValue) {
                 case TypeFilters.Role:
@@ -67,9 +76,12 @@ export const RolesList: FC<{
             </div>
             <main>
                 <div className="grid grid-cols-1 gap-y-5">
-                    {results.map(role => (
-                        <RoleCard key={role.name} role={role} hideSettings={hideSettings} hideTips={hideTips}/>
-                    ))}
+                    {results
+                        .slice()
+                        .sort(sortRolesAndModifiers)
+                        .map(role => (
+                            <RoleCard key={`${role.id}-${role.type}-${role.source ?? 'base'}`} role={role} hideSettings={hideSettings} hideTips={hideTips} scaleRoleIcon={scaleRoleIcons}/>
+                        ))}
                 </div>
             </main>
         </RolesListContext.Provider>
