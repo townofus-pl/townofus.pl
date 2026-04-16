@@ -3,6 +3,7 @@ import {ModSource} from '@/constants/modSources';
 import {RoleSubgroups} from '@/constants/roleSubgroups';
 import {Teams} from '@/constants/teams';
 import {probabilityOfAppearing, SettingTypes} from '@/constants/settings';
+import {MiraCommonAbilities} from '../abilities';
 
 export const MiraAmbusherAbilities = {
     Pursue: {
@@ -48,5 +49,5 @@ export const MiraAmbusher: Role = {
             type: SettingTypes.Boolean,
         },
     },
-    abilities: [MiraAmbusherAbilities.Pursue, MiraAmbusherAbilities.Ambush],
+    abilities: [MiraCommonAbilities.Kill, MiraCommonAbilities.Vent, MiraAmbusherAbilities.Pursue, MiraAmbusherAbilities.Ambush],
 };

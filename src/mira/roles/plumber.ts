@@ -24,7 +24,7 @@ export const MiraPlumber: Role = {
     color: '#CC6600',
     team: Teams.Crewmate,
     icon: '/images/mira/roles/Plumber.png',
-    description: 'Plumber może blokować wenty barierami i przepłukiwać system wentów, wypychając z nich graczy. Po przepłukaniu przez chwilę widzi kierunek wyrzuconego gracza.',
+    description: 'Plumber może blokować wenty barierami i przepłukiwać system wentów, wypychając z nich graczy. Po przepłukaniu przez chwilę widzi strzałkę do wyrzuconego gracza.',
     settings: {
         ...probabilityOfAppearing(0),
         'Flush Cooldown': {

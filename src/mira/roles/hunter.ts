@@ -6,7 +6,7 @@ import {probabilityOfAppearing, SettingTypes} from '@/constants/settings';
 
 export const MiraHunterAbilities = {
     Stalk: {
-        name: 'Stalk (Śledź cel)',
+        name: 'Stalk (Śledź)',
         icon: '/images/mira/abilities/StalkButton.png',
     },
     Kill: {
@@ -24,7 +24,7 @@ export const MiraHunter: Role = {
     color: '#29AB87',
     team: Teams.Crewmate,
     icon: '/images/mira/roles/Hunter.png',
-    description: 'Hunter może śledzić graczy i dostaje sygnał, gdy śledzony użyje jakiejkolwiek zdolności. Taki cel trafia na listę i Hunter może go później zabić.',
+    description: "Hunter może śledzić graczy i dostaje zielony sygnał, gdy śledzony użyje jakiejkolwiek zdolności (nick tego gracza zrobi się czarny). Hunter ma wtedy możliwość zabicia gracza w dowolnym momencie gry, bez żadnych konsekwencji, jeśli zabije on Crewmate'a (pod warunkiem, że nie jest on aktywowanym Veteranem).",
     settings: {
         ...probabilityOfAppearing(0),
         'Kill Cooldown': {
@@ -56,5 +56,5 @@ export const MiraHunter: Role = {
             type: SettingTypes.Boolean,
         },
     },
-    abilities: [MiraHunterAbilities.Stalk, MiraHunterAbilities.Kill],
+    abilities: [MiraHunterAbilities.Kill, MiraHunterAbilities.Stalk],
 };

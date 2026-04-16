@@ -3,6 +3,7 @@ import {ModSource} from '@/constants/modSources';
 import {RoleSubgroups} from '@/constants/roleSubgroups';
 import {Teams} from '@/constants/teams';
 import {probabilityOfAppearing, SettingTypes} from '@/constants/settings';
+import { MiraCommonAbilities } from '../abilities';
 
 export const MiraMinerAbilities = {
     Mine: {
@@ -20,7 +21,7 @@ export const MiraMiner: Role = {
     color: '#FF1919',
     team: Teams.Impostor,
     icon: '/images/mira/roles/Miner.png',
-    description: 'Miner może stawiać dodatkowe wenty na mapie, które łączą się ze sobą, ale nie z bazowymi wentami mapy.',
+    description: 'Miner może tworzyć nowe wentylacje. Te wentylacje łączą się tylko ze sobą, tworząc nową ścieżkę.',
     settings: {
         ...probabilityOfAppearing(0),
         'Number of Miner Vents Per Game': {
@@ -48,5 +49,5 @@ export const MiraMiner: Role = {
             type: SettingTypes.Boolean,
         },
     },
-    abilities: [MiraMinerAbilities.Mine],
+    abilities: [MiraCommonAbilities.Kill, MiraCommonAbilities.Vent, MiraMinerAbilities.Mine],
 };

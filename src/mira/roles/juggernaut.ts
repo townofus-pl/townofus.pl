@@ -6,11 +6,11 @@ import {probabilityOfAppearing, SettingTypes} from '@/constants/settings';
 
 export const MiraJuggernautAbilities = {
     Kill: {
-        name: 'Kill',
+        name: 'Kill (Zabij)',
         icon: '/images/mira/abilities/JuggKillButton.png',
     },
     Vent: {
-        name: 'Vent (Wentylacja)',
+        name: 'Vent (Wejdź do wentylacji)',
         icon: '/images/mira/abilities/JuggVentButton.png',
     },
 };
@@ -24,7 +24,7 @@ export const MiraJuggernaut: Role = {
     color: '#8C004D',
     team: Teams.Neutral,
     icon: '/images/mira/roles/Juggernaut.png',
-    description: 'Juggernaut wygrywa jako ostatni zabójca i z kazdym zabójstwem skroca sobie cooldown zabijania.',
+    description: 'Juggernaut wygrywa jako ostatni zabójca i z kazdym zabójstwem skraca sobie cooldown zabijania.',
     settings: {
         ...probabilityOfAppearing(0),
         'Initial Kill Cooldown': {

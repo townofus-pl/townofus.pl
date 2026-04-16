@@ -20,7 +20,7 @@ export const MiraExecutioner: Role = {
     color: '#633B1F',
     team: Teams.Neutral,
     icon: '/images/mira/roles/Executioner.png',
-    description: 'Executioner wygrywa, gdy jego cel zostanie wyrzucony na spotkaniu.',
+    description: 'Executioner wygrywa, gdy jego cel zostanie wyrzucony na spotkaniu. Jeżeli ustawiono odpowiednią opcję: Po wygranej Executioner może zabić jedną z osób, które zagłosowały na jego cel.',
     settings: {
         ...probabilityOfAppearing(0),
         'On Target Death, Executioner Becomes': {

@@ -10,7 +10,7 @@ export const MiraEngineerAbilities = {
         icon: '/images/mira/abilities/FixButton.png',
     },
     Vent: {
-        name: 'Vent (Wentylacja)',
+        name: 'Vent (Wejdź do wentylacji)',
         icon: '/images/mira/abilities/EngiVentButton.png',
     },
 };
@@ -52,5 +52,5 @@ export const MiraEngineer: Role = {
             type: SettingTypes.Time,
         },
     },
-    abilities: [MiraEngineerAbilities.Fix, MiraEngineerAbilities.Vent],
+    abilities: [MiraEngineerAbilities.Vent, MiraEngineerAbilities.Fix],
 };

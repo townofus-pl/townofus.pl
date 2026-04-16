@@ -28,7 +28,7 @@ export const MiraSeer: Role = {
     color: '#FFCC80',
     team: Teams.Crewmate,
     icon: '/images/mira/roles/Seer.png',
-    description: 'Seer potrafi porównywać sojusze graczy i wykrywać, kto jest sprzymierzeńcem, a kto wrogiem, używając zdolności Intuit, Gaze oraz Reveal.',
+    description: 'Seer potrafi porównywać graczy i wykrywać, czy dwóch graczy należy do jednego sojuszu, używając zdolności Intuit, Gaze. Jeżeli odpowiednia opcja jest wyłączona, Seer ma zdolność Reveal po użyciu której, nick sprawdzanego gracza zmienia kolor na Zielony lub Czerwony. Znaczenie tych kolorów jest zależne od ustawień, z tym że nicki impostorów zawsze są czerwone.',
     settings: {
         ...probabilityOfAppearing(0),
         'Compare Players Instead of Checking Alignments': {

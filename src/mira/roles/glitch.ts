@@ -3,19 +3,24 @@ import {ModSource} from '@/constants/modSources';
 import {RoleSubgroups} from '@/constants/roleSubgroups';
 import {Teams} from '@/constants/teams';
 import {probabilityOfAppearing, SettingTypes} from '@/constants/settings';
+import { Kings } from 'next/font/google';
 
 export const MiraGlitchAbilities = {
     Mimic: {
-        name: 'Mimic',
+        name: 'Mimic (Naśladuj)',
         icon: '/images/mira/abilities/MimicButton.png',
     },
     Hack: {
-        name: 'Hack',
+        name: 'Hack (Hackuj)',
         icon: '/images/mira/abilities/HackButton.png',
     },
     Vent: {
-        name: 'Vent (Wentylacja)',
+        name: 'Vent (Wejdź do wentylacji)',
         icon: '/images/mira/abilities/GlitchVentButton.png',
+    },
+    Kill: {
+        name: 'Kill (Zabij)',
+        icon: '/images/mira/abilities/GlitchKillButton.png',
     },
 };
 
@@ -28,7 +33,7 @@ export const MiraGlitch: Role = {
     color: '#00FF00',
     team: Teams.Neutral,
     icon: '/images/mira/roles/Glitch.png',
-    description: 'Glitch wygrywa jako ostatni zabójca. Może Mimicować wygląd innych oraz Hackować ich umiejętności.',
+    description: 'Glitch wygrywa jako ostatni zabójca. Może naśladować wygląd innych oraz hackować graczy, co uniemożliwia zhakowanemu graczowi jakąkolwiek akcję poza chodzeniem po mapie',
     settings: {
         ...probabilityOfAppearing(0),
         'Kill Cooldown': {
@@ -60,6 +65,6 @@ export const MiraGlitch: Role = {
             type: SettingTypes.Boolean,
         },
     },
-    abilities: [MiraGlitchAbilities.Mimic, MiraGlitchAbilities.Hack, MiraGlitchAbilities.Vent],
+    abilities: [MiraGlitchAbilities.Kill, MiraGlitchAbilities.Vent, MiraGlitchAbilities.Mimic, MiraGlitchAbilities.Hack],
 };
 

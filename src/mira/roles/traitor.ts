@@ -3,6 +3,7 @@ import {ModSource} from '@/constants/modSources';
 import {RoleSubgroups} from '@/constants/roleSubgroups';
 import {Teams} from '@/constants/teams';
 import {probabilityOfAppearing, SettingTypes} from '@/constants/settings';
+import { MiraCommonAbilities } from '../abilities';
 
 export const MiraTraitorAbilities = {
     ChangeRole: {
@@ -20,7 +21,9 @@ export const MiraTraitor: Role = {
     color: '#FF1919',
     team: Teams.Impostor,
     icon: '/images/mira/roles/Traitor.png',
-    description: 'Traitor może przejąć rolę po spełnieniu warunków i odwrócić losy gry na korzyść impostorów.',
+    description: `Jeśli wszyscy Impostorzy zginą, po meetingu jeden Crewmate może stać się Traitorem, zależnie od ustawionych warunków. Traitor stara się wygrać grę dla poległych Impostorów i wyeliminować całą załogę. Tylko Crewmate może zostać Traitorem, z wyjątkiem Mayora.
+
+Podobnie jak Imitator i Ambassador, Traitor może zmieniać role, wybierając inną rolę Impostora z menu. Wtedy nadal można go wskazać jako Traitor podczas zgadywania ról.`,
     settings: {
         ...probabilityOfAppearing(0),
         'Minimum People Alive When Traitor Can Spawn': {
@@ -36,5 +39,5 @@ export const MiraTraitor: Role = {
             type: SettingTypes.Boolean,
         },
     },
-    abilities: [MiraTraitorAbilities.ChangeRole],
+    abilities: [MiraCommonAbilities.Kill, MiraCommonAbilities.Vent, MiraTraitorAbilities.ChangeRole],
 };

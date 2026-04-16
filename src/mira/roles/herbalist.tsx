@@ -3,6 +3,7 @@ import {ModSource} from '@/constants/modSources';
 import {RoleSubgroups} from '@/constants/roleSubgroups';
 import {Teams} from '@/constants/teams';
 import {probabilityOfAppearing, SettingTypes} from '@/constants/settings';
+import { MiraCommonAbilities } from '../abilities';
 
 export const MiraHerbalistAbilities = {
     Expose: {
@@ -28,7 +29,14 @@ export const MiraHerbalist: Role = {
     color: '#FF1919',
     team: Teams.Impostor,
     icon: '/images/mira/roles/Herbalist.png',
-    description: 'Herbalist używa ziół, aby ujawniać, dezorientować lub chronić graczy. Wszystkie trzy działania korzystają ze wspólnego cooldownu.',
+    description: (<>
+        <p>Herbalist używa ziół, aby ujawniać, dezorientować lub chronić graczy. Wszystkie trzy działania korzystają ze wspólnego cooldownu.</p>
+        <ul className="list-disc list-inside">
+            <li>Expose ujawnia rolę wybranego gracza wszystkim Impostorom i blokuje możliwość zgadywania.</li>
+            <li>Confuse otacza gracza zarodnikami, przez co nie może identyfikować innych graczy.</li>
+            <li>Protect chroni gracza tymczasowo tak jak Cleric, również przed innymi Impostorami.</li>
+        </ul>
+    </>),
     settings: {
         ...probabilityOfAppearing(0),
         'Herb Cooldown': {
@@ -68,5 +76,5 @@ export const MiraHerbalist: Role = {
             type: SettingTypes.Boolean,
         },
     },
-    abilities: [MiraHerbalistAbilities.Expose, MiraHerbalistAbilities.Confuse, MiraHerbalistAbilities.Protect],
+    abilities: [MiraCommonAbilities.Kill, MiraCommonAbilities.Vent, MiraHerbalistAbilities.Expose, MiraHerbalistAbilities.Confuse, MiraHerbalistAbilities.Protect],
 };

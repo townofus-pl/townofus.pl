@@ -6,7 +6,7 @@ import {probabilityOfAppearing, SettingTypes} from '@/constants/settings';
 
 export const MiraSpectreAbilities = {
     Spook: {
-        name: 'Spook (Nawiedz)',
+        name: 'Spook (Nawiedź)',
         icon: '/images/mira/abilities/PhantomSpookButton.png',
     },
 };
@@ -20,7 +20,7 @@ export const MiraSpectre: Role = {
     color: '#662961',
     team: Teams.Neutral,
     icon: '/images/mira/roles/Spectre.png',
-    description: 'Po śmierci roli neutralnej gracz może odrodzić się jako Spectre i wygrać przez ukończenie zadań bez złapania.',
+    description: 'Po śmierci roli neutralnej gracz może odrodzić się jako Spectre i wygrać przez ukończenie zadań bez złapania. Jeżeli ustawiono odpowiednią opcję: Po wygranej Spectre może zabić wybranego gracza.',
     settings: {
         ...probabilityOfAppearing(0),
         'Tasks Left Before Clickable': {

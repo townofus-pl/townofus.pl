@@ -6,15 +6,15 @@ import {probabilityOfAppearing, SettingTypes} from '@/constants/settings';
 
 export const MiraWerewolfAbilities = {
     Rampage: {
-        name: 'Rampage',
+        name: 'Rampage (Szał)',
         icon: '/images/mira/abilities/RampageButton.png',
     },
     Kill: {
-        name: 'Kill (podczas Rampage)',
+        name: 'Kill (Zabij)',
         icon: '/images/mira/abilities/WolfKillButton.png',
     },
     Vent: {
-        name: 'Vent (podczas Rampage)',
+        name: 'Vent (Wejdź do wentylacji)',
         icon: '/images/mira/abilities/WolfVentButton.png',
     },
 };
@@ -48,6 +48,6 @@ export const MiraWerewolf: Role = {
             type: SettingTypes.Boolean,
         },
     },
-    abilities: [MiraWerewolfAbilities.Rampage, MiraWerewolfAbilities.Kill, MiraWerewolfAbilities.Vent],
+    abilities: [MiraWerewolfAbilities.Kill, MiraWerewolfAbilities.Vent, MiraWerewolfAbilities.Rampage],
 };
 

@@ -3,6 +3,7 @@ import {ModSource} from '@/constants/modSources';
 import {RoleSubgroups} from '@/constants/roleSubgroups';
 import {Teams} from '@/constants/teams';
 import {probabilityOfAppearing, SettingTypes} from '@/constants/settings';
+import {MiraCommonAbilities} from '../abilities';
 
 export const MiraBlackmailerAbilities = {
     Blackmail: {
@@ -20,7 +21,7 @@ export const MiraBlackmailer: Role = {
     color: '#FF1919',
     team: Teams.Impostor,
     icon: '/images/mira/roles/Blackmailer.png',
-    description: 'Blackmailer może uciszyć gracza na następne spotkanie, oznaczając go czarną literą M i blokując mu możliwość pisania na czacie.',
+    description: 'Blackmailer może uciszyć gracza na następne spotkanie, blokując mu możliwość pisania na czacie.',
     settings: {
         ...probabilityOfAppearing(0),
         'Number of Blackmail Uses Per Game': {
@@ -48,5 +49,5 @@ export const MiraBlackmailer: Role = {
             type: SettingTypes.Boolean,
         },
     },
-    abilities: [MiraBlackmailerAbilities.Blackmail],
+    abilities: [MiraCommonAbilities.Kill, MiraCommonAbilities.Vent, MiraBlackmailerAbilities.Blackmail],
 };

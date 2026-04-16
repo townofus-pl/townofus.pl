@@ -3,17 +3,7 @@ import {ModSource} from '@/constants/modSources';
 import {RoleSubgroups} from '@/constants/roleSubgroups';
 import {Teams} from '@/constants/teams';
 import {probabilityOfAppearing, SettingTypes} from '@/constants/settings';
-
-export const MiraWarlockAbilities = {
-    Hex: {
-        name: 'Hex',
-        icon: '/images/mira/abilities/HexButton.png',
-    },
-    HexBomb: {
-        name: 'Hex Bomb',
-        icon: '/images/mira/abilities/HexBombButton.png',
-    },
-};
+import {MiraCommonAbilities} from '../abilities';
 
 export const MiraWarlock: Role = {
     type: RoleOrModifierTypes.Role,
@@ -24,7 +14,7 @@ export const MiraWarlock: Role = {
     color: '#FF1919',
     team: Teams.Impostor,
     icon: '/images/mira/roles/Warlock.png',
-    description: 'Warlock może naładować ataki i po pełnym naładowaniu wykonywać wielokrotne zabójstwa przez określony czas.',
+    description: 'Warlock może naładować ataki i po pełnym naładowaniu wykonywać wielokrotne zabójstwa przez określony czas. W czasie rozgrywki, Warlockowi ładuje się mana. Manę mierzy się w procentach. W pełni naładowana mana (100%) pozwala na zabijanie bez cooldownu przez określony czas. W przypadku gdy mana nie jest naładowana do pełna, czas na nieograniczone zabijanie jest proporcjonalnie mniejszy.',
     settings: {
         ...probabilityOfAppearing(0),
         'Times it Takes to Fully Charge': {
@@ -40,5 +30,5 @@ export const MiraWarlock: Role = {
             type: SettingTypes.Time,
         },
     },
-    abilities: [MiraWarlockAbilities.Hex, MiraWarlockAbilities.HexBomb],
+    abilities: [MiraCommonAbilities.Kill, MiraCommonAbilities.Vent],
 };

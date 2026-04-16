@@ -10,7 +10,7 @@ export const MiraJailorAbilities = {
         icon: '/images/mira/abilities/JailButton.png',
     },
     Execute: {
-        name: 'Execute (Wykonaj)',
+        name: 'Execute (Dokonaj Egzekucji)',
         icon: '/images/mira/abilities/ExecuteClean.png',
     },
 };

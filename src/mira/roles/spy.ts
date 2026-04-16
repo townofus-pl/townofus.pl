@@ -20,7 +20,7 @@ export const MiraSpy: Role = {
     color: '#CCA3CC',
     team: Teams.Crewmate,
     icon: '/images/mira/roles/Spy.png',
-    description: 'Spy zbiera dodatkowe informacje przez Admin. Widzi pozycje żywych graczy na mapie po kolorach i może dostać przenośny Admin z ładowaniem przez taski.',
+    description: 'Spy zbiera dodatkowe informacje przez Admin. Widzi pozycje żywych graczy na mapie po kolorach i może dostać przenośny Admin z ładowaniem poprzez wykonanywanie tasków.',
     settings: {
         ...probabilityOfAppearing(0),
         'Who Sees Bodies On Admin': {

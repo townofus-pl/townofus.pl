@@ -3,6 +3,7 @@ import {ModSource} from '@/constants/modSources';
 import {RoleSubgroups} from '@/constants/roleSubgroups';
 import {Teams} from '@/constants/teams';
 import {probabilityOfAppearing, SettingTypes} from '@/constants/settings';
+import { MiraCommonAbilities } from '../abilities';
 
 export const MiraUndertakerAbilities = {
     Drag: {
@@ -52,5 +53,5 @@ export const MiraUndertaker: Role = {
             type: SettingTypes.Boolean,
         },
     },
-    abilities: [MiraUndertakerAbilities.Drag, MiraUndertakerAbilities.Drop],
+    abilities: [MiraCommonAbilities.Kill, MiraCommonAbilities.Vent, MiraUndertakerAbilities.Drag, MiraUndertakerAbilities.Drop],
 };

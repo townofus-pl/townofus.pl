@@ -3,6 +3,7 @@ import {ModSource} from '@/constants/modSources';
 import {RoleSubgroups} from '@/constants/roleSubgroups';
 import {Teams} from '@/constants/teams';
 import {probabilityOfAppearing, SettingTypes} from '@/constants/settings';
+import { MiraCommonAbilities } from '../abilities';
 
 export const MiraEclipsalAbilities = {
     Blind: {
@@ -36,5 +37,5 @@ export const MiraEclipsal: Role = {
             type: SettingTypes.Multiplier,
         },
     },
-    abilities: [MiraEclipsalAbilities.Blind],
+    abilities: [MiraCommonAbilities.Kill, MiraCommonAbilities.Vent, MiraEclipsalAbilities.Blind],
 };

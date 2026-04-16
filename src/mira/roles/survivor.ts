@@ -20,7 +20,7 @@ export const MiraSurvivor: Role = {
     color: '#FFE64D',
     team: Teams.Neutral,
     icon: '/images/mira/roles/Survivor.png',
-    description: 'Survivor wygrywa, jeśli dożyje końca gry, i może tymczasowo chronić się kamizelką przed zabiciem.',
+    description: 'Survivor wygrywa, jeśli dożyje końca gry, i może tymczasowo chronić się przed zabiciem.',
     settings: {
         ...probabilityOfAppearing(0),
         'Vest Cooldown': {

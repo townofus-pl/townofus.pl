@@ -3,6 +3,7 @@ import {ModSource} from '@/constants/modSources';
 import {RoleSubgroups} from '@/constants/roleSubgroups';
 import {Teams} from '@/constants/teams';
 import {probabilityOfAppearing, SettingTypes} from '@/constants/settings';
+import { MiraCommonAbilities } from '../abilities';
 
 export const MiraParasiteAbilities = {
     Overtake: {
@@ -20,7 +21,7 @@ export const MiraParasite: Role = {
     color: '#FF1919',
     team: Teams.Impostor,
     icon: '/images/mira/roles/Parasite.png',
-    description: 'Parasite może przejąć pobliskiego gracza, sterować nim chwilowo i zabić go przed końcem kontroli.',
+    description: 'Parasite może przejąć pobliskiego gracza, sterować nim chwilowo i zabić go przed końcem kontroli. Podczas kontroli Parasite porusza się WASD, a kontrolowanym graczem steruje się strzałkami.',
     settings: {
         ...probabilityOfAppearing(0),
         'Overtake Cooldown': {
@@ -56,5 +57,5 @@ export const MiraParasite: Role = {
             type: SettingTypes.Boolean,
         },
     },
-    abilities: [MiraParasiteAbilities.Overtake],
+    abilities: [MiraCommonAbilities.Vent, MiraParasiteAbilities.Overtake],
 };

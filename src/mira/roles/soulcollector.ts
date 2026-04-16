@@ -6,7 +6,7 @@ import {probabilityOfAppearing, SettingTypes} from '@/constants/settings';
 
 export const MiraSoulCollectorAbilities = {
     Reap: {
-        name: 'Reap (Zniwuj)',
+        name: 'Reap (Zbierz żniwa)',
         icon: '/images/mira/abilities/ReapButton.png',
     },
     Vent: {
@@ -24,7 +24,7 @@ export const MiraSoulCollector: Role = {
     color: '#99FFCC',
     team: Teams.Neutral,
     icon: '/images/mira/roles/SoulCollector.png',
-    description: 'Soul Collector zniwa dusze graczy, zostawiajac po nich nieruchome wabiki i dazac do wygranej jako ostatni zabójca.',
+    description: 'Soul Collector wygrywa jako ostatni zabójca. Zabija graczy bez zostawiania ciał, zamiast tego pozostaje dusza której nie można zreportować.',
     settings: {
         ...probabilityOfAppearing(0),
         'Reap Cooldown': {

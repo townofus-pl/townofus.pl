@@ -3,6 +3,7 @@ import {ModSource} from '@/constants/modSources';
 import {RoleSubgroups} from '@/constants/roleSubgroups';
 import {Teams} from '@/constants/teams';
 import {probabilityOfAppearing, SettingTypes} from '@/constants/settings';
+import { MiraCommonAbilities } from '../abilities';
 
 export const MiraSpellslingerAbilities = {
     Hex: {
@@ -24,7 +25,7 @@ export const MiraSpellslinger: Role = {
     color: '#FF1919',
     team: Teams.Impostor,
     icon: '/images/mira/roles/Spellslinger.png',
-    description: 'Spellslinger może hexować graczy, a po zaklęciu wszystkich nie-impostorów uruchamia odliczanie do wybuchu Hex Bomba.',
+    description: 'Spellslinger może hexować graczy, a po zaklęciu wszystkich nie-impostorów uruchamia odliczanie do wybuchu Hex Bomby która zabija wszystkich graczy, co skutkuje wygraną Impostorów.',
     settings: {
         ...probabilityOfAppearing(0),
         'Hex Cooldown': {
@@ -40,5 +41,5 @@ export const MiraSpellslinger: Role = {
             type: SettingTypes.Time,
         },
     },
-    abilities: [MiraSpellslingerAbilities.Hex, MiraSpellslingerAbilities.HexBomb],
+    abilities: [MiraCommonAbilities.Kill, MiraCommonAbilities.Vent, MiraSpellslingerAbilities.Hex, MiraSpellslingerAbilities.HexBomb],
 };

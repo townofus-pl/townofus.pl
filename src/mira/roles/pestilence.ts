@@ -6,11 +6,11 @@ import {probabilityOfAppearing, SettingTypes} from '@/constants/settings';
 
 export const MiraPestilenceAbilities = {
     Kill: {
-        name: 'Kill',
+        name: 'Kill (Zabij)',
         icon: '/images/mira/abilities/PestKillButton.png',
     },
     Vent: {
-        name: 'Vent (Wentylacja)',
+        name: 'Vent (Wejdź do wentylacji)',
         icon: '/images/mira/abilities/PestVentButton.png',
     },
 };
@@ -24,7 +24,7 @@ export const MiraPestilence: Role = {
     color: '#606870',
     team: Teams.Neutral,
     icon: '/images/mira/roles/Pestilence.png',
-    description: 'Pestilence wygrywa jako ostatni zabójca. Jest bardzo odporna i może zabijać każdego, kto z nią wejdzie w interakcję.',
+    description: 'Pestilence wygrywa jako ostatni zabójca. Pestilence to nieśmiertelna siła, która zyskuje zdolność zabijania i można ją zabić tylko przez głosowanie. Nawet śmierć Loversa nie zabije Pestilence.',
     settings: {
         ...probabilityOfAppearing(0),
         'Pestilence Kill Cooldown': {

@@ -14,7 +14,7 @@ export const MiraSnitch: Role = {
     color: '#D4AF37',
     team: Teams.Crewmate,
     icon: '/images/mira/roles/Snitch.png',
-    description: 'Snitch musi ukończyć zadania, aby ujawnić Impostorów. Po ukończeniu zadań widzi ich strzałkami i czerwonymi nazwami, ale sam również zostaje ujawniony.',
+    description: 'Snitch musi ukończyć zadania, aby ujawnić Impostorów. Po ukończeniu wszystkich zadań otrzymuje strzałki wskazujące na Impostorów. Nicki Impostorów pojawiają się również na jego ekranie na czerwono. Jednak gdy pozostanie mu pewna liczba zadań, to Impostorzy otrzymują strzałkę wskazującą na Snitcha.',
     settings: {
         ...probabilityOfAppearing(0),
         'Snitch Reveals Neutral Killers': {

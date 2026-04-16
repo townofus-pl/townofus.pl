@@ -3,6 +3,7 @@ import {ModSource} from '@/constants/modSources';
 import {RoleSubgroups} from '@/constants/roleSubgroups';
 import {Teams} from '@/constants/teams';
 import {probabilityOfAppearing, SettingTypes} from '@/constants/settings';
+import { MiraCommonAbilities } from '../abilities';
 
 export const MiraJanitorAbilities = {
     Clean: {
@@ -44,5 +45,5 @@ export const MiraJanitor: Role = {
             type: SettingTypes.Boolean,
         },
     },
-    abilities: [MiraJanitorAbilities.Clean],
+    abilities: [MiraCommonAbilities.Kill, MiraCommonAbilities.Vent, MiraJanitorAbilities.Clean],
 };

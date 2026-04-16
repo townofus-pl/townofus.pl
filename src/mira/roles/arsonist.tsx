@@ -14,7 +14,7 @@ export const MiraArsonistAbilities = {
         icon: '/images/mira/abilities/IgniteButton.png',
     },
     Vent: {
-        name: 'Vent (Wentylacja)',
+        name: 'Vent (Wejdź do wentylacji)',
         icon: '/images/mira/abilities/ArsoVentButton.png',
     },
 };
@@ -28,8 +28,14 @@ export const MiraArsonist: Role = {
     color: '#FF4D00',
     team: Teams.Neutral,
     icon: '/images/mira/roles/Arsonist.png',
-    description: 'Arsonist wygrywa jako ostatni zabójca. Może polewać cele i podpalać je po spełnieniu warunków.',
-    settings: {
+    "description": (<>
+        <p>Arsonist wygrywa jako ostatni zabójca. Ma dwie zdolności:</p>
+        <ul className="list-disc list-inside">
+            <li>Polewanie innych graczy benzyną,</li>
+            <li>Zapalanie polanych graczy w pobliżu (Legacy mode: zapala wszystkich polanych graczy podchodząc do dowolnego polanego).</li>
+        </ul>
+        </>),    
+        settings: {
         ...probabilityOfAppearing(0),
         'Douse Cooldown': {
             value: 25,
@@ -48,6 +54,6 @@ export const MiraArsonist: Role = {
             type: SettingTypes.Boolean,
         },
     },
-    abilities: [MiraArsonistAbilities.Douse, MiraArsonistAbilities.Ignite, MiraArsonistAbilities.Vent],
+    abilities: [MiraArsonistAbilities.Vent, MiraArsonistAbilities.Douse, MiraArsonistAbilities.Ignite],
 };
 

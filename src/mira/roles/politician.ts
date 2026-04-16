@@ -24,7 +24,7 @@ export const MiraPolitician: Role = {
     color: '#660099',
     team: Teams.Crewmate,
     icon: '/images/mira/roles/Politician.png',
-    description: 'Politician musi skutecznie prowadzić kampanię przynajmniej połowy załogi, aby ujawnić się jako Mayor. Okampanowani gracze są dla niego oznaczeni cyjanowymi nazwami.',
+    description: "Politician musi skutecznie prowadzić kampanię pośród przynajmniej połowy Crewmate'ów, aby ujawnić się jako Mayor.",
     settings: {
         ...probabilityOfAppearing(0),
         'Campaign Cooldown': {

@@ -3,6 +3,7 @@ import {ModSource} from '@/constants/modSources';
 import {RoleSubgroups} from '@/constants/roleSubgroups';
 import {Teams} from '@/constants/teams';
 import {probabilityOfAppearing, SettingTypes} from '@/constants/settings';
+import { MiraCommonAbilities } from '../abilities';
 
 export const MiraPuppeteerAbilities = {
     Control: {
@@ -48,5 +49,5 @@ export const MiraPuppeteer: Role = {
             type: SettingTypes.Boolean,
         },
     },
-    abilities: [MiraPuppeteerAbilities.Control],
+    abilities: [MiraCommonAbilities.Kill, MiraCommonAbilities.Vent, MiraPuppeteerAbilities.Control],
 };

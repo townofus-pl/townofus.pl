@@ -3,6 +3,7 @@ import {ModSource} from '@/constants/modSources';
 import {RoleSubgroups} from '@/constants/roleSubgroups';
 import {Teams} from '@/constants/teams';
 import {probabilityOfAppearing, SettingTypes} from '@/constants/settings';
+import { MiraCommonAbilities } from '../abilities';
 
 export const MiraHypnotistAbilities = {
     Hypnotise: {
@@ -36,5 +37,5 @@ export const MiraHypnotist: Role = {
             type: SettingTypes.Boolean,
         },
     },
-    abilities: [MiraHypnotistAbilities.Hypnotise, MiraHypnotistAbilities.MassHysteria],
+    abilities: [MiraCommonAbilities.Kill, MiraCommonAbilities.Vent, MiraHypnotistAbilities.Hypnotise, MiraHypnotistAbilities.MassHysteria],
 };

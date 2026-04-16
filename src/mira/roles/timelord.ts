@@ -20,7 +20,7 @@ export const MiraTimeLord: Role = {
     color: '#8789D3',
     team: Teams.Crewmate,
     icon: '/images/mira/roles/TimeLord.png',
-    description: 'Time Lord może cofać czas na określony czas, zmuszając graczy do cofnięcia ruchów i potencjalnie przywracając martwych graczy do życia.',
+    description: 'Time Lord może cofać czas, zmuszając graczy do cofnięcia ruchów i potencjalnie przywracając martwych graczy do życia.',
     settings: {
         ...probabilityOfAppearing(0),
         'Rewind Cooldown': {

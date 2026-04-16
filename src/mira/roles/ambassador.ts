@@ -3,6 +3,7 @@ import {ModSource} from '@/constants/modSources';
 import {RoleSubgroups} from '@/constants/roleSubgroups';
 import {Teams} from '@/constants/teams';
 import {probabilityOfAppearing, SettingTypes} from '@/constants/settings';
+import {MiraCommonAbilities} from '../abilities';
 
 export const MiraAmbassadorAbilities = {
     Retrain: {
@@ -44,5 +45,5 @@ export const MiraAmbassador: Role = {
             type: SettingTypes.Number,
         },
     },
-    abilities: [MiraAmbassadorAbilities.Retrain],
+    abilities: [MiraCommonAbilities.Kill, MiraCommonAbilities.Vent, MiraAmbassadorAbilities.Retrain],
 };

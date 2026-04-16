@@ -10,7 +10,7 @@ export const MiraInquisitorAbilities = {
         icon: '/images/mira/abilities/InquireButton.png',
     },
     Vanquish: {
-        name: 'Vanquish (Zgladz)',
+        name: 'Vanquish (Zgładź)',
         icon: '/images/mira/abilities/InquisKillButton.png',
     },
 };
@@ -56,6 +56,6 @@ export const MiraInquisitor: Role = {
             type: SettingTypes.Number,
         },
     },
-    abilities: [MiraInquisitorAbilities.Inquire, MiraInquisitorAbilities.Vanquish],
+    abilities: [MiraInquisitorAbilities.Vanquish, MiraInquisitorAbilities.Inquire],
 };
 

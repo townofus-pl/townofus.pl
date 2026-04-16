@@ -3,6 +3,7 @@ import {ModSource} from '@/constants/modSources';
 import {RoleSubgroups} from '@/constants/roleSubgroups';
 import {Teams} from '@/constants/teams';
 import {probabilityOfAppearing, SettingTypes} from '@/constants/settings';
+import { MiraCommonAbilities } from '../abilities';
 
 export const MiraSwooperAbilities = {
     Swoop: {
@@ -24,7 +25,7 @@ export const MiraSwooper: Role = {
     color: '#FF1919',
     team: Teams.Impostor,
     icon: '/images/mira/roles/Swooper.png',
-    description: 'Swooper może czasowo stać się niewidzialny, aby uniknąć zauważenia przez innych graczy.',
+    description: 'Swooper może chwilowo stać się niewidzialny.',
     settings: {
         ...probabilityOfAppearing(0),
         'Max Swoops': {
@@ -44,5 +45,5 @@ export const MiraSwooper: Role = {
             type: SettingTypes.Boolean,
         },
     },
-    abilities: [MiraSwooperAbilities.Swoop, MiraSwooperAbilities.Unswoop],
+    abilities: [MiraCommonAbilities.Kill, MiraCommonAbilities.Vent, MiraSwooperAbilities.Swoop, MiraSwooperAbilities.Unswoop],
 };

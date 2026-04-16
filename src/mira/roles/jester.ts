@@ -6,11 +6,11 @@ import {probabilityOfAppearing, SettingTypes} from '@/constants/settings';
 
 export const MiraJesterAbilities = {
     Vent: {
-        name: 'Vent (Schowaj sie)',
+        name: 'Vent (Wejdź do wentylacji)',
         icon: '/images/mira/abilities/JesterVentButton.png',
     },
     Haunt: {
-        name: 'Haunt (Nawiedz)',
+        name: 'Haunt (Nawiedź)',
         icon: '/images/mira/abilities/JesterHauntButton.png',
     },
 };
@@ -24,7 +24,7 @@ export const MiraJester: Role = {
     color: '#FFBFCC',
     team: Teams.Neutral,
     icon: '/images/mira/roles/Jester.png',
-    description: 'Jester wygrywa, jeśli zostanie wyrzucony na spotkaniu.',
+    description: 'Jester wygrywa, jeśli zostanie wyrzucony na spotkaniu. Jeżeli ustawiono odpowiednią opcję: Po wygranej Jester może zabić jedną z osób, które na niego zagłosowały.',
     settings: {
         ...probabilityOfAppearing(0),
         'Can Use Button': {

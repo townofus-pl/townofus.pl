@@ -14,7 +14,7 @@ export const MiraScavenger: Role = {
     color: '#FF1919',
     team: Teams.Impostor,
     icon: '/images/mira/roles/Scavenger.png',
-    description: 'Scavenger musi zabijać swoje cele. Jeśli trafi poprawnie, dostaje krótszy cooldown; jeśli nie, cooldown rośnie znacząco.',
+    description: 'Scavenger musi zabijać swoje cele. Jeśli trafi poprawnie, dostaje krótszy cooldown; jeśli nie, cooldown znacząco rośnie.',
     settings: {
         ...probabilityOfAppearing(0),
         'Scavenge Duration': {
@@ -34,5 +34,5 @@ export const MiraScavenger: Role = {
             type: SettingTypes.Multiplier,
         },
     },
-    abilities: [MiraCommonAbilities.None],
+    abilities: [MiraCommonAbilities.Kill, MiraCommonAbilities.Vent],
 };

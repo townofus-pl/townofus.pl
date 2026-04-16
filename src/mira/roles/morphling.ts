@@ -3,6 +3,7 @@ import {ModSource} from '@/constants/modSources';
 import {RoleSubgroups} from '@/constants/roleSubgroups';
 import {Teams} from '@/constants/teams';
 import {probabilityOfAppearing, SettingTypes} from '@/constants/settings';
+import { MiraCommonAbilities } from '../abilities';
 
 export const MiraMorphlingAbilities = {
     Sample: {
@@ -48,5 +49,5 @@ export const MiraMorphling: Role = {
             type: SettingTypes.Boolean,
         },
     },
-    abilities: [MiraMorphlingAbilities.Sample, MiraMorphlingAbilities.Morph],
+    abilities: [MiraCommonAbilities.Kill, MiraCommonAbilities.Vent, MiraMorphlingAbilities.Sample, MiraMorphlingAbilities.Morph],
 };

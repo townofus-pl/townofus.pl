@@ -14,7 +14,7 @@ export const MiraCelebrity: Modifier = {
     color: '#ff9999',
     team: Teams.Crewmate,
     icon: '/images/mira/modifiers/Celebrity.png',
-    description: 'Po śmierci Celebrity na spotkaniu ujawniane są szczegóły zgonu: miejsce i rola zabójcy.',
+    description: 'Po śmierci Celebrity na spotkaniu ujawniane są szczegóły zgonu: miejsce, czas i rola zabójcy.',
     settings: {
         ...probabilityOfAppearing(0),
     },

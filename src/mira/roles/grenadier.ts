@@ -3,6 +3,7 @@ import {ModSource} from '@/constants/modSources';
 import {RoleSubgroups} from '@/constants/roleSubgroups';
 import {Teams} from '@/constants/teams';
 import {probabilityOfAppearing, SettingTypes} from '@/constants/settings';
+import { MiraCommonAbilities } from '../abilities';
 
 export const MiraGrenadierAbilities = {
     Flash: {
@@ -44,5 +45,5 @@ export const MiraGrenadier: Role = {
             type: SettingTypes.Boolean,
         },
     },
-    abilities: [MiraGrenadierAbilities.Flash],
+    abilities: [MiraCommonAbilities.Kill, MiraCommonAbilities.Vent, MiraGrenadierAbilities.Flash],
 };

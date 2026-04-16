@@ -24,7 +24,7 @@ export const MiraMercenary: Role = {
     color: '#8C6699',
     team: Teams.Neutral,
     icon: '/images/mira/roles/Mercenary.png',
-    description: 'Mercenary zbiera złoto przez pilnowanie graczy i przekupuje innych, by wygrać razem z nimi.',
+    description: 'Mercenary zbiera złoto przez pilnowanie graczy i przekupuje innych, by wygrać razem z nimi. Jeśli ktoś nawiąże interakcję z pilnowanym graczem, Mercenary dostaje złoto. Jeśli przekupiony gracz wygra, Mercenary także wygrywa. Przekupiony gracz dowiaduje się, że został przekupiony.',
     settings: {
         ...probabilityOfAppearing(0),
         'Guard Cooldown': {

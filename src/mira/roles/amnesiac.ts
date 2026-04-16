@@ -20,7 +20,7 @@ export const MiraAmnesiac: Role = {
     color: '#80B3FF',
     team: Teams.Neutral,
     icon: '/images/mira/roles/Amnesiac.png',
-    description: 'Amnesiac przypomina sobie rolę przez odnalezienie martwego ciała i przejęcie roli zmarłego gracza.',
+    description: 'Amnesiac nie ma warunku zwycięstwa. Nie ma żadnych zadań i jest praktycznie bez roli. Jednak może sobie przypomnieć rolę, odnajdując martwego gracza. Gdy to zrobi, przejmuje nowy warunek zwycięstwa i dąży do wygranej. Dostaje strzałki wskazujące martwe ciała.',
     settings: {
         ...probabilityOfAppearing(0),
         'Show Arrow Pointing to Dead Bodies': {

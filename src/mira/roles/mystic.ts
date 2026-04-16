@@ -14,7 +14,7 @@ export const MiraMystic: Role = {
     color: '#4D99E6',
     team: Teams.Crewmate,
     icon: '/images/mira/roles/Mystic.png',
-    description: 'Mystic otrzymuje sygnał, gdy ktoś zginie: niebieski błysk oraz krótką strzałkę wskazującą kierunek śmierci.',
+    description: 'Mystic otrzymuje sygnał, gdy ktoś zginie: niebieski błysk oraz strzałkę wskazującą kierunek śmierci.',
     settings: {
         ...probabilityOfAppearing(0),
         'Arrow Duration': {

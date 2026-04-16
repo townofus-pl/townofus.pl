@@ -14,7 +14,7 @@ export const MiraBait: Modifier = {
     color: '#33b3b3',
     team: Teams.Crewmate,
     icon: '/images/mira/modifiers/Bait.png',
-    description: 'Po śmierci Bait zabójca automatycznie zgłasza ciało.',
+    description: 'Po śmierci Baita zabójca automatycznie zgłasza ciało.',
     settings: {
         ...probabilityOfAppearing(0),
         'Min Delay': {

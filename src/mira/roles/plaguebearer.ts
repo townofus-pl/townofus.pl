@@ -6,7 +6,7 @@ import {probabilityOfAppearing, SettingTypes} from '@/constants/settings';
 
 export const MiraPlaguebearerAbilities = {
     Infect: {
-        name: 'Infect (Zaraz)',
+        name: 'Infect (Zaraż)',
         icon: '/images/mira/abilities/InfectButton.png',
     },
 };
@@ -20,7 +20,7 @@ export const MiraPlaguebearer: Role = {
     color: '#E6FFB3',
     team: Teams.Neutral,
     icon: '/images/mira/roles/Plaguebearer.png',
-    description: 'Plaguebearer musi zarazić wszystkich pozostałych graczy, aby przemienić się w Pestilence.',
+    description: 'Plaguebearer wygrywa jako ostatni zabójca. Musi zarazić wszystkich żywych graczy, aby przemienić się w Pestilence.',
     settings: {
         ...probabilityOfAppearing(0),
         'Infect Cooldown': {
