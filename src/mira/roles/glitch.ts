@@ -3,7 +3,6 @@ import {ModSource} from '@/constants/modSources';
 import {RoleSubgroups} from '@/constants/roleSubgroups';
 import {Teams} from '@/constants/teams';
 import {probabilityOfAppearing, SettingTypes} from '@/constants/settings';
-import { Kings } from 'next/font/google';
 
 export const MiraGlitchAbilities = {
     Mimic: {
