@@ -27,7 +27,7 @@ const navigationItems: NavigationItemProps[] = [
     },
      {
         href: "/susmodder",
-        label: "Susmodder",
+        label: "SUSModder",
     },
     {
         href: '/discord',
