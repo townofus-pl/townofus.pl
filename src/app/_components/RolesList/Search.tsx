@@ -4,7 +4,7 @@ export const Search = () => {
     const {search} = useRolesListContext();
 
     return (
-        <div className="col-span-2 md:col-span-3 lg:col-span-6 text-lg">
+        <div className="col-span-2 md:col-span-2 lg:col-span-5 text-lg">
             <label htmlFor="Search">Wyszukaj:</label>
             <input
                 name="search"

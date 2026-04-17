@@ -1,10 +1,11 @@
 import {AvailableFilters, TeamFilters, TypeFilters, useRolesListContext} from './hooks';
+import {ModSource} from '@/constants/modSources';
 
 export const Filters = () => {
-    const {filter} = useRolesListContext();
+    const {filter, showModFilter} = useRolesListContext();
 
     return (
-        <div className="grid grid-cols-2 gap-4 col-span-1 md:col-span-2 lg:col-span-3 text-lg">
+        <div className={`grid gap-4 col-span-1 md:col-span-3 lg:col-span-4 text-lg ${showModFilter ? 'grid-cols-1 md:grid-cols-3' : 'grid-cols-2'}`}>
             <div>
                 <label htmlFor="type-filter">Rodzaj:</label>
                 <select
@@ -30,6 +31,20 @@ export const Filters = () => {
                     <option value={TeamFilters.Impostor}>Impostor</option>
                 </select>
             </div>
+            {showModFilter ? (
+                <div>
+                    <label htmlFor="mod-filter">Mod:</label>
+                    <select
+                        id="mod-filter"
+                        className="w-full p-3 text-md bg-zinc-900/75 border-2 rounded-md border-search"
+                        defaultValue={ModSource.Mira}
+                        onChange={(e) => filter(AvailableFilters.Mod, e.target.value as ModSource)}
+                    >
+                        <option value={ModSource.Mira}>ToU:Mira</option>
+                        <option value={ModSource.TownOfUs}>ToU:R</option>
+                    </select>
+                </div>
+            ) : null}
         </div>
     );
 }

@@ -7,6 +7,7 @@ import {RolesListContext, TeamFilters, TypeFilters, useFilters, useSearch} from 
 import {Search} from "./Search";
 import {Filters} from "./Filters";
 import {RoleCard} from "./RoleCard/RoleCard";
+import {ModSource} from "@/constants/modSources";
 
 const sortRolesAndModifiers = (a: RoleOrModifier, b: RoleOrModifier): number => {
     if (a.type !== b.type) {
@@ -22,9 +23,11 @@ export const RolesList: FC<{
     hideSettings?: boolean
     hideTips?: boolean
     scaleRoleIcons?: boolean
-}> = ({roles, modifiers, hideSettings = false, hideTips = false, scaleRoleIcons = true}) => {
+    showModFilter?: boolean
+    defaultModSource?: ModSource
+}> = ({roles, modifiers, hideSettings = false, hideTips = false, scaleRoleIcons = true, showModFilter = false, defaultModSource = ModSource.Mira}) => {
     const { searchValue, search } = useSearch();
-    const { typeFilterValue, teamFilterValue, filter } = useFilters();
+    const { typeFilterValue, teamFilterValue, modFilterValue, filter } = useFilters({defaultModSource: showModFilter ? defaultModSource : undefined});
 
     const results = useMemo(
         () => {
@@ -63,13 +66,21 @@ export const RolesList: FC<{
                     break;
             }
 
+            if (showModFilter && modFilterValue) {
+                if (modFilterValue === ModSource.TownOfUs) {
+                    rolesAndModifiers = rolesAndModifiers.filter(({source}) => source === ModSource.TownOfUs || source === undefined);
+                } else {
+                    rolesAndModifiers = rolesAndModifiers.filter(({source}) => source === modFilterValue);
+                }
+            }
+
             return rolesAndModifiers;
         },
-        [roles, modifiers, searchValue, typeFilterValue, teamFilterValue]
+        [roles, modifiers, searchValue, typeFilterValue, teamFilterValue, showModFilter, modFilterValue]
     );
 
     return (
-        <RolesListContext.Provider value={{searchValue, search, filter}}>
+        <RolesListContext.Provider value={{searchValue, search, filter, showModFilter}}>
             <div className="grid grid-cols-1 gap-y-5 md:grid-cols-5 lg:grid-cols-9 gap-x-0 md:gap-x-5">
                 <Search/>
                 <Filters/>
@@ -79,9 +90,21 @@ export const RolesList: FC<{
                     {results
                         .slice()
                         .sort(sortRolesAndModifiers)
-                        .map(role => (
-                            <RoleCard key={`${role.id}-${role.type}-${role.source ?? 'base'}`} role={role} hideSettings={hideSettings} hideTips={hideTips} scaleRoleIcon={scaleRoleIcons}/>
-                        ))}
+                        .map(role => {
+                            const roleIconScale = showModFilter
+                                ? (role.source === ModSource.TownOfUs || role.source === undefined ? 1.5 : 1)
+                                : scaleRoleIcons;
+
+                            return (
+                                <RoleCard
+                                    key={`${role.id}-${role.type}-${role.source ?? 'base'}`}
+                                    role={role}
+                                    hideSettings={hideSettings}
+                                    hideTips={hideTips}
+                                    scaleRoleIcon={roleIconScale}
+                                />
+                            );
+                        })}
                 </div>
             </main>
         </RolesListContext.Provider>

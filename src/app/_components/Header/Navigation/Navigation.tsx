@@ -14,7 +14,7 @@ const navigationItems: NavigationItemProps[] = [
     },
     {
         href: "/instalacja-tou",
-        label: "Instalacja ToU"
+        label: "Instalacja"
     },
     {
         href: "/lobby-15-plus",
@@ -28,11 +28,6 @@ const navigationItems: NavigationItemProps[] = [
      {
         href: "/susmodder",
         label: "Susmodder",
-        badge: (
-            <span className="ml-2 text-red-500 font-bold drop-shadow-[0_0_4px_rgba(250,0,0,0.7)]">
-                NOWOŚĆ!
-            </span> 
-        )
     },
     {
         href: '/discord',
