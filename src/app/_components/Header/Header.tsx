@@ -8,7 +8,7 @@ export const Header = () => (
                 <Link href="/">Town Of Us - Role</Link>
             </h1>
             <h2 className="text-3xl font-brook hidden sm:block mt-0 lg:mt-2">
-                Lista ról i modyfikatorów dostępnych w Town Of Us v5.2.1
+                Lista ról i modyfikatorów dostępnych w Town Of Us: Mira
             </h2>
             <Navigation/>
         </div>

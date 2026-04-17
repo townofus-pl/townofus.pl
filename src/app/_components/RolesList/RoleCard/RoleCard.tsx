@@ -10,11 +10,19 @@ export const RoleCard: FC<{
     role: RoleOrModifier,
     hideSettings?: boolean,
     hideTips?: boolean,
-}> = ({role, hideSettings = false, hideTips = false}) => (
+    scaleRoleIcon?: boolean | number,
+}> = ({role, hideSettings = false, hideTips = false, scaleRoleIcon = true}) => {
+    const iconScale = typeof scaleRoleIcon === 'number'
+        ? scaleRoleIcon
+        : scaleRoleIcon === false
+            ? 1
+            : 1.5;
+
+    return (
     <div id={role.id} className="grid grid-cols-1 gap-y-5 p-5 bg-zinc-900/50 rounded-xl border-l-5"
          style={{borderColor: role.color}}>
         <header className="font-brook bg-zinc-900/50 p-4 rounded-lg flex gap-5 items-center justify-start">
-            <Image src={role.icon} alt={role.name} width={400} height={400} className="scale-150 w-28 h-28"/>
+            <Image src={role.icon} alt={role.name} width={400} height={400} className="w-28 h-28" style={{transform: `scale(${iconScale})`}}/>
             <div>
                 <h4 className="mb-2.5 text-6xl font-bold group" style={{color: role.color}}>
                     <Link
@@ -29,7 +37,7 @@ export const RoleCard: FC<{
                         <LinkIcon className="inline-block w-10 h-10 ml-2 invisible group-hover:visible" />
                     </Link>
                 </h4>
-                <Team team={role.team}/>
+                <Team type={role.type} team={role.team} subgroup={role.subgroup} source={role.source}/>
             </div>
         </header>
         <div className="grid grid-cols-1 md:grid-cols-2/1 gap-5">
@@ -58,4 +66,5 @@ export const RoleCard: FC<{
             </div>
         )}
     </div>
-);
+    );
+};

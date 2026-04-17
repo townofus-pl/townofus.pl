@@ -1,6 +1,19 @@
 import {Teams} from "@/constants/teams";
+import {RoleSubgroups} from "@/constants/roleSubgroups";
+import {ModSource} from "@/constants/modSources";
+import {RoleOrModifierTypes} from "@/constants/rolesAndModifiers";
 
-export const Team = ({team}: { team: Teams }) => {
+export const Team = ({
+    type,
+    team,
+    subgroup,
+    source,
+}: {
+    type?: RoleOrModifierTypes,
+    team: Teams,
+    subgroup?: RoleSubgroups,
+    source?: ModSource,
+}) => {
     let teamClasses;
 
     switch (team) {
@@ -16,9 +29,13 @@ export const Team = ({team}: { team: Teams }) => {
             break;
     }
 
+    const teamLabel = source === ModSource.Mira
+        ? (type === RoleOrModifierTypes.Modifier && subgroup ? subgroup : `${team}${subgroup ? ` ${subgroup}` : ''}`)
+        : `Team: ${team}`;
+
     return (
         <div className={`inline-block py-1 px-2.5 rounded text-2xl ${teamClasses}`}>
-           Team: {team}
+            {teamLabel}
         </div>
     );
 }
