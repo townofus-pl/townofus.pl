@@ -26,6 +26,7 @@ import {MiraMercenary} from './mercenary';
 import {MiraMedium} from './medium';
 import {MiraMiner} from './miner';
 import {MiraMystic} from './mystic';
+import {MiraOfficer} from './officer';
 import {MiraParasite} from './parasite';
 import {MiraPestilence} from './pestilence';
 import {MiraPlaguebearer} from './plaguebearer';
@@ -115,6 +116,7 @@ export const MiraRoles = [
     MiraMirrorcaster,
     MiraMorphling,
     MiraMystic,
+    MiraOfficer,
     MiraOracle,
     MiraPolitician,
     MiraPlumber,

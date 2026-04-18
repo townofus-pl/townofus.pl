@@ -63,7 +63,7 @@ export default async function Lobby15Plus() {
                   <p className="text-xl text-gray-100">Mod zawiera:</p>
                   <ul className="text-left text-lg text-gray-100 space-y-2 list-disc pl-6">
                     <li>poprawiony widok podczas głosowania, na vitalsach oraz na ekranie Transportera/Glitcha,</li>
-                    <li>opcję tworzenia lobby do 35 graczy (komenda <code className="bg-gray-800 text-base text-white px-1 rounded font-mono">!limit [number]</code>).</li>
+                    <li>opcję tworzenia lobby do 35 graczy.</li>
                   </ul>
                 </div>
 
