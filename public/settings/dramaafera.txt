@@ -293,11 +293,11 @@ True
 Assassin Can Guess Lovers
 True
 Radiate Colour Range
-0
-Radiate Max Range
-1,25
-Sense Duration
 1
+Radiate Max Range
+3
+Sense Duration
+10
 Examine Cooldown
 20
 Show Detective Reports
@@ -319,21 +319,21 @@ Footprint Size
 Footprint Interval
 0,05
 Footprint Duration
-15
+10
 Anonymous Footprint
 False
 Footprint Vent Visible
 False
 Watch Cooldown
-8
+1
 Lookout Watches Reset After Each Round
 True
 Maximum Number Of Players That Can Be Watched
-2
+5
 Dead Body Arrow Duration
-0,24999984
+1
 Seer Cooldown
-12,5
+10
 Crewmate Killing Roles Are Red
 True
 Neutral Benign Roles Are Red
@@ -355,31 +355,31 @@ True
 Who Sees Dead Bodies On Admin
 1
 Arrow Update Interval
-1
+0,5
 Track Cooldown
-15
+3
 Tracker Arrows Reset After Each Round
 True
 Maximum Number Of Tracks
-10
+3
 Min Amount Of Time In Trap To Register
 0
 Trap Cooldown
-12
+10
 Traps Removed After Each Round
 True
 Maximum Number Of Traps
 1
 Trap Size
-0,40000004
+0,25
 Minimum Number Of Roles Required To Trigger Trap
-5
+3
 Hunter Kill Cooldown
-30
+10
 Hunter Stalk Cooldown
-15
-Hunter Stalk Duration
 5
+Hunter Stalk Duration
+60
 Maximum Stalk Uses
 3
 Hunter Kills Last Voter If Voted Out
@@ -393,17 +393,17 @@ True
 Sheriff Kills Neutral Killing Roles
 True
 Sheriff Kill Cooldown
-35
+20
 Sheriff Can Report Who They've Killed
 True
 Can Be Killed On Alert
 False
 Alert Cooldown
-22,5
+20
 Alert Duration
-5
+10
 Maximum Number Of Alerts
-2
+5
 Number Of Vigilante Kills
 15
 Vigilante Can Kill More Than Once Per Meeting
@@ -419,9 +419,9 @@ True
 Vigilante Can Guess Lovers
 True
 Jail Cooldown
-5
+1
 Maximum Number Of Executes
-3
+5
 Campaign Cooldown
 20
 Prosecutor Dies When They Exile A Crewmate
@@ -429,13 +429,13 @@ True
 Swapper Can Button
 True
 Altruist Revive Duration
-4
+1
 Revive Uses
 5
 Revive Radius
-1,5
+1
 Barrier Cooldown
-35
+20
 Show Barriered Player
 2
 Cleric Gets Attack Notification
@@ -449,7 +449,7 @@ False
 Show Medic Reports
 True
 Time Where Medic Will Have Color Type
-32,5
+20
 Confess Cooldown
 20
 Initial Bless Cooldown
@@ -465,7 +465,7 @@ True
 Show Fortified Player
 2
 Maximum Number Of Fixes
-1
+5
 Mediate Cooldown
 5
 Reveal Appearance Of Mediate Target
@@ -475,13 +475,13 @@ True
 Who Is Revealed With Mediate
 2
 Flush Cooldown
-15
+10
 Maximum Number Of Barricades
 5
 Transport Cooldown
-27,5
+20
 Maximum Number Of Transports
-2
+5
 Transporter Can Use Vitals
 True
 Amnesiac Gets Arrows Pointing To Dead Bodies
@@ -557,27 +557,27 @@ Ignite Radius
 Arsonist Can Vent
 True
 Mimic Cooldown
-30
+20
 Mimic Duration
-5
+10
 Hack Cooldown
-12,5
+10
 Hack Duration
-5
+10
 Glitch Kill Cooldown
-17,5
+15
 Glitch Can Vent
 True
 Juggernaut Initial Kill Cooldown
-12,5
+15
 Reduced Kill Cooldown Per Kill
 2,5
 Juggernaut Can Vent
 True
 Infect Cooldown
-15
+10
 Pestilence Kill Cooldown
-17,5
+10
 Pestilence Can Vent
 True
 Reap Cooldown
@@ -585,7 +585,7 @@ Reap Cooldown
 Soul Collector Can Vent
 True
 Vampire Bite Cooldown
-25
+20
 Vampires Have Impostor Vision
 False
 Vampires Can Vent
@@ -599,59 +599,59 @@ False
 Can Convert Neutral Evil Roles
 False
 Rampage Cooldown
-17,5
+20
 Rampage Duration
-17,5
+10
 Rampage Kill Cooldown
-4
+2,5
 Werewolf Can Vent When Rampaged
 True
 Blind Cooldown
-32,5
+20
 Blind Duration
-22,5
+10
 Blind Radius
-1,5
+1
 Recall Cooldown
-12,5
+10
 Escapist Can Vent
 True
 Flash Grenade Cooldown
-15
+20
 Flash Grenade Duration
 10
 Flash Radius
-2
+1
 Grenadier Can Vent
 True
 Morphling Cooldown
-35
+20
 Morphling Duration
-15
+10
 Morphling Can Vent
 True
 Swoop Cooldown
-17,5
+20
 Swoop Duration
-5
+10
 Swooper Can Vent
 True
 Ability Cooldown
-37,5
+20
 Ability Duration
-8
+10
 Sprint Speed
-1,9999993
+2,5
 Minimum Freeze Speed
-0,7500001
+0,50000006
 Freeze Radius
-0,25
+1
 Detonate Delay
 5
 Max Kills In Detonation
-5
+15
 Detonate Radius
-0,6000001
+0,50000006
 Bomber Can Vent
 True
 All Impostors See Bomb
@@ -671,19 +671,19 @@ False
 Time It Takes To Fully Charge
 20
 Time It Takes To Use Full Charge
-2,249999
+2,4999988
 Initial Blackmail Cooldown
-12
+1
 Only Target Sees Blackmail
 False
 Maximum People Alive Where Blackmailed Can Vote
 1
 Hypnotize Cooldown
-27,5
+10
 Mine Cooldown
-25
+10
 Drag Cooldown
-17,5
+10
 Undertaker Drag Speed
 1
 Undertaker Can Vent
@@ -699,7 +699,7 @@ Diseased Kill Multiplier
 Chill Duration
 10
 Chill Start Speed
-0,49999994
+0,25
 Flash Speed
 1,4999998
 Giant Speed
@@ -713,7 +713,7 @@ True
 Impostor Lover Can Kill Teammate
 False
 Broadcast Duration
-10
+15
 Transparency Delay
 1
 Turn Transparent Duration

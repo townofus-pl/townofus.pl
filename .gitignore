@@ -55,3 +55,4 @@ dev.db
 
 # AI / LLM
 .opencode/
+.ai-plans/
