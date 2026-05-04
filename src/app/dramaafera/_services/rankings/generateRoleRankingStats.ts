@@ -1,5 +1,6 @@
 import { Teams } from '@/constants/teams';
 import type { RoleRankingStats } from './types';
+import type { Prisma } from '@prisma/client';
 import {
   convertRoleNameForDisplay,
   getRoleColor,
@@ -10,20 +11,37 @@ import { withoutDeleted } from '@/app/api/schema/common';
 import { CURRENT_SEASON } from '@/app/dramaafera/_constants/seasons';
 
 // Generate role ranking statistics
-export async function generateRoleRankingStats(seasonId?: number): Promise<RoleRankingStats[]> {
+export async function generateRoleRankingStats(seasonId?: number, dateFrom?: Date, dateTo?: Date): Promise<RoleRankingStats[]> {
   const prisma = await getDatabaseClient();
   if (!prisma) return [];
 
   const season = seasonId ?? CURRENT_SEASON;
 
+  // Build the game where clause with optional date filtering
+  const gameWhereClause: Prisma.GameWhereInput = {
+    ...withoutDeleted,
+    season,
+  };
+
+  if (dateFrom || dateTo) {
+    gameWhereClause.startTime = {};
+    if (dateFrom) {
+      gameWhereClause.startTime.gte = dateFrom;
+    }
+    if (dateTo) {
+      const endOfDay = new Date(dateTo);
+      endOfDay.setHours(23, 59, 59, 999);
+      gameWhereClause.startTime.lte = endOfDay;
+    }
+  }
+
+  const whereClause: Prisma.GamePlayerStatisticsWhereInput = {
+    player: withoutDeleted,
+    game: gameWhereClause,
+  };
+
   const stats = await prisma.gamePlayerStatistics.findMany({
-    where: {
-      player: withoutDeleted,
-      game: {
-        ...withoutDeleted,
-        season,
-      },
-    },
+    where: whereClause,
     select: {
       win: true,
       totalPoints: true,
@@ -79,7 +97,7 @@ export async function generateRoleRankingStats(seasonId?: number): Promise<RoleR
 
   const roleRankingStats: RoleRankingStats[] = Array.from(roleStats.entries()).map(([roleName, data]) => {
     const winRate = data.gamesPlayed > 0 ? Math.round((data.wins / data.gamesPlayed) * 100) : 0;
-    const averagePoints = data.gamesPlayed > 0 ? Math.round(data.totalPoints / data.gamesPlayed) : 0;
+    const averagePoints = data.gamesPlayed > 0 ? data.totalPoints / data.gamesPlayed : 0;
 
     const displayRoleName = convertRoleNameForDisplay(roleName);
     const roleColor = getRoleColor(displayRoleName);
@@ -92,7 +110,7 @@ export async function generateRoleRankingStats(seasonId?: number): Promise<RoleR
       gamesPlayed: playerData.gamesPlayed,
       wins: playerData.wins,
       winRate: playerData.gamesPlayed > 0 ? Math.round((playerData.wins / playerData.gamesPlayed) * 100) : 0,
-      averagePoints: playerData.gamesPlayed > 0 ? Math.round(playerData.totalPoints / playerData.gamesPlayed) : 0
+      averagePoints: playerData.gamesPlayed > 0 ? playerData.totalPoints / playerData.gamesPlayed : 0
     }));
 
     players.sort((a, b) => {
@@ -110,6 +128,7 @@ export async function generateRoleRankingStats(seasonId?: number): Promise<RoleR
       gamesPlayed: data.gamesPlayed,
       wins: data.wins,
       winRate,
+      totalPoints: data.totalPoints,
       averagePoints,
       players
     };

@@ -38,9 +38,12 @@ Claude Code CLI accesses the same skills via `.claude/skills/` (symlinks to `.gi
 |--------------------------|----------------------------------------------------------------|
 | `create-api-route`       | Scaffold a new API route with handler, route.ts, and schemas   |
 | `create-migration`       | Create and apply a Prisma + D1 migration                       |
+| `import-d1-database`     | Safely import a remote D1 export into local development state  |
 | `create-role-or-modifier`| Add a new role or modifier with icon, types, and registration  |
 | `plan-feature`           | Plan a new feature: design decisions, tasks, and phased impl   |
 | `weekly-content-update`  | Weekly game data and ranking content update workflow           |
+
+Use `import-d1-database` when syncing production D1 data into local state and the raw export fails because of foreign keys, dump ordering, or wrangler transaction limits.
 
 ### Slash Commands
 

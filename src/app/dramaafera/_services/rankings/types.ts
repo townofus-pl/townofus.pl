@@ -18,6 +18,7 @@ export interface RoleRankingStats {
   gamesPlayed: number;
   wins: number;
   winRate: number;
+  totalPoints: number;
   averagePoints: number;
   players: Array<{
     playerName: string;
