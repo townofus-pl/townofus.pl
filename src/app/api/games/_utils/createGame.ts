@@ -114,6 +114,36 @@ export async function createGameFromData(
       }
     });
 
+    // Auto-delete Lista Cweli for this date when first game of the day is added
+    const dayStart = new Date(startTime);
+    dayStart.setHours(0, 0, 0, 0);
+    const dayEnd = new Date(startTime);
+    dayEnd.setHours(23, 59, 59, 999);
+
+    const listaCweliForDay = await prisma.gameSessionList.findMany({
+      where: {
+        date: {
+          gte: dayStart,
+          lt: dayEnd
+        },
+        season: game.season,
+        deletedAt: null
+      }
+    });
+
+    if (listaCweliForDay.length > 0) {
+      console.log(`🗑️ Auto-deleting ${listaCweliForDay.length} Lista Cweli entries for date ${startTime.toISOString()}`);
+      
+      await Promise.all(
+        listaCweliForDay.map((list) =>
+          prisma.gameSessionList.update({
+            where: { id: list.id },
+            data: { deletedAt: new Date() }
+          })
+        )
+      );
+    }
+
     // Step 3: Create game player statistics
     const gamePlayerStatsMap = new Map<string, number>();
     

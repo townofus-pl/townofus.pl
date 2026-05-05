@@ -1,9 +1,9 @@
 'use server';
 
-import { getDatabaseClient } from '../db';
+import { getDatabaseClient } from '@/app/dramaafera/_services/db';
 import { withoutDeleted } from '@/app/api/schema/common';
 import { CURRENT_SEASON } from '@/app/dramaafera/_constants/seasons';
-import type { GameSessionListEntry, GameSessionListSummary } from './types';
+import type { GameSessionListEntry, GameSessionListSummary } from '@/app/dramaafera/_services/gameSessionList/types';
 
 /**
  * Get all saved game session lists for the current season
