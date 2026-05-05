@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import HostClient from './HostClient';
 import RoleRankingTable from './RoleRankingTable';
+import ListaCweliTab from './ListaCweliTab';
 import type { GameDateEntry } from '@/app/dramaafera/_services';
 import type { RoleRankingStats } from '@/app/dramaafera/_services';
 
@@ -10,10 +11,11 @@ interface HostTabsProps {
   initialDates: GameDateEntry[];
   seasonId: number;
   roles: RoleRankingStats[];
+  availableAvatars: string[];
 }
 
-export default function HostTabs({ initialDates, seasonId, roles }: HostTabsProps) {
-  const [activeTab, setActiveTab] = useState<'host' | 'role'>('host');
+export default function HostTabs({ initialDates, seasonId, roles, availableAvatars }: HostTabsProps) {
+  const [activeTab, setActiveTab] = useState<'host' | 'role' | 'lista'>('host');
 
   return (
     <div>
@@ -39,12 +41,23 @@ export default function HostTabs({ initialDates, seasonId, roles }: HostTabsProp
         >
           Role
         </button>
+        <button
+          onClick={() => setActiveTab('lista')}
+          className={`px-6 py-3 font-semibold text-lg transition-all ${
+            activeTab === 'lista'
+              ? 'text-yellow-400 border-b-2 border-yellow-400'
+              : 'text-gray-400 hover:text-gray-300'
+          }`}
+        >
+          Lista Cweli
+        </button>
       </div>
 
       {/* Zawartość kart */}
       <div>
         {activeTab === 'host' && <HostClient initialDates={initialDates} seasonId={seasonId} />}
         {activeTab === 'role' && <RoleRankingTable roles={roles} seasonId={seasonId} />}
+        {activeTab === 'lista' && <ListaCweliTab seasonId={seasonId} availableAvatars={availableAvatars} />}
       </div>
     </div>
   );

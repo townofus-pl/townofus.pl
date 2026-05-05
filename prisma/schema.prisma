@@ -335,3 +335,25 @@ model PlayerRanking {
     @@index([playerId, season, createdAt])
     @@map("player_rankings")
 }
+
+// =============================================================================
+// GAME SESSION LISTS (LISTA CWELI)
+// =============================================================================
+
+model GameSessionList {
+    id          Int     @id @default(autoincrement())
+    season      Int
+    date        DateTime  // Session date (stored as date, format: YYYY-MM-DD HH:mm:ss)
+    playerNames String    // JSON array of player names: ["nick1", "nick2", ...]
+
+    // Timestamps
+    createdAt   DateTime @default(now())
+    updatedAt   DateTime @updatedAt
+    deletedAt   DateTime? // Soft delete
+
+    @@unique([season, date])
+    @@index([season])
+    @@index([date])
+    @@index([deletedAt])
+    @@map("game_session_lists")
+}
