@@ -7,13 +7,13 @@ import RoleTable from "@/app/_components/RoleTable";
 import type { GameDateEntry, SessionSummary } from "@/app/dramaafera/_services";
 import { CURRENT_SEASON } from "@/app/dramaafera/_constants/seasons";
 import { getSessionResults } from "@/app/dramaafera/_actions/seasonActions";
-import Image from "next/image";
+import { AvatarImageFill } from "@/app/dramaafera/_components/PodsumowanieClient/AvatarImage";
 
 interface GameSessionListData {
     id: number;
     date: string;
     displayDate: string;
-    players: Array<{ name: string }>;
+    players: Array<{ name: string; eloRanking: number | null }>;
 }
 
 interface WynikiClientProps {
@@ -26,6 +26,12 @@ interface WynikiClientProps {
 export default function WynikiClient({ initialDates, initialResults, seasonId, listaCweli = [] }: WynikiClientProps) {
     // Merge dates and Lista Cweli into combined list
     const combinedDates = useMemo(() => {
+        const getSortableDateNumber = (date: string): number => {
+            const normalized = date.replace(/[^\d]/g, '');
+            const parsed = Number.parseInt(normalized, 10);
+            return Number.isNaN(parsed) ? 0 : parsed;
+        };
+
         const combined: Array<{
             date: string;
             displayDate: string;
@@ -55,14 +61,14 @@ export default function WynikiClient({ initialDates, initialResults, seasonId, l
         });
 
         // Sort by date descending
-        return combined.sort((a, b) => b.date.localeCompare(a.date));
+        return combined.sort((a, b) => getSortableDateNumber(b.date) - getSortableDateNumber(a.date));
     }, [initialDates, listaCweli]);
 
-    const [selectedDate, setSelectedDate] = useState<string>(
-        initialResults?.date ?? (combinedDates.length > 0 ? combinedDates[0].date : "")
+    const [selectedDate, setSelectedDate] = useState<string>(combinedDates[0]?.date ?? "");
+    const [resultsData, setResultsData] = useState<SessionSummary | null>(
+        combinedDates[0]?.type === 'games' ? initialResults : null
     );
-    const [resultsData, setResultsData] = useState<SessionSummary | null>(initialResults);
-    const [selectedDateType, setSelectedDateType] = useState<'games' | 'lista'>('games');
+    const [selectedDateType, setSelectedDateType] = useState<'games' | 'lista'>(combinedDates[0]?.type ?? 'games');
     const [dataLoading, setDataLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [lastUpdateHash, setLastUpdateHash] = useState<string>(() =>
@@ -255,7 +261,7 @@ export default function WynikiClient({ initialDates, initialResults, seasonId, l
                         return (
                             <div className="space-y-6">
                                 <div className="text-center">
-                                    <h2 className="text-3xl font-bold text-yellow-400 mb-2">📋 Lista Cweli</h2>
+                                    <h2 className="text-3xl font-bold text-yellow-400 mb-2">Lista Cweli</h2>
                                     <p className="text-gray-400">{listaItem.players.length} graczy</p>
                                 </div>
 
@@ -266,18 +272,13 @@ export default function WynikiClient({ initialDates, initialResults, seasonId, l
                                             className="flex flex-col items-center gap-2 p-3 bg-zinc-800/50 rounded-lg border border-zinc-700 hover:border-yellow-500 transition-colors"
                                         >
                                             <div className="relative w-16 h-16">
-                                                <Image
-                                                    src={`/images/avatars/${player.name}.png`}
-                                                    alt={player.name}
-                                                    fill
+                                                <AvatarImageFill
+                                                    nickname={player.name}
                                                     className="object-cover rounded-lg"
-                                                    onError={(e: React.SyntheticEvent<HTMLImageElement>) => {
-                                                        e.currentTarget.src = '/images/avatars/placeholder.png';
-                                                    }}
                                                 />
                                             </div>
                                             <p className="text-sm font-semibold text-center text-white truncate w-full">
-                                                {player.name}
+                                                {player.name} ({player.eloRanking ?? 2000})
                                             </p>
                                         </div>
                                     ))}

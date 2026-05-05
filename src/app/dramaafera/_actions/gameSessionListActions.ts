@@ -95,6 +95,8 @@ export async function saveGameSessionList(
 
   try {
     const playerNamesJson = JSON.stringify(playerNames);
+    const normalizedDate = new Date(date);
+    normalizedDate.setUTCHours(0, 0, 0, 0);
 
     let result;
     if (listIdToUpdate) {
@@ -102,19 +104,42 @@ export async function saveGameSessionList(
       result = await prisma.gameSessionList.update({
         where: { id: listIdToUpdate },
         data: {
+          date: normalizedDate,
           playerNames: playerNamesJson,
+          deletedAt: null,
           updatedAt: new Date(),
         },
       });
     } else {
-      // Create new
-      result = await prisma.gameSessionList.create({
-        data: {
+      // Reuse existing row for the same season/date (including soft-deleted)
+      // to avoid unique constraint collisions on (season, date).
+      const existingForDate = await prisma.gameSessionList.findFirst({
+        where: {
           season: seasonId,
-          date,
-          playerNames: playerNamesJson,
+          date: normalizedDate,
         },
       });
+
+      if (existingForDate) {
+        result = await prisma.gameSessionList.update({
+          where: { id: existingForDate.id },
+          data: {
+            date: normalizedDate,
+            playerNames: playerNamesJson,
+            deletedAt: null,
+            updatedAt: new Date(),
+          },
+        });
+      } else {
+        // Create new
+        result = await prisma.gameSessionList.create({
+          data: {
+            season: seasonId,
+            date: normalizedDate,
+            playerNames: playerNamesJson,
+          },
+        });
+      }
     }
 
     return {
@@ -185,6 +210,67 @@ export async function deleteGameSessionListByDate(seasonId: number, date: Date):
   } catch (error) {
     console.error('Error deleting game session list by date:', error);
     return false;
+  }
+}
+
+/**
+ * Get game statistics for all players to support sorting
+ */
+export async function getPlayerGameStats(
+  seasonId: number,
+  playerNames: string[]
+): Promise<Record<string, { lastGameDate: Date | null; secondLastGameDate: Date | null; gameCount: number }>> {
+  const prisma = await getDatabaseClient();
+  if (!prisma) return {};
+
+  try {
+    const stats: Record<string, { lastGameDate: Date | null; secondLastGameDate: Date | null; gameCount: number }> = {};
+
+    for (const playerName of playerNames) {
+      // Find player by name
+      const player = await prisma.player.findFirst({
+        where: { name: playerName, ...withoutDeleted },
+      });
+
+      if (!player) {
+        stats[playerName] = { lastGameDate: null, secondLastGameDate: null, gameCount: 0 };
+        continue;
+      }
+
+      // Get all games for this player in the season
+      const games = await prisma.gamePlayerStatistics.findMany({
+        where: {
+          playerId: player.id,
+          game: {
+            season: seasonId,
+            ...withoutDeleted,
+          },
+        },
+        include: {
+          game: {
+            select: { startTime: true },
+          },
+        },
+        orderBy: {
+          game: { startTime: 'desc' },
+        },
+      });
+
+      const gameCount = games.length;
+      const lastGameDate = games[0]?.game.startTime || null;
+      const secondLastGameDate = games[1]?.game.startTime || null;
+
+      stats[playerName] = {
+        lastGameDate,
+        secondLastGameDate,
+        gameCount,
+      };
+    }
+
+    return stats;
+  } catch (error) {
+    console.error('Error fetching player game stats:', error);
+    return {};
   }
 }
 

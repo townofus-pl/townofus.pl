@@ -1,17 +1,25 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { AvatarImageFill } from '@/app/dramaafera/_components/PodsumowanieClient/AvatarImage';
 import {
   getGameSessionLists,
   saveGameSessionList,
   deleteGameSessionList,
   getGameSessionListById,
+  getPlayerGameStats,
 } from '@/app/dramaafera/_actions/gameSessionListActions';
 import type { GameSessionListSummary } from '@/app/dramaafera/_services/gameSessionList/types';
 
 interface ListaCweliTabProps {
   seasonId: number;
   availableAvatars: string[];
+}
+
+interface PlayerStats {
+  lastGameDate: Date | null;
+  secondLastGameDate: Date | null;
+  gameCount: number;
 }
 
 export default function ListaCweliTab({ seasonId, availableAvatars }: ListaCweliTabProps) {
@@ -25,6 +33,42 @@ export default function ListaCweliTab({ seasonId, availableAvatars }: ListaCweli
   const [isSaving, setIsSaving] = useState(false);
   const [editingListId, setEditingListId] = useState<number | null>(null);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
+  const [playerStats, setPlayerStats] = useState<Record<string, PlayerStats>>({});
+
+  // Load game stats on mount
+  useEffect(() => {
+    const loadStats = async () => {
+      const stats = await getPlayerGameStats(seasonId, availableAvatars);
+      setPlayerStats(stats);
+    };
+    loadStats();
+  }, [seasonId, availableAvatars]);
+
+  // Sort avatars by priorities
+  const sortedAvatars = useMemo(() => {
+    return [...availableAvatars].sort((a, b) => {
+      const statsA = playerStats[a];
+      const statsB = playerStats[b];
+
+      if (!statsA || !statsB) return a.localeCompare(b);
+
+      // Priority 1: Played in last session (most recent)
+      const aLastGame = statsA.lastGameDate?.getTime() || 0;
+      const bLastGame = statsB.lastGameDate?.getTime() || 0;
+      if (aLastGame !== bLastGame) return bLastGame - aLastGame;
+
+      // Priority 2: Played in second last session
+      const aSecondLast = statsA.secondLastGameDate?.getTime() || 0;
+      const bSecondLast = statsB.secondLastGameDate?.getTime() || 0;
+      if (aSecondLast !== bSecondLast) return bSecondLast - aSecondLast;
+
+      // Priority 3: Number of games in season
+      if (statsA.gameCount !== statsB.gameCount) return statsB.gameCount - statsA.gameCount;
+
+      // Priority 4: Alphabetical
+      return a.localeCompare(b);
+    });
+  }, [availableAvatars, playerStats]);
 
   useEffect(() => {
     const loadLists = async () => {
@@ -185,19 +229,29 @@ export default function ListaCweliTab({ seasonId, availableAvatars }: ListaCweli
         <label className="block text-sm font-semibold text-zinc-300 mb-4">
           Gracze z avatarów
         </label>
-        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3 max-h-96 overflow-y-auto">
-          {availableAvatars.map((playerName) => (
+        <div className="grid grid-cols-3 gap-4">
+          {sortedAvatars.map((playerName) => (
             <label
               key={playerName}
-              className="flex items-center gap-3 p-3 bg-zinc-800/50 rounded-lg border border-zinc-600 hover:border-yellow-500 cursor-pointer transition-colors"
+              className="flex items-center gap-3 p-4 bg-zinc-800/50 rounded-lg border border-zinc-600 hover:border-yellow-500 cursor-pointer transition-colors"
             >
+              {/* Avatar */}
+              <div className="flex-shrink-0 w-12 h-12 relative rounded overflow-hidden bg-zinc-700">
+                <AvatarImageFill nickname={playerName} className="object-cover" />
+              </div>
+
+              {/* Nick */}
+              <span className="flex-1 text-sm font-medium text-zinc-200 min-w-0 truncate">
+                {playerName}
+              </span>
+
+              {/* Checkbox */}
               <input
                 type="checkbox"
                 checked={selectedPlayerNames.has(playerName)}
                 onChange={() => handlePlayerToggle(playerName)}
-                className="w-4 h-4 cursor-pointer"
+                className="flex-shrink-0 w-5 h-5 cursor-pointer accent-yellow-500"
               />
-              <span className="text-sm text-zinc-300">{playerName}</span>
             </label>
           ))}
         </div>

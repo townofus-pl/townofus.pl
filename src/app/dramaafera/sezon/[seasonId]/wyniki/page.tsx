@@ -32,7 +32,7 @@ export default async function SeasonWynikiPage({ params }: PageProps) {
         id: number;
         date: string;
         displayDate: string;
-        players: Array<{ name: string }>;
+        players: Array<{ name: string; eloRanking: number | null }>;
     }> = [];
 
     if (prisma) {
@@ -47,20 +47,60 @@ export default async function SeasonWynikiPage({ params }: PageProps) {
                 },
             });
 
+            const uniquePlayerNames = Array.from(
+                new Set(
+                    lists.flatMap((list) => JSON.parse(list.playerNames) as string[])
+                )
+            );
+
+            const players = await prisma.player.findMany({
+                where: {
+                    ...withoutDeleted,
+                    name: {
+                        in: uniquePlayerNames,
+                    },
+                },
+                include: {
+                    currentRanking: true,
+                },
+            });
+
+            const eloByPlayerName = new Map(
+                players.map((player) => [
+                    player.name,
+                    player.currentRanking?.score != null
+                        ? Math.round(player.currentRanking.score)
+                        : null,
+                ])
+            );
+
             listaCweli = lists.map((list) => {
                 const players = JSON.parse(list.playerNames) as string[];
                 const dateObj = new Date(list.date);
+                const sortedPlayers = players
+                    .map((name) => ({
+                        name,
+                        eloRanking: eloByPlayerName.get(name) ?? null,
+                    }))
+                    .sort((a, b) => {
+                        const eloA = a.eloRanking ?? 2000;
+                        const eloB = b.eloRanking ?? 2000;
+                        if (eloA !== eloB) {
+                            return eloB - eloA;
+                        }
+
+                        return a.name.localeCompare(b.name, 'pl-PL');
+                    });
                 
                 return {
                     id: list.id,
                     date: dateObj.toISOString().split('T')[0],
                     displayDate: dateObj.toLocaleDateString('pl-PL', {
-                        weekday: 'long',
-                        year: 'numeric',
                         month: 'long',
                         day: 'numeric',
+                        year: 'numeric',
                     }),
-                    players: players.map((name) => ({ name })),
+                    players: sortedPlayers,
                 };
             });
         } catch (error) {
