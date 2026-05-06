@@ -340,7 +340,7 @@ model PlayerRanking {
 // GAME SESSION LISTS (LISTA CWELI)
 // =============================================================================
 
-model GameSessionList {
+model ListaCweli {
     id          Int     @id @default(autoincrement())
     season      Int
     date        DateTime  // Session date (stored as date, format: YYYY-MM-DD HH:mm:ss)
@@ -355,5 +355,5 @@ model GameSessionList {
     @@index([season])
     @@index([date])
     @@index([deletedAt])
-    @@map("game_session_lists")
+    @@map("lista_cweli")
 }

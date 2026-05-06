@@ -16,6 +16,12 @@ export interface GameSessionListSummary {
   playerCount: number;
   players: Array<{
     name: string;
-    hasAvatar: boolean; // Whether player has avatar image
   }>;
+}
+
+export interface ListaCweliDisplayEntry {
+  id: number;
+  date: string;
+  displayDate: string;
+  players: Array<{ name: string; eloRanking: number | null }>;
 }
