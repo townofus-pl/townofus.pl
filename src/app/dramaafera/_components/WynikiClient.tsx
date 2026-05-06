@@ -67,6 +67,7 @@ export default function WynikiClient({ initialDates, initialResults, seasonId, l
     const [selectedDate, setSelectedDate] = useState<string>(
         combinedDates[0] ? `${combinedDates[0].date}__${combinedDates[0].type}` : ""
     );
+    const selectedPlainDate = selectedDate ? selectedDate.split('__')[0] : '';
     const [resultsData, setResultsData] = useState<SessionSummary | null>(
         combinedDates[0]?.type === 'games' ? initialResults : null
     );
@@ -226,7 +227,7 @@ export default function WynikiClient({ initialDates, initialResults, seasonId, l
                         players={resultsData.players}
                         reversedGames={resultsData.games}
                         detailedGames={resultsData.detailedGames}
-                        date={selectedDate}
+                        date={selectedPlainDate}
                         hideZeroStats={true}
                         seasonId={seasonId}
                     />
@@ -237,7 +238,7 @@ export default function WynikiClient({ initialDates, initialResults, seasonId, l
                         roles={resultsData.roles}
                         reversedGames={resultsData.games}
                         detailedGames={resultsData.detailedGames}
-                        date={selectedDate}
+                        date={selectedPlainDate}
                         hideZeroStats={true}
                         seasonId={seasonId}
                     />
