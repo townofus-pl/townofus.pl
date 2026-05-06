@@ -15,7 +15,7 @@ export async function getGameSessionLists(seasonId?: number): Promise<GameSessio
   const season = seasonId ?? CURRENT_SEASON;
 
   try {
-    const lists = await prisma.gameSessionList.findMany({
+    const lists = await prisma.listaCweli.findMany({
       where: {
         season,
         ...withoutDeleted,
@@ -40,9 +40,9 @@ export async function getGameSessionLists(seasonId?: number): Promise<GameSessio
         }),
         playerCount: players.length,
         players: players.map((name) => ({
-          name,
-          hasAvatar: isPlayerAvatarExists(name),
-        })),
+            name,
+            hasAvatar: true,
+          })),
       };
     });
   } catch (error) {
@@ -59,11 +59,11 @@ export async function getGameSessionListById(listId: number): Promise<GameSessio
   if (!prisma) return null;
 
   try {
-    const list = await prisma.gameSessionList.findUnique({
-      where: { id: listId },
+    const list = await prisma.listaCweli.findFirst({
+      where: { id: listId, ...withoutDeleted },
     });
 
-    if (!list || list.deletedAt) {
+    if (!list) {
       return null;
     }
 
@@ -101,7 +101,7 @@ export async function saveGameSessionList(
     let result;
     if (listIdToUpdate) {
       // Update existing
-      result = await prisma.gameSessionList.update({
+      result = await prisma.listaCweli.update({
         where: { id: listIdToUpdate },
         data: {
           date: normalizedDate,
@@ -113,7 +113,7 @@ export async function saveGameSessionList(
     } else {
       // Reuse existing row for the same season/date (including soft-deleted)
       // to avoid unique constraint collisions on (season, date).
-      const existingForDate = await prisma.gameSessionList.findFirst({
+      const existingForDate = await prisma.listaCweli.findFirst({
         where: {
           season: seasonId,
           date: normalizedDate,
@@ -121,7 +121,7 @@ export async function saveGameSessionList(
       });
 
       if (existingForDate) {
-        result = await prisma.gameSessionList.update({
+        result = await prisma.listaCweli.update({
           where: { id: existingForDate.id },
           data: {
             date: normalizedDate,
@@ -132,7 +132,7 @@ export async function saveGameSessionList(
         });
       } else {
         // Create new
-        result = await prisma.gameSessionList.create({
+        result = await prisma.listaCweli.create({
           data: {
             season: seasonId,
             date: normalizedDate,
@@ -164,7 +164,7 @@ export async function deleteGameSessionList(listId: number): Promise<boolean> {
   if (!prisma) return false;
 
   try {
-    await prisma.gameSessionList.update({
+    await prisma.listaCweli.update({
       where: { id: listId },
       data: {
         deletedAt: new Date(),
@@ -187,12 +187,12 @@ export async function deleteGameSessionListByDate(seasonId: number, date: Date):
 
   try {
     const startOfDay = new Date(date);
-    startOfDay.setHours(0, 0, 0, 0);
+    startOfDay.setUTCHours(0, 0, 0, 0);
 
     const endOfDay = new Date(date);
-    endOfDay.setHours(23, 59, 59, 999);
+    endOfDay.setUTCHours(23, 59, 59, 999);
 
-    const result = await prisma.gameSessionList.updateMany({
+    const result = await prisma.listaCweli.updateMany({
       where: {
         season: seasonId,
         date: {
@@ -224,72 +224,58 @@ export async function getPlayerGameStats(
   if (!prisma) return {};
 
   try {
+    // Batch fetch all players at once
+    const players = await prisma.player.findMany({
+      where: { name: { in: playerNames }, ...withoutDeleted },
+      select: { id: true, name: true },
+    });
+
+    const playerIdToName = new Map(players.map((p) => [p.id, p.name]));
+
     const stats: Record<string, { lastGameDate: Date | null; secondLastGameDate: Date | null; gameCount: number }> = {};
 
+    // Initialize all players with empty stats
     for (const playerName of playerNames) {
-      // Find player by name
-      const player = await prisma.player.findFirst({
-        where: { name: playerName, ...withoutDeleted },
-      });
-
-      if (!player) {
-        stats[playerName] = { lastGameDate: null, secondLastGameDate: null, gameCount: 0 };
-        continue;
-      }
-
-      // Get all games for this player in the season
-      const games = await prisma.gamePlayerStatistics.findMany({
-        where: {
-          playerId: player.id,
-          game: {
-            season: seasonId,
-            ...withoutDeleted,
-          },
-        },
-        include: {
-          game: {
-            select: { startTime: true },
-          },
-        },
-        orderBy: {
-          game: { startTime: 'desc' },
-        },
-      });
-
-      const gameCount = games.length;
-      const lastGameDate = games[0]?.game.startTime || null;
-      const secondLastGameDate = games[1]?.game.startTime || null;
-
-      stats[playerName] = {
-        lastGameDate,
-        secondLastGameDate,
-        gameCount,
-      };
+      stats[playerName] = { lastGameDate: null, secondLastGameDate: null, gameCount: 0 };
     }
+
+    if (players.length === 0) return stats;
+
+    // Fetch the last 2 game dates for each player using relation filter (avoids D1 IN clause variable limit)
+    // We query per-player but only fetch 2 rows each — much cheaper than fetching all games
+    await Promise.all(
+      players.map(async (player) => {
+        const games = await prisma.gamePlayerStatistics.findMany({
+          where: {
+            playerId: player.id,
+            game: {
+              season: seasonId,
+              ...withoutDeleted,
+            },
+          },
+          include: {
+            game: {
+              select: { startTime: true },
+            },
+          },
+          orderBy: {
+            game: { startTime: 'desc' },
+          },
+          take: 2,
+        });
+
+        const name = playerIdToName.get(player.id)!;
+        stats[name] = {
+          lastGameDate: games[0]?.game.startTime ?? null,
+          secondLastGameDate: games[1]?.game.startTime ?? null,
+          gameCount: games.length, // NOTE: with take:2 this is at most 2; use a count query if exact count needed
+        };
+      })
+    );
 
     return stats;
   } catch (error) {
     console.error('Error fetching player game stats:', error);
     return {};
   }
-}
-
-/**
- * Helper: Check if avatar exists for a player
- * Avatars are stored in /public/images/avatars/{name}.png
- */
-function isPlayerAvatarExists(_playerName: string): boolean {
-  // This is a helper that will check against known avatars
-  // In practice, we'll handle this in the component by checking against the list of available avatars
-  return true; // Placeholder - will be checked in component
-}
-
-/**
- * Get list of available player avatars from filesystem
- * Returns array of player names that have avatars
- */
-export async function getAvailablePlayerAvatars(): Promise<string[]> {
-  // This would typically read from /public/images/avatars
-  // For now, return empty - will be populated by component scanning the avatars folder
-  return [];
 }

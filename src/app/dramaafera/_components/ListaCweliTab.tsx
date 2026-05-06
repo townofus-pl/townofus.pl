@@ -8,7 +8,7 @@ import {
   deleteGameSessionList,
   getGameSessionListById,
   getPlayerGameStats,
-} from '@/app/dramaafera/_actions/gameSessionListActions';
+} from '@/app/dramaafera/_actions/listaCweliActions';
 import type { GameSessionListSummary } from '@/app/dramaafera/_services/gameSessionList/types';
 
 interface ListaCweliTabProps {
@@ -34,6 +34,13 @@ export default function ListaCweliTab({ seasonId, availableAvatars }: ListaCweli
   const [editingListId, setEditingListId] = useState<number | null>(null);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
   const [playerStats, setPlayerStats] = useState<Record<string, PlayerStats>>({});
+
+  // Auto-dismiss success messages
+  useEffect(() => {
+    if (!message || message.type !== 'success') return;
+    const timer = setTimeout(() => setMessage(null), 3000);
+    return () => clearTimeout(timer);
+  }, [message]);
 
   // Load game stats on mount
   useEffect(() => {
