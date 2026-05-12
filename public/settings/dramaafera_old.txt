@@ -569,7 +569,7 @@ Glitch Kill Cooldown
 Glitch Can Vent
 True
 Juggernaut Initial Kill Cooldown
-15
+17,5
 Reduced Kill Cooldown Per Kill
 2,5
 Juggernaut Can Vent
