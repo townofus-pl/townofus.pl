@@ -7,7 +7,7 @@ import RoleTable from "@/app/_components/RoleTable";
 import type { GameDateEntry, SessionSummary } from "@/app/dramaafera/_services";
 import { CURRENT_SEASON } from "@/app/dramaafera/_constants/seasons";
 import { getSessionResults } from "@/app/dramaafera/_actions/seasonActions";
-import { getGameSessionLists } from "@/app/dramaafera/_actions/gameSessionListActions";
+import { getGameSessionLists } from "@/app/dramaafera/_actions/listaCweliActions";
 import { AvatarImageFill } from "@/app/dramaafera/_components/PodsumowanieClient/AvatarImage";
 
 interface GameSessionListData {
@@ -65,7 +65,10 @@ export default function WynikiClient({ initialDates, initialResults, seasonId, l
         return combined.sort((a, b) => getSortableDateNumber(b.date) - getSortableDateNumber(a.date));
     }, [initialDates, listaCweli]);
 
-    const [selectedDate, setSelectedDate] = useState<string>(combinedDates[0]?.date ?? "");
+    const [selectedDate, setSelectedDate] = useState<string>(
+        combinedDates[0] ? `${combinedDates[0].date}__${combinedDates[0].type}` : ""
+    );
+    const selectedPlainDate = selectedDate ? selectedDate.split('__')[0] : '';
     const [resultsData, setResultsData] = useState<SessionSummary | null>(
         combinedDates[0]?.type === 'games' ? initialResults : null
     );
@@ -195,27 +198,30 @@ export default function WynikiClient({ initialDates, initialResults, seasonId, l
         if (seasonId !== CURRENT_SEASON) return;
         if (!selectedDate || !combinedDates.length) return;
 
-        // Sprawdź czy wybrana data to najnowsza
-        const isNewestDate = selectedDate === combinedDates[0]?.date;
+        // Sprawdź czy wybrana data to najnowsza i czy to gry (nie Lista Cweli)
+        const newestCompound = combinedDates[0] ? `${combinedDates[0].date}__${combinedDates[0].type}` : '';
+        const isNewestDate = selectedDate === newestCompound;
         if (!isNewestDate) return;
 
         const interval = setInterval(() => {
             if (selectedDateType === 'games') {
-                fetchResultsData(selectedDate, true);
+                fetchResultsData(selectedPlainDate, true);
             } else if (selectedDateType === 'lista') {
-                fetchListaCweliData(selectedDate, true);
+                fetchListaCweliData(selectedPlainDate, true);
             }
         }, 30000);
 
         return () => clearInterval(interval);
-    }, [seasonId, selectedDate, selectedDateType, combinedDates, fetchResultsData, fetchListaCweliData]);
+    }, [seasonId, selectedDate, selectedDateType, selectedPlainDate, combinedDates, fetchResultsData, fetchListaCweliData]);
 
     const handleDateChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        const dateValue = e.target.value;
-        setSelectedDate(dateValue);
+        const compoundValue = e.target.value;
+        setSelectedDate(compoundValue);
         
-        // Determine if this is a game date or Lista Cweli
-        const selectedItem = combinedDates.find(item => item.date === dateValue);
+        const [dateValue, typeValue] = compoundValue.split('__') as [string, 'games' | 'lista'];
+        const selectedItem = combinedDates.find(
+            item => item.date === dateValue && item.type === typeValue
+        );
         if (selectedItem) {
             setSelectedDateType(selectedItem.type);
             if (selectedItem.type === 'games') {
@@ -251,15 +257,15 @@ export default function WynikiClient({ initialDates, initialResults, seasonId, l
                             style={{ minWidth: '200px' }}
                         >
                             {combinedDates.map((item) => (
-                                <option key={`${item.date}-${item.type}`} value={item.date} className="font-barlow text-base">
-                                    {item.displayDate} {item.type === 'lista' ? '📋' : ''}
+                                <option key={`${item.date}-${item.type}`} value={`${item.date}__${item.type}`} className="font-barlow text-base">
+                                    {item.displayDate} {item.type === 'lista' ? '(lista)' : ''}
                                 </option>
                             ))}
                         </select>
                     </h1>
 
                     {/* Wskaźnik auto-refresh dla najnowszej daty (tylko bieżący sezon) */}
-                    {seasonId === CURRENT_SEASON && selectedDate === combinedDates[0]?.date && (
+                    {seasonId === CURRENT_SEASON && selectedDate === (combinedDates[0] ? `${combinedDates[0].date}__${combinedDates[0].type}` : '') && (
                         <div className="flex items-center justify-center gap-2 text-sm text-gray-400">
                             <div className={`w-2 h-2 rounded-full ${isRefreshing ? 'bg-yellow-400 animate-pulse' : 'bg-green-400'}`}></div>
                             <span>
@@ -294,7 +300,7 @@ export default function WynikiClient({ initialDates, initialResults, seasonId, l
                         players={resultsData.players}
                         reversedGames={resultsData.games}
                         detailedGames={resultsData.detailedGames}
-                        date={selectedDate}
+                        date={selectedPlainDate}
                         hideZeroStats={true}
                         seasonId={seasonId}
                     />
@@ -305,7 +311,7 @@ export default function WynikiClient({ initialDates, initialResults, seasonId, l
                         roles={resultsData.roles}
                         reversedGames={resultsData.games}
                         detailedGames={resultsData.detailedGames}
-                        date={selectedDate}
+                        date={selectedPlainDate}
                         hideZeroStats={true}
                         seasonId={seasonId}
                     />

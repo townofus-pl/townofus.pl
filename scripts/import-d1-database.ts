@@ -27,6 +27,7 @@ const TEMP_RESTORE_FILE = path.join(TEMP_DIR, 'restore-player-current-ranking.sq
 const TABLE_ORDER = [
     'players',
     'games',
+    'lista_cweli',
     'meetings',
     'player_rankings',
     'game_player_statistics',
@@ -262,9 +263,14 @@ async function main(): Promise<void> {
     const options = parseArgs(process.argv.slice(2));
     const wranglerCommand = getWranglerCommand();
 
+    // Wrangler appends 'v3/d1/' internally to --persist-to, so we must pass the
+    // grandparent of stateDir (.wrangler/state) to land at the correct default path.
+    const persistToDir = path.resolve(options.stateDir, '../..');
+
     console.log(`Baza: ${options.databaseName}`);
     console.log(`Export: ${options.exportFile}`);
     console.log(`Stan lokalny: ${options.stateDir}`);
+    console.log(`Persist-to: ${persistToDir}`);
 
     if (options.dryRun) {
         console.log('Tryb testowy: nie uruchamiam wrangler i nie zapisuję zmian.');
@@ -292,16 +298,16 @@ async function main(): Promise<void> {
     console.log(`UPDATE-ów do odtworzenia currentRankingId: ${restoreStatements.length}`);
 
     console.log('Aplikuję migracje do świeżego stanu lokalnego...');
-    runCommand(wranglerCommand, ['d1', 'migrations', 'apply', options.databaseName, '--local', '--persist-to', options.stateDir], 'y\n');
+    runCommand(wranglerCommand, ['d1', 'migrations', 'apply', options.databaseName, '--local', '--persist-to', persistToDir], 'y\n');
 
     console.log('Importuję dane...');
-    runCommand(wranglerCommand, ['d1', 'execute', options.databaseName, '--local', '--file', options.importFile, '--persist-to', options.stateDir]);
+    runCommand(wranglerCommand, ['d1', 'execute', options.databaseName, '--local', '--file', options.importFile, '--persist-to', persistToDir]);
 
     console.log('Odtwarzam currentRankingId...');
-    runCommand(wranglerCommand, ['d1', 'execute', options.databaseName, '--local', '--file', options.restoreFile, '--persist-to', options.stateDir]);
+    runCommand(wranglerCommand, ['d1', 'execute', options.databaseName, '--local', '--file', options.restoreFile, '--persist-to', persistToDir]);
 
     console.log('Sprawdzam spójność kluczy obcych...');
-    runCommand(wranglerCommand, ['d1', 'execute', options.databaseName, '--local', '--persist-to', options.stateDir, '--command', 'PRAGMA foreign_key_check;']);
+    runCommand(wranglerCommand, ['d1', 'execute', options.databaseName, '--local', '--persist-to', persistToDir, '--command', 'PRAGMA foreign_key_check;']);
 
     console.log('Sprawdzam liczbę rekordów w kluczowych tabelach...');
     for (const tableName of ['players', 'games', 'player_rankings', 'game_player_statistics', 'meetings', 'game_events']) {
@@ -313,7 +319,7 @@ async function main(): Promise<void> {
                 options.databaseName,
                 '--local',
                 '--persist-to',
-                options.stateDir,
+                persistToDir,
                 '--command',
                 `SELECT COUNT(*) AS c FROM ${tableName};`,
             ],

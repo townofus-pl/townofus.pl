@@ -116,11 +116,11 @@ export async function createGameFromData(
 
     // Auto-delete Lista Cweli for this date when first game of the day is added
     const dayStart = new Date(startTime);
-    dayStart.setHours(0, 0, 0, 0);
+    dayStart.setUTCHours(0, 0, 0, 0);
     const dayEnd = new Date(startTime);
-    dayEnd.setHours(23, 59, 59, 999);
+    dayEnd.setUTCHours(23, 59, 59, 999);
 
-    const listaCweliForDay = await prisma.gameSessionList.findMany({
+    const listaCweliForDay = await prisma.listaCweli.findMany({
       where: {
         date: {
           gte: dayStart,
@@ -136,7 +136,7 @@ export async function createGameFromData(
       
       await Promise.all(
         listaCweliForDay.map((list) =>
-          prisma.gameSessionList.update({
+          prisma.listaCweli.update({
             where: { id: list.id },
             data: { deletedAt: new Date() }
           })

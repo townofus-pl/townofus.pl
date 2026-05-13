@@ -24,7 +24,7 @@
 # production
 /build
 *.sql
-
+!/prisma/migrations/*.sql
 # misc
 .DS_Store
 *.pem
