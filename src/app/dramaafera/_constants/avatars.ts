@@ -66,6 +66,7 @@ export const AVAILABLE_AVATARS = [
   'Subek',
   'suchyalan',
   'suinko',
+  'svzki',
   'szymonix18',
   'Tabakuba',
   'Tajson',
