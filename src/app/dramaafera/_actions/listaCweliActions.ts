@@ -41,7 +41,6 @@ export async function getGameSessionLists(seasonId?: number): Promise<GameSessio
         playerCount: players.length,
         players: players.map((name) => ({
             name,
-            hasAvatar: true,
           })),
       };
     });
