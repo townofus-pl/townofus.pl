@@ -1,4 +1,4 @@
-import { getPrismaClient } from '../../_database';
+import type { PrismaClient } from '@prisma/client';
 import { withoutDeleted } from '../../schema/common';
 import type { GameData } from '../../schema/games';
 import { calculateRankingForGame } from '../../_utils/rankingCalculator';
@@ -15,7 +15,7 @@ export interface CreateGameResult {
 }
 
 export async function createGameFromData(
-  prisma: ReturnType<typeof getPrismaClient>,
+  prisma: PrismaClient,
   gameData: GameData
 ): Promise<CreateGameResult> {
   const { metadata, players, gameEvents, meetings } = gameData;
