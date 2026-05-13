@@ -217,8 +217,13 @@ export default function WynikiClient({ initialDates, initialResults, seasonId, l
     const handleDateChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
         const compoundValue = e.target.value;
         setSelectedDate(compoundValue);
-        
-        const [dateValue, typeValue] = compoundValue.split('__') as [string, 'games' | 'lista'];
+
+        const [dateValue, typeValueRaw] = compoundValue.split('__');
+        if (!dateValue || (typeValueRaw !== 'games' && typeValueRaw !== 'lista')) {
+            return;
+        }
+
+        const typeValue: 'games' | 'lista' = typeValueRaw;
         const selectedItem = combinedDates.find(
             item => item.date === dateValue && item.type === typeValue
         );
