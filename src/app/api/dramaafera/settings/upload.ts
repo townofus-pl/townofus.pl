@@ -1,11 +1,10 @@
 import { NextRequest } from 'next/server';
-import { withAuth, withCors } from '@/app/api/_middlewares';
 import { getPrismaClient } from '@/app/api/_database';
 import { getCloudflareContext } from '@opennextjs/cloudflare';
 import { createSuccessResponse, createErrorResponse } from '@/app/api/_utils';
 import { validateSettingsFile, readFileContent } from './utils';
 
-async function uploadHandler(req: NextRequest) {
+export async function POST(req: NextRequest, _authContext: { user: { username: string } }) {
   try {
     const formData = await req.formData();
     const file = formData.get('file') as File | null;
@@ -159,5 +158,3 @@ async function uploadHandler(req: NextRequest) {
     return createErrorResponse('Błąd podczas wgrywania pliku', 500);
   }
 }
-
-export const POST = withCors(withAuth(uploadHandler));
