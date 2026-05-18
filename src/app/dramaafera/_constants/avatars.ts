@@ -30,6 +30,7 @@ export const AVAILABLE_AVATARS = [
   'Fearu',
   'Foxy',
   'GIMPER 2',
+  'GibkiBonzo',
   'Hosshin',
   'Ignorancky',
   'Jakubeq',

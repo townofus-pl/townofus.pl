@@ -11,6 +11,8 @@ This skill automates the recurring weekly content update that happens after each
 
 **Before starting, check available player avatars** in `public/images/avatars/` directory. These file names are the source of truth for correct player nicknames (with proper capitalization). The screenshot from discord polls is always in ALL CAPS, so you must normalize nicks by comparing against available avatar files.
 
+If the user attaches the poll screenshot, the new settings file, a new avatar image, or the YouTube ID in the same message, extract those values directly instead of asking follow-up questions. Only ask for what is still missing.
+
 Example: If screenshot shows `ZIOMSON` and you see `ziomson.png` in avatars folder, use `ziomson` (lowercase).
 
 Gather the following from the user before starting:
@@ -29,6 +31,7 @@ Gather the following from the user before starting:
 - Match each ALL CAPS name against files in `public/images/avatars/` directory
 - Use the avatar file name (with original capitalization) as the canonical nickname
 - Example conversion: `SZYMONIX18` (screenshot) → `szymonix18.png` (file) → `szymonix18` (use in JSON)
+- If a new avatar image is already present in `public/images/avatars/`, add its file name to `src/app/dramaafera/_constants/avatars.ts` in the same update.
 
 ## Step 1: Create Emperor Poll JSON
 
