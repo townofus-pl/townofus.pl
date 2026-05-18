@@ -9,7 +9,6 @@ import type { UIGameData, UIPlayerData } from "../../_services";
 import { Roles } from "@/roles";
 import type { Role } from "@/constants/rolesAndModifiers";
 import { SettingsList } from "@/app/_components/RolesList/RoleCard/SettingsList";
-import { getCloudflareContext } from '@opennextjs/cloudflare';
 import { parseSettingsFile, getMatchingFileName, updateSettingValue } from '../../_utils/settingsParser';
 
 // Interface dla statystyk roli
@@ -307,15 +306,17 @@ export async function RoleDetailContent({ nazwa, seasonId }: RoleDetailContentPr
         roleDefinition = Roles.find(r => r.name.toLowerCase().replace(/\s+/g, '') === normalizedRoleName);
     }
 
-    // Wczytaj plik dramaafera.txt i zaktualizuj wartości ustawień
+    // Wczytaj ustawienia z API i zaktualizuj wartości ustawień
     let roleDefinitionWithSettings = roleDefinition;
     if (roleDefinition) {
         try {
-            const { env } = await getCloudflareContext();
-            if (!env.ASSETS) throw new Error('ASSETS binding not available');
-            const response = await env.ASSETS.fetch(new Request('http://localhost/settings/dramaafera.txt'));
+            const baseUrl = process.env.NEXT_PUBLIC_API_URL || `http://localhost:${process.env.PORT || 3000}`;
+            const response = await fetch(`${baseUrl}/api/dramaafera/settings`, {
+                cache: 'no-store'
+            });
             if (!response.ok) throw new Error(`Failed to fetch settings: ${response.status}`);
-            const fileContent = await response.text();
+            const data = await response.json() as { success: boolean; data: { current: string; old: string | null } };
+            const fileContent = data.data?.current || "";
 
             const { fileContentMap, cleanedFileContentMap } = parseSettingsFile(fileContent);
 
@@ -345,7 +346,7 @@ export async function RoleDetailContent({ nazwa, seasonId }: RoleDetailContentPr
                 }
             }
         } catch (error) {
-            console.error('Error loading dramaafera.txt:', error);
+            console.error('Error loading settings from API:', error);
         }
     }
 

@@ -75,7 +75,7 @@ export function SettingsTab() {
       const formData = new FormData();
       formData.append('file', selectedFile);
 
-      const response = await fetch('/api/dramaafera/settings/upload?mode=normal', {
+      const response = await fetch('/api/dramaafera/settings?mode=normal', {
         method: 'POST',
         body: formData,
         headers: {
@@ -112,7 +112,7 @@ export function SettingsTab() {
       const formData = new FormData();
       formData.append('file', selectedAdvancedFile);
 
-      const response = await fetch(`/api/dramaafera/settings/upload?mode=advanced&targetVersion=${targetVersion}`, {
+      const response = await fetch(`/api/dramaafera/settings?mode=advanced&targetVersion=${targetVersion}`, {
         method: 'POST',
         body: formData,
         headers: {
