@@ -3,6 +3,7 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import { RoleImage } from "../_components/RoleImage";
 import { getAllGamesData } from "../../_services";
+import { getDramaAferaSettings } from "../../_services/getDramaAferaSettings";
 import { getRoleColor, convertRoleNameForDisplay, convertUrlSlugToRole, convertNickToUrlSlug, getPlayerAvatarPath } from "@/app/dramaafera/_utils/gameUtils";
 import { buildSeasonUrl } from "@/app/dramaafera/_utils/seasonHelpers";
 import type { UIGameData, UIPlayerData } from "../../_services";
@@ -310,13 +311,7 @@ export async function RoleDetailContent({ nazwa, seasonId }: RoleDetailContentPr
     let roleDefinitionWithSettings = roleDefinition;
     if (roleDefinition) {
         try {
-            const baseUrl = process.env.NEXT_PUBLIC_API_URL || `http://localhost:${process.env.PORT || 3000}`;
-            const response = await fetch(`${baseUrl}/api/dramaafera/settings`, {
-                cache: 'no-store'
-            });
-            if (!response.ok) throw new Error(`Failed to fetch settings: ${response.status}`);
-            const data = await response.json() as { success: boolean; data: { current: string; old: string | null } };
-            const fileContent = data.data?.current || "";
+            const { current: fileContent } = await getDramaAferaSettings();
 
             const { fileContentMap, cleanedFileContentMap } = parseSettingsFile(fileContent);
 

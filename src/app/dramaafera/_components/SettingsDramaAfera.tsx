@@ -14,9 +14,12 @@ export function     SettingsDramaAfera() {
 
     useEffect(() => {
         fetch("/api/dramaafera/settings")
-            .then((response) => response.json() as Promise<{ success: boolean; data: { current: string; old: string | null } }>)
+            .then((response) => {
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                return response.json() as Promise<{ success: boolean; data: { current: string; old: string | null } }>;
+            })
             .then((data) => {
-                // API zwraca { success, data: { current, old } }
+                if (!data.success) throw new Error('API error');
                 setFileContent(data.data?.current || "");
             })
             .catch(() => {

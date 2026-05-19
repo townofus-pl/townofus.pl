@@ -367,7 +367,6 @@ model DramaAferaSettings {
     versionType   String   @default("current")  // "current" | "old"
     content       String                        // Full .txt file content — saved as-is
     uploadedAt    DateTime @default(now())
-    uploadedBy    String?                       // Host name who uploaded it
 
     // Timestamps
     createdAt     DateTime @default(now())

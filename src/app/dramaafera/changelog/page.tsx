@@ -1,9 +1,14 @@
+import Image from "next/image";
 import { Roles } from "../_roles";
 import { Modifiers } from "@/modifiers";
 import { SettingTypes } from "@/constants/settings";
 import { Teams } from "@/constants/teams";
+import { getDramaAferaSettings } from "../_services/getDramaAferaSettings";
+import { getPrismaClient } from "@/app/api/_database";
+import { getCloudflareContext } from "@opennextjs/cloudflare";
 
-// Funkcja do znajdowania koloru i ikony roli lub modyfikatora
+export const dynamic = 'force-dynamic';
+
 const getRoleInfo = (roleName: string): { color: string; icon: string | null } => {
     // Najpierw szukaj w rolach
     const role = Roles.find(r => r.name === roleName);
@@ -77,31 +82,16 @@ interface Change {
     type: 'role' | 'setting';
 }
 
-interface ApiResponse {
-  success: boolean;
-  data: {
-    current: string;
-    old: string | null;
-  };
-}
-
-async function getChanges(): Promise<Change[]> {
+async function getChanges(prisma: Awaited<ReturnType<typeof getPrismaClient>>): Promise<Change[]> {
     try {
-        const baseUrl = process.env.NEXT_PUBLIC_API_URL || `http://localhost:${process.env.PORT || 3000}`;
-        const response = await fetch(`${baseUrl}/api/dramaafera/settings`, {
-            cache: 'no-store'
-        });
+        const { current: currentContent, old: oldContent } = await getDramaAferaSettings(prisma);
 
-        if (!response.ok) {
-            console.error('Failed to fetch settings');
+        if (!currentContent) {
             return [];
         }
 
-        const data = (await response.json()) as ApiResponse;
-        const currentContent = data.data.current;
-        const oldContent = data.data.old;
-
-        if (!currentContent || !oldContent) {
+        // Jeśli brak starej wersji — to są pierwsze zmiany, bez porównania
+        if (!oldContent) {
             return [];
         }
 
@@ -230,7 +220,9 @@ async function getChanges(): Promise<Change[]> {
 }
 
 export default async function ChangelogPage() {
-    const changes = await getChanges();
+    const { env } = await getCloudflareContext();
+    const prisma = getPrismaClient(env.DB);
+    const changes = await getChanges(prisma);
 
     if (changes.length === 0) {
         return (
@@ -364,11 +356,13 @@ export default async function ChangelogPage() {
                         <div key={roleName} className="bg-zinc-900/50 rounded-xl text-white p-6">
                             <div className="flex items-center gap-6">
                                 {roleInfo.icon && (
-                                    <img 
+                                    <Image 
                                         src={roleInfo.icon} 
                                         alt={roleName}
                                         width={80}
                                         height={80}
+                                        unoptimized
+                                        quality={100}
                                         className="rounded-lg flex-shrink-0 scale-[1.9]"
                                         style={{ width: '80px', height: '80px' }}
                                     />

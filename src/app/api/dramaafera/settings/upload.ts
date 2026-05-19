@@ -4,7 +4,7 @@ import { getCloudflareContext } from '@opennextjs/cloudflare';
 import { createSuccessResponse, createErrorResponse } from '@/app/api/_utils';
 import { validateSettingsFile, readFileContent } from './utils';
 
-export async function POST(req: NextRequest, _authContext: { user: { username: string } }) {
+export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData();
     const file = formData.get('file') as File | null;
@@ -62,7 +62,6 @@ export async function POST(req: NextRequest, _authContext: { user: { username: s
         data: {
           versionType: 'current',
           content,
-          uploadedBy: 'host', // TODO: pobierz z auth
         },
       });
 
@@ -79,14 +78,12 @@ export async function POST(req: NextRequest, _authContext: { user: { username: s
             id: newCurrent.id,
             versionType: 'current' as const,
             uploadedAt: newCurrent.uploadedAt.toISOString(),
-            uploadedBy: newCurrent.uploadedBy,
           },
           old: newOld
             ? {
                 id: newOld.id,
                 versionType: 'old' as const,
                 uploadedAt: newOld.uploadedAt.toISOString(),
-                uploadedBy: newOld.uploadedBy,
               }
             : null,
         },
@@ -112,7 +109,6 @@ export async function POST(req: NextRequest, _authContext: { user: { username: s
         data: {
           versionType: targetVersion,
           content,
-          uploadedBy: 'host', // TODO: pobierz z auth
         },
       });
 
@@ -130,23 +126,19 @@ export async function POST(req: NextRequest, _authContext: { user: { username: s
             id: newRecord.id,
             versionType: 'current' as const,
             uploadedAt: newRecord.uploadedAt.toISOString(),
-            uploadedBy: newRecord.uploadedBy,
           } : otherRecord ? {
             id: otherRecord.id,
             versionType: 'current' as const,
             uploadedAt: otherRecord.uploadedAt.toISOString(),
-            uploadedBy: otherRecord.uploadedBy,
           } : null,
           old: targetVersion === 'old' ? {
             id: newRecord.id,
             versionType: 'old' as const,
             uploadedAt: newRecord.uploadedAt.toISOString(),
-            uploadedBy: newRecord.uploadedBy,
           } : otherRecord ? {
             id: otherRecord.id,
             versionType: 'old' as const,
             uploadedAt: otherRecord.uploadedAt.toISOString(),
-            uploadedBy: otherRecord.uploadedBy,
           } : null,
         },
       });

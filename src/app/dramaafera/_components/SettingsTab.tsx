@@ -1,68 +1,15 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-
-interface SettingsVersion {
-  id: number;
-  versionType: 'current' | 'old';
-  uploadedAt: string;
-  uploadedBy: string | null;
-}
-
-interface ApiResponse {
-  success: boolean;
-  message?: string;
-  error?: string;
-  data?: unknown;
-}
+import { useState } from 'react';
+import { uploadSettingsAction } from '@/app/dramaafera/_actions/uploadSettingsAction';
 
 export function SettingsTab() {
-  const [currentVersion, setCurrentVersion] = useState<SettingsVersion | null>(null);
-  const [oldVersion, setOldVersion] = useState<SettingsVersion | null>(null);
-  const [loading, setLoading] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [expandedAdvanced, setExpandedAdvanced] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
   const [selectedAdvancedFile, setSelectedAdvancedFile] = useState<File | null>(null);
   const [targetVersion, setTargetVersion] = useState<'current' | 'old'>('current');
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
-
-  useEffect(() => {
-    fetchVersions();
-  }, []);
-
-  const fetchVersions = async () => {
-    try {
-      setLoading(true);
-      const response = await fetch('/api/dramaafera/settings');
-      if (!response.ok) throw new Error('Nie udało się pobrać wersji');
-
-      // Fetch metadata — to będzie osobny endpoint (tymczasowo mockujemy)
-      // W przyszłości: GET /api/dramaafera/settings/metadata zwróci wersje z metadanymi
-      setCurrentVersion({
-        id: 1,
-        versionType: 'current',
-        uploadedAt: new Date().toISOString(),
-        uploadedBy: 'system',
-      });
-      setOldVersion({
-        id: 2,
-        versionType: 'old',
-        uploadedAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
-        uploadedBy: 'system',
-      });
-    } catch (error) {
-      console.error('Error fetching versions:', error);
-      setMessage({ type: 'error', text: 'Nie udało się pobrać metadanych wersji' });
-    } finally {
-      setLoading(false);
-    }
-  };
-
-  const formatDate = (isoString: string) => {
-    const date = new Date(isoString);
-    return date.toLocaleString('pl-PL');
-  };
 
   const handleNormalUpload = async () => {
     if (!selectedFile) {
@@ -75,27 +22,18 @@ export function SettingsTab() {
       const formData = new FormData();
       formData.append('file', selectedFile);
 
-      const response = await fetch('/api/dramaafera/settings?mode=normal', {
-        method: 'POST',
-        body: formData,
-        headers: {
-          'Authorization': 'Basic ' + btoa(`${process.env.NEXT_PUBLIC_API_USERNAME || 'demo_user'}:${process.env.NEXT_PUBLIC_API_PASSWORD || 'demo_pass'}`)
-        }
-      });
+      const result = await uploadSettingsAction(formData, 'normal');
 
-      const result = await response.json() as ApiResponse;
-
-      if (!response.ok) {
+      if (!result.success) {
         setMessage({ type: 'error', text: result.error || 'Błąd podczas wgrywania' });
         return;
       }
 
       setMessage({ type: 'success', text: result.message || 'Plik wgrany pomyślnie' });
       setSelectedFile(null);
-      setTimeout(() => fetchVersions(), 1000);
     } catch (error) {
       console.error('Error uploading:', error);
-      setMessage({ type: 'error', text: 'Błąd sieci podczas wgrywania' });
+      setMessage({ type: 'error', text: 'Błąd podczas wgrywania' });
     } finally {
       setUploading(false);
     }
@@ -112,73 +50,25 @@ export function SettingsTab() {
       const formData = new FormData();
       formData.append('file', selectedAdvancedFile);
 
-      const response = await fetch(`/api/dramaafera/settings?mode=advanced&targetVersion=${targetVersion}`, {
-        method: 'POST',
-        body: formData,
-        headers: {
-          'Authorization': 'Basic ' + btoa(`${process.env.NEXT_PUBLIC_API_USERNAME || 'demo_user'}:${process.env.NEXT_PUBLIC_API_PASSWORD || 'demo_pass'}`)
-        }
-      });
+      const result = await uploadSettingsAction(formData, 'advanced', targetVersion);
 
-      const result = await response.json() as ApiResponse;
-
-      if (!response.ok) {
+      if (!result.success) {
         setMessage({ type: 'error', text: result.error || 'Błąd podczas wgrywania' });
         return;
       }
 
       setMessage({ type: 'success', text: result.message || 'Plik wgrany pomyślnie' });
       setSelectedAdvancedFile(null);
-      setTimeout(() => fetchVersions(), 1000);
     } catch (error) {
       console.error('Error uploading:', error);
-      setMessage({ type: 'error', text: 'Błąd sieci podczas wgrywania' });
+      setMessage({ type: 'error', text: 'Błąd podczas wgrywania' });
     } finally {
       setUploading(false);
     }
   };
 
-  if (loading) {
-    return <div className="text-center text-gray-400">Ładowanie...</div>;
-  }
-
   return (
     <div className="space-y-8">
-      {/* Wersje */}
-      <div className="bg-zinc-800 rounded-lg p-6">
-        <h2 className="text-2xl font-bold text-yellow-400 mb-6">Wersje Ustawień</h2>
-        <div className="space-y-4">
-          {currentVersion && (
-            <div className="bg-zinc-700 p-4 rounded-lg">
-              <div className="flex items-center">
-                <span className="text-green-500 text-xl mr-2">✓</span>
-                <div>
-                  <p className="text-lg font-semibold text-white">Aktualny</p>
-                  <p className="text-sm text-gray-400">
-                    {formatDate(currentVersion.uploadedAt)}
-                    {currentVersion.uploadedBy && ` • wgrany przez: ${currentVersion.uploadedBy}`}
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
-          {oldVersion && (
-            <div className="bg-zinc-700 p-4 rounded-lg">
-              <div className="flex items-center">
-                <span className="text-blue-500 text-xl mr-2">✓</span>
-                <div>
-                  <p className="text-lg font-semibold text-white">Stary</p>
-                  <p className="text-sm text-gray-400">
-                    {formatDate(oldVersion.uploadedAt)}
-                    {oldVersion.uploadedBy && ` • wgrany przez: ${oldVersion.uploadedBy}`}
-                  </p>
-                </div>
-              </div>
-            </div>
-          )}
-        </div>
-      </div>
-
       {/* Zwykły upload */}
       <div className="bg-zinc-800 rounded-lg p-6">
         <h3 className="text-xl font-bold text-white mb-4">Wgraj Plik Ustawień</h3>
