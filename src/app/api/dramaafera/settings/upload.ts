@@ -63,7 +63,6 @@ async function uploadHandler(req: NextRequest) {
         data: {
           versionType: 'current',
           content,
-          uploadedBy: 'host', // TODO: pobierz z auth
         },
       });
 
@@ -80,14 +79,12 @@ async function uploadHandler(req: NextRequest) {
             id: newCurrent.id,
             versionType: 'current' as const,
             uploadedAt: newCurrent.uploadedAt.toISOString(),
-            uploadedBy: newCurrent.uploadedBy,
           },
           old: newOld
             ? {
                 id: newOld.id,
                 versionType: 'old' as const,
                 uploadedAt: newOld.uploadedAt.toISOString(),
-                uploadedBy: newOld.uploadedBy,
               }
             : null,
         },
@@ -113,7 +110,6 @@ async function uploadHandler(req: NextRequest) {
         data: {
           versionType: targetVersion,
           content,
-          uploadedBy: 'host', // TODO: pobierz z auth
         },
       });
 
@@ -131,23 +127,19 @@ async function uploadHandler(req: NextRequest) {
             id: newRecord.id,
             versionType: 'current' as const,
             uploadedAt: newRecord.uploadedAt.toISOString(),
-            uploadedBy: newRecord.uploadedBy,
           } : otherRecord ? {
             id: otherRecord.id,
             versionType: 'current' as const,
             uploadedAt: otherRecord.uploadedAt.toISOString(),
-            uploadedBy: otherRecord.uploadedBy,
           } : null,
           old: targetVersion === 'old' ? {
             id: newRecord.id,
             versionType: 'old' as const,
             uploadedAt: newRecord.uploadedAt.toISOString(),
-            uploadedBy: newRecord.uploadedBy,
           } : otherRecord ? {
             id: otherRecord.id,
             versionType: 'old' as const,
             uploadedAt: otherRecord.uploadedAt.toISOString(),
-            uploadedBy: otherRecord.uploadedBy,
           } : null,
         },
       });

@@ -19,13 +19,11 @@ export const UploadDramaAferaSettingsResponseSchema = z.object({
       id: z.number(),
       versionType: z.literal('current'),
       uploadedAt: z.string(),
-      uploadedBy: z.string().nullable(),
     }).nullable(),
     old: z.object({
       id: z.number(),
       versionType: z.literal('old'),
       uploadedAt: z.string(),
-      uploadedBy: z.string().nullable(),
     }).nullable(),
   }).optional(),
   error: z.string().optional(),
