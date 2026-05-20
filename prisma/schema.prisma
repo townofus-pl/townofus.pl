@@ -357,3 +357,24 @@ model ListaCweli {
     @@index([deletedAt])
     @@map("lista_cweli")
 }
+
+// =============================================================================
+// DRAMAAFERA SETTINGS & CHANGELOG
+// =============================================================================
+
+model DramaAferaSettings {
+    id            Int      @id @default(autoincrement())
+    versionType   String   @default("current")  // "current" | "old"
+    content       String                        // Full .txt file content — saved as-is
+    uploadedAt    DateTime @default(now())
+
+    // Timestamps
+    createdAt     DateTime @default(now())
+    updatedAt     DateTime @updatedAt
+    deletedAt     DateTime? // Soft delete
+
+    @@index([versionType])
+    @@index([uploadedAt])
+    @@index([deletedAt])
+    @@map("drama_afera_settings")
+}

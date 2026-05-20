@@ -3,13 +3,13 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import { RoleImage } from "../_components/RoleImage";
 import { getAllGamesData } from "../../_services";
+import { getDramaAferaSettings } from "../../_services/getDramaAferaSettings";
 import { getRoleColor, convertRoleNameForDisplay, convertUrlSlugToRole, convertNickToUrlSlug, getPlayerAvatarPath } from "@/app/dramaafera/_utils/gameUtils";
 import { buildSeasonUrl } from "@/app/dramaafera/_utils/seasonHelpers";
 import type { UIGameData, UIPlayerData } from "../../_services";
 import { Roles } from "@/roles";
 import type { Role } from "@/constants/rolesAndModifiers";
 import { SettingsList } from "@/app/_components/RolesList/RoleCard/SettingsList";
-import { getCloudflareContext } from '@opennextjs/cloudflare';
 import { parseSettingsFile, getMatchingFileName, updateSettingValue } from '../../_utils/settingsParser';
 
 // Interface dla statystyk roli
@@ -307,15 +307,11 @@ export async function RoleDetailContent({ nazwa, seasonId }: RoleDetailContentPr
         roleDefinition = Roles.find(r => r.name.toLowerCase().replace(/\s+/g, '') === normalizedRoleName);
     }
 
-    // Wczytaj plik dramaafera.txt i zaktualizuj wartości ustawień
+    // Wczytaj ustawienia z API i zaktualizuj wartości ustawień
     let roleDefinitionWithSettings = roleDefinition;
     if (roleDefinition) {
         try {
-            const { env } = await getCloudflareContext();
-            if (!env.ASSETS) throw new Error('ASSETS binding not available');
-            const response = await env.ASSETS.fetch(new Request('http://localhost/settings/dramaafera.txt'));
-            if (!response.ok) throw new Error(`Failed to fetch settings: ${response.status}`);
-            const fileContent = await response.text();
+            const { current: fileContent } = await getDramaAferaSettings();
 
             const { fileContentMap, cleanedFileContentMap } = parseSettingsFile(fileContent);
 
@@ -345,7 +341,7 @@ export async function RoleDetailContent({ nazwa, seasonId }: RoleDetailContentPr
                 }
             }
         } catch (error) {
-            console.error('Error loading dramaafera.txt:', error);
+            console.error('Error loading settings from API:', error);
         }
     }
 

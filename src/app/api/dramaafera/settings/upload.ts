@@ -1,11 +1,10 @@
 import { NextRequest } from 'next/server';
-import { withAuth, withCors } from '@/app/api/_middlewares';
 import { getPrismaClient } from '@/app/api/_database';
 import { getCloudflareContext } from '@opennextjs/cloudflare';
 import { createSuccessResponse, createErrorResponse } from '@/app/api/_utils';
 import { validateSettingsFile, readFileContent } from './utils';
 
-async function uploadHandler(req: NextRequest) {
+export async function POST(req: NextRequest) {
   try {
     const formData = await req.formData();
     const file = formData.get('file') as File | null;
@@ -63,7 +62,6 @@ async function uploadHandler(req: NextRequest) {
         data: {
           versionType: 'current',
           content,
-          uploadedBy: 'host', // TODO: pobierz z auth
         },
       });
 
@@ -80,14 +78,12 @@ async function uploadHandler(req: NextRequest) {
             id: newCurrent.id,
             versionType: 'current' as const,
             uploadedAt: newCurrent.uploadedAt.toISOString(),
-            uploadedBy: newCurrent.uploadedBy,
           },
           old: newOld
             ? {
                 id: newOld.id,
                 versionType: 'old' as const,
                 uploadedAt: newOld.uploadedAt.toISOString(),
-                uploadedBy: newOld.uploadedBy,
               }
             : null,
         },
@@ -113,7 +109,6 @@ async function uploadHandler(req: NextRequest) {
         data: {
           versionType: targetVersion,
           content,
-          uploadedBy: 'host', // TODO: pobierz z auth
         },
       });
 
@@ -131,23 +126,19 @@ async function uploadHandler(req: NextRequest) {
             id: newRecord.id,
             versionType: 'current' as const,
             uploadedAt: newRecord.uploadedAt.toISOString(),
-            uploadedBy: newRecord.uploadedBy,
           } : otherRecord ? {
             id: otherRecord.id,
             versionType: 'current' as const,
             uploadedAt: otherRecord.uploadedAt.toISOString(),
-            uploadedBy: otherRecord.uploadedBy,
           } : null,
           old: targetVersion === 'old' ? {
             id: newRecord.id,
             versionType: 'old' as const,
             uploadedAt: newRecord.uploadedAt.toISOString(),
-            uploadedBy: newRecord.uploadedBy,
           } : otherRecord ? {
             id: otherRecord.id,
             versionType: 'old' as const,
             uploadedAt: otherRecord.uploadedAt.toISOString(),
-            uploadedBy: otherRecord.uploadedBy,
           } : null,
         },
       });
@@ -159,5 +150,3 @@ async function uploadHandler(req: NextRequest) {
     return createErrorResponse('Błąd podczas wgrywania pliku', 500);
   }
 }
-
-export const POST = withCors(withAuth(uploadHandler));

@@ -13,12 +13,14 @@ export function     SettingsDramaAfera() {
     const [isLoading, setIsLoading] = useState(true); // Początkowo ustawione na true
 
     useEffect(() => {
-        fetch("/settings/dramaafera.txt")
+        fetch("/api/dramaafera/settings")
             .then((response) => {
-                return response.text();
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                return response.json() as Promise<{ success: boolean; data: { current: string; old: string | null } }>;
             })
-            .then((text) => {
-                setFileContent(text);
+            .then((data) => {
+                if (!data.success) throw new Error('API error');
+                setFileContent(data.data?.current || "");
             })
             .catch(() => {
                 setFileContent(""); // Ustaw domyślną zawartość w przypadku błędu
