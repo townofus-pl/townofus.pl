@@ -2,7 +2,7 @@ import { getPrismaClient } from '@/app/api/_database';
 import { getCloudflareContext } from '@opennextjs/cloudflare';
 import { createSuccessResponse, createErrorResponse } from '@/app/api/_utils';
 
-export async function GET() {
+export async function handler() {
   try {
     const { env } = await getCloudflareContext();
     const prisma = getPrismaClient(env.DB);
