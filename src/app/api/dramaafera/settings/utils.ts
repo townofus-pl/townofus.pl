@@ -2,7 +2,7 @@ export const validateSettingsFile = (file: File): string | null => {
   if (!file.name.endsWith('.txt')) {
     return 'Plik musi mieć rozszerzenie .txt';
   }
-  
+
   if (file.size === 0) {
     return 'Plik nie może być pusty';
   }
@@ -12,8 +12,4 @@ export const validateSettingsFile = (file: File): string | null => {
   }
 
   return null;
-};
-
-export const readFileContent = async (file: File): Promise<string> => {
-  return file.text();
 };

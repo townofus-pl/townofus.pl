@@ -14,7 +14,14 @@ const TAB_ROLES = 'role';
 const TAB_LIST = 'lista';
 const TAB_SETTINGS = 'ustawienia';
 
-type SettingsTabs = typeof TAB_HOST | typeof TAB_ROLES | typeof TAB_LIST | typeof TAB_SETTINGS;
+type HostTabId = typeof TAB_HOST | typeof TAB_ROLES | typeof TAB_LIST | typeof TAB_SETTINGS;
+
+const TABS: ReadonlyArray<{ id: HostTabId; label: string }> = [
+  { id: TAB_HOST, label: 'Host' },
+  { id: TAB_ROLES, label: 'Role' },
+  { id: TAB_LIST, label: 'Lista Cweli' },
+  { id: TAB_SETTINGS, label: 'Ustawienia' },
+];
 
 interface HostTabsProps {
   initialDates: GameDateEntry[];
@@ -24,7 +31,7 @@ interface HostTabsProps {
 }
 
 export default function HostTabs({ initialDates, seasonId, roles, availableAvatars }: HostTabsProps) {
-  const [activeTab, setActiveTab] = useState<SettingsTabs>(TAB_HOST);
+  const [activeTab, setActiveTab] = useState<HostTabId>(TAB_HOST);
 
   const getTabContent = () => {
     switch (activeTab) {
@@ -41,21 +48,14 @@ export default function HostTabs({ initialDates, seasonId, roles, availableAvata
     }
   };
 
-  const tabs = [
-    { id: TAB_HOST, label: 'Host' },
-    { id: TAB_ROLES, label: 'Role' },
-    { id: TAB_LIST, label: 'Lista Cweli' },
-    { id: TAB_SETTINGS, label: 'Ustawienia' },
-  ];
-
   return (
     <div>
       {/* Karty nagłówkowe */}
       <div className="flex gap-4 mb-6 border-b border-gray-700 overflow-x-auto">
-        {tabs.map((tab) => (
+        {TABS.map((tab) => (
           <button
             key={tab.id}
-            onClick={() => setActiveTab(tab.id as SettingsTabs)}
+            onClick={() => setActiveTab(tab.id)}
             className={`px-6 py-3 font-semibold text-lg transition-all whitespace-nowrap ${
               activeTab === tab.id
                 ? 'text-yellow-400 border-b-2 border-yellow-400'

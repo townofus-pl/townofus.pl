@@ -3,6 +3,15 @@
 import { useState } from 'react';
 import { uploadSettingsAction } from '@/app/dramaafera/_actions/uploadSettingsAction';
 
+const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; // 5MB — must match server-side limit
+
+function validateClientFile(file: File): string | null {
+  if (!file.name.endsWith('.txt')) return 'Plik musi być w formacie .txt';
+  if (file.size === 0) return 'Plik nie może być pusty';
+  if (file.size > MAX_FILE_SIZE_BYTES) return 'Plik nie może być większy niż 5MB';
+  return null;
+}
+
 export function SettingsTab() {
   const [uploading, setUploading] = useState(false);
   const [expandedAdvanced, setExpandedAdvanced] = useState(false);
@@ -14,6 +23,12 @@ export function SettingsTab() {
   const handleNormalUpload = async () => {
     if (!selectedFile) {
       setMessage({ type: 'error', text: 'Wybierz plik do wgrania' });
+      return;
+    }
+
+    const clientError = validateClientFile(selectedFile);
+    if (clientError) {
+      setMessage({ type: 'error', text: clientError });
       return;
     }
 
@@ -42,6 +57,12 @@ export function SettingsTab() {
   const handleAdvancedUpload = async () => {
     if (!selectedAdvancedFile) {
       setMessage({ type: 'error', text: 'Wybierz plik do wgrania' });
+      return;
+    }
+
+    const clientError = validateClientFile(selectedAdvancedFile);
+    if (clientError) {
+      setMessage({ type: 'error', text: clientError });
       return;
     }
 

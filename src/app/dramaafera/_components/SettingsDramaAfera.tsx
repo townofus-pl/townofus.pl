@@ -14,13 +14,23 @@ export function     SettingsDramaAfera() {
 
     useEffect(() => {
         fetch("/api/dramaafera/settings")
-            .then((response) => {
+            .then(async (response) => {
                 if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                return response.json() as Promise<{ success: boolean; data: { current: string; old: string | null } }>;
-            })
-            .then((data) => {
-                if (!data.success) throw new Error('API error');
-                setFileContent(data.data?.current || "");
+                const payload: unknown = await response.json();
+                if (
+                    typeof payload !== 'object' ||
+                    payload === null ||
+                    !('success' in payload) ||
+                    payload.success !== true ||
+                    !('data' in payload) ||
+                    typeof payload.data !== 'object' ||
+                    payload.data === null ||
+                    !('current' in payload.data) ||
+                    typeof payload.data.current !== 'string'
+                ) {
+                    throw new Error('Unexpected response shape');
+                }
+                setFileContent(payload.data.current);
             })
             .catch(() => {
                 setFileContent(""); // Ustaw domyślną zawartość w przypadku błędu

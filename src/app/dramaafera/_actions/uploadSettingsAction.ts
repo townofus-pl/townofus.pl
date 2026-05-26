@@ -1,7 +1,10 @@
 'use server';
 
-import { getPrismaClient } from '@/app/api/_database';
-import { getCloudflareContext } from '@opennextjs/cloudflare';
+import { revalidatePath } from 'next/cache';
+import {
+  rotateDramaAferaSettings,
+  replaceDramaAferaSettings,
+} from '@/app/dramaafera/_services/settings';
 
 export interface UploadSettingsActionResult {
   success: boolean;
@@ -9,101 +12,55 @@ export interface UploadSettingsActionResult {
   error?: string;
 }
 
-export async function uploadSettingsAction(formData: FormData, mode: 'normal' | 'advanced' = 'normal', targetVersion?: 'current' | 'old'): Promise<UploadSettingsActionResult> {
+const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; // 5MB — matches API utils.ts
+
+export async function uploadSettingsAction(
+  formData: FormData,
+  mode: 'normal' | 'advanced' = 'normal',
+  targetVersion?: 'current' | 'old',
+): Promise<UploadSettingsActionResult> {
   try {
-    const file = formData.get('file') as File;
+    const file = formData.get('file') as File | null;
     if (!file) {
       return { success: false, error: 'Brak pliku do wgrania' };
     }
 
-    // Validate file extension
     if (!file.name.endsWith('.txt')) {
       return { success: false, error: 'Plik musi być w formacie .txt' };
     }
 
-    // Validate file size (max 1MB)
-    if (file.size > 1024 * 1024) {
-      return { success: false, error: 'Plik jest za duży (max 1MB)' };
+    if (file.size === 0) {
+      return { success: false, error: 'Plik nie może być pusty' };
     }
 
-    // Read file content
+    if (file.size > MAX_FILE_SIZE_BYTES) {
+      return { success: false, error: 'Plik nie może być większy niż 5MB' };
+    }
+
     const content = await file.text();
     if (!content.trim()) {
       return { success: false, error: 'Plik jest pusty' };
     }
 
-    const { env } = await getCloudflareContext();
-    const prisma = getPrismaClient(env.DB);
-
-    if (mode === 'normal') {
-      // Normal mode: new → current, current → old, old → soft-delete
-      const withoutDeleted = { deletedAt: null };
-
-      // Soft-delete old version
-      const oldRecord = await prisma.dramaAferaSettings.findFirst({
-        where: { versionType: 'old', ...withoutDeleted }
-      });
-      if (oldRecord) {
-        await prisma.dramaAferaSettings.update({
-          where: { id: oldRecord.id },
-          data: { deletedAt: new Date() }
-        });
-      }
-
-      // Move current to old
-      const currentRecord = await prisma.dramaAferaSettings.findFirst({
-        where: { versionType: 'current', ...withoutDeleted }
-      });
-      if (currentRecord) {
-        await prisma.dramaAferaSettings.update({
-          where: { id: currentRecord.id },
-          data: { versionType: 'old' }
-        });
-      }
-
-      // Create new current
-      await prisma.dramaAferaSettings.create({
-        data: {
-          versionType: 'current',
-          content,
-          uploadedAt: new Date()
-        }
-      });
-
-      return { success: true, message: 'Ustawienia wgrane pomyślnie' };
-    } else if (mode === 'advanced') {
-      // Advanced mode: replace specific version
+    if (mode === 'advanced') {
       if (!targetVersion) {
         return { success: false, error: 'Brak wybranej wersji do zamiany' };
       }
-
-      const withoutDeleted = { deletedAt: null };
-      const existing = await prisma.dramaAferaSettings.findFirst({
-        where: { versionType: targetVersion, ...withoutDeleted }
-      });
-
-      if (existing) {
-        await prisma.dramaAferaSettings.update({
-          where: { id: existing.id },
-          data: {
-            content,
-            uploadedAt: new Date()
-          }
-        });
-      } else {
-        await prisma.dramaAferaSettings.create({
-          data: {
-            versionType: targetVersion,
-            content,
-            uploadedAt: new Date()
-          }
-        });
-      }
-
-      return { success: true, message: `Wersja ${targetVersion} zmieniona pomyślnie` };
+      await replaceDramaAferaSettings(content, targetVersion);
+    } else {
+      await rotateDramaAferaSettings(content);
     }
 
-    return { success: false, error: 'Nieznany tryb wgrywania' };
+    revalidatePath('/dramaafera/changelog');
+    revalidatePath('/dramaafera/role/[nazwa]', 'page');
+
+    return {
+      success: true,
+      message:
+        mode === 'advanced'
+          ? `Wersja ${targetVersion} zmieniona pomyślnie`
+          : 'Ustawienia wgrane pomyślnie',
+    };
   } catch (error) {
     console.error('Error in uploadSettingsAction:', error);
     return { success: false, error: 'Błąd serwera podczas wgrywania ustawień' };

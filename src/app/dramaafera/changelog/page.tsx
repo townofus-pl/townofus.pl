@@ -3,11 +3,10 @@ import { Roles } from "../_roles";
 import { Modifiers } from "@/modifiers";
 import { SettingTypes } from "@/constants/settings";
 import { Teams } from "@/constants/teams";
-import { getDramaAferaSettings } from "../_services/getDramaAferaSettings";
-import { getPrismaClient } from "@/app/api/_database";
-import { getCloudflareContext } from "@opennextjs/cloudflare";
+import { getDramaAferaSettings } from "../_services";
+import { parseSettingsFile, updateSettingValue } from "../_utils/settingsParser";
 
-export const dynamic = 'force-dynamic';
+export const revalidate = 300;
 
 const getRoleInfo = (roleName: string): { color: string; icon: string | null } => {
     // Najpierw szukaj w rolach
@@ -82,54 +81,16 @@ interface Change {
     type: 'role' | 'setting';
 }
 
-async function getChanges(prisma: Awaited<ReturnType<typeof getPrismaClient>>): Promise<Change[]> {
+async function getChanges(): Promise<Change[]> {
     try {
-        const { current: currentContent, old: oldContent } = await getDramaAferaSettings(prisma);
+        const { current: currentContent, old: oldContent } = await getDramaAferaSettings();
 
-        if (!currentContent) {
+        if (!currentContent || !oldContent) {
             return [];
         }
 
-        // Jeśli brak starej wersji — to są pierwsze zmiany, bez porównania
-        if (!oldContent) {
-            return [];
-        }
-
-        // Parsowanie plików - ta sama logika co w SettingsDramaAfera
-        const parseFile = (content: string) => {
-            const lines = content.split('\n').map(line => line.trim());
-            const fileContentMap = new Map<string, string>();
-            const cleanedFileContentMap = new Map<string, number>();
-
-            for (let i = 0; i < lines.length; i++) {
-                const line = lines[i];
-                if (line.includes('<color=') && line.includes('</color>')) {
-                    const extractName = (line: string): string => {
-                        const match = line.match(/<color=#[A-F0-9]{8}>(.*?)<\/color>/);
-                        return match ? match[1] : line;
-                    };
-                    
-                    const name = extractName(line);
-                    const nextLine = lines[i + 1];
-                    if (nextLine && !isNaN(Number(nextLine))) {
-                        const value = Number(nextLine);
-                        cleanedFileContentMap.set(name, value);
-                        i++; // Pomiń następną linię, która jest wartością
-                    }
-                } else if (line && !line.includes('<color=') && i + 1 < lines.length) {
-                    const nextLine = lines[i + 1];
-                    if (nextLine && nextLine.trim() !== '') {
-                        fileContentMap.set(line, nextLine);
-                        i++; // Pomiń następną linię, która jest wartością
-                    }
-                }
-            }
-
-            return { fileContentMap, cleanedFileContentMap };
-        };
-
-        const currentData = parseFile(currentContent);
-        const oldData = parseFile(oldContent);
+        const currentData = parseSettingsFile(currentContent);
+        const oldData = parseSettingsFile(oldContent);
 
         const detectedChanges: Change[] = [];
 
@@ -178,26 +139,8 @@ async function getChanges(prisma: Awaited<ReturnType<typeof getPrismaClient>>): 
                     }
                 }
 
-                // Formatuj wartości z zaokrąglaniem
-                const processValue = (value: string, type: SettingTypes) => {
-                    switch (type) {
-                        case SettingTypes.Boolean:
-                            return value.toLowerCase() === 'true';
-                        case SettingTypes.Number:
-                        case SettingTypes.Percentage:
-                        case SettingTypes.Time:
-                        case SettingTypes.Multiplier: {
-                            const num = Number(value.replace(/,/g, '.'));
-                            return !isNaN(num) ? (Number.isInteger(num) ? num : Number(num.toFixed(2))) : num;
-                        }
-                        case SettingTypes.Text:
-                        default:
-                            return value;
-                    }
-                };
-
-                const processedOldValue = processValue(oldValue, settingType);
-                const processedNewValue = processValue(currentValue, settingType);
+                const processedOldValue = updateSettingValue(settingType, oldValue);
+                const processedNewValue = updateSettingValue(settingType, currentValue);
 
                 const formattedOldValue = formatValue(processedOldValue, settingType, description);
                 const formattedNewValue = formatValue(processedNewValue, settingType, description);
@@ -220,9 +163,7 @@ async function getChanges(prisma: Awaited<ReturnType<typeof getPrismaClient>>): 
 }
 
 export default async function ChangelogPage() {
-    const { env } = await getCloudflareContext();
-    const prisma = getPrismaClient(env.DB);
-    const changes = await getChanges(prisma);
+    const changes = await getChanges();
 
     if (changes.length === 0) {
         return (
