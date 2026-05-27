@@ -1,5 +1,5 @@
 import { NextRequest } from 'next/server';
-import { createSuccessResponse, createErrorResponse } from '@/app/api/_utils';
+import { createMessageResponse, createErrorResponse } from '@/app/api/_utils';
 import { validateSettingsFile } from './utils';
 import {
   rotateDramaAferaSettings,
@@ -21,6 +21,9 @@ export async function POST(req: NextRequest) {
     }
 
     const content = await file.text();
+    if (!content.trim()) {
+      return createErrorResponse('Plik jest pusty', 400);
+    }
 
     const mode = req.nextUrl.searchParams.get('mode') ?? 'normal';
     const targetVersionParam = req.nextUrl.searchParams.get('targetVersion');
@@ -30,16 +33,14 @@ export async function POST(req: NextRequest) {
         return createErrorResponse('Nieprawidłowy targetVersion', 400);
       }
       await replaceDramaAferaSettings(content, targetVersionParam);
-      return createSuccessResponse({
-        message: `Plik ${targetVersionParam === 'current' ? 'aktualnego' : 'starego'} wariantu zaktualizowany.`,
-      });
+      return createMessageResponse(
+        `Plik ${targetVersionParam === 'current' ? 'aktualnego' : 'starego'} wariantu zaktualizowany.`,
+      );
     }
 
     if (mode === 'normal') {
       await rotateDramaAferaSettings(content);
-      return createSuccessResponse({
-        message: 'Plik wgrany! Aktualna wersja zaktualizowana.',
-      });
+      return createMessageResponse('Plik wgrany! Aktualna wersja zaktualizowana.');
     }
 
     return createErrorResponse('Nieprawidłowy mode', 400);

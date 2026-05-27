@@ -96,7 +96,7 @@ export function SettingsTab() {
         <div className="space-y-4">
           <div className="bg-yellow-900/20 border border-yellow-700 rounded-lg p-4">
             <p className="text-sm text-yellow-300">
-              ⚠️ Aktualny plik stanie się starym, poprzedni stary będzie usunięty z bazy.
+              ⚠️ Aktualny plik stanie się starym, poprzedni stary zostanie zarchiwizowany (soft-delete).
             </p>
           </div>
           <div>
@@ -141,7 +141,7 @@ export function SettingsTab() {
           <div className="mt-6 space-y-4">
             <div className="bg-blue-900/20 border border-blue-700 rounded-lg p-4">
               <p className="text-sm text-blue-300">
-                ℹ️ Zastąpi tylko wybrany wariant bez rotacji. Poprzedni wariant będzie usunięty z bazy.
+                ℹ️ Zastąpi tylko wybrany wariant bez rotacji. Poprzedni wariant zostanie zarchiwizowany (soft-delete).
               </p>
             </div>
 

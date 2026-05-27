@@ -6,7 +6,10 @@ import { Teams } from "@/constants/teams";
 import { getDramaAferaSettings } from "../_services";
 import { parseSettingsFile, updateSettingValue } from "../_utils/settingsParser";
 
-export const revalidate = 300;
+// `force-dynamic` because the project's `open-next.config.ts` uses the default
+// (dummy) incremental cache and tag cache — ISR / `revalidatePath` would be no-ops
+// until R2 + DO queue + tag-cache bindings are configured. Re-render per request.
+export const dynamic = 'force-dynamic';
 
 const getRoleInfo = (roleName: string): { color: string; icon: string | null } => {
     // Najpierw szukaj w rolach

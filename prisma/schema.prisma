@@ -377,4 +377,18 @@ model DramaAferaSettings {
     @@index([uploadedAt])
     @@index([deletedAt])
     @@map("drama_afera_settings")
+    // MANUAL INDEX: a partial UNIQUE INDEX on (versionType) WHERE deletedAt IS NULL,
+    // defined in 0006_add_drama_afera_settings.sql. Enforces at most one active row
+    // per versionType.
+    //
+    // Partial indexes are supported by Prisma 7.4+ via the `partialIndexes` preview
+    // feature (`@@unique([versionType], where: { deletedAt: null })`); this project
+    // is on 6.19.2, where there is no schema syntax for it — hence the hand-written
+    // CREATE UNIQUE INDEX in the migration.
+    //
+    // `db:migrate:diff` is unaware of this index. If a future generated migration
+    // contains a DROP for `idx_drama_afera_settings_version_type`, delete that
+    // statement before applying. Once the project upgrades to Prisma 7.4+, replace
+    // this comment with `@@unique([versionType], where: { deletedAt: null })`
+    // (with `partialIndexes` enabled in `previewFeatures`).
 }

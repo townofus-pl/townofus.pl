@@ -1,6 +1,5 @@
 'use server';
 
-import { revalidatePath } from 'next/cache';
 import {
   rotateDramaAferaSettings,
   replaceDramaAferaSettings,
@@ -51,8 +50,10 @@ export async function uploadSettingsAction(
       await rotateDramaAferaSettings(content);
     }
 
-    revalidatePath('/dramaafera/changelog');
-    revalidatePath('/dramaafera/role/[nazwa]', 'page');
+    // No `revalidatePath` here: the project's `open-next.config.ts` uses default
+    // (dummy) tag cache, so on-demand revalidation is a no-op until cache bindings
+    // are configured. Pages reading settings (changelog, role detail) are
+    // `force-dynamic` and re-render per request.
 
     return {
       success: true,
