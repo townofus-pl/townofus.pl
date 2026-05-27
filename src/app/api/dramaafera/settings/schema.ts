@@ -13,20 +13,26 @@ export type GetDramaAferaSettingsResponse = z.infer<typeof GetDramaAferaSettings
 
 export const UploadDramaAferaSettingsResponseSchema = z.object({
   success: z.boolean(),
-  message: z.string(),
-  data: z.object({
-    current: z.object({
-      id: z.number(),
-      versionType: z.literal('current'),
-      uploadedAt: z.string(),
-    }).nullable(),
-    old: z.object({
-      id: z.number(),
-      versionType: z.literal('old'),
-      uploadedAt: z.string(),
-    }).nullable(),
-  }).optional(),
+  message: z.string().optional(),
   error: z.string().optional(),
 });
 
 export type UploadDramaAferaSettingsResponse = z.infer<typeof UploadDramaAferaSettingsResponseSchema>;
+
+/**
+ * Query-param schema for `POST /api/dramaafera/settings`.
+ * - `mode`: rotation flow selector (defaults to `normal` when absent).
+ * - `targetVersion`: required only when `mode === 'advanced'`; identifies the
+ *   row to replace without rotation.
+ */
+export const UploadDramaAferaSettingsQuerySchema = z
+  .object({
+    mode: z.enum(['normal', 'advanced']).default('normal'),
+    targetVersion: z.enum(['current', 'old']).optional(),
+  })
+  .refine((q) => q.mode !== 'advanced' || q.targetVersion !== undefined, {
+    message: 'targetVersion is required when mode=advanced',
+    path: ['targetVersion'],
+  });
+
+export type UploadDramaAferaSettingsQuery = z.infer<typeof UploadDramaAferaSettingsQuerySchema>;

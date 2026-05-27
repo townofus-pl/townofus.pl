@@ -5,6 +5,11 @@ import { CURRENT_SEASON } from "../../_constants/seasons";
 import { RoleDetailContent } from "./RoleDetailContent";
 import { convertRoleToUrlSlug, convertUrlSlugToRole } from "@/app/dramaafera/_utils/gameUtils";
 
+// RoleDetailContent reads DramaAfera settings from D1 per request. Without
+// `force-dynamic`, `generateStaticParams` below would snapshot settings at
+// build time and host uploads would never reach already-built role pages.
+export const dynamic = 'force-dynamic';
+
 interface RolePageProps {
     params: Promise<{
         nazwa: string;

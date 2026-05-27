@@ -1,4 +1,5 @@
 import { getDatabaseClient } from '../db';
+import { chunkedInQuery } from '@/app/api/_database';
 import { withoutDeleted } from '@/app/api/schema/common';
 import { CURRENT_SEASON } from '@/app/dramaafera/_constants/seasons';
 import type { VotingStatistics } from './types';
@@ -79,7 +80,10 @@ export async function getPlayerVotingStats(
     });
 
     // Fetch all meetings for this player in the season via relation filters.
-    // Avoids IN (...) clauses which exceed D1's SQL variable limit.
+    // Two-step fetch (then `meetingVotes` per meeting id, chunked) to stay under
+    // Cloudflare D1's 98 bound-parameter cap on Prisma 7 — a single
+    // `include: { meetingVotes }` would emit `WHERE meetingId IN (?,…?N)`
+    // for the relation fetch and trip P2029 on heavy players.
     const allMeetings = await prisma.meeting.findMany({
       where: {
         ...withoutDeleted,
@@ -89,9 +93,22 @@ export async function getPlayerVotingStats(
           { skipVotes:    { some: { playerId: player.id } } },
         ]
       },
-      include: {
-        meetingVotes: true
-      }
+      select: { id: true, wasTie: true },
+    });
+
+    const meetingIds = allMeetings.map((m) => m.id);
+    const allMeetingVotes = await chunkedInQuery(meetingIds, (chunk) =>
+      prisma.meetingVote.findMany({
+        where: { meetingId: { in: chunk } },
+        select: { meetingId: true, targetId: true },
+      }),
+    );
+
+    const votesByMeetingId = new Map<number, { targetId: number }[]>();
+    allMeetingVotes.forEach((v) => {
+      const list = votesByMeetingId.get(v.meetingId) ?? [];
+      list.push({ targetId: v.targetId });
+      votesByMeetingId.set(v.meetingId, list);
     });
 
     const totalMeetings = allMeetings.length;
@@ -102,8 +119,9 @@ export async function getPlayerVotingStats(
     allMeetings.forEach(meeting => {
       if (meeting.wasTie) return;
 
+      const meetingVotes = votesByMeetingId.get(meeting.id) ?? [];
       const voteCounts = new Map<number, number>();
-      meeting.meetingVotes.forEach((vote: { targetId: number }) => {
+      meetingVotes.forEach((vote) => {
         voteCounts.set(vote.targetId, (voteCounts.get(vote.targetId) || 0) + 1);
       });
 
@@ -123,8 +141,9 @@ export async function getPlayerVotingStats(
     const meetingVoteCounts = new Map<number, Map<number, number>>();
 
     allMeetings.forEach(meeting => {
+      const meetingVotes = votesByMeetingId.get(meeting.id) ?? [];
       const voteCounts = new Map<number, number>();
-      meeting.meetingVotes.forEach((vote: { targetId: number }) => {
+      meetingVotes.forEach((vote) => {
         voteCounts.set(vote.targetId, (voteCounts.get(vote.targetId) || 0) + 1);
       });
       meetingVoteCounts.set(meeting.id, voteCounts);

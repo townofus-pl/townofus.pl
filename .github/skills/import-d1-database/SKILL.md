@@ -12,7 +12,7 @@ This skill documents the safe import workflow for Cloudflare D1 in this project.
 - wrangler transaction restrictions
 - foreign key pragma behavior that D1/wrangler does not reliably honor
 
-The preferred implementation is the repository script at [scripts/import-d1-database.ts](scripts/import-d1-database.ts), exposed as `npm run db:import:local`.
+The preferred implementation is the repository script at [scripts/import-d1-database.ts](scripts/import-d1-database.ts), exposed as `npm run db:import:local`. The script encodes the entire workflow described below — for routine syncs, just run it.
 
 ## When to use this skill
 
@@ -22,6 +22,7 @@ Use this skill when you need to:
 - inspect production data locally
 - restore a broken local D1 state
 - create a repeatable import workflow for future syncs
+- understand why the script behaves the way it does, when it fails, or when you need to extend it
 
 If you just want the practical one-command path, use `npm run db:import:local` instead of performing the steps manually.
 
@@ -34,9 +35,10 @@ Gather or confirm:
 | Data | Required | Example |
 |---|---|---|
 | Source database name | Yes | `townofus-pl` |
-| Target state directory | Yes | `.wrangler/state/v3/d1-import-v3` |
+| Target state directory | Yes | `.wrangler/state/v3/d1` (the default the dev server reads) |
 | Fresh export file path | Yes | `db-backups/townofus-pl-remote.sql` |
 | Whether the local dev server is running | Yes | stop it first if it locks the state files |
+| Cloudflare account selection | Yes if multiple accounts | set `CLOUDFLARE_ACCOUNT_ID=d1287f321cc95882fc773ab71241b51a` (the project's "Spoko Firma" account, also used by `.github/workflows/deploy.yml`) before running `wrangler d1 export --remote` |
 
 ## Workflow
 
@@ -52,7 +54,7 @@ If the state files are locked, the import or copy step can fail or leave the dat
 
 ### 2. Export the remote database
 
-Run:
+Run (set `CLOUDFLARE_ACCOUNT_ID` first if you belong to multiple accounts — see Prerequisites):
 
 ```bash
 wrangler d1 export townofus-pl --remote --output db-backups/townofus-pl-remote.sql
@@ -86,22 +88,26 @@ Rules:
 
 The dump order is not safe for D1 import. Reorder the INSERTs so parent tables are loaded before child tables.
 
-Recommended order for this project:
+Recommended order for this project (matches `TABLE_ORDER` in `scripts/import-d1-database.ts`):
 
 1. `players` with `currentRankingId` temporarily nulled
 2. `games`
-3. `meetings`
-4. `player_rankings`
-5. `game_player_statistics`
-6. `player_roles`
-7. `player_modifiers`
-8. `game_events`
-9. `meeting_votes`
-10. `meeting_skip_votes`
-11. `meeting_jailed_players`
-12. `meeting_blackmailed_players`
-13. `meeting_no_votes`
-14. `sqlite_sequence`
+3. `lista_cweli`
+4. `drama_afera_settings`
+5. `meetings`
+6. `player_rankings`
+7. `game_player_statistics`
+8. `player_roles`
+9. `player_modifiers`
+10. `game_events`
+11. `meeting_votes`
+12. `meeting_skip_votes`
+13. `meeting_jailed_players`
+14. `meeting_blackmailed_players`
+15. `meeting_no_votes`
+16. `sqlite_sequence`
+
+Tables not listed (e.g. a new model added later) are appended alphabetically at the end of the import by the script's catch-all (`scripts/import-d1-database.ts:249-252`). This is safe for FK-free or self-contained tables but should be revisited when introducing a new table with relations into another table.
 
 The important circular dependency is:
 
@@ -142,13 +148,29 @@ The dev server reads the default local D1 state. If you imported into a separate
 
 If the app still shows no data, verify that the SQLite files under `.wrangler/state/v3/d1/...` are the populated ones, not the empty bootstrap state.
 
+Note for Prisma 7: `prisma.config.ts` calls `listLocalDatabases()` and expects exactly one SQLite file under `.wrangler/state/v3/d1/miniflare-D1DatabaseObject/`. If you ran the import into a separate `--persist-to` directory, clean up the stale state directory before running `prisma` commands (e.g. `npm run db:migrate:diff`), or the config will throw a "Multiple local D1 databases found" error.
+
 ## Validation
 
 After import, verify:
 
-1. `SELECT COUNT(*)` on key tables (`players`, `games`, `player_rankings`, `game_player_statistics`, `meetings`, `game_events`)
+1. `SELECT COUNT(*)` on key tables (`players`, `games`, `player_rankings`, `game_player_statistics`, `meetings`, `game_events`, `lista_cweli`, `drama_afera_settings`)
 2. `PRAGMA foreign_key_check;` returns no rows
-3. `npm run dev` reads the populated local state
+3. `npm run db:migrate:diff` reports `-- This is an empty migration.` — confirms the imported DB schema matches `prisma/schema.prisma` (no drift introduced by the import)
+4. `npm run dev` reads the populated local state
+
+Reference counts from a recent prod import (May 2026), for sanity-checking magnitudes:
+
+| Table | Rows |
+|---|---|
+| players | ~50 |
+| games | ~470 |
+| meetings | ~1,750 |
+| player_rankings | ~18,200 |
+| game_player_statistics | ~7,300 |
+| game_events | ~12,300 |
+| lista_cweli | ~4 |
+| drama_afera_settings | 0 (until PR #278 lands and production starts writing) |
 
 ## Common failures and fixes
 
@@ -168,12 +190,22 @@ Remove `INSERT INTO "d1_migrations"` from the import file. Migrations already cr
 
 The import file was damaged by a bad text transformation or encoding problem. Rebuild the file from a fresh export.
 
+### `More than one account available but unable to select one in non-interactive mode.`
+
+Wrangler can't pick between multiple Cloudflare accounts. Export `CLOUDFLARE_ACCOUNT_ID=d1287f321cc95882fc773ab71241b51a` (this project's account) and rerun.
+
+### `Multiple local D1 databases found` from `prisma.config.ts`
+
+`listLocalDatabases()` found more than one `.sqlite` file under `.wrangler/state/v3/d1/miniflare-D1DatabaseObject/`. Usually a leftover persist directory from a previous import. Remove the stale one and rerun.
+
 ### App still shows no data after a successful import
 
 The app is reading the default local D1 state, but the import was written to a different `--persist-to` directory.
 
 ## Checklist
 
+- [ ] `CLOUDFLARE_ACCOUNT_ID` exported (or single-account environment)
+- [ ] Dev server / workerd processes stopped
 - [ ] Remote export created successfully
 - [ ] Local migrations applied to a fresh state
 - [ ] Import file contains INSERTs only
@@ -182,4 +214,5 @@ The app is reading the default local D1 state, but the import was written to a d
 - [ ] Bulk import completed successfully
 - [ ] `players.currentRankingId` restored afterward
 - [ ] `PRAGMA foreign_key_check` passes
+- [ ] `npm run db:migrate:diff` reports empty (no drift)
 - [ ] `npm run dev` sees the imported data

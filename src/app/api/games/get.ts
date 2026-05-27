@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
 import { getCloudflareContext } from '@opennextjs/cloudflare';
-import { getPrismaClient } from '../_database';
+import { getPrismaClient, chunkedInQuery } from '../_database';
 import { GamesQuerySchema } from '../schema/games';
 import { createSuccessResponse, createErrorResponse } from '../_utils';
 import { formatZodError, withoutDeleted } from '../schema/common';
@@ -132,44 +132,105 @@ export async function GET(request: NextRequest, _authContext: { user: { username
       orderBy.startTime = 'desc';
     }
 
-    // Build include clause based on includePlayers flag
-    const include: Record<string, unknown> = {};
-    if (includePlayers) {
-      include.gamePlayerStatistics = {
-        where: {
-          player: withoutDeleted
-        },
-        include: {
-          player: {
-            select: {
-              id: true,
-              name: true
-            }
-          },
-          roleHistory: {
-            orderBy: {
-              order: 'asc'
-            }
-          },
-          modifiers: true
-        }
-      };
-    } else {
-      include.gamePlayerStatistics = {
-        select: {
-          id: true
-        }
-      };
-    }
-
-    // Fetch games
+    // Fetch games (no nested include).
+    // Note: a nested `gamePlayerStatistics` include with `roleHistory` /
+    // `modifiers` / `player` blows past D1's 98 bound-parameter cap on Prisma
+    // 7 once `limit > ~6`. Fetch related rows in chunks separately when
+    // `includePlayers=true`; otherwise just count stat ids per game.
     const games = await prisma.game.findMany({
       where,
       orderBy,
       skip: offset,
       take: limit,
-      include
     });
+
+    const gameIds = games.map((g) => g.id);
+    type StatRow = {
+      id: number;
+      gameId: number;
+      playerId: number;
+      win: boolean;
+      disconnected: boolean;
+      totalPoints: number;
+      completedTasks: number;
+      survivedRounds: number;
+      correctKills: number;
+      incorrectKills: number;
+      correctGuesses: number;
+      incorrectGuesses: number;
+    };
+    const rawStats: StatRow[] = await chunkedInQuery(gameIds, (chunk) =>
+      prisma.gamePlayerStatistics.findMany({
+        where: { gameId: { in: chunk }, player: withoutDeleted },
+        select: {
+          id: true,
+          gameId: true,
+          playerId: true,
+          win: true,
+          disconnected: true,
+          totalPoints: true,
+          completedTasks: true,
+          survivedRounds: true,
+          correctKills: true,
+          incorrectKills: true,
+          correctGuesses: true,
+          incorrectGuesses: true,
+        },
+      }),
+    );
+
+    const statCountByGameId = new Map<number, number>();
+    rawStats.forEach((s) => statCountByGameId.set(s.gameId, (statCountByGameId.get(s.gameId) ?? 0) + 1));
+
+    // Per-game stat groupings (only populated when includePlayers=true)
+    const statsByGameId = new Map<number, StatRow[]>();
+    let playerNameById = new Map<number, string>();
+    const rolesByStatId = new Map<number, string[]>();
+    const modifiersByStatId = new Map<number, string[]>();
+    if (includePlayers && rawStats.length > 0) {
+      rawStats.forEach((s) => {
+        const list = statsByGameId.get(s.gameId) ?? [];
+        list.push(s);
+        statsByGameId.set(s.gameId, list);
+      });
+
+      const statIds = rawStats.map((s) => s.id);
+      const uniquePlayerIds = Array.from(new Set(rawStats.map((s) => s.playerId)));
+
+      const [players, roles, modifiers] = await Promise.all([
+        chunkedInQuery(uniquePlayerIds, (chunk) =>
+          prisma.player.findMany({
+            where: { id: { in: chunk } },
+            select: { id: true, name: true },
+          }),
+        ),
+        chunkedInQuery(statIds, (chunk) =>
+          prisma.playerRole.findMany({
+            where: { gamePlayerStatisticsId: { in: chunk } },
+            orderBy: { order: 'asc' },
+            select: { gamePlayerStatisticsId: true, roleName: true },
+          }),
+        ),
+        chunkedInQuery(statIds, (chunk) =>
+          prisma.playerModifier.findMany({
+            where: { gamePlayerStatisticsId: { in: chunk } },
+            select: { gamePlayerStatisticsId: true, modifierName: true },
+          }),
+        ),
+      ]);
+
+      playerNameById = new Map(players.map((p) => [p.id, p.name]));
+      roles.forEach((r) => {
+        const list = rolesByStatId.get(r.gamePlayerStatisticsId) ?? [];
+        list.push(r.roleName);
+        rolesByStatId.set(r.gamePlayerStatisticsId, list);
+      });
+      modifiers.forEach((m) => {
+        const list = modifiersByStatId.get(m.gamePlayerStatisticsId) ?? [];
+        list.push(m.modifierName);
+        modifiersByStatId.set(m.gamePlayerStatisticsId, list);
+      });
+    }
 
     // Transform games to API response format
     const transformedGames = games.map(game => {
@@ -197,8 +258,8 @@ export async function GET(request: NextRequest, _authContext: { user: { username
         gameDate = game.startTime.toLocaleDateString('pl-PL');
       }
 
-      // Count players
-      const playerCount = game.gamePlayerStatistics?.length || 0;
+      // Count players (always available — stat ids are fetched regardless)
+      const playerCount = statCountByGameId.get(game.id) ?? 0;
 
       // Basic game summary
       const gameResponse: Record<string, unknown> = {
@@ -214,54 +275,31 @@ export async function GET(request: NextRequest, _authContext: { user: { username
         winner: game.winnerTeam || 'Unknown',
         winCondition: game.winCondition || 'Unknown',
         createdAt: game.createdAt,
-        updatedAt: game.updatedAt
+        updatedAt: game.updatedAt,
       };
 
       // Add player details if requested
-      if (includePlayers && game.gamePlayerStatistics && Array.isArray(game.gamePlayerStatistics)) {
-        const validStats = game.gamePlayerStatistics.filter(stat =>
-          stat && typeof stat === 'object' && 'playerId' in stat && 'win' in stat
-        );
+      if (includePlayers) {
+        const stats = statsByGameId.get(game.id) ?? [];
 
-        gameResponse.playerStats = validStats.map(stat => {
-          const playerStat = stat as {
-            playerId: number;
-            win: boolean;
-            disconnected: boolean;
-            totalPoints: number;
-            completedTasks: number;
-            survivedRounds: number;
-            correctKills: number;
-            incorrectKills: number;
-            correctGuesses: number;
-            incorrectGuesses: number;
-            player?: { name: string };
-            roleHistory?: Array<{ roleName: string }>;
-            modifiers?: Array<{ modifierName: string }>;
-          };
+        gameResponse.playerStats = stats.map((stat) => ({
+          playerId: stat.playerId,
+          playerName: playerNameById.get(stat.playerId) ?? 'Unknown',
+          win: stat.win,
+          disconnected: stat.disconnected,
+          totalPoints: stat.totalPoints,
+          completedTasks: stat.completedTasks,
+          survivedRounds: stat.survivedRounds,
+          correctKills: stat.correctKills,
+          incorrectKills: stat.incorrectKills,
+          correctGuesses: stat.correctGuesses,
+          incorrectGuesses: stat.incorrectGuesses,
+          roles: rolesByStatId.get(stat.id) ?? [],
+          modifiers: modifiersByStatId.get(stat.id) ?? [],
+        }));
 
-          return {
-            playerId: playerStat.playerId,
-            playerName: playerStat.player?.name || 'Unknown',
-            win: playerStat.win,
-            disconnected: playerStat.disconnected,
-            totalPoints: playerStat.totalPoints,
-            completedTasks: playerStat.completedTasks,
-            survivedRounds: playerStat.survivedRounds,
-            correctKills: playerStat.correctKills,
-            incorrectKills: playerStat.incorrectKills,
-            correctGuesses: playerStat.correctGuesses,
-            incorrectGuesses: playerStat.incorrectGuesses,
-            roles: playerStat.roleHistory?.map(role => role.roleName) || [],
-            modifiers: playerStat.modifiers?.map(mod => mod.modifierName) || []
-          };
-        });
-
-        // Extract winner information
-        const winners = validStats.filter(stat => (stat as { win: boolean }).win);
-        gameResponse.winnerNames = winners.map(w =>
-          (w as { player?: { name: string } }).player?.name || 'Unknown'
-        );
+        const winners = stats.filter((s) => s.win);
+        gameResponse.winnerNames = winners.map((w) => playerNameById.get(w.playerId) ?? 'Unknown');
         gameResponse.winnerCount = winners.length;
       }
 

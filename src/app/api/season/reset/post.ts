@@ -1,7 +1,7 @@
 import { NextRequest } from 'next/server';
 import { z } from 'zod';
 import { getCloudflareContext } from '@opennextjs/cloudflare';
-import { getPrismaClient, batchStatements } from '../../_database';
+import { getPrismaClient, batchStatements, chunkedInQuery } from '../../_database';
 import { createSuccessResponse, createErrorResponse } from '../../_utils';
 import { RANKING_CONSTANTS } from '../../_utils/rankingCalculator';
 import { PlayerRankingReason } from '../../_constants/rankingTypes';
@@ -68,24 +68,38 @@ export async function POST(
       );
     }
 
-    // Pobierz wszystkich aktywnych graczy z ich aktualnym rankingiem
+    // Pobierz wszystkich aktywnych graczy + ich currentRanking metadata.
+    // Implementation note: a nested `include: { currentRanking }` would trip
+    // D1's 98 bound-parameter cap on Prisma 7 once the playerbase grows past
+    // ~95. Fetch separately + chunked.
     const allPlayers = await prisma.player.findMany({
       where: withoutDeleted,
-      include: {
-        currentRanking: true,
-      },
+      select: { id: true, name: true, currentRankingId: true },
     });
+
+    const currentRankingIds = allPlayers
+      .map((p) => p.currentRankingId)
+      .filter((id): id is number => id !== null);
+    const currentRankings = await chunkedInQuery(currentRankingIds, (chunk) =>
+      prisma.playerRanking.findMany({
+        where: { id: { in: chunk } },
+        select: { id: true, season: true, reason: true, deletedAt: true },
+      }),
+    );
+    const rankingById = new Map(currentRankings.map((r) => [r.id, r]));
 
     // Option B guard: pomiń gracza jeśli currentRanking jest już season_reset dla docelowego sezonu.
     // Sprawdzamy deletedAt === null — soft-deleted wpis nie powinien blokować resetu.
-    const playersToReset = allPlayers.filter(
-      (player) =>
-        !(
-          player.currentRanking?.deletedAt === null &&
-          player.currentRanking?.season === targetSeason &&
-          player.currentRanking?.reason === PlayerRankingReason.SeasonReset
-        ),
-    );
+    const playersToReset = allPlayers.filter((player) => {
+      const cr = player.currentRankingId !== null
+        ? rankingById.get(player.currentRankingId)
+        : undefined;
+      return !(
+        cr?.deletedAt === null &&
+        cr?.season === targetSeason &&
+        cr?.reason === PlayerRankingReason.SeasonReset
+      );
+    });
 
     if (playersToReset.length === 0) {
       return createSuccessResponse({
@@ -112,7 +126,9 @@ export async function POST(
 
     const resetResults = playersToReset.map((player) => ({
       playerName: player.name,
-      oldSeason: player.currentRanking?.season ?? null,
+      oldSeason: player.currentRankingId !== null
+        ? rankingById.get(player.currentRankingId)?.season ?? null
+        : null,
     }));
 
     console.log(

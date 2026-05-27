@@ -64,10 +64,23 @@ Rules:
 
 ## Step 2: Rotate Settings Changelog
 
-This is a two-part rotation:
+Settings are stored in the D1 `drama_afera_settings` table. The host uploads
+the new file via the **Ustawienia** tab in `/dramaafera/host` (Settings Tab UI),
+which calls the `uploadSettingsAction` server action. The action performs an
+atomic rotation: new content becomes `current`, the existing `current` is
+demoted to `old`, and the previous `old` is soft-deleted.
 
-1. **Copy** the current content of `public/settings/dramaafera.txt` into `public/settings/dramaafera_old.txt` (overwrite)
-2. **Replace** the content of `public/settings/dramaafera.txt` with the new settings provided by the user
+If the user attaches the settings file in this conversation, instruct them
+(or, if you have host credentials, perform on their behalf):
+
+1. Log into `/dramaafera/host` (Basic Auth gated by `src/middleware.ts`).
+2. Open the **Ustawienia** tab.
+3. Use the **Wgraj Plik Ustawień** form to upload the new `.txt`. The server
+   action handles the rotation atomically (see
+   `src/app/dramaafera/_services/settings/writeDramaAferaSettings.ts`).
+
+For history-only access or full content snapshots, the GET endpoint is public:
+`GET /api/dramaafera/settings` returns `{ current, old }`.
 
 Both files use a line-based format alternating between role color tags and values:
 ```
@@ -77,8 +90,11 @@ Both files use a line-based format alternating between role color tags and value
 
 Rules:
 - Preserve the exact formatting — no trailing whitespace, no extra newlines
-- The files are ~728 lines each — always replace the entire file content
+- The file is ~728 lines — upload the entire file content
 - If the user provides the new settings as a file attachment or pasted text, use it verbatim
+- Do NOT modify `public/settings/dramaafera*.txt` — those files are now only
+  consumed by the legacy `dramaafera-old/` section and are not the source of
+  truth for the current dramaafera pages.
 
 ## Step 3: Add Playlist Entry
 
@@ -99,7 +115,9 @@ Rules:
 
 After making all changes:
 1. Validate the JSON file is parseable: `node -e "require('./public/emperor-polls/<DATE>.json')"`
-2. Check that `dramaafera.txt` and `dramaafera_old.txt` are different files (the old one has previous session's settings)
+2. After settings upload via the host UI, hit `GET /api/dramaafera/settings`
+   (or visit `/dramaafera/changelog`) and confirm the new `current`/`old` rows
+   differ as expected.
 3. Verify the playlista page compiles: `npx tsc --noEmit src/app/dramaafera/playlista/page.tsx` or run `npm run build`
 
 ## Commit Convention

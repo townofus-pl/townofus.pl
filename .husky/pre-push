@@ -1,1 +1,1 @@
-npm run lint && npm run build
+npm run next-typegen && npm run build

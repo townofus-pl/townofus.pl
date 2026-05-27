@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
 import { getCloudflareContext } from '@opennextjs/cloudflare';
-import { getPrismaClient } from '../../_database';
+import { getPrismaClient, chunkedInQuery } from '../../_database';
 import { createSuccessResponse, createErrorResponse } from '../../_utils';
 import { withoutDeleted } from '../../schema/common';
 
@@ -23,36 +23,40 @@ export async function GET(request: NextRequest) {
     const month = dateParam.substring(4, 6);
     const day = dateParam.substring(6, 8);
     
-    // Znajdź wszystkie gry z danego dnia
+    // Znajdź wszystkie gry z danego dnia.
+    // Note: nested includes would emit `WHERE gameId IN (…)` for the relation
+    // fetch and trip D1's 98 bound-parameter cap on busy nights. We only need
+    // playerId + totalPoints + name for the points aggregate below, so fetch
+    // stats in chunks separately.
     const games = await prisma.game.findMany({
       where: {
         ...withoutDeleted,
-        gameIdentifier: {
-          startsWith: dateParam
-        }
+        gameIdentifier: { startsWith: dateParam },
       },
-      include: {
-        gamePlayerStatistics: {
-          include: {
-            player: {
-              select: {
-                id: true,
-                name: true
-              }
-            },
-            roleHistory: true,
-            modifiers: true
-          }
-        }
-      },
-      orderBy: {
-        startTime: 'asc'
-      }
+      select: { id: true },
+      orderBy: { startTime: 'asc' },
     });
 
     if (games.length === 0) {
       return createErrorResponse('No games found for this date', 404);
     }
+
+    const gameIds = games.map((g) => g.id);
+    const rawStats = await chunkedInQuery(gameIds, (chunk) =>
+      prisma.gamePlayerStatistics.findMany({
+        where: { gameId: { in: chunk }, player: withoutDeleted },
+        select: { playerId: true, totalPoints: true },
+      }),
+    );
+
+    const uniquePlayerIds = Array.from(new Set(rawStats.map((s) => s.playerId)));
+    const dbPlayers = await chunkedInQuery(uniquePlayerIds, (chunk) =>
+      prisma.player.findMany({
+        where: { id: { in: chunk } },
+        select: { id: true, name: true },
+      }),
+    );
+    const playerNameById = new Map(dbPlayers.map((p) => [p.id, p.name]));
 
     // Formatowanie daty do wyświetlenia
     const months = [
@@ -113,23 +117,22 @@ export async function GET(request: NextRequest) {
 
     const playerMap = new Map<string, PlayerHostInfo>();
 
-    games.forEach((game) => {
-      game.gamePlayerStatistics.forEach((playerStat) => {
-        const playerName = playerStat.player.name;
-        
-        if (!playerMap.has(playerName)) {
-          playerMap.set(playerName, {
-            name: playerName,
-            avatar: `/images/avatars/${playerName}.png`,
-            totalPoints: 0,
-            games: 0
-          });
-        }
-        
-        const stats = playerMap.get(playerName)!;
-        stats.totalPoints += playerStat.totalPoints;
-        stats.games++;
-      });
+    rawStats.forEach((playerStat) => {
+      const playerName = playerNameById.get(playerStat.playerId);
+      if (!playerName) return;
+
+      if (!playerMap.has(playerName)) {
+        playerMap.set(playerName, {
+          name: playerName,
+          avatar: `/images/avatars/${playerName}.png`,
+          totalPoints: 0,
+          games: 0,
+        });
+      }
+
+      const stats = playerMap.get(playerName)!;
+      stats.totalPoints += playerStat.totalPoints;
+      stats.games++;
     });
 
     // Stwórz mapy rankingów

@@ -1,4 +1,5 @@
 import { getDatabaseClient } from '../db';
+import { chunkedInQuery } from '@/app/api/_database';
 import { withoutDeleted } from '@/app/api/schema/common';
 import { CURRENT_SEASON } from '@/app/dramaafera/_constants/seasons';
 import { getRankingSnapshots, buildRankPositionMap } from './_rankingHelpers';
@@ -37,26 +38,38 @@ export async function getHostInfo(
 
   const displayDate = formatDisplayDate(date);
 
+  // Per-day host page — typically ~10 games and a couple hundred stats. The
+  // include + nested player select would otherwise emit `WHERE playerId IN (…)`
+  // for the relation fetch and risk D1's 98-param cap on busy nights.
   const games = await prisma.game.findMany({
     where: {
       ...withoutDeleted,
       gameIdentifier: { startsWith: date },
       season: seasonId ?? CURRENT_SEASON,
     },
-    include: {
-      gamePlayerStatistics: {
-        where: { player: withoutDeleted },
-        include: {
-          player: { select: { id: true, name: true } },
-          roleHistory: true,
-          modifiers: true,
-        },
-      },
-    },
+    select: { id: true },
     orderBy: { startTime: 'asc' },
   });
 
   if (games.length === 0) return null;
+
+  const gameIds = games.map((g) => g.id);
+
+  const rawStats = await chunkedInQuery(gameIds, (chunk) =>
+    prisma.gamePlayerStatistics.findMany({
+      where: { gameId: { in: chunk }, player: withoutDeleted },
+      select: { playerId: true, totalPoints: true },
+    }),
+  );
+
+  const uniquePlayerIds = Array.from(new Set(rawStats.map((s) => s.playerId)));
+  const dbPlayers = await chunkedInQuery(uniquePlayerIds, (chunk) =>
+    prisma.player.findMany({
+      where: { id: { in: chunk } },
+      select: { id: true, name: true },
+    }),
+  );
+  const playerNameById = new Map(dbPlayers.map((p) => [p.id, p.name]));
 
   const firstGameDb = games[0];
   const lastGameDb = games[games.length - 1];
@@ -65,21 +78,20 @@ export async function getHostInfo(
     await getRankingSnapshots(firstGameDb.id, lastGameDb.id, seasonId);
 
   const playerMap = new Map<string, HostPlayerInfo>();
-  games.forEach((game) => {
-    game.gamePlayerStatistics.forEach((playerStat) => {
-      const playerName = playerStat.player.name;
-      if (!playerMap.has(playerName)) {
-        playerMap.set(playerName, {
-          name: playerName,
-          avatar: `/images/avatars/${playerName}.png`,
-          totalPoints: 0,
-          games: 0,
-        });
-      }
-      const stats = playerMap.get(playerName)!;
-      stats.totalPoints += playerStat.totalPoints;
-      stats.games++;
-    });
+  rawStats.forEach((playerStat) => {
+    const playerName = playerNameById.get(playerStat.playerId);
+    if (!playerName) return;
+    if (!playerMap.has(playerName)) {
+      playerMap.set(playerName, {
+        name: playerName,
+        avatar: `/images/avatars/${playerName}.png`,
+        totalPoints: 0,
+        games: 0,
+      });
+    }
+    const stats = playerMap.get(playerName)!;
+    stats.totalPoints += playerStat.totalPoints;
+    stats.games++;
   });
 
   const rankPositionBefore = buildRankPositionMap(rankingBeforeMap);

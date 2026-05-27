@@ -26,7 +26,7 @@ export const ErrorResponseSchema = z.object({
     description: 'Error message describing what went wrong',
     example: 'Validation failed'
   }),
-  details: z.record(z.unknown()).optional().openapi({
+  details: z.record(z.string(), z.unknown()).optional().openapi({
     description: 'Additional error details (e.g., validation errors)',
     example: {
       field: 'name',

@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
 import { getCloudflareContext } from '@opennextjs/cloudflare';
-import { getPrismaClient } from '../../_database';
+import { getPrismaClient, batchStatements } from '../../_database';
 
 import { IdParamSchema } from '../../schema/base';
 import { createSuccessResponse, createErrorResponse } from '../../_utils';
@@ -26,26 +26,12 @@ export async function DELETE(request: NextRequest, authContext: { user: { userna
 
     const playerId = parseInt(id, 10);
 
-    // Check if the player exists and is not already deleted
+    // Check if the player exists and is not already deleted.
+    // (Previously included gamePlayerStatistics/gameEvents/meetingVotes counts,
+    // but the result was never used — removed to avoid P2029 on heavy players.)
     const existingPlayer = await prisma.player.findFirst({
-      where: {
-        id: playerId,
-        ...withoutDeleted
-      },
-      include: {
-        gamePlayerStatistics: {
-          select: { id: true }
-        },
-        gameEvents: {
-          select: { id: true }
-        },
-        meetingVotesFor: {
-          select: { id: true }
-        },
-        meetingVotesBy: {
-          select: { id: true }
-        }
-      }
+      where: { id: playerId, ...withoutDeleted },
+      select: { id: true, name: true, createdAt: true },
     });
 
     if (!existingPlayer) {
@@ -58,34 +44,22 @@ export async function DELETE(request: NextRequest, authContext: { user: { userna
     //                    existingPlayer.meetingVotesFor.length > 0 ||
     //                    existingPlayer.meetingVotesBy.length > 0;
 
-    // Use transaction to ensure consistency
-    await prisma.$transaction(async (tx) => {
-      // Soft delete the player
-      await tx.player.update({
-        where: { id: playerId },
-        data: {
-          deletedAt: new Date(),
-          updatedAt: new Date()
-        }
-      });
-
-      // If player has current ranking, soft delete it too
-      if (existingPlayer.currentRankingId) {
-        await tx.playerRanking.update({
-          where: { id: existingPlayer.currentRankingId },
-          data: { deletedAt: new Date() }
-        });
-      }
-
-      // Soft delete all ranking history records
-      await tx.playerRanking.updateMany({
-        where: { 
-          playerId: playerId,
-          deletedAt: null
-        },
-        data: { deletedAt: new Date() }
-      });
-    });
+    // Soft-delete the player and all of their ranking history atomically.
+    // `prisma.$transaction` is a silent no-op on Cloudflare D1 (see
+    // @prisma/adapter-d1 docs) — we use `env.DB.batch()` via `batchStatements`
+    // so a partial failure rolls the whole sequence back.
+    await batchStatements(env.DB, [
+      env.DB
+        .prepare(
+          `UPDATE "players" SET "deletedAt" = CURRENT_TIMESTAMP, "updatedAt" = CURRENT_TIMESTAMP WHERE "id" = ?`,
+        )
+        .bind(playerId),
+      env.DB
+        .prepare(
+          `UPDATE "player_rankings" SET "deletedAt" = CURRENT_TIMESTAMP WHERE "playerId" = ? AND "deletedAt" IS NULL`,
+        )
+        .bind(playerId),
+    ]);
 
     // Return the soft-deleted player data (without sensitive info)
     const deletedPlayerResponse = {
@@ -100,11 +74,6 @@ export async function DELETE(request: NextRequest, authContext: { user: { userna
 
   } catch (error) {
     console.error('Error deleting player:', error);
-    
-    if (error instanceof Error) {
-      return createErrorResponse('Failed to delete player: ' + error.message, 500);
-    }
-
-    return createErrorResponse('Internal server error', 500);
+    return createErrorResponse('Failed to delete player', 500);
   }
 }

@@ -1,6 +1,8 @@
 // Types for better type safety
+import { getCloudflareContext } from '@opennextjs/cloudflare';
 import { withoutDeleted } from '../schema/common';
-import type { PrismaClient, Player, GamePlayerStatistics, PlayerRanking } from '@prisma/client';
+import { batchStatements, chunkedInQuery } from '../_database';
+import type { PrismaClient, GamePlayerStatistics } from '@prisma/client';
 import { PlayerRankingReason } from '../_constants/rankingTypes';
 
 // Stałe systemu rankingowego (eksportowane — używane też w serwisach rankingowych)
@@ -86,31 +88,47 @@ export async function calculateRankingForGame(
 
     console.log(`📊 Processing ${game.gamePlayerStatistics.length} present players`);
 
-    // 4. Pobierz wszystkich graczy w systemie
+    // 4. Pobierz wszystkich graczy w systemie.
+    // Implementation note: a nested `include: { currentRanking }` would emit
+    // `WHERE id IN (…currentRankingIds)` for the relation fetch — once the
+    // playerbase grows past ~95 this trips D1's 98 bound-parameter cap on
+    // Prisma 7 (P2029). Fetch separately and chunk.
     const allPlayers = await prisma.player.findMany({
       where: withoutDeleted,
-      include: {
-        currentRanking: true
-      }
+      select: { id: true, name: true, currentRankingId: true },
     });
+
+    const currentRankingIds = allPlayers
+      .map((p) => p.currentRankingId)
+      .filter((id): id is number => id !== null);
+    const currentRankings = await chunkedInQuery(currentRankingIds, (chunk) =>
+      prisma.playerRanking.findMany({
+        where: { id: { in: chunk } },
+        select: { id: true, score: true },
+      }),
+    );
+    const scoreByRankingId = new Map(currentRankings.map((r) => [r.id, r.score]));
 
     console.log(`👥 Found ${allPlayers.length} total players in system`);
 
     // 5. Przygotuj dane graczy - obecnych i nieobecnych
     const presentPlayerIds = new Set(game.gamePlayerStatistics.map((gps: GamePlayerStatistics) => gps.playerId));
-    
-    const playersData: PlayerGameData[] = allPlayers.map((player: Player & { currentRanking?: PlayerRanking | null }) => {
+
+    const playersData: PlayerGameData[] = allPlayers.map((player) => {
       const isPresent = presentPlayerIds.has(player.id);
-      const gameStats = isPresent 
+      const gameStats = isPresent
         ? game.gamePlayerStatistics.find((gps: GamePlayerStatistics) => gps.playerId === player.id)
         : null;
-      
+      const currentScore = player.currentRankingId !== null
+        ? scoreByRankingId.get(player.currentRankingId)
+        : undefined;
+
       return {
         id: player.id,
         name: player.name,
         totalPoints: gameStats?.totalPoints || 0,
-        previousRating: player.currentRanking?.score || RANKING_CONSTANTS.START_RATING,
-        isPresent
+        previousRating: currentScore ?? RANKING_CONSTANTS.START_RATING,
+        isPresent,
       };
     });
 
@@ -172,30 +190,26 @@ export async function calculateRankingForGame(
       }
     }
 
-    // 8. Zapisz nowe rankingi do bazy
-    const createdRankings = [];
-    
-    for (const ranking of newRankings) {
-      const newRankingRecord = await prisma.playerRanking.create({
-        data: {
-          playerId: ranking.playerId,
-          gameId: gameId,
-          score: ranking.newRating,
-          reason: ranking.reason,
-          season: game.season
-        }
-      });
-      
-      createdRankings.push(newRankingRecord);
-    }
-
-    // 9. Aktualizuj currentRankingId dla wszystkich graczy
-    for (const ranking of createdRankings) {
-      await prisma.player.update({
-        where: { id: ranking.playerId },
-        data: { currentRankingId: ranking.id }
-      });
-    }
+    // 8+9. Insert all PlayerRanking rows and update player.currentRankingId in
+    // a single atomic D1 batch. Previously this was N sequential
+    // `prisma.create()` calls followed by N sequential `prisma.update()` calls
+    // — a mid-loop failure left partial rankings and stale `currentRankingId`.
+    // D1 batch() executes the whole sequence or none of it.
+    const { env } = await getCloudflareContext();
+    const insertStatements = newRankings.map((ranking) =>
+      env.DB.prepare(
+        `INSERT INTO "player_rankings" ("playerId", "gameId", "score", "reason", "season", "createdAt") VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)`,
+      ).bind(ranking.playerId, gameId, ranking.newRating, ranking.reason, game.season),
+    );
+    // The MAX(id) subquery resolves to the row just inserted above for this
+    // (playerId, gameId) pair — each game produces at most one ranking row
+    // per player here, so MAX is safe.
+    const updateStatements = newRankings.map((ranking) =>
+      env.DB.prepare(
+        `UPDATE "players" SET "currentRankingId" = (SELECT MAX("id") FROM "player_rankings" WHERE "playerId" = ? AND "gameId" = ? AND "deletedAt" IS NULL) WHERE "id" = ?`,
+      ).bind(ranking.playerId, gameId, ranking.playerId),
+    );
+    await batchStatements(env.DB, [...insertStatements, ...updateStatements]);
 
     console.log(`✅ Updated rankings for ${newRankings.length} players`);
 

@@ -7,25 +7,33 @@ import { Modifiers } from "@/modifiers";
 import { SettingTypes } from "@/constants/settings";
 import { SlotsDisplay } from "./SlotsDisplay";
 import { SpecialSettingsAccordion } from "./SpecialSettingsAccordion";
+import { GetDramaAferaSettingsResponseSchema } from "@/app/api/dramaafera/settings/schema";
 
 export function     SettingsDramaAfera() {
     const [fileContent, setFileContent] = useState<string | null>(null);
     const [isLoading, setIsLoading] = useState(true); // Początkowo ustawione na true
 
     useEffect(() => {
-        fetch("/settings/dramaafera.txt")
-            .then((response) => {
-                return response.text();
+        const controller = new AbortController();
+
+        fetch("/api/dramaafera/settings", { signal: controller.signal })
+            .then(async (response) => {
+                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                const parsed = GetDramaAferaSettingsResponseSchema.parse(await response.json());
+                if (!parsed.success) throw new Error(parsed.error ?? 'API error');
+                setFileContent(parsed.data.current);
             })
-            .then((text) => {
-                setFileContent(text);
-            })
-            .catch(() => {
+            .catch((err) => {
+                if (err instanceof DOMException && err.name === 'AbortError') return;
                 setFileContent(""); // Ustaw domyślną zawartość w przypadku błędu
             })
             .finally(() => {
-                setIsLoading(false); // Zakończ ładowanie nawet w przypadku błędu
+                if (!controller.signal.aborted) {
+                    setIsLoading(false);
+                }
             });
+
+        return () => controller.abort();
     }, []);
 
     const { filteredRoles, modSettings, impostorSettings } = useMemo(() => {

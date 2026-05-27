@@ -2,8 +2,6 @@ import { PrismaClient } from '@prisma/client';
 import { PrismaD1 } from '@prisma/adapter-d1';
 import type { Prisma } from '@prisma/client';
 
-
-
 /**
  * Global Prisma client instance
  */
@@ -20,16 +18,6 @@ export function getPrismaClient(d1Database: D1Database): PrismaClient {
     });
   }
   return prisma;
-}
-
-/**
- * Close Prisma client connection
- */
-export async function closePrismaClient(): Promise<void> {
-  if (prisma) {
-    await prisma.$disconnect();
-    prisma = null;
-  }
 }
 
 /**
@@ -62,26 +50,6 @@ export function buildPaginationQuery(options: DatabasePaginationOptions = {}) {
   };
 }
 
-
-
-/**
- * Database connection health check
- */
-export async function checkDatabaseConnection(d1Database: D1Database): Promise<boolean> {
-  try {
-    const client = getPrismaClient(d1Database);
-    // Simple health check using a standard Prisma query instead of raw SQL
-    await client.player.findFirst({
-      select: { id: true },
-      take: 1
-    });
-    return true;
-  } catch (error) {
-    console.error('Database connection failed:', error);
-    return false;
-  }
-}
-
 /**
  * Execute multiple raw SQL statements atomically using D1's batch() API.
  *
@@ -99,4 +67,34 @@ export async function batchStatements(
   statements: D1PreparedStatement[]
 ): Promise<D1Result[]> {
   return d1Database.batch(statements);
+}
+
+/**
+ * Cloudflare D1 caps bound parameters per query at 98 (see
+ * `@prisma/adapter-d1/.../index-workerd.mjs:MAX_BIND_VALUES`). Prisma 7's
+ * query-plan executor can only chunk a single `IN (…)` fragment per query —
+ * any second IN-tuple (e.g. an `include`/nested `select` fetching child rows
+ * with `parentId IN (…manyIds)`) will throw P2029 once the dataset is large.
+ *
+ * Use this helper to manually batch any `WHERE id IN (…)` lookup over an
+ * arbitrarily large array. Default chunk size leaves headroom for additional
+ * bound params in the same statement (e.g. soft-delete filters).
+ *
+ * Example:
+ *   const stats = await chunkedInQuery(statIds, (chunk) =>
+ *     prisma.playerRole.findMany({ where: { gamePlayerStatisticsId: { in: chunk } } })
+ *   );
+ */
+export async function chunkedInQuery<T>(
+  ids: readonly number[] | readonly string[],
+  fetchFn: (chunk: number[] & string[]) => Promise<T[]>,
+  chunkSize: number = 90,
+): Promise<T[]> {
+  if (ids.length === 0) return [];
+  const results: T[] = [];
+  for (let i = 0; i < ids.length; i += chunkSize) {
+    const chunk = ids.slice(i, i + chunkSize) as number[] & string[];
+    results.push(...(await fetchFn(chunk)));
+  }
+  return results;
 }

@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
 import { getCloudflareContext } from '@opennextjs/cloudflare';
-import { getPrismaClient } from '../../_database';
+import { getPrismaClient, chunkedInQuery } from '../../_database';
 
 import { IdParamSchema } from '../../schema/base';
 import { createSuccessResponse, createErrorResponse } from '../../_utils';
@@ -26,68 +26,87 @@ export async function GET(request: NextRequest, authContext: { user: { username:
 
     const playerId = parseInt(id, 10);
 
-    // Fetch player with comprehensive statistics
+    // Fetch player (no relation include — heavy players accumulate hundreds
+    // of stats and the nested `game: { select }` would emit `WHERE id IN (…
+    // many gameIds)` for the relation fetch and trip D1's 98 bound-parameter
+    // cap on Prisma 7).
     const player = await prisma.player.findFirst({
-      where: {
-        id: playerId,
-        ...withoutDeleted
-      },
-      include: {
-        gamePlayerStatistics: {
-          where: {
-            game: withoutDeleted // Only include stats from non-deleted games
-          },
-          select: {
-            win: true,
-            totalPoints: true,
-            completedTasks: true,
-            correctKills: true,
-            incorrectKills: true,
-            correctGuesses: true,
-            incorrectGuesses: true,
-            survivedRounds: true,
-            game: {
-              select: {
-                id: true,
-                gameIdentifier: true,
-                startTime: true,
-                winnerTeam: true
-              }
-            }
-          }
-        },
-        currentRanking: {
-          select: {
-            score: true,
-            createdAt: true
-          }
-        },
-        rankingHistory: {
-          orderBy: {
-            createdAt: 'desc'
-          },
-          take: 10, // Last 10 ranking changes
-          select: {
-            score: true,
-            reason: true,
-            createdAt: true,
-            game: {
-              select: {
-                gameIdentifier: true,
-                startTime: true
-              }
-            }
-          }
-        }
-      }
+      where: { id: playerId, ...withoutDeleted },
+      select: { id: true, name: true, createdAt: true, updatedAt: true, currentRankingId: true },
     });
 
     if (!player) {
       return createErrorResponse('Player not found', 404);
     }
 
-    // Calculate comprehensive statistics
-    const gameStats = player.gamePlayerStatistics || [];
+    // Stats (no nested game relation — fetched separately)
+    const rawStats = await prisma.gamePlayerStatistics.findMany({
+      where: { playerId: player.id, game: withoutDeleted },
+      select: {
+        gameId: true,
+        win: true,
+        totalPoints: true,
+        completedTasks: true,
+        correctKills: true,
+        incorrectKills: true,
+        correctGuesses: true,
+        incorrectGuesses: true,
+        survivedRounds: true,
+      },
+    });
+
+    const uniqueGameIds = Array.from(new Set(rawStats.map((s) => s.gameId)));
+    const games = await chunkedInQuery(uniqueGameIds, (chunk) =>
+      prisma.game.findMany({
+        where: { id: { in: chunk } },
+        select: { id: true, gameIdentifier: true, startTime: true, winnerTeam: true },
+      }),
+    );
+    const gameById = new Map(games.map((g) => [g.id, g]));
+
+    const gameStats = rawStats.map((s) => ({
+      ...s,
+      game: gameById.get(s.gameId) ?? {
+        id: s.gameId,
+        gameIdentifier: '',
+        startTime: new Date(0),
+        winnerTeam: null as string | null,
+      },
+    }));
+
+    // Current ranking score
+    const currentRankingObj = player.currentRankingId !== null
+      ? await prisma.playerRanking.findUnique({
+          where: { id: player.currentRankingId },
+          select: { score: true, createdAt: true },
+        })
+      : null;
+
+    // Last 10 ranking changes
+    const rankingHistoryRows = await prisma.playerRanking.findMany({
+      where: { playerId: player.id, ...withoutDeleted },
+      orderBy: { createdAt: 'desc' },
+      take: 10,
+      select: { score: true, reason: true, createdAt: true, gameId: true },
+    });
+    const historyGameIds = Array.from(
+      new Set(rankingHistoryRows.map((r) => r.gameId).filter((id): id is number => id !== null)),
+    );
+    const historyGames = await chunkedInQuery(historyGameIds, (chunk) =>
+      prisma.game.findMany({
+        where: { id: { in: chunk } },
+        select: { id: true, gameIdentifier: true, startTime: true },
+      }),
+    );
+    const historyGameById = new Map(historyGames.map((g) => [g.id, g]));
+    const rankingHistory = rankingHistoryRows.map((r) => ({
+      score: r.score,
+      reason: r.reason,
+      createdAt: r.createdAt,
+      game: r.gameId !== null
+        ? historyGameById.get(r.gameId) ?? null
+        : null,
+    }));
     const totalGames = gameStats.length;
     const wins = gameStats.filter(stat => stat.win).length;
     const losses = totalGames - wins;
@@ -112,7 +131,7 @@ export async function GET(request: NextRequest, authContext: { user: { username:
     const averageSurvivedRounds = totalGames > 0 ? totalSurvivedRounds / totalGames : 0;
     
     // Get current ranking
-    const currentRanking = player.currentRanking?.score || 2000; // Default to 2000 if no ranking
+    const currentRanking = currentRankingObj?.score || 2000; // Default to 2000 if no ranking
     
     // Build response with detailed stats
     const playerWithStats = {
@@ -150,10 +169,10 @@ export async function GET(request: NextRequest, authContext: { user: { username:
             startTime: stat.game.startTime,
             win: stat.win,
             points: stat.totalPoints,
-            winnerTeam: stat.game.winnerTeam
+            winnerTeam: stat.game.winnerTeam,
           })),
-        rankingHistory: player.rankingHistory
-      }
+        rankingHistory,
+      },
     };
 
     return createSuccessResponse(playerWithStats, 200);
