@@ -5,8 +5,9 @@ import { listLocalDatabases } from '@prisma/adapter-d1';
 // `listLocalDatabases()` scans `.wrangler/state/v3/d1/miniflare-D1DatabaseObject/`
 // for local D1 SQLite files created by `wrangler d1 ... --local`.
 //
-// We resolve eagerly here (at module-load time) so the failure mode for fresh
-// checkouts is a clear message, not an opaque ENOENT or "wrong DB" silent diff.
+// Resolution is lazy via a getter so commands that don't actually need a local
+// datasource (e.g. `prisma generate`, `prisma migrate apply:remote` in CI) do
+// not trip the no-local-DB check at module load.
 function resolveLocalD1Url(): string {
   let candidates: string[];
   try {
@@ -42,6 +43,8 @@ export default defineConfig({
     path: 'prisma/migrations',
   },
   datasource: {
-    url: resolveLocalD1Url(),
+    get url() {
+      return resolveLocalD1Url();
+    },
   },
 });

@@ -104,6 +104,10 @@ export function generateOpenApiDocument(currentPort?: string) {
         name: 'Games',
         description: 'Among Us game data management and statistics',
       },
+      {
+        name: 'DramaAfera',
+        description: 'DramaAfera-specific public read endpoints and host-only writes',
+      },
     ],
   });
 }

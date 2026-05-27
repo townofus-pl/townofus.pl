@@ -1,6 +1,7 @@
 // Types for better type safety
+import { getCloudflareContext } from '@opennextjs/cloudflare';
 import { withoutDeleted } from '../schema/common';
-import { chunkedInQuery } from '../_database';
+import { batchStatements, chunkedInQuery } from '../_database';
 import type { PrismaClient, GamePlayerStatistics } from '@prisma/client';
 import { PlayerRankingReason } from '../_constants/rankingTypes';
 
@@ -189,30 +190,26 @@ export async function calculateRankingForGame(
       }
     }
 
-    // 8. Zapisz nowe rankingi do bazy
-    const createdRankings = [];
-    
-    for (const ranking of newRankings) {
-      const newRankingRecord = await prisma.playerRanking.create({
-        data: {
-          playerId: ranking.playerId,
-          gameId: gameId,
-          score: ranking.newRating,
-          reason: ranking.reason,
-          season: game.season
-        }
-      });
-      
-      createdRankings.push(newRankingRecord);
-    }
-
-    // 9. Aktualizuj currentRankingId dla wszystkich graczy
-    for (const ranking of createdRankings) {
-      await prisma.player.update({
-        where: { id: ranking.playerId },
-        data: { currentRankingId: ranking.id }
-      });
-    }
+    // 8+9. Insert all PlayerRanking rows and update player.currentRankingId in
+    // a single atomic D1 batch. Previously this was N sequential
+    // `prisma.create()` calls followed by N sequential `prisma.update()` calls
+    // — a mid-loop failure left partial rankings and stale `currentRankingId`.
+    // D1 batch() executes the whole sequence or none of it.
+    const { env } = await getCloudflareContext();
+    const insertStatements = newRankings.map((ranking) =>
+      env.DB.prepare(
+        `INSERT INTO "player_rankings" ("playerId", "gameId", "score", "reason", "season", "createdAt") VALUES (?, ?, ?, ?, ?, CURRENT_TIMESTAMP)`,
+      ).bind(ranking.playerId, gameId, ranking.newRating, ranking.reason, game.season),
+    );
+    // The MAX(id) subquery resolves to the row just inserted above for this
+    // (playerId, gameId) pair — each game produces at most one ranking row
+    // per player here, so MAX is safe.
+    const updateStatements = newRankings.map((ranking) =>
+      env.DB.prepare(
+        `UPDATE "players" SET "currentRankingId" = (SELECT MAX("id") FROM "player_rankings" WHERE "playerId" = ? AND "gameId" = ? AND "deletedAt" IS NULL) WHERE "id" = ?`,
+      ).bind(ranking.playerId, gameId, ranking.playerId),
+    );
+    await batchStatements(env.DB, [...insertStatements, ...updateStatements]);
 
     console.log(`✅ Updated rankings for ${newRankings.length} players`);
 

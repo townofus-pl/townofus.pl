@@ -1,5 +1,11 @@
 'use server';
 
+import { headers } from 'next/headers';
+import { authenticateHeaders } from '@/app/api/_middlewares/auth';
+import {
+  validateSettingsFile,
+  validateSettingsContent,
+} from '@/app/api/dramaafera/settings/utils';
 import {
   rotateDramaAferaSettings,
   replaceDramaAferaSettings,
@@ -11,34 +17,35 @@ export interface UploadSettingsActionResult {
   error?: string;
 }
 
-const MAX_FILE_SIZE_BYTES = 5 * 1024 * 1024; // 5MB — matches API utils.ts
-
 export async function uploadSettingsAction(
   formData: FormData,
   mode: 'normal' | 'advanced' = 'normal',
   targetVersion?: 'current' | 'old',
 ): Promise<UploadSettingsActionResult> {
   try {
+    // Defense-in-depth: `src/middleware.ts` already gates `/dramaafera/host`
+    // with Basic Auth, but server actions are an independent code path. A
+    // future matcher edit that exempted host subpaths must not silently open
+    // this write surface — re-check the Authorization header in the action.
+    const auth = await authenticateHeaders(await headers());
+    if (!auth.success) {
+      return { success: false, error: 'Brak autoryzacji' };
+    }
+
     const file = formData.get('file') as File | null;
     if (!file) {
       return { success: false, error: 'Brak pliku do wgrania' };
     }
 
-    if (!file.name.endsWith('.txt')) {
-      return { success: false, error: 'Plik musi być w formacie .txt' };
-    }
-
-    if (file.size === 0) {
-      return { success: false, error: 'Plik nie może być pusty' };
-    }
-
-    if (file.size > MAX_FILE_SIZE_BYTES) {
-      return { success: false, error: 'Plik nie może być większy niż 5MB' };
+    const fileError = validateSettingsFile(file);
+    if (fileError) {
+      return { success: false, error: fileError };
     }
 
     const content = await file.text();
-    if (!content.trim()) {
-      return { success: false, error: 'Plik jest pusty' };
+    const contentError = validateSettingsContent(content);
+    if (contentError) {
+      return { success: false, error: contentError };
     }
 
     if (mode === 'advanced') {

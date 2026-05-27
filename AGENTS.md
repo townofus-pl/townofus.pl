@@ -92,6 +92,8 @@ src/
 │                                 #   rankings/                 — generatePlayerRankingStats, generateRoleRankingStats
 │                                 #                               types.ts (PlayerRankingStats, RoleRankingStats)
 │                                 #   season/                   — getRanking, getGameDatesLightweight, getSessionSummaryByDate, etc.
+│                                 #   settings/                 — getDramaAferaSettings, rotateDramaAferaSettings, replaceDramaAferaSettings
+│                                 #                               (read + atomic write helpers for DramaAferaSettings rows)
 │   ├── dramaafera-old/           # LEGACY — do not modify
 │   ├── tajemniczy/               # Tajemniczy Pasażer mini-game page
 │   └── custom/                   # Custom roles page
@@ -108,9 +110,14 @@ Split HTTP methods: get.ts / post.ts / put.ts / delete.ts + route.ts composing m
 
 Always wrap in route.ts:
 ```
-  Protected:  export const GET = withCors(withAuth(getHandler));  // all /api/* except /api/dramaafera/*
-  Public:     export const GET = withCors(handler);               // /api/dramaafera/* only
+  Protected:  export const GET = withCors(withAuth(getHandler));  // all /api/* except /api/dramaafera/* GET
+  Public:     export const GET = withCors(handler);               // /api/dramaafera/* read endpoints (GET)
 ```
+
+`/api/dramaafera/*` reads (GET) are public so they can be consumed by client
+components and embeddable widgets. Destructive endpoints under the same prefix
+(POST/PUT/DELETE, e.g. `/api/dramaafera/settings` POST upload) MUST still wrap
+with `withAuth` — the public-prefix rule applies to read shape only.
 
 Response format (from @/app/api/_utils — returns NextResponse, not plain objects):
 ```

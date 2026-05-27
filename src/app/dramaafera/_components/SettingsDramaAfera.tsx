@@ -14,19 +14,26 @@ export function     SettingsDramaAfera() {
     const [isLoading, setIsLoading] = useState(true); // Początkowo ustawione na true
 
     useEffect(() => {
-        fetch("/api/dramaafera/settings")
+        const controller = new AbortController();
+
+        fetch("/api/dramaafera/settings", { signal: controller.signal })
             .then(async (response) => {
                 if (!response.ok) throw new Error(`HTTP ${response.status}`);
                 const parsed = GetDramaAferaSettingsResponseSchema.parse(await response.json());
                 if (!parsed.success) throw new Error(parsed.error ?? 'API error');
                 setFileContent(parsed.data.current);
             })
-            .catch(() => {
+            .catch((err) => {
+                if (err instanceof DOMException && err.name === 'AbortError') return;
                 setFileContent(""); // Ustaw domyślną zawartość w przypadku błędu
             })
             .finally(() => {
-                setIsLoading(false); // Zakończ ładowanie nawet w przypadku błędu
+                if (!controller.signal.aborted) {
+                    setIsLoading(false);
+                }
             });
+
+        return () => controller.abort();
     }, []);
 
     const { filteredRoles, modSettings, impostorSettings } = useMemo(() => {

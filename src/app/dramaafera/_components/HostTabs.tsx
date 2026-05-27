@@ -43,8 +43,10 @@ export default function HostTabs({ initialDates, seasonId, roles, availableAvata
         return <ListaCweliTab seasonId={seasonId} availableAvatars={availableAvatars} />;
       case TAB_SETTINGS:
         return <SettingsTab />;
-      default:
-        return null;
+      default: {
+        const _exhaustive: never = activeTab;
+        return _exhaustive;
+      }
     }
   };
 

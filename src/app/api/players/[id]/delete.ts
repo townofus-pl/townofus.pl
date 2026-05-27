@@ -74,11 +74,6 @@ export async function DELETE(request: NextRequest, authContext: { user: { userna
 
   } catch (error) {
     console.error('Error deleting player:', error);
-    
-    if (error instanceof Error) {
-      return createErrorResponse('Failed to delete player: ' + error.message, 500);
-    }
-
-    return createErrorResponse('Internal server error', 500);
+    return createErrorResponse('Failed to delete player', 500);
   }
 }

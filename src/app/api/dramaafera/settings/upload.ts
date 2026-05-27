@@ -1,6 +1,7 @@
 import { NextRequest } from 'next/server';
 import { createMessageResponse, createErrorResponse } from '@/app/api/_utils';
-import { validateSettingsFile } from './utils';
+import { validateSettingsFile, validateSettingsContent } from './utils';
+import { UploadDramaAferaSettingsQuerySchema } from './schema';
 import {
   rotateDramaAferaSettings,
   replaceDramaAferaSettings,
@@ -8,6 +9,18 @@ import {
 
 export async function POST(req: NextRequest) {
   try {
+    const queryParse = UploadDramaAferaSettingsQuerySchema.safeParse({
+      mode: req.nextUrl.searchParams.get('mode') ?? undefined,
+      targetVersion: req.nextUrl.searchParams.get('targetVersion') ?? undefined,
+    });
+    if (!queryParse.success) {
+      return createErrorResponse(
+        'Nieprawidłowe parametry: ' + queryParse.error.issues.map((i) => i.message).join(', '),
+        400,
+      );
+    }
+    const { mode, targetVersion } = queryParse.data;
+
     const formData = await req.formData();
     const file = formData.get('file') as File | null;
 
@@ -15,35 +28,27 @@ export async function POST(req: NextRequest) {
       return createErrorResponse('Brak pliku w żądaniu', 400);
     }
 
-    const validationError = validateSettingsFile(file);
-    if (validationError) {
-      return createErrorResponse(validationError, 400);
+    const fileError = validateSettingsFile(file);
+    if (fileError) {
+      return createErrorResponse(fileError, 400);
     }
 
     const content = await file.text();
-    if (!content.trim()) {
-      return createErrorResponse('Plik jest pusty', 400);
+    const contentError = validateSettingsContent(content);
+    if (contentError) {
+      return createErrorResponse(contentError, 400);
     }
 
-    const mode = req.nextUrl.searchParams.get('mode') ?? 'normal';
-    const targetVersionParam = req.nextUrl.searchParams.get('targetVersion');
-
     if (mode === 'advanced') {
-      if (targetVersionParam !== 'current' && targetVersionParam !== 'old') {
-        return createErrorResponse('Nieprawidłowy targetVersion', 400);
-      }
-      await replaceDramaAferaSettings(content, targetVersionParam);
+      // `targetVersion` is guaranteed by the Zod refine when mode === 'advanced'.
+      await replaceDramaAferaSettings(content, targetVersion!);
       return createMessageResponse(
-        `Plik ${targetVersionParam === 'current' ? 'aktualnego' : 'starego'} wariantu zaktualizowany.`,
+        `Plik ${targetVersion === 'current' ? 'aktualnego' : 'starego'} wariantu zaktualizowany.`,
       );
     }
 
-    if (mode === 'normal') {
-      await rotateDramaAferaSettings(content);
-      return createMessageResponse('Plik wgrany! Aktualna wersja zaktualizowana.');
-    }
-
-    return createErrorResponse('Nieprawidłowy mode', 400);
+    await rotateDramaAferaSettings(content);
+    return createMessageResponse('Plik wgrany! Aktualna wersja zaktualizowana.');
   } catch (error) {
     console.error('Error uploading settings:', error);
     return createErrorResponse('Błąd podczas wgrywania pliku', 500);

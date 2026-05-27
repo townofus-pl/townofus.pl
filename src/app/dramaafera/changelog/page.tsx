@@ -84,12 +84,21 @@ interface Change {
     type: 'role' | 'setting';
 }
 
-async function getChanges(): Promise<Change[]> {
+type ChangelogResult =
+    | { status: 'no-current' }     // No settings uploaded yet
+    | { status: 'no-old' }         // Current exists but no previous version to diff against
+    | { status: 'no-diff' }        // Both versions exist but identical
+    | { status: 'ok'; changes: Change[] };
+
+async function getChanges(): Promise<ChangelogResult> {
     try {
         const { current: currentContent, old: oldContent } = await getDramaAferaSettings();
 
-        if (!currentContent || !oldContent) {
-            return [];
+        if (!currentContent) {
+            return { status: 'no-current' };
+        }
+        if (!oldContent) {
+            return { status: 'no-old' };
         }
 
         const currentData = parseSettingsFile(currentContent);
@@ -158,25 +167,36 @@ async function getChanges(): Promise<Change[]> {
             }
         }
 
-        return detectedChanges;
+        if (detectedChanges.length === 0) {
+            return { status: 'no-diff' };
+        }
+        return { status: 'ok', changes: detectedChanges };
     } catch (error) {
         console.error('Błąd podczas ładowania zmian:', error);
-        return [];
+        return { status: 'no-current' };
     }
 }
 
-export default async function ChangelogPage() {
-    const changes = await getChanges();
+const EMPTY_MESSAGE: Record<Exclude<ChangelogResult['status'], 'ok'>, string> = {
+    'no-current': 'Ustawienia nie zostały jeszcze wgrane.',
+    'no-old': 'Brak poprzedniej wersji ustawień — nie ma jeszcze co porównywać.',
+    'no-diff': 'Brak zmian do wyświetlenia.',
+};
 
-    if (changes.length === 0) {
+export default async function ChangelogPage() {
+    const result = await getChanges();
+
+    if (result.status !== 'ok') {
         return (
             <div className="container mx-auto">
                 <div className="text-center text-2xl text-gray-600">
-                    Brak zmian do wyświetlenia
+                    {EMPTY_MESSAGE[result.status]}
                 </div>
             </div>
         );
     }
+
+    const { changes } = result;
 
     return (
         <div className="container mx-auto">

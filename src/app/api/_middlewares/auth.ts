@@ -2,6 +2,30 @@ import { NextRequest, NextResponse } from 'next/server';
 import { getCloudflareContext } from '@opennextjs/cloudflare';
 
 /**
+ * Constant-time string comparison using SHA-256 digests.
+ *
+ * Hashing first guarantees both inputs end up at the same fixed length so the
+ * pairwise XOR loop reveals nothing about either input's length or content,
+ * regardless of which Workers/Node runtime executes it. `crypto.subtle.digest`
+ * is standard Web Crypto API — available in both Cloudflare Workers and the
+ * Node-based `next dev` runtime.
+ */
+async function timingSafeStringEqual(a: string, b: string): Promise<boolean> {
+  const enc = new TextEncoder();
+  const [aHashBuf, bHashBuf] = await Promise.all([
+    crypto.subtle.digest('SHA-256', enc.encode(a)),
+    crypto.subtle.digest('SHA-256', enc.encode(b)),
+  ]);
+  const aHash = new Uint8Array(aHashBuf);
+  const bHash = new Uint8Array(bHashBuf);
+  let mismatch = 0;
+  for (let i = 0; i < aHash.length; i++) {
+    mismatch |= aHash[i] ^ bHash[i];
+  }
+  return mismatch === 0;
+}
+
+/**
  * Authentication result interface
  */
 export interface AuthResult {
@@ -13,14 +37,18 @@ export interface AuthResult {
 }
 
 /**
- * HTTP Basic Authentication for API routes
- * Validates credentials against environment variables
+ * HTTP Basic Authentication against `Headers`.
+ *
+ * Extracted so callers without a `NextRequest` (e.g. Server Actions reading
+ * via `next/headers`) can perform the same check. Returns `{ success: true }`
+ * with the resolved username on success, or a NextResponse with the right
+ * status code on failure.
  */
-export async function authenticateApiRequest(request: NextRequest): Promise<AuthResult> {
+export async function authenticateHeaders(reqHeaders: Headers): Promise<AuthResult> {
   try {
     // Get Cloudflare context for environment variables
     const { env } = await getCloudflareContext();
-    
+
     // Get credentials from environment
     const validUsername = (env as unknown as Record<string, string>)?.API_USERNAME || process.env.API_USERNAME;
     const validPassword = (env as unknown as Record<string, string>)?.API_PASSWORD || process.env.API_PASSWORD;
@@ -38,7 +66,7 @@ export async function authenticateApiRequest(request: NextRequest): Promise<Auth
     }
 
     // Get Authorization header
-    const authHeader = request.headers.get('Authorization');
+    const authHeader = reqHeaders.get('Authorization');
 
     if (!authHeader) {
       return {
@@ -60,8 +88,14 @@ export async function authenticateApiRequest(request: NextRequest): Promise<Auth
       const credentials = Buffer.from(base64Credentials, 'base64').toString('utf-8');
       const [username, password] = credentials.split(':');
 
-      // Validate credentials
-      if (username !== validUsername || password !== validPassword) {
+      // Validate credentials with constant-time comparison to avoid timing
+      // side-channels. Both compares run unconditionally to completion.
+      const [usernameMatch, passwordMatch] = await Promise.all([
+        timingSafeStringEqual(username ?? '', validUsername),
+        timingSafeStringEqual(password ?? '', validPassword),
+      ]);
+
+      if (!usernameMatch || !passwordMatch) {
         return {
           success: false,
           response: createAuthResponse('Invalid credentials')
@@ -69,7 +103,7 @@ export async function authenticateApiRequest(request: NextRequest): Promise<Auth
       }
 
       // Authentication successful
-      return { 
+      return {
         success: true,
         user: { username }
       };
@@ -92,6 +126,14 @@ export async function authenticateApiRequest(request: NextRequest): Promise<Auth
       )
     };
   }
+}
+
+/**
+ * HTTP Basic Authentication for API routes — thin wrapper around
+ * `authenticateHeaders` for callers that already have a `NextRequest`.
+ */
+export async function authenticateApiRequest(request: NextRequest): Promise<AuthResult> {
+  return authenticateHeaders(request.headers);
 }
 
 /**
