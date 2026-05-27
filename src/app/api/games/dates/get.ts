@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
 import { getCloudflareContext } from '@opennextjs/cloudflare';
-import { getPrismaClient } from '../../_database';
+import { getPrismaClient, chunkedInQuery } from '../../_database';
 import { createSuccessResponse, createErrorResponse } from '../../_utils';
 import { withoutDeleted } from '../../schema/common';
 
@@ -14,39 +14,43 @@ export async function GET(request: NextRequest) {
     const url = new URL(request.url);
     const includePlayerNames = url.searchParams.get('includePlayers') === 'true';
 
-    // Get all games grouped by date
-    const games = includePlayerNames
-      ? await prisma.game.findMany({
-          where: withoutDeleted,
-          select: {
-            id: true,
-            gameIdentifier: true,
-            startTime: true,
-            gamePlayerStatistics: {
-              include: {
-                player: {
-                  select: {
-                    name: true
-                  }
-                }
-              }
-            }
-          },
-          orderBy: {
-            startTime: 'desc'
-          }
-        })
-      : await prisma.game.findMany({
-          where: withoutDeleted,
-          select: {
-            id: true,
-            gameIdentifier: true,
-            startTime: true
-          },
-          orderBy: {
-            startTime: 'desc'
-          }
-        });
+    // Get all games grouped by date.
+    // Note: when `includePlayers=true`, we can't use a nested
+    // `gamePlayerStatistics → player` include — it would emit `WHERE gameId IN
+    // (…473 ids)` for the relation fetch and trip D1's 98 bound-parameter cap
+    // on Prisma 7. Fetch stats + players in chunks separately.
+    const games = await prisma.game.findMany({
+      where: withoutDeleted,
+      select: { id: true, gameIdentifier: true, startTime: true },
+      orderBy: { startTime: 'desc' },
+    });
+
+    const namesByGameId = new Map<number, string[]>();
+    if (includePlayerNames && games.length > 0) {
+      const gameIds = games.map((g) => g.id);
+      const rawStats = await chunkedInQuery(gameIds, (chunk) =>
+        prisma.gamePlayerStatistics.findMany({
+          where: { gameId: { in: chunk }, player: withoutDeleted },
+          select: { gameId: true, playerId: true },
+        }),
+      );
+      const uniquePlayerIds = Array.from(new Set(rawStats.map((s) => s.playerId)));
+      const dbPlayers = await chunkedInQuery(uniquePlayerIds, (chunk) =>
+        prisma.player.findMany({
+          where: { id: { in: chunk } },
+          select: { id: true, name: true },
+        }),
+      );
+      const playerNameById = new Map(dbPlayers.map((p) => [p.id, p.name]));
+
+      rawStats.forEach((s) => {
+        const name = playerNameById.get(s.playerId);
+        if (!name) return;
+        const list = namesByGameId.get(s.gameId) ?? [];
+        list.push(name);
+        namesByGameId.set(s.gameId, list);
+      });
+    }
 
     // Group games by date
     const dateGroups = new Map<string, {
@@ -114,12 +118,10 @@ export async function GET(request: NextRequest) {
         gameIdentifier: game.gameIdentifier
       };
 
-      // Add player names if requested
-      if (includePlayerNames && 'gamePlayerStatistics' in game && game.gamePlayerStatistics) {
-        const playerNames = (game.gamePlayerStatistics as Array<{ player: { name: string } }>).map(stat => stat.player.name);
+      // Add player names if requested (resolved from the chunked fetch above)
+      if (includePlayerNames) {
+        const playerNames = namesByGameId.get(game.id) ?? [];
         gameSummary.allPlayerNames = playerNames;
-        
-        // Add to unique players for this date
         playerNames.forEach(name => dateGroup!.allPlayerNames.add(name));
       }
 

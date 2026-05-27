@@ -7,6 +7,7 @@ import {
   determineTeam,
 } from '@/app/dramaafera/_utils/gameUtils';
 import { getDatabaseClient } from '../db';
+import { chunkedInQuery } from '@/app/api/_database';
 import { withoutDeleted } from '@/app/api/schema/common';
 import { CURRENT_SEASON } from '@/app/dramaafera/_constants/seasons';
 
@@ -40,19 +41,36 @@ export async function generateRoleRankingStats(seasonId?: number, dateFrom?: Dat
     game: gameWhereClause,
   };
 
+  // Step 1: fetch stats without nested roleHistory (otherwise Prisma 7's executor
+  // emits a `WHERE gamePlayerStatisticsId IN (?,…,?N)` for the relation fetch
+  // and trips D1's 98-param cap with full-season datasets).
   const stats = await prisma.gamePlayerStatistics.findMany({
     where: whereClause,
     select: {
+      id: true,
       win: true,
       totalPoints: true,
       player: {
         select: { name: true },
       },
-      roleHistory: {
-        orderBy: { order: 'asc' },
-        select: { roleName: true, order: true },
-      },
     },
+  });
+
+  // Step 2: fetch roleHistory in 90-id chunks and group by stat id.
+  const statIds = stats.map((s) => s.id);
+  const allRoleHistory = await chunkedInQuery(statIds, (chunk) =>
+    prisma.playerRole.findMany({
+      where: { gamePlayerStatisticsId: { in: chunk } },
+      orderBy: { order: 'asc' },
+      select: { gamePlayerStatisticsId: true, roleName: true, order: true },
+    }),
+  );
+
+  const roleHistoryByStatId = new Map<number, { roleName: string; order: number }[]>();
+  allRoleHistory.forEach((rh) => {
+    const list = roleHistoryByStatId.get(rh.gamePlayerStatisticsId) ?? [];
+    list.push({ roleName: rh.roleName, order: rh.order });
+    roleHistoryByStatId.set(rh.gamePlayerStatisticsId, list);
   });
 
   const roleStats = new Map<string, {
@@ -64,7 +82,8 @@ export async function generateRoleRankingStats(seasonId?: number, dateFrom?: Dat
 
   stats.forEach(stat => {
     // Primary role = first entry in ascending order
-    const roleName = stat.roleHistory[0]?.roleName ?? 'Nieznana rola';
+    const roleHistory = roleHistoryByStatId.get(stat.id) ?? [];
+    const roleName = roleHistory[0]?.roleName ?? 'Nieznana rola';
     const playerName = stat.player?.name;
     if (!playerName) return;
 

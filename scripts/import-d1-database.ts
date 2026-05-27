@@ -28,6 +28,7 @@ const TABLE_ORDER = [
     'players',
     'games',
     'lista_cweli',
+    'drama_afera_settings',
     'meetings',
     'player_rankings',
     'game_player_statistics',

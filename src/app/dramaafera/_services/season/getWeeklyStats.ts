@@ -1,4 +1,5 @@
 import { getDatabaseClient, buildSeasonGameWhere } from '../db';
+import { chunkedInQuery } from '@/app/api/_database';
 import { withoutDeleted } from '@/app/api/schema/common';
 
 export interface WeeklyPlayerStats {
@@ -51,6 +52,10 @@ export async function getWeeklyStats(
   endOfWeek.setUTCDate(endOfWeek.getUTCDate() + 7);
   endOfWeek.setUTCHours(0, 0, 0, 0);
 
+  // Step 1: fetch games (no relation include) within the week.
+  // A nested `include`/`select` here would emit `WHERE playerId IN (…)` /
+  // `WHERE gameId IN (…)` for relation fetches and risk D1's 98-param cap on
+  // high-volume weeks. See `chunkedInQuery` for context.
   const weeklyGames = await prisma.game.findMany({
     where: {
       startTime: {
@@ -59,46 +64,60 @@ export async function getWeeklyStats(
       },
       ...buildSeasonGameWhere(seasonId),
     },
-    include: {
-      gamePlayerStatistics: {
-        where: { player: withoutDeleted },
-        select: {
-          player: { select: { name: true } },
-          win: true,
-          totalPoints: true,
-        },
-      },
-    },
+    select: { id: true },
   });
 
   if (weeklyGames.length === 0) {
     return empty;
   }
 
+  const gameIds = weeklyGames.map((g) => g.id);
+
+  // Step 2: fetch stats for those games, chunked.
+  const rawStats = await chunkedInQuery(gameIds, (chunk) =>
+    prisma.gamePlayerStatistics.findMany({
+      where: { gameId: { in: chunk }, player: withoutDeleted },
+      select: { playerId: true, win: true, totalPoints: true },
+    }),
+  );
+
+  if (rawStats.length === 0) {
+    return empty;
+  }
+
+  // Step 3: fetch player names for the unique playerIds, chunked.
+  const uniquePlayerIds = Array.from(new Set(rawStats.map((s) => s.playerId)));
+  const dbPlayers = await chunkedInQuery(uniquePlayerIds, (chunk) =>
+    prisma.player.findMany({
+      where: { id: { in: chunk } },
+      select: { id: true, name: true },
+    }),
+  );
+  const playerNameById = new Map(dbPlayers.map((p) => [p.id, p.name]));
+
   const playerStatsMap = new Map<
     string,
     { gamesPlayed: number; wins: number; totalPoints: number }
   >();
 
-  weeklyGames.forEach((game) => {
-    game.gamePlayerStatistics.forEach((stat) => {
-      const playerName = stat.player.name;
+  rawStats.forEach((stat) => {
+    const playerName = playerNameById.get(stat.playerId);
+    if (!playerName) return;
 
-      if (!playerStatsMap.has(playerName)) {
-        playerStatsMap.set(playerName, {
-          gamesPlayed: 0,
-          wins: 0,
-          totalPoints: 0,
-        });
-      }
+    if (!playerStatsMap.has(playerName)) {
+      playerStatsMap.set(playerName, {
+        gamesPlayed: 0,
+        wins: 0,
+        totalPoints: 0,
+      });
+    }
 
-      const playerStats = playerStatsMap.get(playerName)!;
-      playerStats.gamesPlayed++;
-      if (stat.win) {
-        playerStats.wins++;
-      }
-      playerStats.totalPoints += stat.totalPoints;
-    });
+    const playerStats = playerStatsMap.get(playerName)!;
+    playerStats.gamesPlayed++;
+    if (stat.win) {
+      playerStats.wins++;
+    }
+    playerStats.totalPoints += stat.totalPoints;
   });
 
   const weeklyStats: WeeklyPlayerStats[] = Array.from(

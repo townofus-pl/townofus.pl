@@ -26,26 +26,12 @@ export async function DELETE(request: NextRequest, authContext: { user: { userna
 
     const playerId = parseInt(id, 10);
 
-    // Check if the player exists and is not already deleted
+    // Check if the player exists and is not already deleted.
+    // (Previously included gamePlayerStatistics/gameEvents/meetingVotes counts,
+    // but the result was never used — removed to avoid P2029 on heavy players.)
     const existingPlayer = await prisma.player.findFirst({
-      where: {
-        id: playerId,
-        ...withoutDeleted
-      },
-      include: {
-        gamePlayerStatistics: {
-          select: { id: true }
-        },
-        gameEvents: {
-          select: { id: true }
-        },
-        meetingVotesFor: {
-          select: { id: true }
-        },
-        meetingVotesBy: {
-          select: { id: true }
-        }
-      }
+      where: { id: playerId, ...withoutDeleted },
+      select: { id: true, name: true, createdAt: true },
     });
 
     if (!existingPlayer) {

@@ -1,6 +1,6 @@
 import { NextRequest } from 'next/server';
 import { getCloudflareContext } from '@opennextjs/cloudflare';
-import { getPrismaClient } from '../../_database';
+import { getPrismaClient, chunkedInQuery } from '../../_database';
 import { createSuccessResponse, createErrorResponse } from '../../_utils';
 import { formatZodError, withoutDeleted } from '../../schema/common';
 import { z } from 'zod';
@@ -93,42 +93,46 @@ export async function GET(request: NextRequest, _authContext: { user: { username
         };
       }
 
-      // Get player statistics with aggregated data
-      const playersWithStats = await prisma.player.findMany({
+      // Get matching players (no relation include — would trip D1's 98 bound-
+      // parameter cap on Prisma 7 once season has many games).
+      const dbPlayers = await prisma.player.findMany({
         where: {
           ...playerWhere,
-          gamePlayerStatistics: {
-            some: {
-              game: gameWhere
-            }
-          }
+          gamePlayerStatistics: { some: { game: gameWhere } },
         },
-        include: {
-          gamePlayerStatistics: {
-            where: {
-              game: gameWhere
-            },
-            include: {
-              game: {
-                select: {
-                  id: true,
-                  startTime: true,
-                  gameIdentifier: true
-                }
-              }
-            }
-          },
-          currentRanking: {
-            select: {
-              score: true
-            }
-          }
-        }
+        select: { id: true, name: true, currentRankingId: true },
       });
 
+      // Stats per player, chunked (all fields used downstream)
+      const playerIds = dbPlayers.map((p) => p.id);
+      const allStats = await chunkedInQuery(playerIds, (chunk) =>
+        prisma.gamePlayerStatistics.findMany({
+          where: { playerId: { in: chunk }, game: gameWhere },
+        }),
+      );
+      type StatsAgg = (typeof allStats)[number];
+      const statsByPlayerId = new Map<number, StatsAgg[]>();
+      allStats.forEach((s) => {
+        const list = statsByPlayerId.get(s.playerId) ?? [];
+        list.push(s);
+        statsByPlayerId.set(s.playerId, list);
+      });
+
+      // currentRanking scores
+      const currentRankingIds = dbPlayers
+        .map((p) => p.currentRankingId)
+        .filter((id): id is number => id !== null);
+      const rankings = await chunkedInQuery(currentRankingIds, (chunk) =>
+        prisma.playerRanking.findMany({
+          where: { id: { in: chunk } },
+          select: { id: true, score: true },
+        }),
+      );
+      const scoreByRankingId = new Map(rankings.map((r) => [r.id, r.score]));
+
       // Calculate statistics for each player
-      const playerStats = playersWithStats.map(player => {
-        const gameStats = player.gamePlayerStatistics;
+      const playerStats = dbPlayers.map((player) => {
+        const gameStats = statsByPlayerId.get(player.id) ?? [];
         const totalGames = gameStats.length;
         
         if (totalGames < minGames) return null;
@@ -168,7 +172,9 @@ export async function GET(request: NextRequest, _authContext: { user: { username
           totalGuesses,
           correctGuesses,
           guessAccuracy,
-          currentRanking: player.currentRanking?.score || null,
+          currentRanking: player.currentRankingId !== null
+            ? scoreByRankingId.get(player.currentRankingId) ?? null
+            : null,
           
           // Detailed stats
           correctProsecutes: gameStats.reduce((sum, stat) => sum + stat.correctProsecutes, 0),

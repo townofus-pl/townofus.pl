@@ -1,4 +1,5 @@
 import { getDatabaseClient, buildSeasonGameWhere } from '../db';
+import { chunkedInQuery } from '@/app/api/_database';
 import { withoutDeleted } from '@/app/api/schema/common';
 import { formatDisplayDate } from '@/app/dramaafera/_utils/gameUtils';
 
@@ -21,6 +22,10 @@ export interface GameDatesResult {
   totalDates: number;
 }
 
+// Implementation note: with `includePlayers=true`, a nested
+// `gamePlayerStatistics → player` include here would emit `WHERE gameId IN (…473
+// ids)` then `WHERE id IN (…playerIds)` and trip D1's 98 bound-parameter cap on
+// Prisma 7 (P2029). Chunked two-step fetch when players are requested.
 export async function getGameDatesLightweight(
   includePlayers = false,
   seasonId?: number,
@@ -30,33 +35,39 @@ export async function getGameDatesLightweight(
 
   const where = buildSeasonGameWhere(seasonId);
 
-  const games = includePlayers
-    ? await prisma.game.findMany({
-        where,
-        select: {
-          id: true,
-          gameIdentifier: true,
-          startTime: true,
-          gamePlayerStatistics: {
-            where: { player: withoutDeleted },
-            include: {
-              player: {
-                select: { name: true },
-              },
-            },
-          },
-        },
-        orderBy: { startTime: 'desc' },
-      })
-    : await prisma.game.findMany({
-        where,
-        select: {
-          id: true,
-          gameIdentifier: true,
-          startTime: true,
-        },
-        orderBy: { startTime: 'desc' },
-      });
+  const games = await prisma.game.findMany({
+    where,
+    select: { id: true, gameIdentifier: true, startTime: true },
+    orderBy: { startTime: 'desc' },
+  });
+
+  // Resolve player names per-game when requested, chunked.
+  const namesByGameId = new Map<number, string[]>();
+  if (includePlayers && games.length > 0) {
+    const gameIds = games.map((g) => g.id);
+    const rawStats = await chunkedInQuery(gameIds, (chunk) =>
+      prisma.gamePlayerStatistics.findMany({
+        where: { gameId: { in: chunk }, player: withoutDeleted },
+        select: { gameId: true, playerId: true },
+      }),
+    );
+    const uniquePlayerIds = Array.from(new Set(rawStats.map((s) => s.playerId)));
+    const dbPlayers = await chunkedInQuery(uniquePlayerIds, (chunk) =>
+      prisma.player.findMany({
+        where: { id: { in: chunk } },
+        select: { id: true, name: true },
+      }),
+    );
+    const playerNameById = new Map(dbPlayers.map((p) => [p.id, p.name]));
+
+    rawStats.forEach((s) => {
+      const name = playerNameById.get(s.playerId);
+      if (!name) return;
+      const list = namesByGameId.get(s.gameId) ?? [];
+      list.push(name);
+      namesByGameId.set(s.gameId, list);
+    });
+  }
 
   const dateGroups = new Map<
     string,
@@ -111,14 +122,8 @@ export async function getGameDatesLightweight(
       gameIdentifier: game.gameIdentifier,
     };
 
-    if (
-      includePlayers &&
-      'gamePlayerStatistics' in game &&
-      game.gamePlayerStatistics
-    ) {
-      const playerNames = (
-        game.gamePlayerStatistics as Array<{ player: { name: string } }>
-      ).map((stat) => stat.player.name);
+    if (includePlayers) {
+      const playerNames = namesByGameId.get(game.id) ?? [];
       gameSummary.allPlayerNames = playerNames;
       playerNames.forEach((name) => dateGroup.allPlayerNames.add(name));
     }

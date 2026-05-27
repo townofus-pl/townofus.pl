@@ -1,9 +1,5 @@
 import { getDatabaseClient } from '../db';
-import { withoutDeleted } from '@/app/api/schema/common';
 import { CURRENT_SEASON } from '@/app/dramaafera/_constants/seasons';
-import { RANKING_CONSTANTS } from '@/app/api/_utils/rankingCalculator';
-
-const { START_RATING } = RANKING_CONSTANTS;
 
 export interface RankingPlayer {
   rank: number;
@@ -22,6 +18,19 @@ export interface RankingResult {
   total: number;
 }
 
+// Single raw-SQL implementation for both current and past seasons.
+//
+// Why raw SQL: the previous Prisma-based current-season branch used
+// `player.findMany({ include: { gamePlayerStatistics: { ... } } })` which, with
+// full prod data, blows past D1's 98-param cap (Prisma 7's query-plan executor
+// emits `WHERE playerId IN (…)` for the relation fetch — P2029). A single
+// JOINed query is both safer and faster.
+//
+// `pr.id IN (SELECT MAX(id) ... GROUP BY playerId)` returns the most recent
+// ranking per player for the given season — for current season this is
+// equivalent to `player.currentRankingId`, for past seasons this picks the
+// terminal ranking. `HAVING COUNT(gps.id) > 0` excludes players with no games
+// played in the target season, matching the previous behaviour.
 export async function getRanking(
   seasonId?: number,
   limit = 50,
@@ -32,69 +41,6 @@ export async function getRanking(
   const prisma = await getDatabaseClient();
   if (!prisma) return { ranking: [], total: 0 };
 
-  // Aktualny sezon: używamy currentRankingId gracza (szybka ścieżka).
-  // Filtrujemy tylko graczy, których currentRanking należy do bieżącego sezonu
-  // i którzy mają statystyki z gier w tym sezonie — dopóki nie ma gier/statystyk,
-  // ranking pozostaje pusty.
-  if (targetSeason === CURRENT_SEASON) {
-    const players = await prisma.player.findMany({
-      where: {
-        ...withoutDeleted,
-        currentRanking: { season: targetSeason, deletedAt: null },
-        gamePlayerStatistics: { some: { game: { ...withoutDeleted, season: targetSeason } } },
-      },
-      include: {
-        currentRanking: true,
-        gamePlayerStatistics: {
-          where: { game: { ...withoutDeleted, season: targetSeason } },
-          select: { win: true },
-        },
-      },
-      orderBy: {
-        currentRanking: {
-          score: 'desc',
-        },
-      },
-      skip: offset,
-      take: limit,
-    });
-
-    const ranking: RankingPlayer[] = players.map((player, index) => {
-      const totalGames = player.gamePlayerStatistics.length;
-      const wins = player.gamePlayerStatistics.filter((stat) => stat.win).length;
-      const winRate = totalGames > 0 ? (wins / totalGames) * 100 : 0;
-
-      return {
-        rank: offset + index + 1,
-        playerId: player.id,
-        playerName: player.name,
-        currentRating: (player.currentRanking && player.currentRanking.season === targetSeason)
-          ? player.currentRanking.score
-          : START_RATING,
-        totalGames,
-        wins,
-        losses: totalGames - wins,
-        winRate: Math.round(winRate * 100) / 100,
-        lastUpdated: (player.currentRanking?.createdAt ?? player.createdAt).toISOString(),
-      };
-    });
-
-    const total = await prisma.player.count({
-      where: {
-        ...withoutDeleted,
-        currentRanking: { season: targetSeason, deletedAt: null },
-        gamePlayerStatistics: { some: { game: { ...withoutDeleted, season: targetSeason } } },
-      },
-    });
-
-    return { ranking, total };
-  }
-
-  // Miniony sezon: pobieramy najnowszy wpis rankingowy per gracz via raw SQL
-  // (MAX(id) per playerId — unikamy take: N, które przy wielu wpisach per gracz
-  //  ucinałoby graczy z wyższymi playerId).
-  // Sortowanie, filtrowanie graczy bez gier, paginacja i COUNT wykonywane są w SQL —
-  // unikamy ładowania całego rankingu do pamięci i sortowania O(n log n) w JS.
   const [latestPerPlayer, countResult] = await Promise.all([
     prisma.$queryRaw<
       Array<{

@@ -1,6 +1,7 @@
 // Types for better type safety
 import { withoutDeleted } from '../schema/common';
-import type { PrismaClient, Player, GamePlayerStatistics, PlayerRanking } from '@prisma/client';
+import { chunkedInQuery } from '../_database';
+import type { PrismaClient, GamePlayerStatistics } from '@prisma/client';
 import { PlayerRankingReason } from '../_constants/rankingTypes';
 
 // Stałe systemu rankingowego (eksportowane — używane też w serwisach rankingowych)
@@ -86,31 +87,47 @@ export async function calculateRankingForGame(
 
     console.log(`📊 Processing ${game.gamePlayerStatistics.length} present players`);
 
-    // 4. Pobierz wszystkich graczy w systemie
+    // 4. Pobierz wszystkich graczy w systemie.
+    // Implementation note: a nested `include: { currentRanking }` would emit
+    // `WHERE id IN (…currentRankingIds)` for the relation fetch — once the
+    // playerbase grows past ~95 this trips D1's 98 bound-parameter cap on
+    // Prisma 7 (P2029). Fetch separately and chunk.
     const allPlayers = await prisma.player.findMany({
       where: withoutDeleted,
-      include: {
-        currentRanking: true
-      }
+      select: { id: true, name: true, currentRankingId: true },
     });
+
+    const currentRankingIds = allPlayers
+      .map((p) => p.currentRankingId)
+      .filter((id): id is number => id !== null);
+    const currentRankings = await chunkedInQuery(currentRankingIds, (chunk) =>
+      prisma.playerRanking.findMany({
+        where: { id: { in: chunk } },
+        select: { id: true, score: true },
+      }),
+    );
+    const scoreByRankingId = new Map(currentRankings.map((r) => [r.id, r.score]));
 
     console.log(`👥 Found ${allPlayers.length} total players in system`);
 
     // 5. Przygotuj dane graczy - obecnych i nieobecnych
     const presentPlayerIds = new Set(game.gamePlayerStatistics.map((gps: GamePlayerStatistics) => gps.playerId));
-    
-    const playersData: PlayerGameData[] = allPlayers.map((player: Player & { currentRanking?: PlayerRanking | null }) => {
+
+    const playersData: PlayerGameData[] = allPlayers.map((player) => {
       const isPresent = presentPlayerIds.has(player.id);
-      const gameStats = isPresent 
+      const gameStats = isPresent
         ? game.gamePlayerStatistics.find((gps: GamePlayerStatistics) => gps.playerId === player.id)
         : null;
-      
+      const currentScore = player.currentRankingId !== null
+        ? scoreByRankingId.get(player.currentRankingId)
+        : undefined;
+
       return {
         id: player.id,
         name: player.name,
         totalPoints: gameStats?.totalPoints || 0,
-        previousRating: player.currentRanking?.score || RANKING_CONSTANTS.START_RATING,
-        isPresent
+        previousRating: currentScore ?? RANKING_CONSTANTS.START_RATING,
+        isPresent,
       };
     });
 
