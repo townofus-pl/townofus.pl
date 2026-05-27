@@ -4,8 +4,9 @@
     "private": true,
     "scripts": {
         "dev": "next dev --turbopack",
+        "nx": "next",
         "build": "next build",
-        "lint": "next lint",
+        "next-typegen": "next typegen",
         "test": "jest",
         "test:watch": "jest --watch",
         "test:coverage": "jest --coverage",
