@@ -311,7 +311,7 @@ export const MeetingDataSchema = z.object({
     description: 'Array of death descriptions since last meeting',
     example: ['Malkiz was killed by brubel']
   }),
-  votes: z.record(z.array(z.string())).openapi({
+  votes: z.record(z.string(), z.array(z.string())).openapi({
     description: 'Object mapping target player names to arrays of voter names',
     example: { "Malkiz": ["brubel", "player2"], "skip": ["player3"] }
   }),
