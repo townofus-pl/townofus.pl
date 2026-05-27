@@ -122,6 +122,8 @@ async function getChanges(): Promise<ChangelogResult> {
 
         // Sprawdź zmiany w ustawieniach
         for (const [settingName, currentValue] of currentData.fileContentMap) {
+            // Linie ról (z tagiem <color=...>) są już obsługiwane wyżej jako zmiany szansy
+            if (settingName.startsWith('<color=')) continue;
             const oldValue = oldData.fileContentMap.get(settingName);
             if (oldValue !== undefined && oldValue !== currentValue) {
                 // Znajdź odpowiednią rolę i ustawienie, żeby określić typ

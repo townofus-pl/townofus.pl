@@ -14,14 +14,19 @@ export function parseSettingsFile(fileContent: string): ParsedSettings {
         fileContentMap.set(lines[i], lines[i + 1]);
     }
 
-    // Usuwanie tagów <color=...>...</color>
-    const extractName = (str: string): string => str.replace(/<color=[^>]+>(.*?)<\/color>/, "$1");
+    // Tylko linie ról zaczynają się od <color=...> — pozostałe to globalne/mod settings
+    // (np. "Airship Doors Are Polus Doors\nFalse"), które po Number(...) byłyby NaN
+    // i — przez NaN !== NaN — pojawiałyby się jako fałszywe zmiany szansy w changelogu.
+    const ROLE_LINE_REGEX = /^<color=[^>]+>(.*?)<\/color>$/;
 
-    // Mapa oczyszczonych nazw postaci i ich szans na wystąpienie
     const cleanedFileContentMap = new Map<string, number>();
     for (const [key, value] of fileContentMap.entries()) {
+        const match = key.match(ROLE_LINE_REGEX);
+        if (!match) continue;
         const normalized = typeof value === 'string' ? value.replace(/,/g, '.') : value;
-        cleanedFileContentMap.set(extractName(key), Number(normalized));
+        const parsed = Number(normalized);
+        if (Number.isNaN(parsed)) continue;
+        cleanedFileContentMap.set(match[1], parsed);
     }
 
     return { fileContentMap, cleanedFileContentMap };
