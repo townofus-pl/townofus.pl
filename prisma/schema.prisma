@@ -385,31 +385,15 @@ model DramaAferaSettings {
     @@index([versionType])
     @@index([uploadedAt])
     @@index([deletedAt])
-    // At most one active row per versionType. Already present in
-    // 0006_add_drama_afera_settings.sql; declared here via the `partialIndexes`
-    // preview feature so the Prisma client / Zod generator see the constraint.
+    // Partial unique index: at most one active row per versionType. Defined in
+    // 0006_add_drama_afera_settings.sql and normalized by 0007_cleanup.sql
+    // (quoting drift). Declared here via the `partialIndexes` preview feature
+    // so the Prisma client and Zod generator see the constraint.
     //
-    // KNOWN ISSUE (prisma/prisma#23734, #29289): `prisma migrate diff` still
-    // emits a no-op DROP-then-CREATE for partial indexes on every run. When
-    // generating new migrations with `npm run db:migrate:create`, delete the
-    // `DROP INDEX "idx_drama_afera_settings_version_type"; CREATE UNIQUE
-    // INDEX ... WHERE "deletedAt" IS NULL;` pair from the generated SQL
-    // before applying — it would otherwise drop and re-create an identical
-    // index for no reason.
+    // If `db:migrate:create` ever regenerates a no-op `DROP INDEX
+    // "idx_drama_afera_settings_version_type"; CREATE UNIQUE INDEX ... WHERE
+    // "deletedAt" IS NULL;` pair, strip it before applying (prisma/prisma#23734,
+    // #29289). Currently clean as of 0007.
     @@unique([versionType], map: "idx_drama_afera_settings_version_type", where: { deletedAt: null })
     @@map("drama_afera_settings")
-    // MANUAL INDEX: a partial UNIQUE INDEX on (versionType) WHERE deletedAt IS NULL,
-    // defined in 0006_add_drama_afera_settings.sql. Enforces at most one active row
-    // per versionType.
-    //
-    // Partial indexes are supported by Prisma 7.4+ via the `partialIndexes` preview
-    // feature (`@@unique([versionType], where: { deletedAt: null })`); this project
-    // is on 6.19.2, where there is no schema syntax for it — hence the hand-written
-    // CREATE UNIQUE INDEX in the migration.
-    //
-    // `db:migrate:diff` is unaware of this index. If a future generated migration
-    // contains a DROP for `idx_drama_afera_settings_version_type`, delete that
-    // statement before applying. Once the project upgrades to Prisma 7.4+, replace
-    // this comment with `@@unique([versionType], where: { deletedAt: null })`
-    // (with `partialIndexes` enabled in `previewFeatures`).
 }

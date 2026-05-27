@@ -7,6 +7,7 @@ import { Modifiers } from "@/modifiers";
 import { SettingTypes } from "@/constants/settings";
 import { SlotsDisplay } from "./SlotsDisplay";
 import { SpecialSettingsAccordion } from "./SpecialSettingsAccordion";
+import { GetDramaAferaSettingsResponseSchema } from "@/app/api/dramaafera/settings/schema";
 
 export function     SettingsDramaAfera() {
     const [fileContent, setFileContent] = useState<string | null>(null);
@@ -16,21 +17,9 @@ export function     SettingsDramaAfera() {
         fetch("/api/dramaafera/settings")
             .then(async (response) => {
                 if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                const payload: unknown = await response.json();
-                if (
-                    typeof payload !== 'object' ||
-                    payload === null ||
-                    !('success' in payload) ||
-                    payload.success !== true ||
-                    !('data' in payload) ||
-                    typeof payload.data !== 'object' ||
-                    payload.data === null ||
-                    !('current' in payload.data) ||
-                    typeof payload.data.current !== 'string'
-                ) {
-                    throw new Error('Unexpected response shape');
-                }
-                setFileContent(payload.data.current);
+                const parsed = GetDramaAferaSettingsResponseSchema.parse(await response.json());
+                if (!parsed.success) throw new Error(parsed.error ?? 'API error');
+                setFileContent(parsed.data.current);
             })
             .catch(() => {
                 setFileContent(""); // Ustaw domyślną zawartość w przypadku błędu

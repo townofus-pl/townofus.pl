@@ -2,8 +2,6 @@ import { PrismaClient } from '@prisma/client';
 import { PrismaD1 } from '@prisma/adapter-d1';
 import type { Prisma } from '@prisma/client';
 
-
-
 /**
  * Global Prisma client instance
  */
@@ -20,16 +18,6 @@ export function getPrismaClient(d1Database: D1Database): PrismaClient {
     });
   }
   return prisma;
-}
-
-/**
- * Close Prisma client connection
- */
-export async function closePrismaClient(): Promise<void> {
-  if (prisma) {
-    await prisma.$disconnect();
-    prisma = null;
-  }
 }
 
 /**
@@ -60,26 +48,6 @@ export function buildPaginationQuery(options: DatabasePaginationOptions = {}) {
     take: Math.min(100, Math.max(1, take)), // Limit to max 100 items
     orderBy
   };
-}
-
-
-
-/**
- * Database connection health check
- */
-export async function checkDatabaseConnection(d1Database: D1Database): Promise<boolean> {
-  try {
-    const client = getPrismaClient(d1Database);
-    // Simple health check using a standard Prisma query instead of raw SQL
-    await client.player.findFirst({
-      select: { id: true },
-      take: 1
-    });
-    return true;
-  } catch (error) {
-    console.error('Database connection failed:', error);
-    return false;
-  }
 }
 
 /**
