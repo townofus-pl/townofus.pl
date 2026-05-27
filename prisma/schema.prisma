@@ -2,7 +2,8 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-    provider = "prisma-client-js"
+    provider        = "prisma-client-js"
+    previewFeatures = ["partialIndexes"]
 }
 
 generator zod {
@@ -12,7 +13,9 @@ generator zod {
 
 datasource db {
     provider = "sqlite"
-    url      = env("DATABASE_URL")
+    // Prisma 7: connection URL lives in `prisma.config.ts` (read by `migrate
+    // diff --from-config-datasource`). At runtime, `src/app/api/_database/
+    // index.ts` constructs the D1 adapter and passes it to `new PrismaClient`.
 }
 
 // =============================================================================
@@ -351,7 +354,13 @@ model ListaCweli {
     updatedAt   DateTime @updatedAt
     deletedAt   DateTime? // Soft delete
 
-    @@unique([season, date])
+    // `map:` points at SQLite's auto-index name so `prisma migrate diff` doesn't
+    // try to RedefineIndex (which would fail — SQLite rejects DROP INDEX on
+    // auto-indexes backing inline UNIQUE constraints). The original constraint
+    // in 0005_add_lista_cweli.sql is `CONSTRAINT "lista_cweli_season_date_key"
+    // UNIQUE (...)`, but SQLite reports the backing index as
+    // `sqlite_autoindex_lista_cweli_1` regardless of the constraint name.
+    @@unique([season, date], map: "sqlite_autoindex_lista_cweli_1")
     @@index([season])
     @@index([date])
     @@index([deletedAt])
@@ -376,6 +385,18 @@ model DramaAferaSettings {
     @@index([versionType])
     @@index([uploadedAt])
     @@index([deletedAt])
+    // At most one active row per versionType. Already present in
+    // 0006_add_drama_afera_settings.sql; declared here via the `partialIndexes`
+    // preview feature so the Prisma client / Zod generator see the constraint.
+    //
+    // KNOWN ISSUE (prisma/prisma#23734, #29289): `prisma migrate diff` still
+    // emits a no-op DROP-then-CREATE for partial indexes on every run. When
+    // generating new migrations with `npm run db:migrate:create`, delete the
+    // `DROP INDEX "idx_drama_afera_settings_version_type"; CREATE UNIQUE
+    // INDEX ... WHERE "deletedAt" IS NULL;` pair from the generated SQL
+    // before applying — it would otherwise drop and re-create an identical
+    // index for no reason.
+    @@unique([versionType], map: "idx_drama_afera_settings_version_type", where: { deletedAt: null })
     @@map("drama_afera_settings")
     // MANUAL INDEX: a partial UNIQUE INDEX on (versionType) WHERE deletedAt IS NULL,
     // defined in 0006_add_drama_afera_settings.sql. Enforces at most one active row

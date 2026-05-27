@@ -8,7 +8,7 @@ TownOfUs.pl is a Polish Among Us community website: a role search engine for the
 
 - **Next.js 15.3** (App Router) · **React 19** · **TypeScript** (strict)
 - **Cloudflare Workers** via @opennextjs/cloudflare · **Cloudflare D1** (SQLite) · **Cloudflare R2**
-- **Prisma 6** with @prisma/adapter-d1
+- **Prisma 7** with @prisma/adapter-d1 (migrate config in `prisma.config.ts`; `partialIndexes` preview feature enabled)
 - **Tailwind CSS 3.4** · **Zod 3** · **Jest**
 
 ## Commands

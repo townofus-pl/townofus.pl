@@ -2,7 +2,7 @@
 
 Full instructions: `AGENTS.md` + `.github/instructions/*.instructions.md` (applied via `applyTo`).
 
-**Stack**: Next.js 15.3 App Router · React 19 · TypeScript strict · Cloudflare Workers/D1/R2 · Prisma 6 · Tailwind 3.4 · Zod 3
+**Stack**: Next.js 15.3 App Router · React 19 · TypeScript strict · Cloudflare Workers/D1/R2 · Prisma 7 · Tailwind 3.4 · Zod 3
 
 ## Hard Blocks
 
