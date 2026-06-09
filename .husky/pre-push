@@ -1,1 +1,1 @@
-npm run cf-typegen && npm run db:generate && npm run build
+npm run cf-typegen && npm run build
