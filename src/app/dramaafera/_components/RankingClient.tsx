@@ -172,7 +172,7 @@ export default function RankingClient({ initialData, seasonId }: RankingClientPr
                                             <Link href={buildSeasonUrl(`/user/${convertNickToUrlSlug(player.playerName)}`, seasonId)}>
                                                     <div className="flex items-center space-x-3 hover:bg-gray-700/30 rounded-lg p-2 transition-colors cursor-pointer">
                                                         <Image
-                                                            src={getPlayerAvatarPath(player.playerName)}
+                                                            src={hasRanking && Math.round(player.currentRating) === 2137 ? "/images/avatars/papaj.jpg" : getPlayerAvatarPath(player.playerName)}
                                                             alt={`Avatar ${player.playerName}`}
                                                             width={40}
                                                             height={40}
