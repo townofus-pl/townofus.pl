@@ -133,8 +133,14 @@ async function main(): Promise<void> {
         return;
     }
 
+    // Bez BEGIN TRANSACTION / COMMIT — zdalne D1 odrzuca je z błędem
+    // "please use the state.storage.transaction() ... APIs instead", nawet jeśli
+    // miniflare lokalnie je przepuszcza. Skutek: przerwanie w połowie zostawia
+    // częściowo naniesioną korektę. Nie szkodzi — każdy UPDATE adresuje wiersz
+    // po gameIdentifier, a skrypt jest idempotentny, więc wystarczy uruchomić
+    // go ponownie, żeby dokończyć resztę.
     await mkdir(path.dirname(OUTPUT_FILE), { recursive: true });
-    await writeFile(OUTPUT_FILE, ['BEGIN TRANSACTION;', ...updates, 'COMMIT;', ''].join('\n'), 'utf8');
+    await writeFile(OUTPUT_FILE, [...updates, ''].join('\n'), 'utf8');
     console.log(`Zapisano ${OUTPUT_FILE}.`);
 
     if (!apply) {
