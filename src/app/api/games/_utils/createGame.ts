@@ -3,6 +3,8 @@ import { withoutDeleted } from '../../schema/common';
 import type { GameData } from '../../schema/games';
 import { calculateRankingForGame } from '../../_utils/rankingCalculator';
 import { getSeasonForDate } from '@/app/dramaafera/_constants/seasons';
+import { determineTeam } from '@/app/dramaafera/_utils/gameUtils';
+import { Teams } from '@/constants/teams';
 
 export interface CreateGameResult {
   gameId: number;
@@ -51,23 +53,23 @@ export async function createGameFromData(
   let winCondition: string | null = null;
 
   if (winners.length > 0) {
-    // For simplicity, determine team based on common roles
-    // This is a basic implementation - you might want to enhance this logic
-    const winnerRoles = winners.map(w => w.roleHistory[0]?.toLowerCase() || '');
-    
-    const impostorRoles = ['impostor', 'shapeshifter', 'morphling', 'swooper', 'glitch', 'venerer'];
-    const neutralRoles = ['jester', 'executioner', 'arsonist', 'plaguebearer', 'doomsayer', 'amnesiac'];
-    
-    if (winnerRoles.some(role => impostorRoles.includes(role))) {
-      winnerTeam = 'Impostor';
-    } else if (winnerRoles.some(role => neutralRoles.includes(role))) {
-      winnerTeam = 'Neutral';
+    // `determineTeam` resolves against the `Roles` registry and takes the FINAL
+    // role from roleHistory — a Traitor/Amnesiac wins with the team they ended
+    // on, not the one they started in. Priority Impostor > Crewmate > Neutral
+    // mirrors `calculateWinnerFromStats`, so the API and the UI agree.
+    const winnerTeams = winners.map(w => determineTeam(w.roleHistory));
+
+    if (winnerTeams.includes(Teams.Impostor)) {
+      winnerTeam = Teams.Impostor;
+    } else if (winnerTeams.includes(Teams.Crewmate)) {
+      winnerTeam = Teams.Crewmate;
     } else {
-      winnerTeam = 'Crewmate';
+      winnerTeam = Teams.Neutral;
     }
-    
+
     if (winners.length === 1) {
-      winCondition = `${winners[0].roleHistory[0]} victory`;
+      const roleHistory = winners[0].roleHistory;
+      winCondition = `${roleHistory[roleHistory.length - 1]} victory`;
     } else {
       winCondition = `${winnerTeam} victory`;
     }
