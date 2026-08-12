@@ -2,10 +2,8 @@ import { NextRequest } from 'next/server';
 import { getCloudflareContext } from '@opennextjs/cloudflare';
 import { getPrismaClient } from '../_database';
 import { CreatePlayerRequestSchema } from '../schema/players';
-import { createSuccessResponse, createErrorResponse } from '../_utils';
+import { createSuccessResponse, createErrorResponse, createPlayerWithRanking } from '../_utils';
 import { formatZodError, withoutDeleted } from '../schema/common';
-import { PlayerRankingReason } from '../_constants/rankingTypes';
-import { CURRENT_SEASON } from '@/app/dramaafera/_constants/seasons';
 
 export async function POST(request: NextRequest) {
   try {
@@ -35,42 +33,8 @@ export async function POST(request: NextRequest) {
       return createErrorResponse(`Player already exists: '${existingPlayer.name}'`, 409);
     }
 
-    // Create new player with original casing
-    const newPlayer = await prisma.player.create({
-      data: {
-        name: name.trim(), // Store with original casing but trimmed
-      },
-      select: {
-        id: true,
-        name: true,
-        createdAt: true,
-        updatedAt: true,
-        currentRankingId: true
-      }
-    });
-
-    // Create initial ranking record for the player
-    const initialRanking = await prisma.playerRanking.create({
-      data: {
-        playerId: newPlayer.id,
-        score: 2000.0, // Default starting ranking
-        reason: PlayerRankingReason.InitialValue,
-        season: CURRENT_SEASON
-      }
-    });
-
-    // Update player's current ranking reference
-    const updatedPlayer = await prisma.player.update({
-      where: { id: newPlayer.id },
-      data: { currentRankingId: initialRanking.id },
-      select: {
-        id: true,
-        name: true,
-        createdAt: true,
-        updatedAt: true,
-        currentRankingId: true
-      }
-    });
+    // Create new player with initial ranking (original casing, trimmed)
+    const updatedPlayer = await createPlayerWithRanking(prisma, name);
 
     return createSuccessResponse(updatedPlayer, 201);
 

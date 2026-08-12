@@ -3,6 +3,9 @@ import { NextRequest, NextResponse } from 'next/server';
 // Re-export ranking calculator
 export { calculateRankingForGame, RANKING_CONSTANTS } from './rankingCalculator';
 
+// Re-export player creation helper
+export { createPlayerWithRanking } from './createPlayerWithRanking';
+
 /**
  * Standard API response structure
  */
