@@ -17,13 +17,25 @@ export const MiraInvestigator: Role = {
     description: 'Investigator widzi odciski stóp innych graczy w trakcie rundy, co pomaga śledzić ich ruchy i alibi. Uwaga: odciski stóp Swoopera są ukryte.',
     settings: {
         ...probabilityOfAppearing(0),
+        'Footprints Added Based On': {
+            value: 0,
+            type: SettingTypes.Number,
+            description: {
+                0: 'Distance',
+                1: 'Time',
+            },
+        },
+        'Footprint Interval (D)': {
+            value: 0.5,
+            type: SettingTypes.Number,
+        },
+        'Footprint Interval (T)': {
+            value: 1,
+            type: SettingTypes.Time,
+        },
         'Footprint Size': {
             value: 4,
             type: SettingTypes.Multiplier,
-        },
-        'Footprint Interval': {
-            value: 1,
-            type: SettingTypes.Time,
         },
         'Footprint Duration': {
             value: 10,

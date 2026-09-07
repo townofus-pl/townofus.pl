@@ -35,6 +35,7 @@ import {MiraTelepath} from './telepath';
 import {MiraTiebreaker} from './tiebreaker';
 import {MiraTorch} from './torch';
 import {MiraUnderdog} from './underdog';
+import {MiraOverclocker} from './overclocker';
 
 export const MiraModifiers: readonly Modifier[] = [
 	MiraAftermath,
@@ -58,6 +59,7 @@ export const MiraModifiers: readonly Modifier[] = [
 	MiraMultitasker,
 	MiraNoisemaker,
 	MiraOperative,
+	MiraOverclocker,
 	MiraRadar,
 	MiraRotting,
 	MiraSaboteur,

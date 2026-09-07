@@ -1,6 +1,10 @@
 import { SettingTypes, type Setting } from '@/constants/settings';
+import type { MiraSettingGroup } from './types';
 
 export const MiraGameMechanics = {
+    name: 'Game Mechanics',
+    id: 'mira_game_mechanics',
+    cfgKey: 'GameMechanic',
     settings: {
         'Powerful Crew Continue The Game': {
             value: true,
@@ -55,4 +59,4 @@ export const MiraGameMechanics = {
             type: SettingTypes.Multiplier,
         },
     } as Record<string, Setting>,
-};
+} satisfies MiraSettingGroup;

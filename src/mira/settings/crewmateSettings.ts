@@ -1,6 +1,10 @@
 import { SettingTypes, type Setting } from '@/constants/settings';
+import type { MiraSettingGroup } from './types';
 
 export const MiraCrewmateSettings = {
+    name: 'Crewmate Settings',
+    id: 'mira_crewmate_settings',
+    cfgKey: 'RoleDraftCrew',
     settings: {
         'Max Investigative Roles': {
             value: 5,
@@ -23,4 +27,4 @@ export const MiraCrewmateSettings = {
             type: SettingTypes.Number,
         },
     } as Record<string, Setting>,
-};
+} satisfies MiraSettingGroup;

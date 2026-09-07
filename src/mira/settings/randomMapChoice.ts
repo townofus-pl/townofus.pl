@@ -1,6 +1,10 @@
 import { SettingTypes, type Setting } from '@/constants/settings';
+import type { MiraSettingGroup } from './types';
 
 export const MiraRandomMapChoice = {
+    name: 'Random Map Choice',
+    id: 'mira_random_map_choice',
+    cfgKey: 'TownOfUsMap',
     settings: {
         'Enable Randomized Map': {
             value: false,
@@ -11,6 +15,10 @@ export const MiraRandomMapChoice = {
             type: SettingTypes.Percentage,
         },
         'dlekS ecnahC': {
+            value: 0,
+            type: SettingTypes.Percentage,
+        },
+        'Mira HQ Chance': {
             value: 0,
             type: SettingTypes.Percentage,
         },
@@ -35,4 +43,4 @@ export const MiraRandomMapChoice = {
             type: SettingTypes.Percentage,
         },
     } as Record<string, Setting>,
-};
+} satisfies MiraSettingGroup;

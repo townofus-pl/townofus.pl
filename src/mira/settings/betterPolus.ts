@@ -1,6 +1,10 @@
 import { SettingTypes, type Setting } from '@/constants/settings';
+import type { MiraSettingGroup } from './types';
 
 export const MiraBetterPolus = {
+    name: 'Better Polus',
+    id: 'mira_better_polus',
+    cfgKey: 'BetterPolus',
     settings: {
         'Camouflage Comms': {
             value: true,
@@ -81,4 +85,4 @@ export const MiraBetterPolus = {
             type: SettingTypes.Time,
         },
     } as Record<string, Setting>,
-};
+} satisfies MiraSettingGroup;

@@ -1,6 +1,10 @@
 import { SettingTypes, type Setting } from '@/constants/settings';
+import type { MiraSettingGroup } from './types';
 
 export const MiraRoleblockMechanics = {
+    name: 'Roleblock Mechanics',
+    id: 'mira_roleblock_mechanics',
+    cfgKey: 'Roleblock',
     settings: {
         'Roleblock Affects Non-Role Actions': {
             value: false,
@@ -23,4 +27,4 @@ export const MiraRoleblockMechanics = {
             type: SettingTypes.Time,
         },
     } as Record<string, Setting>,
-};
+} satisfies MiraSettingGroup;

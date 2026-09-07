@@ -1,6 +1,10 @@
 import { SettingTypes, type Setting } from '@/constants/settings';
+import type { MiraSettingGroup } from './types';
 
 export const MiraGlobalBetterMaps = {
+    name: 'Global Better Maps',
+    id: 'mira_global_better_maps',
+    cfgKey: 'GlobalBetterMap',
     settings: {
         'Use Camouflage Comms': {
             value: 0,
@@ -90,4 +94,4 @@ export const MiraGlobalBetterMaps = {
             type: SettingTypes.Number,
         },
     } as Record<string, Setting>,
-};
+} satisfies MiraSettingGroup;

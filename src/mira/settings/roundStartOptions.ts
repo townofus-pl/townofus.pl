@@ -1,6 +1,10 @@
 import { SettingTypes, type Setting } from '@/constants/settings';
+import type { MiraSettingGroup } from './types';
 
 export const MiraRoundStartOptions = {
+    name: 'Round Start Options',
+    id: 'mira_round_start',
+    cfgKey: 'InitialRound',
     settings: {
         'Modifier Type To Show In Role Intro': {
             value: 1,
@@ -45,4 +49,4 @@ export const MiraRoundStartOptions = {
             type: SettingTypes.Boolean,
         },
     } as Record<string, Setting>,
-};
+} satisfies MiraSettingGroup;

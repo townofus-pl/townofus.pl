@@ -35,13 +35,17 @@ export const MiraSeer: Role = {
             value: true,
             type: SettingTypes.Boolean,
         },
-        'Reveal / Compare Cooldown': {
+        'Reveal/Compare Cooldown': {
             value: 20,
             type: SettingTypes.Time,
         },
-        'Max Uses of Reveal / Compare': {
+        'Max Uses of Reveal/Compare': {
             value: 5,
             type: SettingTypes.Number,
+        },
+        'Can Reveal/Compare More Than Once Per Round': {
+            value: false,
+            type: SettingTypes.Boolean,
         },
         'Neutral Benigns Shows Friends to All': {
             value: false,

@@ -1,6 +1,10 @@
 import { SettingTypes, type Setting } from '@/constants/settings';
+import type { MiraSettingGroup } from './types';
 
 export const MiraGeneral = {
+    name: 'General',
+    id: 'mira_general',
+    cfgKey: 'General',
     settings: {
         'Impostors Don\'t Know Each Other': {
             value: false,
@@ -23,4 +27,4 @@ export const MiraGeneral = {
             type: SettingTypes.Time,
         },
     } as Record<string, Setting>,
-};
+} satisfies MiraSettingGroup;

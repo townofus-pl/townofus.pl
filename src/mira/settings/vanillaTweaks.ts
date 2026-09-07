@@ -1,6 +1,10 @@
 import { SettingTypes, type Setting } from '@/constants/settings';
+import type { MiraSettingGroup } from './types';
 
 export const MiraVanillaTweaks = {
+    name: 'Vanilla Tweaks',
+    id: 'mira_vanilla_tweaks',
+    cfgKey: 'VanillaTweak',
     settings: {
         'Continue Cooldowns In Tasks And Panels': {
             value: true,
@@ -46,4 +50,4 @@ export const MiraVanillaTweaks = {
             }
         },    
     } as Record<string, Setting>,
-};
+} satisfies MiraSettingGroup;

@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import Image from "next/image";
-import { MiraModifiers, MiraRoles } from "@/mira";
+import { MiraModifiers, MiraRoles, MiraSettings } from "@/mira";
 import { RoleOrModifierTypes } from "@/constants/rolesAndModifiers";
 import { SettingTypes, type Setting } from "@/constants/settings";
 import { Teams } from "@/constants/teams";
@@ -10,6 +10,7 @@ import { Teams } from "@/constants/teams";
 type GroupKind = "role" | "modifier" | "section";
 
 type MiraEntity = (typeof MiraRoles)[number] | (typeof MiraModifiers)[number];
+type MiraSettingGroup = (typeof MiraSettings)[number];
 
 interface Change {
     groupName: string;
@@ -56,6 +57,14 @@ for (const entity of miraEntities) {
     }
 }
 
+const settingGroupLookup = new Map<string, MiraSettingGroup>();
+
+for (const group of MiraSettings) {
+    for (const candidate of [group.cfgKey, group.name, group.id]) {
+        settingGroupLookup.set(normalizeLookupKey(candidate), group);
+    }
+}
+
 function normalizeLookupKey(value: string): string {
     return value
         .normalize("NFD")
@@ -78,8 +87,11 @@ function stripConfigAffixes(value: string): string {
         .replace(/Options$/i, "")
         .replace(/Modifier$/i, "")
         .replace(/Role$/i, "")
-        .replace(/Tou$/i, "")
-        .replace(/^Hns/i, "");
+        .replace(/Tou$/i, "");
+}
+
+function isHideAndSeekSection(sectionName: string): boolean {
+    return sectionName.split(".").some((part) => part === "HideAndSeek" || /^Hns/i.test(part));
 }
 
 function getEntityFromToken(token: string): MiraEntity | undefined {
@@ -167,6 +179,17 @@ function getSectionLabel(sectionName: string): string {
     return humanizeIdentifier(stripConfigAffixes(lastToken));
 }
 
+function getSettingGroupFromSection(sectionName: string): MiraSettingGroup | undefined {
+    const lastToken = sectionName.split(".").at(-1) ?? sectionName;
+    const cfgKey = lastToken.replace(/Options$/i, "");
+
+    return settingGroupLookup.get(normalizeLookupKey(cfgKey));
+}
+
+function isRoleOrModifierSection(sectionName: string): boolean {
+    return sectionName.includes(".Roles.") || sectionName.includes(".Modifiers.");
+}
+
 function getEntityFromSection(sectionName: string): MiraEntity | undefined {
     const lastToken = sectionName.split(".").at(-1) ?? sectionName;
     const entityToken = stripConfigAffixes(lastToken);
@@ -239,16 +262,18 @@ function createEntityEntry(params: {
 }
 
 function createSectionEntry(params: {
-    sectionName: string;
+    groupName: string;
+    groupId: string;
     sectionOrder: number;
     settingName: string;
     settingType: SettingTypes;
+    description?: Record<number, string>;
     value: string;
 }): ParsedEntry {
     return {
-        groupName: getSectionLabel(params.sectionName),
+        groupName: params.groupName,
         settingName: params.settingName,
-        comparisonKey: `${params.sectionName}::${normalizeLookupKey(params.settingName)}`,
+        comparisonKey: `${params.groupId}::${normalizeLookupKey(params.settingName)}`,
         value: params.value,
         groupKind: "section",
         groupTeam: null,
@@ -256,6 +281,7 @@ function createSectionEntry(params: {
         groupIcon: null,
         groupOrder: params.sectionOrder,
         settingType: params.settingType,
+        description: params.description,
     };
 }
 
@@ -297,7 +323,7 @@ function parseConfigFile(content: string): Map<string, ParsedEntry> {
             return;
         }
 
-        if (section.name.includes("HideAndSeek")) {
+        if (isHideAndSeekSection(section.name)) {
             return;
         }
 
@@ -329,6 +355,35 @@ function parseConfigFile(content: string): Map<string, ParsedEntry> {
             }
 
             return;
+        }
+
+        if (!isRoleOrModifierSection(section.name)) {
+            const settingGroup = getSettingGroupFromSection(section.name);
+
+            if (settingGroup) {
+                const orderedSettings = Object.entries(settingGroup.settings);
+
+                section.entries.forEach((entry, entryIndex) => {
+                    const setting = orderedSettings[entryIndex];
+                    const settingName = setting?.[0] ?? humanizeIdentifier(entry.key);
+                    const settingDefinition = setting?.[1];
+
+                    entries.set(
+                        `${settingGroup.id}::${normalizeLookupKey(settingName)}`,
+                        createSectionEntry({
+                            groupName: settingGroup.name,
+                            groupId: settingGroup.id,
+                            sectionOrder,
+                            settingName,
+                            settingType: settingDefinition?.type ?? inferTypeFromValue(entry.value),
+                            description: settingDefinition?.description,
+                            value: entry.value,
+                        })
+                    );
+                });
+
+                return;
+            }
         }
 
         const sectionEntity = getEntityFromSection(section.name);
@@ -381,7 +436,8 @@ function parseConfigFile(content: string): Map<string, ParsedEntry> {
             entries.set(
                 `${section.name}::${normalizeLookupKey(entry.key)}`,
                 createSectionEntry({
-                    sectionName: section.name,
+                    groupName: getSectionLabel(section.name),
+                    groupId: section.name,
                     sectionOrder,
                     settingName: humanizeIdentifier(entry.key),
                     settingType: inferTypeFromValue(entry.value),

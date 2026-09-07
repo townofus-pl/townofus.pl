@@ -1,6 +1,10 @@
 import { SettingTypes, type Setting } from '@/constants/settings';
+import type { MiraSettingGroup } from './types';
 
 export const MiraHostSpecificOptions = {
+    name: 'Host Specific Options',
+    id: 'mira_host_specific',
+    cfgKey: 'HostSpecific',
     settings: {
         'Enable Anti Cheat Warnings': {
             value: true,
@@ -27,4 +31,4 @@ export const MiraHostSpecificOptions = {
             type: SettingTypes.Boolean,
         },
     } as Record<string, Setting>,
-};
+} satisfies MiraSettingGroup;

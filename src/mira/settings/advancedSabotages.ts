@@ -1,6 +1,10 @@
 import { SettingTypes, type Setting } from '@/constants/settings';
+import type { MiraSettingGroup } from './types';
 
 export const MiraAdvancedSabotages = {
+    name: 'Advanced Sabotages',
+    id: 'mira_advanced_sabotages',
+    cfgKey: 'AdvancedSabotage',
     settings: {
         'Kill Anyone During Camouflage': {
             value: true,
@@ -19,4 +23,4 @@ export const MiraAdvancedSabotages = {
             type: SettingTypes.Boolean,
         },
     } as Record<string, Setting>,
-};
+} satisfies MiraSettingGroup;

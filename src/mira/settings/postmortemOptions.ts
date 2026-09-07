@@ -1,6 +1,10 @@
 import { SettingTypes, type Setting } from '@/constants/settings';
+import type { MiraSettingGroup } from './types';
 
 export const MiraPostmortemOptions = {
+    name: 'Postmortem Options',
+    id: 'mira_postmortem',
+    cfgKey: 'Postmortem',
     settings: {
         'The Dead Know Players': {
             value: true,
@@ -38,4 +42,4 @@ export const MiraPostmortemOptions = {
             type: SettingTypes.Boolean,
         },
     } as Record<string, Setting>,
-};
+} satisfies MiraSettingGroup;

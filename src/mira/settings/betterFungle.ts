@@ -1,6 +1,10 @@
 import { SettingTypes, type Setting } from '@/constants/settings';
+import type { MiraSettingGroup } from './types';
 
 export const MiraBetterFungle = {
+    name: 'Better Fungle',
+    id: 'mira_better_fungle',
+    cfgKey: 'BetterFungle',
     settings: {
         'Camouflage Comms': {
             value: false,
@@ -60,4 +64,4 @@ export const MiraBetterFungle = {
             type: SettingTypes.Time,
         },
     } as Record<string, Setting>,
-};
+} satisfies MiraSettingGroup;

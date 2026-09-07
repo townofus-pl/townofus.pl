@@ -1,22 +1,74 @@
-export { MiraHostSpecificOptions } from './hostSpecificOptions';
-export { MiraVanillaTweaks } from './vanillaTweaks';
-export { MiraRoleblockMechanics } from './roleblockMechanics';
-export { MiraGameMechanics } from './gameMechanics';
-export { MiraRoundStartOptions } from './roundStartOptions';
-export { MiraGeneral } from './general';
-export { MiraRoleSettings } from './roleSettings';
-export { MiraRoleListSettings } from './roleListSettings';
-export { MiraPostmortemOptions } from './postmortemOptions';
-export { MiraRandomMapChoice } from './randomMapChoice';
-export { MiraGlobalBetterMaps } from './globalBetterMaps';
-export { MiraRandomizedDoorMode } from './randomizedDoorMode';
-export { MiraAdvancedSabotages } from './advancedSabotages';
-export { MiraAdvancedUtilities } from './advancedUtilities';
-export { MiraBetterSkeld } from './betterSkeld';
-export { MiraBetterMiraHq } from './betterMiraHq';
-export { MiraBetterPolus } from './betterPolus';
-export { MiraBetterAirship } from './betterAirship';
-export { MiraBetterFungle } from './betterFungle';
-export { MiraImpostorSettings } from './impostorSettings';
-export { MiraCrewmateSettings } from './crewmateSettings';
-export { MiraNeutralSettings } from './neutralSettings';
+export type { MiraSettingGroup } from './types';
+
+import { MiraHostSpecificOptions } from './hostSpecificOptions';
+import { MiraVanillaTweaks } from './vanillaTweaks';
+import { MiraRoleblockMechanics } from './roleblockMechanics';
+import { MiraGameMechanics } from './gameMechanics';
+import { MiraRoundStartOptions } from './roundStartOptions';
+import { MiraGeneral } from './general';
+import { MiraRoleSettings } from './roleSettings';
+import { MiraRoleListSettings } from './roleListSettings';
+import { MiraPostmortemOptions } from './postmortemOptions';
+import { MiraRandomMapChoice } from './randomMapChoice';
+import { MiraGlobalBetterMaps } from './globalBetterMaps';
+import { MiraRandomizedDoorMode } from './randomizedDoorMode';
+import { MiraAdvancedSabotages } from './advancedSabotages';
+import { MiraAdvancedUtilities } from './advancedUtilities';
+import { MiraBetterSkeld } from './betterSkeld';
+import { MiraBetterMiraHq } from './betterMiraHq';
+import { MiraBetterPolus } from './betterPolus';
+import { MiraBetterAirship } from './betterAirship';
+import { MiraBetterFungle } from './betterFungle';
+import { MiraImpostorSettings } from './impostorSettings';
+import { MiraCrewmateSettings } from './crewmateSettings';
+import { MiraNeutralSettings } from './neutralSettings';
+
+export {
+    MiraHostSpecificOptions,
+    MiraVanillaTweaks,
+    MiraRoleblockMechanics,
+    MiraGameMechanics,
+    MiraRoundStartOptions,
+    MiraGeneral,
+    MiraRoleSettings,
+    MiraRoleListSettings,
+    MiraPostmortemOptions,
+    MiraRandomMapChoice,
+    MiraGlobalBetterMaps,
+    MiraRandomizedDoorMode,
+    MiraAdvancedSabotages,
+    MiraAdvancedUtilities,
+    MiraBetterSkeld,
+    MiraBetterMiraHq,
+    MiraBetterPolus,
+    MiraBetterAirship,
+    MiraBetterFungle,
+    MiraImpostorSettings,
+    MiraCrewmateSettings,
+    MiraNeutralSettings,
+};
+
+export const MiraSettings = [
+    MiraHostSpecificOptions,
+    MiraVanillaTweaks,
+    MiraRoleblockMechanics,
+    MiraGameMechanics,
+    MiraRoundStartOptions,
+    MiraGeneral,
+    MiraRoleSettings,
+    MiraRoleListSettings,
+    MiraPostmortemOptions,
+    MiraRandomMapChoice,
+    MiraGlobalBetterMaps,
+    MiraRandomizedDoorMode,
+    MiraAdvancedSabotages,
+    MiraAdvancedUtilities,
+    MiraBetterSkeld,
+    MiraBetterMiraHq,
+    MiraBetterPolus,
+    MiraBetterAirship,
+    MiraBetterFungle,
+    MiraImpostorSettings,
+    MiraCrewmateSettings,
+    MiraNeutralSettings,
+] as const;

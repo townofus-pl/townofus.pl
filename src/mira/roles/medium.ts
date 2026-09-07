@@ -40,13 +40,13 @@ export const MiraMedium: Role = {
             type: SettingTypes.Time,
         },
         'Medium Can Identify': {
-            value: 0,
+            value: 3,
             type: SettingTypes.Number,
             description: {
-                0: 'Nobody',
-                1: 'Living',
-                2: 'Ghosts',
-                3: 'Living + Ghosts',
+                0: 'Living',
+                1: 'Ghosts',
+                2: 'Living + Ghosts',
+                3: 'Nobody',
             },
         },
         'Arrow Visibility': {

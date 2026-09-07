@@ -1,4 +1,5 @@
 import { SettingTypes, type Setting } from '@/constants/settings';
+import type { MiraSettingGroup } from './types';
 
 const RecapOptions = {
     0: 'Nothing, Faction, Alignment, Role',
@@ -12,6 +13,9 @@ const roleListOptions = {
 };
 
 export const MiraRoleSettings = {
+    name: 'Role Settings',
+    id: 'mira_role_settings',
+    cfgKey: 'Role',
     settings: {
         'Role Assignment Type': {
             value: 1,
@@ -173,4 +177,4 @@ export const MiraRoleSettings = {
             description: roleListOptions,
         },
     } as Record<string, Setting>,
-};
+} satisfies MiraSettingGroup;

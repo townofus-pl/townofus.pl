@@ -1,6 +1,10 @@
 import { SettingTypes, type Setting } from '@/constants/settings';
+import type { MiraSettingGroup } from './types';
 
 export const MiraRandomizedDoorMode = {
+    name: 'Randomized Door Mode',
+    id: 'mira_randomized_door_mode',
+    cfgKey: 'RandomDoorMap',
     settings: {
         'No Doors Chance': {
             value: 5,
@@ -27,4 +31,4 @@ export const MiraRandomizedDoorMode = {
             type: SettingTypes.Percentage,
         },
     } as Record<string, Setting>,
-};
+} satisfies MiraSettingGroup;

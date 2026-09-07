@@ -35,12 +35,12 @@ export const MiraForensic: Role = {
             value: true,
             type: SettingTypes.Boolean,
         },
-        'Time Where Forensic Will Have Faction': {
-            value: 30,
-            type: SettingTypes.Time,
-        },
         'Time Where Forensic Will Have Role': {
             value: 7.5,
+            type: SettingTypes.Time,
+        },
+        'Time Where Forensic Will Have Faction': {
+            value: 30,
             type: SettingTypes.Time,
         },
     },

@@ -1,6 +1,10 @@
 import { SettingTypes, type Setting } from '@/constants/settings';
+import type { MiraSettingGroup } from './types';
 
 export const MiraAdvancedUtilities = {
+    name: 'Advanced Utilities',
+    id: 'mira_advanced_utilities',
+    cfgKey: 'AdvancedUtility',
     settings: {
         'Tasks Required to Use Admin Table': {
             value: 1,
@@ -23,4 +27,4 @@ export const MiraAdvancedUtilities = {
             type: SettingTypes.Boolean,
         }
     } as Record<string, Setting>,
-};
+} satisfies MiraSettingGroup;

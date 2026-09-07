@@ -1,4 +1,5 @@
 import { SettingTypes, type Setting } from '@/constants/settings';
+import type { MiraSettingGroup } from './types';
 
 const roleListOptions = {
     0: 'NonImp, Any',
@@ -8,6 +9,9 @@ const roleListOptions = {
 };
 
 export const MiraRoleListSettings = {
+    name: 'Role List Settings',
+    id: 'mira_role_list_settings',
+    cfgKey: 'RoleDraftRoleList',
     settings: {
         'Slot 1': {
             value: 'CrewCommon',
@@ -85,4 +89,4 @@ export const MiraRoleListSettings = {
             description: roleListOptions,
         },
     } satisfies Record<string, Setting>,
-};
+} satisfies MiraSettingGroup;
