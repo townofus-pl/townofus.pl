@@ -25,6 +25,10 @@ export const MiraDeadlyQuota: Modifier = {
             value: 4,
             type: SettingTypes.Number,
         },
+        'Meeting Kills Count Towards Quota': {
+            value: true,
+            type: SettingTypes.Boolean,
+        },
         'Temporary Shield Until Quota Is Met': {
             value: false,
             type: SettingTypes.Boolean,

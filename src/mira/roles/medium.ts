@@ -55,7 +55,8 @@ export const MiraMedium: Role = {
             description: {
                 0: 'Medium',
                 1: 'Mediated',
-                2: 'Neither',
+                2: 'Medium + Mediated',
+                3: 'Disabled',
             },
         },
         'Who is Revealed': {

@@ -271,6 +271,10 @@ function parseConfigFile(content: string): Map<string, ParsedEntry> {
                     continue;
                 }
 
+                if (match[2].split(".").includes("HideAndSeek")) {
+                    continue;
+                }
+
                 const roleToken = match[2].split(".").at(-1) ?? match[2];
                 const entity = getEntityFromToken(roleToken);
                 if (!entity) {
@@ -282,6 +286,40 @@ function parseConfigFile(content: string): Map<string, ParsedEntry> {
                     `${entity.id}::${normalizeLookupKey(settingName)}`,
                     createEntityEntry({
                         entity,
+                        sectionOrder,
+                        settingName,
+                        settingType: SettingTypes.Percentage,
+                        value: entry.value,
+                    })
+                );
+            }
+
+            return;
+        }
+
+        if (section.name.includes("HideAndSeek")) {
+            return;
+        }
+
+        if (section.name.endsWith("ModifierOptions")) {
+            for (const entry of section.entries) {
+                const probabilityMatch = entry.key.match(/^(.+?)Chance$/);
+                if (!probabilityMatch) {
+                    continue;
+                }
+
+                const modifier = MiraModifiers.find(
+                    (candidate) => normalizeLookupKey(candidate.name) === normalizeLookupKey(probabilityMatch[1])
+                );
+                if (!modifier) {
+                    continue;
+                }
+
+                const settingName = "Probability Of Appearing";
+                entries.set(
+                    `${modifier.id}::${normalizeLookupKey(settingName)}`,
+                    createEntityEntry({
+                        entity: modifier,
                         sectionOrder,
                         settingName,
                         settingType: SettingTypes.Percentage,
@@ -438,6 +476,19 @@ export default function MiraChangelogPage() {
             accumulator[change.groupName].push(change);
             return accumulator;
         }, {} as Record<string, Change[]>);
+
+        Object.values(grouped).forEach((groupChanges) => {
+            groupChanges.sort((left, right) => {
+                const leftIsProbability = left.settingName === "Probability Of Appearing";
+                const rightIsProbability = right.settingName === "Probability Of Appearing";
+
+                if (leftIsProbability !== rightIsProbability) {
+                    return leftIsProbability ? -1 : 1;
+                }
+
+                return 0;
+            });
+        });
 
         return Object.entries(grouped).sort(([, leftChanges], [, rightChanges]) => {
             const left = leftChanges[0];

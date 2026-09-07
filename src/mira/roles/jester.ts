@@ -35,15 +35,31 @@ export const MiraJester: Role = {
             value: true,
             type: SettingTypes.Boolean,
         },
+        'Vent Cooldown': {
+            value: 15,
+            type: SettingTypes.Time,
+        },
+        'Vent Duration': {
+            value: 45,
+            type: SettingTypes.Time,
+        },
+        'Can Poke': {
+            value: true,
+            type: SettingTypes.Boolean,
+        },
+        'Poke Cooldown': {
+            value: 25,
+            type: SettingTypes.Time,
+        },
         'Has Impostor Vision': {
             value: true,
             type: SettingTypes.Boolean,
         },
-        'Survivor Scatter Mechanic Enabled': {
+        'Scatter Mechanic Enabled': {
             value: false,
             type: SettingTypes.Boolean,
         },
-        'Survivor Scatter Timer': {
+        'Scatter Timer': {
             value: 25,
             type: SettingTypes.Time,
         },
@@ -55,6 +71,10 @@ export const MiraJester: Role = {
                 1: 'Haunts',
                 2: 'Nothing',
             },
+        },
+        'Notify Others On Win': {
+            value: true,
+            type: SettingTypes.Boolean,
         },
     },
     abilities: [MiraJesterAbilities.Vent, MiraJesterAbilities.Haunt],

@@ -43,6 +43,10 @@ export const MiraDoomsayer: Role = {
             value: false,
             type: SettingTypes.Boolean,
         },
+        'Kill Only The Last Victim': {
+            value: false,
+            type: SettingTypes.Boolean,
+        },
         "Doomsayer Can't Observe": {
             value: false,
             type: SettingTypes.Boolean,
@@ -55,6 +59,14 @@ export const MiraDoomsayer: Role = {
                 1: 'Ends Game',
                 2: 'Nothing',
             },
+        },
+        'Hide Role On Win Notification': {
+            value: false,
+            type: SettingTypes.Boolean,
+        },
+        'Doomsayer Continues The Game': {
+            value: true,
+            type: SettingTypes.Boolean,
         },
     },
     abilities: [MiraDoomsayerAbilities.Observe, MiraDoomsayerAbilities.Guess],

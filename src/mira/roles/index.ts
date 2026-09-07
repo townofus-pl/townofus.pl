@@ -33,7 +33,7 @@ import {MiraPlaguebearer} from './plaguebearer';
 import {MiraPuppeteer} from './puppeteer';
 import {MiraSeer} from './seer';
 import {MiraScavenger} from './scavenger';
-import {MiraSoulCollector} from './soulcollector';
+import {MiraMedusa} from './medusa';
 import {MiraSpectre} from './spectre';
 import {MiraSnitch} from './snitch';
 import {MiraSonar} from './sonar';
@@ -129,7 +129,7 @@ export const MiraRoles = [
     MiraSeer,
     MiraSentry,
     MiraSheriff,
-    MiraSoulCollector,
+    MiraMedusa,
     MiraSpectre,
     MiraUndertaker,
     MiraSnitch,

@@ -37,8 +37,13 @@ export const MiraJanitor: Role = {
             type: SettingTypes.Time,
         },
         'Reset Kill & Clean Cooldowns Together': {
-            value: false,
-            type: SettingTypes.Boolean,
+            value: 1,
+            type: SettingTypes.Number,
+            description: {
+                0: 'Unlinked',
+                1: 'With Teammates',
+                2: 'Always',
+            },
         },
         'Janitor Can Kill With Teammate': {
             value: true,

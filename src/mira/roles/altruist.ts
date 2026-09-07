@@ -40,9 +40,13 @@ export const MiraAltruist: Role = {
             value: 5,
             type: SettingTypes.Time,
         },
-        'Revive Uses (Group Revive)': {
+        'Revive Uses': {
             value: 2,
             type: SettingTypes.Number,
+        },
+        'Kill Altruist When Starting Revive': {
+            value: false,
+            type: SettingTypes.Boolean,
         },
         'Freeze Altruist During Revive': {
             value: true,
