@@ -2,6 +2,10 @@ import { SettingTypes, type Setting } from '@/constants/settings';
 
 export const MiraBetterFungle = {
     settings: {
+        'Camouflage Comms': {
+            value: false,
+            type: SettingTypes.Boolean,
+        },
         'Speed Multiplier': {
             value: 1,
             type: SettingTypes.Multiplier,

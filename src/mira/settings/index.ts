@@ -17,3 +17,6 @@ export { MiraBetterMiraHq } from './betterMiraHq';
 export { MiraBetterPolus } from './betterPolus';
 export { MiraBetterAirship } from './betterAirship';
 export { MiraBetterFungle } from './betterFungle';
+export { MiraImpostorSettings } from './impostorSettings';
+export { MiraCrewmateSettings } from './crewmateSettings';
+export { MiraNeutralSettings } from './neutralSettings';
