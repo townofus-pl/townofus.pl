@@ -3,7 +3,41 @@
 import { getDatabaseClient } from '@/app/dramaafera/_services/db';
 import { withoutDeleted } from '@/app/api/schema/common';
 import { CURRENT_SEASON } from '@/app/dramaafera/_constants/seasons';
-import type { GameSessionListEntry, GameSessionListSummary } from '@/app/dramaafera/_services/gameSessionList/types';
+import { createPlayerWithRanking } from '@/app/api/_utils';
+import { findSimilarPlayerName } from '@/app/dramaafera/_utils/textMatch';
+import { getListaCweliPlayerPickerData } from '@/app/dramaafera/_services/gameSessionList/getListaCweliPlayerPicker';
+import type {
+  GameSessionListEntry,
+  GameSessionListSummary,
+  PlayerPickerData,
+} from '@/app/dramaafera/_services/gameSessionList/types';
+
+/**
+ * Data for the Lista Cweli player picker (main list + Add-player dialog).
+ */
+export async function getPlayerPickerData(seasonId: number): Promise<PlayerPickerData> {
+  return getListaCweliPlayerPickerData(seasonId);
+}
+
+/**
+ * Flags brand-new player names that look like typos of an existing player
+ * (exact match after folding case/diacritics, or Levenshtein distance <= 1).
+ */
+export async function checkNewPlayerNames(
+  candidateNames: string[]
+): Promise<Array<{ candidate: string; similarTo: string | null }>> {
+  const prisma = await getDatabaseClient();
+  if (!prisma) return candidateNames.map((candidate) => ({ candidate, similarTo: null }));
+
+  const existingNames = (
+    await prisma.player.findMany({ where: { ...withoutDeleted }, select: { name: true } })
+  ).map((p) => p.name);
+
+  return candidateNames.map((candidate) => ({
+    candidate,
+    similarTo: findSimilarPlayerName(candidate, existingNames),
+  }));
+}
 
 /**
  * Get all saved game session lists for the current season
@@ -81,18 +115,30 @@ export async function getGameSessionListById(listId: number): Promise<GameSessio
 }
 
 /**
- * Save or update a game session list
+ * Save or update a game session list. `newPlayerNames` (a subset of
+ * `playerNames`) are brand-new names picked in the Add-player dialog that
+ * don't have a Player row yet — they're created here, on save, never
+ * eagerly on Add (Player.name is @unique, so an abandoned draft must not
+ * leave a stray row behind).
  */
 export async function saveGameSessionList(
   seasonId: number,
   date: Date,
   playerNames: string[],
-  listIdToUpdate?: number
+  listIdToUpdate?: number,
+  newPlayerNames: string[] = []
 ): Promise<GameSessionListEntry | null> {
   const prisma = await getDatabaseClient();
   if (!prisma) return null;
 
   try {
+    for (const name of newPlayerNames) {
+      const existing = await prisma.player.findFirst({ where: { name, ...withoutDeleted } });
+      if (!existing) {
+        await createPlayerWithRanking(prisma, name);
+      }
+    }
+
     const playerNamesJson = JSON.stringify(playerNames);
     const normalizedDate = new Date(date);
     normalizedDate.setUTCHours(0, 0, 0, 0);
@@ -209,72 +255,5 @@ export async function deleteGameSessionListByDate(seasonId: number, date: Date):
   } catch (error) {
     console.error('Error deleting game session list by date:', error);
     return false;
-  }
-}
-
-/**
- * Get game statistics for all players to support sorting
- */
-export async function getPlayerGameStats(
-  seasonId: number,
-  playerNames: string[]
-): Promise<Record<string, { lastGameDate: Date | null; secondLastGameDate: Date | null; gameCount: number }>> {
-  const prisma = await getDatabaseClient();
-  if (!prisma) return {};
-
-  try {
-    // Batch fetch all players at once
-    const players = await prisma.player.findMany({
-      where: { name: { in: playerNames }, ...withoutDeleted },
-      select: { id: true, name: true },
-    });
-
-    const playerIdToName = new Map(players.map((p) => [p.id, p.name]));
-
-    const stats: Record<string, { lastGameDate: Date | null; secondLastGameDate: Date | null; gameCount: number }> = {};
-
-    // Initialize all players with empty stats
-    for (const playerName of playerNames) {
-      stats[playerName] = { lastGameDate: null, secondLastGameDate: null, gameCount: 0 };
-    }
-
-    if (players.length === 0) return stats;
-
-    // Fetch the last 2 game dates for each player using relation filter (avoids D1 IN clause variable limit)
-    // We query per-player but only fetch 2 rows each — much cheaper than fetching all games
-    await Promise.all(
-      players.map(async (player) => {
-        const games = await prisma.gamePlayerStatistics.findMany({
-          where: {
-            playerId: player.id,
-            game: {
-              season: seasonId,
-              ...withoutDeleted,
-            },
-          },
-          include: {
-            game: {
-              select: { startTime: true },
-            },
-          },
-          orderBy: {
-            game: { startTime: 'desc' },
-          },
-          take: 2,
-        });
-
-        const name = playerIdToName.get(player.id)!;
-        stats[name] = {
-          lastGameDate: games[0]?.game.startTime ?? null,
-          secondLastGameDate: games[1]?.game.startTime ?? null,
-          gameCount: games.length, // NOTE: with take:2 this is at most 2; use a count query if exact count needed
-        };
-      })
-    );
-
-    return stats;
-  } catch (error) {
-    console.error('Error fetching player game stats:', error);
-    return {};
   }
 }

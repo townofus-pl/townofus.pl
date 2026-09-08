@@ -27,10 +27,9 @@ interface HostTabsProps {
   initialDates: GameDateEntry[];
   seasonId: number;
   roles: RoleRankingStats[];
-  availableAvatars: string[];
 }
 
-export default function HostTabs({ initialDates, seasonId, roles, availableAvatars }: HostTabsProps) {
+export default function HostTabs({ initialDates, seasonId, roles }: HostTabsProps) {
   const [activeTab, setActiveTab] = useState<HostTabId>(TAB_HOST);
 
   const getTabContent = () => {
@@ -40,7 +39,7 @@ export default function HostTabs({ initialDates, seasonId, roles, availableAvata
       case TAB_ROLES:
         return <RoleRankingTable roles={roles} seasonId={seasonId} />;
       case TAB_LIST:
-        return <ListaCweliTab seasonId={seasonId} availableAvatars={availableAvatars} />;
+        return <ListaCweliTab seasonId={seasonId} />;
       case TAB_SETTINGS:
         return <SettingsTab />;
       default: {

@@ -33,6 +33,10 @@ npm run deploy                       # Build + deploy to production
 
 Reusable workflows for complex tasks. Primary location: `.github/skills/<name>/SKILL.md`
 Claude Code CLI accesses the same skills via `.claude/skills/` (symlinks to `.github/skills/`).
+Every directory in `.github/skills/` needs a matching symlink in `.claude/skills/` — without
+one the skill is invisible to Claude Code.
+
+Project-authored:
 
 | Skill                    | Description                                                    |
 |--------------------------|----------------------------------------------------------------|
@@ -52,6 +56,40 @@ Available in OpenCode (`.opencode/commands/`) and Claude Code CLI (`.claude/comm
 | Command         | File                             | Description                      |
 |-----------------|----------------------------------|----------------------------------|
 | `/plan-feature` | `.opencode/commands/plan-feature.md` | Run the plan-feature skill   |
+
+### Vendored skills
+
+Copied from [mattpocock/skills](https://github.com/mattpocock/skills) (MIT) — not authored
+here, so edit upstream rather than in place. See `.github/skills/VENDORED.md` for the sync
+commit and re-sync procedure.
+
+| Skill             | Description                                                          |
+|-------------------|----------------------------------------------------------------------|
+| `wayfinder`       | Chart work too big for one session as decision tickets on the tracker |
+| `triage`          | Move issues/PRs through triage roles into agent-ready briefs          |
+| `research`        | Investigate a question against primary sources, capture as Markdown   |
+| `prototype`       | Build a throwaway prototype to answer a design question               |
+| `domain-modeling` | Pin down domain terminology; record ADRs                              |
+| `grilling`        | Stress-test a plan or decision by relentless questioning              |
+
+Verbatim copies — names match upstream, since `wayfinder` calls the others internally as
+`/research`, `/prototype`, `/grilling`, and `/domain-modeling`. No prefix is needed: the
+globally-installed plugin exposes the same skills as `mattpocock-skills:*`, so the
+namespaces can't collide.
+
+## Agent skills
+
+### Issue tracker
+
+Issues live in GitHub Issues on `townofus-pl/townofus.pl`, via the `gh` CLI. See `docs/agents/issue-tracker.md`.
+
+### Triage labels
+
+The five canonical roles, each label string equal to its name. See `docs/agents/triage-labels.md`.
+
+### Domain docs
+
+Single-context: `CONTEXT.md` + `docs/adr/` at the repo root. See `docs/agents/domain.md`.
 
 ## Structure
 

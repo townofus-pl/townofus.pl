@@ -106,7 +106,7 @@ export default function SigmasSlide({
                                 backgroundColor: 'rgba(0, 0, 0, 0.6)'
                             }}
                         >
-                            <AvatarImageFill nickname={sigma.nickname} />
+                            <AvatarImageFill key={sigma.nickname} nickname={sigma.nickname} />
                             {/* Overlay z cieniem wewnętrznym */}
                             <div 
                                 className="absolute inset-0 pointer-events-none"

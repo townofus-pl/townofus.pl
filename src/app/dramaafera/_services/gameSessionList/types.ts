@@ -25,3 +25,8 @@ export interface ListaCweliDisplayEntry {
   displayDate: string;
   players: Array<{ name: string; eloRanking: number | null }>;
 }
+
+export interface PlayerPickerData {
+  seasonPlayers: Array<{ name: string; lastGameDate: string | null }>; // has a game this season — most recent game first
+  otherPlayers: Array<{ name: string; lastGameDate: string | null }>; // most recent game first, never-played last
+}

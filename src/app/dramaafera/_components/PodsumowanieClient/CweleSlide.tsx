@@ -96,7 +96,7 @@ export default function CweleSlide({ isFullscreen, currentStep, isTransitioning,
                                 backgroundColor: 'rgba(0, 0, 0, 0.6)'
                             }}
                         >
-                            <AvatarImageFill nickname={cwel.nickname} />
+                            <AvatarImageFill key={cwel.nickname} nickname={cwel.nickname} />
                             {/* Overlay z cieniem wewnętrznym */}
                             <div 
                                 className="absolute inset-0 pointer-events-none"
