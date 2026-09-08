@@ -31,7 +31,7 @@ export const MiraVampire: Role = {
             value: 25,
             type: SettingTypes.Time,
         },
-        'Max Number of Vampires Per Game': {
+        'Max Number Of Vampires Per Game': {
             value: 2,
             type: SettingTypes.Number,
         },
@@ -39,25 +39,31 @@ export const MiraVampire: Role = {
             value: true,
             type: SettingTypes.Boolean,
         },
-        'New Vampire Can Assassinate': {
+        'New Vampires Can Assassinate': {
             value: true,
             type: SettingTypes.Boolean,
         },
-        'Valid Conversions': {
-            value: 'Crew, Neutral Benign & Neutral Evils',
-            type: SettingTypes.Text,
-            description: {
-                0: 'Crew, Neutral Benign & Neutral Evils',
-                1: 'Crew & Lovers',
-                2: 'Crew, Lovers & NBs',
-                3: 'Crew, Lovers & NEs',
-                4: 'Crew, Lovers, NBs & NEs',
-                5: 'Crewmates',
-                6: 'Crew & NBs',
-                7: 'Crew & NEs',
-            },
+        'Can Convert Neutral Benign Roles': {
+            value: true,
+            type: SettingTypes.Boolean,
         },
-        'Vampire Can Vent': {
+        'Can Convert Neutral Evil Roles': {
+            value: true,
+            type: SettingTypes.Boolean,
+        },
+        'Can Convert Neutral Outlier Roles': {
+            value: false,
+            type: SettingTypes.Boolean,
+        },
+        'Can Convert Lovers': {
+            value: false,
+            type: SettingTypes.Boolean,
+        },
+        'New Vampires Can Convert': {
+            value: true,
+            type: SettingTypes.Boolean,
+        },
+        'Vampires Can Vent': {
             value: true,
             type: SettingTypes.Boolean,
         },

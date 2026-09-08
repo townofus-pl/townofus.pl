@@ -41,7 +41,14 @@ export const MiraArsonist: Role = {
             value: 25,
             type: SettingTypes.Time,
         },
-        'Douse From Interactions': {
+        'Douses Possible at Once': {
+            value: 5,
+            type: SettingTypes.Number,
+            description: {
+                0: '∞',
+            },
+        },
+        'Douse From Interactions': {    
             value: true,
             type: SettingTypes.Boolean,
         },
@@ -49,8 +56,16 @@ export const MiraArsonist: Role = {
             value: true,
             type: SettingTypes.Boolean,
         },
+        'Ignite Radius': {
+            value: 0.25,
+            type: SettingTypes.Number,
+        },
         'Arsonist Can Vent': {
             value: false,
+            type: SettingTypes.Boolean,
+        },
+        'Has Impostor Vision': {
+            value: true,
             type: SettingTypes.Boolean,
         },
     },

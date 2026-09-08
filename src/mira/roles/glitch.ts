@@ -47,7 +47,7 @@ export const MiraGlitch: Role = {
             value: 10,
             type: SettingTypes.Time,
         },
-        'Move While Using Mimic Menu (Keyboard Only)': {
+        'Move While Using Mimic Menu (KB ONLY)': {
             value: true,
             type: SettingTypes.Boolean,
         },
@@ -56,12 +56,17 @@ export const MiraGlitch: Role = {
             type: SettingTypes.Time,
         },
         'Hack Duration': {
-            value: 25,
+            value: 10,
             type: SettingTypes.Time,
         },
         'Glitch Can Vent': {
-            value: true,
-            type: SettingTypes.Boolean,
+            value: 2,
+            type: SettingTypes.Number,
+            description: {
+                0: 'Never',
+                1: 'Unless Mimicking',
+                2: 'Always',
+            },
         },
     },
     abilities: [MiraGlitchAbilities.Kill, MiraGlitchAbilities.Vent, MiraGlitchAbilities.Mimic, MiraGlitchAbilities.Hack],
