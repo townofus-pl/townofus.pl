@@ -32,15 +32,15 @@ export const MiraAmbassador: Role = {
             value: true,
             type: SettingTypes.Boolean,
         },
-        'Kills Needed by Ambassador or Teammate to Retrain': {
+        'Kills Needed By Ambassador Or Teammate To Retrain': {
             value: 2,
             type: SettingTypes.Number,
         },
-        'Round in Which Retraining is Possible': {
+        'Round In Which Retraining Is Possible': {
             value: 2,
             type: SettingTypes.Number,
         },
-        'Rounds Needed to Retrain Again': {
+        'Rounds Needed To Retrain Again': {
             value: 2,
             type: SettingTypes.Number,
         },

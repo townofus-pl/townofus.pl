@@ -30,12 +30,25 @@ Podobnie jak Imitator i Ambassador, Traitor może zmieniać role, wybierając in
             value: 5,
             type: SettingTypes.Number,
         },
-        'Traitor Won\'t Spawn if Neutral Killer is Alive': {
-            value: false,
+        'Traitor Won\'t Spawn If NK Is Alive': {
+            value: false,   
             type: SettingTypes.Boolean,
         },
         'Disable Existing Impostor Roles': {
-            value: false,
+            value: true,
+            type: SettingTypes.Boolean,
+        },
+        'Traitor Must Be Guessed As': {
+            value: 2,
+            type: SettingTypes.Number,
+            description: {
+                0: 'Traitor',
+                1: 'New Role',
+                2: 'Traitor or New Role',
+            },
+        },
+        'Traitor Becomes Assassin': {
+            value: true,
             type: SettingTypes.Boolean,
         },
     },
