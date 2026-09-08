@@ -24,9 +24,12 @@ export const MiraJanitor: Role = {
     description: 'Janitor może czyścić martwe ciała, usuwając dowody zbrodni i czyniąc ciało niemożliwym do zgłoszenia.',
     settings: {
         ...probabilityOfAppearing(0),
-        'Clean Uses Per Games': {
-            value: Infinity,
+        'Clean Uses Per Game': {
+            value: 0,
             type: SettingTypes.Number,
+            description: {
+                0: '∞',               
+            },
         },
         'Clean Cooldown': {
             value: 40,

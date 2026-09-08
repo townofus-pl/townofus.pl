@@ -24,25 +24,28 @@ export const MiraMiner: Role = {
     description: 'Miner może tworzyć nowe wentylacje. Te wentylacje łączą się tylko ze sobą, tworząc nową ścieżkę.',
     settings: {
         ...probabilityOfAppearing(0),
-        'Number of Miner Vents Per Game': {
-            value: Infinity,
+        'Number Of Miner Vents Per Game': {
+            value: 0,
             type: SettingTypes.Number,
+            description: {
+                0: '∞',               
+            },
         },
         'Mine Cooldown': {
             value: 25,
             type: SettingTypes.Time,
         },
+        'Mine Visibility': {
+            value: 0,
+            type: SettingTypes.Number,
+            description: {
+                0: 'Immediate',
+                1: 'After Use',
+            },
+        },
         'Mine Delay': {
             value: 3,
             type: SettingTypes.Time,
-        },
-        'Mine Visibility': {
-            value: 'Immediately',
-            type: SettingTypes.Text,
-            description: {
-                0: 'Immediately',
-                1: 'After Use',
-            },
         },
         'Miner Can Kill With Teammate': {
             value: true,
