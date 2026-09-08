@@ -36,12 +36,12 @@ export const MiraParasite: Role = {
             value: 30,
             type: SettingTypes.Time,
         },
-        'Save Victim if Parasite Dies': {
+        'Save Victim If Parasite Dies': {
             value: true,
             type: SettingTypes.Boolean,
         },
-        'Save Victim if Meeting Called': {
-            value: true,
+        'Save Victim If Meeting Called': {
+            value: false,
             type: SettingTypes.Boolean,
         },
         'Parasite Can Vent': {
@@ -53,7 +53,7 @@ export const MiraParasite: Role = {
             type: SettingTypes.Boolean,
         },
         'Overtaken Looks Like Parasite': {
-            value: true,
+            value: false,
             type: SettingTypes.Boolean,
         },
     },

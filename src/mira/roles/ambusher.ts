@@ -28,9 +28,12 @@ export const MiraAmbusher: Role = {
     description: 'Ambusher może ścigać gracza i dostaje strzałkę do jego pozycji. Gdy ścigany cel stoi obok innego gracza, Ambusher może użyć zasadzki, by zmusić ścigany cel do zabicia pobliskiej osoby. Po udanej zasadzce ciało jest przeciągane w cień i teleportowane do Ambushera.',
     settings: {
         ...probabilityOfAppearing(0),
-        'Ambushes Users Per Game': {
-            value: Infinity,
+        'Ambush Uses Per Game': {
+            value: 0,
             type: SettingTypes.Number,
+            description: {
+                0: '∞',
+            },
         },
         'Ambush Cooldown': {
             value: 25,
@@ -40,7 +43,7 @@ export const MiraAmbusher: Role = {
             value: 2.5,
             type: SettingTypes.Time,
         },
-        'Stop Pursuing Player on Ambush': {
+        'Stop Pursuing Player On Ambush': {
             value: true,
             type: SettingTypes.Boolean,
         },

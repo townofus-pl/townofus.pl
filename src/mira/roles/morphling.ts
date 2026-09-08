@@ -28,15 +28,18 @@ export const MiraMorphling: Role = {
     description: 'Morphling może pobrać próbkę innego gracza, a potem zamienić się w niego na pewien czas, aby się ukryć.',
     settings: {
         ...probabilityOfAppearing(0),
-        'Max Samples': {
-            value: Infinity,
+        'Samples Per Game': {
+            value: 0,
+            type: SettingTypes.Number,
+            description: {
+                0: '∞',
+            }
+        },
+        'Morph Uses Per Round': {
+            value: 0,
             type: SettingTypes.Number,
         },
-        'Max Morphs': {
-            value: Infinity,
-            type: SettingTypes.Number,
-        },
-        'Cooldown': {
+        'Morph Cooldown': {
             value: 25,
             type: SettingTypes.Time,
         },
@@ -44,9 +47,14 @@ export const MiraMorphling: Role = {
             value: 10,
             type: SettingTypes.Time,
         },
-        'Can Vent': {
-            value: true,
-            type: SettingTypes.Boolean,
+        'Morphling Can Vent': {
+            value: 2,
+            type: SettingTypes.Number,
+            description: {
+                0: 'Never',
+                1: 'Unless Morphed',
+                2: 'Always',
+            },
         },
     },
     abilities: [MiraCommonAbilities.Kill, MiraCommonAbilities.Vent, MiraMorphlingAbilities.Sample, MiraMorphlingAbilities.Morph],

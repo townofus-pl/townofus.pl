@@ -28,21 +28,38 @@ export const MiraSwooper: Role = {
     description: 'Swooper może chwilowo stać się niewidzialny.',
     settings: {
         ...probabilityOfAppearing(0),
-        'Max Swoops': {
-            value: Infinity,
+        'Swoop Uses Per Round': {
+            value: 0,
             type: SettingTypes.Number,
+            description: {
+                0: '∞',
+            },
         },
         'Swoop Cooldown': {
-            value: 10,
-            type: SettingTypes.Time,
-        },
-        'Swoop Duration': {
             value: 25,
             type: SettingTypes.Time,
         },
-        'Can Vent': {
-            value: true,
-            type: SettingTypes.Boolean,
+        'Swoop Duration': {
+            value: 10,
+            type: SettingTypes.Time,
+        },
+        'Can be Tracked while Invisible': {
+            value: 2,
+            type: SettingTypes.Number,
+            description: {
+                0: 'Never',
+                1: 'Not by Radar',
+                2: 'Always',
+            },
+        },
+        'Swooper Can Vent': {
+            value: 2,
+            type: SettingTypes.Number,
+            description: {
+                0: 'Never',
+                1: 'When Visible',
+                2: 'Always',
+            },
         },
     },
     abilities: [MiraCommonAbilities.Kill, MiraCommonAbilities.Vent, MiraSwooperAbilities.Swoop, MiraSwooperAbilities.Unswoop],
