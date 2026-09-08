@@ -31,7 +31,7 @@ export const MiraJester: Role = {
             value: true,
             type: SettingTypes.Boolean,
         },
-        'Can Hide in Vents': {
+        'Can Hide In Vents': {
             value: true,
             type: SettingTypes.Boolean,
         },
@@ -43,7 +43,7 @@ export const MiraJester: Role = {
             value: 45,
             type: SettingTypes.Time,
         },
-        'Can Poke': {
+        'Can Poke Others': {
             value: true,
             type: SettingTypes.Boolean,
         },
@@ -64,8 +64,8 @@ export const MiraJester: Role = {
             type: SettingTypes.Time,
         },
         'After Win Type': {
-            value: 'Ends Game',
-            type: SettingTypes.Text,
+            value: 0,
+            type: SettingTypes.Number,
             description: {
                 0: 'Ends Game',
                 1: 'Haunts',

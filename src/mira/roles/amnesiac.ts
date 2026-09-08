@@ -23,13 +23,35 @@ export const MiraAmnesiac: Role = {
     description: 'Amnesiac nie ma warunku zwycięstwa. Nie ma żadnych zadań i jest praktycznie bez roli. Jednak może sobie przypomnieć rolę, odnajdując martwego gracza. Gdy to zrobi, przejmuje nowy warunek zwycięstwa i dąży do wygranej. Dostaje strzałki wskazujące martwe ciała.',
     settings: {
         ...probabilityOfAppearing(0),
-        'Show Arrow Pointing to Dead Bodies': {
+        'Inherit Faction Modifiers': {
+            value: true,
+            type: SettingTypes.Boolean,
+        },
+        'Show Arrows Pointing To Dead Bodies': {
             value: true,
             type: SettingTypes.Boolean,
         },
         'Time After Death Arrow Appears': {
             value: 5,
             type: SettingTypes.Time,
+        },
+        'Can be Impostor Assassin': {
+            value: 1,
+            type: SettingTypes.Number,
+            description: {
+                0: 'Never',
+                1: 'If Imp is Assassin',
+                2: 'Always',
+            },
+        },
+        'Can be Neutral Killing Assassin': {
+            value: 2,
+            type: SettingTypes.Number,
+            description: {
+                0: 'Never',
+                1: 'If NK is Assassin',
+                2: 'Always',
+            },
         },
     },
     abilities: [MiraAmnesiacAbilities.Remember],

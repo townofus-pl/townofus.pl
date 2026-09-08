@@ -39,7 +39,7 @@ export const MiraInquisitor: Role = {
             value: true,
             type: SettingTypes.Boolean,
         },
-        "Inquisitor Can't Inquire": {
+        'Inquisitor Can\'t Inquire': {
             value: false,
             type: SettingTypes.Boolean,
         },
@@ -47,13 +47,17 @@ export const MiraInquisitor: Role = {
             value: 25,
             type: SettingTypes.Time,
         },
-        'Max Number of Inquiries': {
+        'Max Number Of Inquiries': {
             value: 5,
             type: SettingTypes.Number,
         },
-        'Amount of Heretics Needed': {
+        'Amount Of Heretics Needed': {
             value: 3,
             type: SettingTypes.Number,
+        },
+        'Hide Role On Win Notification': {
+            value: false,
+            type: SettingTypes.Boolean,
         },
     },
     abilities: [MiraInquisitorAbilities.Vanquish, MiraInquisitorAbilities.Inquire],

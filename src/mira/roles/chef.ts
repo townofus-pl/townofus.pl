@@ -27,19 +27,19 @@ export const MiraChef: Role = {
     description: 'Chef musi gotować martwe ciała i serwować posiłki innym graczom, by osiągnąć wymagany limit i wygrać.',
     settings: {
         ...probabilityOfAppearing(0),
-        'Serve Cooldown': {
-            value: 25,
-            type: SettingTypes.Time,
-        },
         'Cook Cooldown': {
             value: 25,
             type: SettingTypes.Time,
         },
-        'Reset Cook and Serve Cooldowns Together': {
+        'Serve Cooldown': {
+            value: 25,
+            type: SettingTypes.Time,
+        },
+        'Reset Cook & Serve Cooldowns Together': {
             value: true,
             type: SettingTypes.Boolean,
         },
-        'Amount of Servings Needed': {
+        'Amount Of Servings Needed': {
             value: 3,
             type: SettingTypes.Number,
         },
@@ -47,7 +47,7 @@ export const MiraChef: Role = {
             value: 60,
             type: SettingTypes.Time,
         },
-        'Show Arrows Pointing to Dead Bodies': {
+        'Show Arrows Pointing To Dead Bodies': {
             value: true,
             type: SettingTypes.Boolean,
         },
@@ -56,8 +56,12 @@ export const MiraChef: Role = {
             type: SettingTypes.Time,
         },
         'Dead Body Arrow Duration': {
-            value: 25,
+            value: 10,
             type: SettingTypes.Time,
+        },
+        'Hide Role On Win Notification': {
+            value: false,
+            type: SettingTypes.Boolean,
         },
     },
     abilities: [MiraChefAbilities.Cook, MiraChefAbilities.Serve],

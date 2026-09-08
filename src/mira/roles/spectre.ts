@@ -33,6 +33,7 @@ export const MiraSpectre: Role = {
             description: {
                 0: 'Nothing',
                 1: 'Ends Game',
+                2: 'Spooks',
             },
         },
     },

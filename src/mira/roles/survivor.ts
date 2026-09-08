@@ -31,7 +31,7 @@ export const MiraSurvivor: Role = {
             value: 10,
             type: SettingTypes.Time,
         },
-        'Max Number of Vests': {
+        'Max Number Of Vests': {
             value: 10,
             type: SettingTypes.Number,
         },
