@@ -30,18 +30,25 @@ export const MiraMonarch: Role = {
         'Maximum Knights': {
             value: 2,
             type: SettingTypes.Number,
+            description: {
+                0: '∞',
+            }
         },
         'Votes Per Knight': {
             value: 1,
             type: SettingTypes.Number,
         },
-        'Extra Votes Apply on Self': {
+        'Knight Delay (Cancellable)': {
+            value: 3,
+            type: SettingTypes.Time,
+        },
+        'Reveal Knighting At Meeting': {
             value: false,
             type: SettingTypes.Boolean,
         },
-        'Knight Delay': {
-            value: 3,
-            type: SettingTypes.Time,
+        'Show Knighted Votes': {
+            value: true,
+            type: SettingTypes.Boolean,
         },
         'Allow Round One Knighting': {
             value: false,

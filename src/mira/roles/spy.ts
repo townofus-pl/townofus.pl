@@ -33,17 +33,17 @@ export const MiraSpy: Role = {
                 3: 'Everyone',
             },
         },
-        'Portable Admin': {
+        'Allow Portable Admin Table For': {
             value: 2,
             type: SettingTypes.Number,
             description: {
                 0: 'Role',
                 1: 'Modifier',
-                2: 'Both',
-                3: 'Neither',
+                2: 'Role + Modifier',
+                3: 'Disabled',
             },
         },
-        'Move With Portable Admin': {
+        'Move While Using Portable Admin': {
             value: true,
             type: SettingTypes.Boolean,
         },
@@ -51,19 +51,19 @@ export const MiraSpy: Role = {
             value: 20,
             type: SettingTypes.Time,
         },
-        'Round Charge': {
+        'Battery Charged Each Round': {
             value: 15,
             type: SettingTypes.Time,
         },
-        'Task Charge': {
+        'Battery Charged Per Task': {
             value: 10,
             type: SettingTypes.Time,
         },
-        'Display Cooldown': {
+        'Portable Admin Display Cooldown': {
             value: 15,
             type: SettingTypes.Time,
         },
-        'Display Duration': {
+        'Portable Admin Display Duration': {
             value: 15,
             type: SettingTypes.Time,
         },

@@ -28,7 +28,7 @@ export const MiraVeteran: Role = {
             type: SettingTypes.Time,
         },
         'Alert Duration': {
-            value: 25,
+            value: 10,
             type: SettingTypes.Time,
         },
         'Max Number of Alerts': {
@@ -37,6 +37,10 @@ export const MiraVeteran: Role = {
         },
         'Can Be Killed On Alert': {
             value: false,
+            type: SettingTypes.Boolean,
+        },
+        'Knows When Attacked In Meeting': {
+            value: true,
             type: SettingTypes.Boolean,
         },
         'Get More Uses From Completing Tasks': {

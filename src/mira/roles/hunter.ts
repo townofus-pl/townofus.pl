@@ -27,31 +27,47 @@ export const MiraHunter: Role = {
     description: "Hunter może śledzić graczy i dostaje zielony sygnał, gdy śledzony użyje jakiejkolwiek zdolności (nick tego gracza zrobi się czarny). Hunter ma wtedy możliwość zabicia gracza w dowolnym momencie gry, bez żadnych konsekwencji, jeśli zabije on Crewmate'a (pod warunkiem, że nie jest on aktywowanym Veteranem).",
     settings: {
         ...probabilityOfAppearing(0),
-        'Kill Cooldown': {
+        'Hunter Kill Cooldown': {
             value: 25,
             type: SettingTypes.Time,
         },
-        'Stalk Cooldown': {
+        'Hunter Stalk Cooldown': {
             value: 20,
             type: SettingTypes.Time,
         },
-        'Stalk Duration': {
+        'Hunter Stalk Duration': {
             value: 25,
             type: SettingTypes.Time,
         },
-        'Max Stalks': {
+        'Initial Stalks Uses': {
             value: 5,
             type: SettingTypes.Number,
         },
-        'Task Gains': {
+        'Tasks Required For Additional Stalk Use': {
+            value: 1,
+            type: SettingTypes.Number,
+            description: {
+                0: 'Off',
+                //TODO: -1 = ∞
+            },
+        },
+        'Stalks Triggered By': {
+            value: 0,
+            type: SettingTypes.Number,
+            description: {
+                0: 'All Abilities',
+                1: 'Interactions',
+            },
+        },
+        'Hunter Sees Interaction Type': {
             value: true,
             type: SettingTypes.Boolean,
         },
-        'Retribution': {
+        'Hunter Kills Last Voter if Voted Out': {
             value: true,
             type: SettingTypes.Boolean,
         },
-        'Report Body': {
+        'Hunter Can Report Who They\'ve Killed': {
             value: false,
             type: SettingTypes.Boolean,
         },

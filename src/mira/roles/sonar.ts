@@ -27,7 +27,7 @@ export const MiraSonar: Role = {
             value: 20,
             type: SettingTypes.Time,
         },
-        'Max Number Of Tracks': {
+        'Initial Number Of Tracks': {
             value: 5,
             type: SettingTypes.Number,
         },
@@ -35,11 +35,11 @@ export const MiraSonar: Role = {
             value: 5,
             type: SettingTypes.Time,
         },
-        'Sonar Arrows Make Sound On Death': {
+        'Trackers Make Sound On Death': {
             value: true,
             type: SettingTypes.Boolean,
         },
-        'Sonar Arrows Reset After Each Round': {
+        'Trackers Reset After Each Round': {
             value: true,
             type: SettingTypes.Boolean,
         },

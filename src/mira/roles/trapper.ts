@@ -31,7 +31,7 @@ export const MiraTrapper: Role = {
             value: 5,
             type: SettingTypes.Time,
         },
-        'Max Number Of Traps': {
+        'Initial Number Of Traps': {
             value: 5,
             type: SettingTypes.Number,
         },
@@ -39,7 +39,7 @@ export const MiraTrapper: Role = {
             value: 0.25,
             type: SettingTypes.Multiplier,
         },
-        'Traps Removed After Each Round': {
+        'Traps Reset After Each Round': {
             value: true,
             type: SettingTypes.Boolean,
         },

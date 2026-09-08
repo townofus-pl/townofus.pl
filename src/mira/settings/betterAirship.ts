@@ -60,7 +60,7 @@ export const MiraBetterAirship = {
             value: 0,
             type: SettingTypes.Number,
             description: {
-                //TO DO: Add all spawn locations
+                //TODO: Add all spawn locations
             },
         },
         'No Ladder Cooldown': {
