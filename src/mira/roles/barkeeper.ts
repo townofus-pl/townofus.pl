@@ -51,7 +51,7 @@ export const MiraBarkeeper: Role = {
             value: 30,
             type: SettingTypes.Time,
         },
-        'Amount Of Time Player is Affected By Spill': {
+        'Amount of Time Player is Affected By Spill': {
             value: 20,
             type: SettingTypes.Time,
         },

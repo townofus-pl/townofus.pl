@@ -28,15 +28,18 @@ export const MiraEscapist: Role = {
     description: 'Escapist może oznaczyć miejsce na mapie, a następnie wrócić do niego z dowolnego miejsca.',
     settings: {
         ...probabilityOfAppearing(0),
-        'Max Recalls': {
-            value: Infinity,
+        'Recall Uses Per Game': {
+            value: 0,
             type: SettingTypes.Number,
+            description: {
+                0: '∞',
+            }
         },
         'Recall Cooldown': {
             value: 25,
             type: SettingTypes.Time,
         },
-        'Can Vent': {
+        'Escapist Can Vent': {
             value: true,
             type: SettingTypes.Boolean,
         },

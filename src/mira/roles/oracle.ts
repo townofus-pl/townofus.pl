@@ -43,11 +43,15 @@ export const MiraOracle: Role = {
             value: false,
             type: SettingTypes.Boolean,
         },
-        'Neutral Evil Show Up As Evil': {
+        'Neutral Evils Show Up As Evil': {
             value: false,
             type: SettingTypes.Boolean,
         },
-        'Neutral Killing Show Up As Evil': {
+        'Neutral Killers Show Up As Evil': {
+            value: true,
+            type: SettingTypes.Boolean,
+        },
+        'Neutral Outliers Show Up As Evil': {
             value: true,
             type: SettingTypes.Boolean,
         },

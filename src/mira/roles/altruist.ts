@@ -24,12 +24,12 @@ export const MiraAltruist: Role = {
     settings: {
         ...probabilityOfAppearing(0),
         'Revive Type': {
-            value: 0,
+            value: 1,
             type: SettingTypes.Number,
             description: {
-                0: 'Group Sacrifice',
-                1: 'Group Revive',
-                2: 'Sacrifice',
+                0: 'Sacrifice',
+                1: 'Group Sacrifice',
+                2: 'Group Revive',
             },
         },
         'Revive Range': {
@@ -66,7 +66,7 @@ export const MiraAltruist: Role = {
                 3: 'Neutrals and Impostors',
             },
         },
-        'Kilers Alerted After Revive': {
+        'Killers Alerted After Revive': {
             value: 3,
             type: SettingTypes.Number,
             description: {

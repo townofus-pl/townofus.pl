@@ -39,14 +39,9 @@ export const MiraCleric: Role = {
             value: 25,
             type: SettingTypes.Time,
         },
-        'Show Barriered Player': {
-            value: 'Cleric',
-            type: SettingTypes.Text,
-            description: {
-                0: 'Self',
-                1: 'Cleric',
-                2: 'Self+Cleric',
-            },
+        'Protected Player Sees Barrier': {
+            value: false,
+            type: SettingTypes.Boolean,
         },
         'Cleric Gets Attack Notification': {
             value: true,
