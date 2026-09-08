@@ -35,14 +35,6 @@ export const MiraOfficer: Role = {
             value: 30,
             type: SettingTypes.Time,
         },
-        'Bullets at Once': {
-            value: 3,
-            type: SettingTypes.Number,
-        },
-        'Bullets Total': {
-            value: 9,
-            type: SettingTypes.Number,
-        },
         'Can Self Report': {
             value: false,
             type: SettingTypes.Boolean,
@@ -58,6 +50,18 @@ export const MiraOfficer: Role = {
         'Crewmate Killing Roles are Innocent': {
             value: false,
             type: SettingTypes.Boolean,
+        },
+        'Non Killing Neutrals are Innocent': {
+            value: false,
+            type: SettingTypes.Boolean,
+        },
+        'Maximum Bullets in Total': {
+            value: 9,
+            type: SettingTypes.Number,
+        },
+        'Maximum Bullets at Once': {
+            value: 3,
+            type: SettingTypes.Number,
         },
         '# of Rounds to Shoot Again After Misfire': {
             value: 1,

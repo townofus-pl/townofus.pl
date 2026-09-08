@@ -31,17 +31,24 @@ export const MiraPlumber: Role = {
             value: 25,
             type: SettingTypes.Time,
         },
+        'Flush Duration': {
+            value: 3,
+            type: SettingTypes.Time,
+        },
         'Block Cooldown': {
             value: 25,
             type: SettingTypes.Time,
         },
-        'Max Number of Barricades': {
+        'Initial Number Of Barricades': {
             value: 3,
             type: SettingTypes.Number,
         },
-        'Amount of Rounds Barricades Last': {
+        'Amount Of Rounds Barricades Last': {
             value: 2,
             type: SettingTypes.Number,
+            description: {
+                0: '∞',
+            },
         },
         'Get More Barricades From Completing Tasks': {
             value: true,

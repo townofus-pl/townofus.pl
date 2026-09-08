@@ -43,11 +43,11 @@ export const MiraVenerer: Role = {
             </p>
         </>),    settings: {
         ...probabilityOfAppearing(0),
-        'Cooldown': {
+        'Ability Cooldown': {
             value: 25,
             type: SettingTypes.Time,
         },
-        'Duration': {
+        'Ability Duration': {
             value: 10,
             type: SettingTypes.Time,
         },
@@ -55,7 +55,7 @@ export const MiraVenerer: Role = {
             value: 1.25,
             type: SettingTypes.Multiplier,
         },
-        'Min Freeze Speed': {
+        'Minimum Freeze Speed': {
             value: 0.25,
             type: SettingTypes.Multiplier,
         },

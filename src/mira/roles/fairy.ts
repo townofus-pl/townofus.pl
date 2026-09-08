@@ -31,41 +31,41 @@ export const MiraFairy: Role = {
             value: 10,
             type: SettingTypes.Time,
         },
-        'Max Number of Protect': {
+        'Max Number Of Protects': {
             value: 5,
             type: SettingTypes.Number,
         },
         'Show Protected Player': {
-            value: 'Target + GA',
-            type: SettingTypes.Text,
+            value: 1,
+            type: SettingTypes.Number,
             description: {
-                0: 'Target',
-                1: 'Target + GA',
+                0: 'Fairy',
+                1: 'Fairy + Target',
                 2: 'Everyone',
             },
         },
-        'On Target Death, GA Becomes': {
-            value: 'Amnesiac',
-            type: SettingTypes.Text,
+        'On Target Death, Fairy Becomes': {
+            value: 1,
+            type: SettingTypes.Number,
             description: {
-                0: 'Amnesiac',
-                1: 'Survivor',
-                2: 'Mercenary',
-                3: 'Jester',
-                4: 'Crewmate',
+                0: 'Crewmate',
+                1: 'Amnesiac',
+                2: 'Survivor',
+                3: 'Mercenary',
+                4: 'Jester',
             },
         },
-        'Target Knows GA Exists': {
+        'Target Knows Fairy Exists': {
             value: true,
             type: SettingTypes.Boolean,
         },
-        'GA Knows Target Roles': {
+        'Fairy Knows Target’s Role': {
             value: true,
             type: SettingTypes.Boolean,
         },
-        'Odds of Target Being Evil': {
+        'Odds Of Target Being Evil': {
             value: 20,
-            type: SettingTypes.Percentage,
+            type: SettingTypes.Number,
         },
     },
     abilities: [MiraFairyAbilities.Protect],

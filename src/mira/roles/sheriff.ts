@@ -35,6 +35,10 @@ export const MiraSheriff: Role = {
             value: false,
             type: SettingTypes.Boolean,
         },
+        'Can Shot Neutral Benign Roles': {
+            value: true,
+            type: SettingTypes.Boolean,
+        },
         'Can Shot Neutral Evil Roles': {
             value: true,
             type: SettingTypes.Boolean,
@@ -51,10 +55,10 @@ export const MiraSheriff: Role = {
             value: 0,
             type: SettingTypes.Number,
             description: {
-                0: 'Sheriff',
+                0: 'Self',
                 1: 'Target',
-                2: 'Sheriff & Target',
-                3: 'No One',
+                2: 'Self & Target',
+                3: 'Nobody',
             },
         },
     },

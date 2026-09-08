@@ -24,27 +24,27 @@ export const MiraBlackmailer: Role = {
     description: 'Blackmailer może uciszyć gracza na następne spotkanie, blokując mu możliwość pisania na czacie.',
     settings: {
         ...probabilityOfAppearing(0),
-        'Number of Blackmail Uses Per Game': {
-            value: Infinity,
+        'Number Of Blackmail Uses Per Game': {
+            value: 0,
             type: SettingTypes.Number,
         },
         'Blackmail Cooldown': {
             value: 20,
             type: SettingTypes.Time,
         },
-        'Max Players Alive Where Blackmailed Can Vote': {
-            value: 10,
+        'Max Players Alive To Allow Voting': {
+            value: 5,
             type: SettingTypes.Number,
         },
         'Blackmail Same Person Twice In A Row': {
             value: false,
             type: SettingTypes.Boolean,
         },
-        'OnlyTarget Sees Blackmail': {
+        'Only Target Sees Blackmail': {
             value: false,
             type: SettingTypes.Boolean,
         },
-        'Blackmailer Can Kill with Teammate': {
+        'Blackmailer Can Kill With Teammates': {
             value: true,
             type: SettingTypes.Boolean,
         },

@@ -17,9 +17,13 @@ export const MiraMystic: Role = {
     description: 'Mystic otrzymuje sygnał, gdy ktoś zginie: niebieski błysk oraz strzałkę wskazującą kierunek śmierci.',
     settings: {
         ...probabilityOfAppearing(0),
-        'Arrow Duration': {
-            value: 0.05,
+        'Dead Body Arrow Duration': {
+            value: 0.1,
             type: SettingTypes.Time,
+        },
+        'Show Death Pop-Up': {
+            value: true,
+            type: SettingTypes.Boolean,
         },
     },
     abilities: [MiraCommonAbilities.None],

@@ -8,11 +8,11 @@ import {MiraCommonAbilities} from '../abilities';
 export const MiraDoubleShot: Modifier = {
     type: RoleOrModifierTypes.Modifier,
     source: ModSource.Mira,
-    subgroup: RoleSubgroups.ImpostorModifier,
+    subgroup: RoleSubgroups.AssailantModifier,
     name: 'Double Shot',
     id: 'mira_double_shot',
-    color: '#FF1919',
-    team: Teams.Impostor,
+    color: '#7e708f',
+    team: Teams.Assailant,
     icon: '/images/mira/modifiers/DoubleShot.png',
     description: 'Dostajesz drugą próbę, gdy chybisz strzał na spotkaniu.',
     settings: {

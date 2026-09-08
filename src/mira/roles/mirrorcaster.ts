@@ -28,8 +28,8 @@ export const MiraMirrorcaster: Role = {
     settings: {
         ...probabilityOfAppearing(0),
         'Who Gets Murder Attempt Indicator': {
-            value: 'Mirrorcaster + Killer',
-            type: SettingTypes.Text,
+            value: 1,
+            type: SettingTypes.Number,
             description: {
                 0: 'Mirrorcaster',
                 1: 'Mirrorcaster + Killer',
@@ -47,9 +47,9 @@ export const MiraMirrorcaster: Role = {
             value: 15,
             type: SettingTypes.Time,
         },
-        'Attack Information Received Upon Attack': {
-            value: 'Subalignment',
-            type: SettingTypes.Text,
+        'Information Received Upon Attack': {
+            value: 1,
+            type: SettingTypes.Number,
             description: {
                 0: 'Role',
                 1: 'Faction',
@@ -61,7 +61,7 @@ export const MiraMirrorcaster: Role = {
             value: false,
             type: SettingTypes.Boolean,
         },
-        'Max Number of Magic Mirrors': {
+        'Max Number Of Magic Mirrors': {
             value: 5,
             type: SettingTypes.Number,
         },

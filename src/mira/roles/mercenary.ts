@@ -31,11 +31,19 @@ export const MiraMercenary: Role = {
             value: 25,
             type: SettingTypes.Time,
         },
-        'Max Number of Guards': {
+        'Max Number Of Guards': {
             value: 6,
             type: SettingTypes.Number,
         },
         'Bribe Cost': {
+            value: 2,
+            type: SettingTypes.Number,
+        },
+        'Guarding Stops Attacks': {
+            value: true,
+            type: SettingTypes.Boolean,
+        },
+        'Gold Given From An Attack': {
             value: 2,
             type: SettingTypes.Number,
         },

@@ -27,6 +27,10 @@ export const MiraTimeLord: Role = {
             value: 30,
             type: SettingTypes.Time,
         },
+        'Rewind Duration': {
+            value: 2.5,
+            type: SettingTypes.Time,
+        },
         'Rewind History': {
             value: 7.5,
             type: SettingTypes.Time,
@@ -38,14 +42,22 @@ export const MiraTimeLord: Role = {
         'Tasks Required for Additional Rewind Use': {
             value: 3,
             type: SettingTypes.Number,
+            description: {
+                0: 'Off',
+            }
         },
         'Can Use Vitals': {
             value: false,
             type: SettingTypes.Boolean,
         },
         'Revive on Rewind': {
-            value: true,
-            type: SettingTypes.Boolean,
+            value: 1,
+            type: SettingTypes.Number,
+            description: {
+                0: 'Disabled',
+                1: 'Until Next Round',
+                2: 'Fully',
+            }
         },
         'Undo Tasks On Rewind': {
             value: true,

@@ -24,15 +24,18 @@ export const MiraGrenadier: Role = {
     description: 'Grenadier może rzucić granatem, który oślepia graczy w zasięgu i zamienia ich widzenie w szarość na określony czas.',
     settings: {
         ...probabilityOfAppearing(0),
-        'Max Flashes': {
-            value: Infinity,
+        'Flash Uses Per Game': {
+            value: 0,
             type: SettingTypes.Number,
+            description: {
+                0: '∞',
+            },
         },
-        'Flash Cooldown': {
+        'Flash Grenade Cooldown': {
             value: 25,
             type: SettingTypes.Time,
         },
-        'Flash Duration': {
+        'Flash Grenade Duration': {
             value: 10,
             type: SettingTypes.Time,
         },
@@ -40,7 +43,11 @@ export const MiraGrenadier: Role = {
             value: 1,
             type: SettingTypes.Multiplier,
         },
-        'Can Vent': {
+        'Allow Flashing During Sabotage': {
+            value: false,
+            type: SettingTypes.Boolean,
+        },
+        'Grenadier Can Vent': {
             value: true,
             type: SettingTypes.Boolean,
         },

@@ -29,10 +29,6 @@ export const MiraSnitch: Role = {
             value: true,
             type: SettingTypes.Boolean,
         },
-        'Snitch Sees Revealed Players\' Roles': {
-            value: false,
-            type: SettingTypes.Boolean,
-        },
         'Tasks Remaining When Revealed': {
             value: 1,
             type: SettingTypes.Number,

@@ -43,7 +43,7 @@ export const MiraHerbalist: Role = {
             value: 30,
             type: SettingTypes.Time,
         },
-        'Max Exposes Uses': {
+        'Max Expose Uses': {
             value: 3,
             type: SettingTypes.Number,
         },
@@ -71,7 +71,7 @@ export const MiraHerbalist: Role = {
             value: false,
             type: SettingTypes.Boolean,
         },
-        'Notify Herablist Upon Attack': {
+        'Notify Herbalist Upon Attack': {
             value: true,
             type: SettingTypes.Boolean,
         },

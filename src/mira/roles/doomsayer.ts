@@ -31,7 +31,7 @@ export const MiraDoomsayer: Role = {
             value: 20,
             type: SettingTypes.Time,
         },
-        'Number of Guesses Needed to Win': {
+        'Number Of Guesses Needed To Win': {
             value: 3,
             type: SettingTypes.Number,
         },
@@ -39,22 +39,34 @@ export const MiraDoomsayer: Role = {
             value: false,
             type: SettingTypes.Boolean,
         },
-        'Doomsayer Guesses All Roles at Once': {
+        'Doomsayer Guesses All Roles At Once': {
             value: false,
             type: SettingTypes.Boolean,
         },
-        "Doomsayer Can't Observe": {
+        'Kill Only The Last Victim': {
+            value: false,
+            type: SettingTypes.Boolean,
+        },
+        'Doomsayer Can\'t Observe': {
             value: false,
             type: SettingTypes.Boolean,
         },
         'Doomsayer Win': {
-            value: 'Leaves in Victory',
-            type: SettingTypes.Text,
+            value: 1,
+            type: SettingTypes.Number,
             description: {
-                0: 'Leaves in Victory',
-                1: 'Ends Game',
+                0: 'Ends Game',
+                1: 'Leaves In Victory',
                 2: 'Nothing',
             },
+        },
+        'Hide Role On Win Notification': {
+            value: false,
+            type: SettingTypes.Boolean,
+        },
+        'Doomsayer Continues The Game': {
+            value: true,
+            type: SettingTypes.Boolean,
         },
     },
     abilities: [MiraDoomsayerAbilities.Observe, MiraDoomsayerAbilities.Guess],

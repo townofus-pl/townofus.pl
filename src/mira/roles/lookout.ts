@@ -27,11 +27,23 @@ export const MiraLookout: Role = {
             value: 20,
             type: SettingTypes.Time,
         },
-        'Max Watches': {
+        'Watched Player Feedback Reveals': {
+            value: 1,
+            type: SettingTypes.Number,
+            description: {
+                0: 'Roles',
+                1: 'Players',
+            }
+        },
+        'Initial Players That Can be Watched': {
             value: 5,
             type: SettingTypes.Number,
         },
-        'Reset Each Round': {
+        'See Indirect Attacks': {
+            value: false,
+            type: SettingTypes.Boolean,
+        },
+        'Lookout Watches Reset After Each Round': {
             value: true,
             type: SettingTypes.Boolean,
         },

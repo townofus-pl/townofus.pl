@@ -28,7 +28,7 @@ export const MiraEngineer: Role = {
     settings: {
         ...probabilityOfAppearing(0),
         'Vent Uses Per Game': {
-            value: 30,
+            value: -1,
             type: SettingTypes.Number,
         },
         'Earn More Vent Uses From Completing Tasks': {
@@ -43,9 +43,16 @@ export const MiraEngineer: Role = {
             value: 10,
             type: SettingTypes.Time,
         },
-        'Fixes Per Game': {
-            value: 5,
+        'Fix Uses Per Game': {
+            value: 2,
             type: SettingTypes.Number,
+        },
+        'Tasks Required For Additional Fix Use': {
+            value: 1,
+            type: SettingTypes.Number,
+            description: {
+                0: 'Off',
+            },
         },
         'Fix Delay': {
             value: 0.5,

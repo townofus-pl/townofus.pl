@@ -23,9 +23,14 @@ export const MiraProsecutor: Role = {
     description: 'Prosecutor może wyrzucić wybranego gracza podczas spotkania, zagłuszając wszystkie inne głosy. Może też widzieć, kto na kogo głosował, nawet przy anonimowych głosach.',
     settings: {
         ...probabilityOfAppearing(0),
-        'Prosecutor Dies When They Exile a Crewmate': {
-            value: true,
-            type: SettingTypes.Boolean,
+        'On Wrongful Prosecution': {
+            value: 0,
+            type: SettingTypes.Number,
+            description: {
+                0: 'Eject Prosecutor',
+                1: 'Eject Victim, Lose Uses, Eject Both',
+                2: 'Eject Both',
+            },
         },
         'Max Prosecutions': {
             value: 2,

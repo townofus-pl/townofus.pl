@@ -5,7 +5,9 @@ import {MiraWarlock} from './warlock';
 import {MiraAmbassador} from './ambassador';
 import {MiraAmbusher} from './ambusher';
 import {MiraArsonist} from './arsonist';
+import {MiraBarkeeper} from './barkeeper';
 import {MiraBlackmailer} from './blackmailer';
+import {MiraBootlegger} from './bootlegger';
 import {MiraBomber} from './bomber';
 import {MiraChef} from './chef';
 import {MiraDoomsayer} from './doomsayer';
@@ -33,7 +35,7 @@ import {MiraPlaguebearer} from './plaguebearer';
 import {MiraPuppeteer} from './puppeteer';
 import {MiraSeer} from './seer';
 import {MiraScavenger} from './scavenger';
-import {MiraSoulCollector} from './soulcollector';
+import {MiraMedusa} from './medusa';
 import {MiraSpectre} from './spectre';
 import {MiraSnitch} from './snitch';
 import {MiraSonar} from './sonar';
@@ -81,6 +83,7 @@ export const MiraRoles = [
     MiraAmbassador,
     MiraAmbusher,
     MiraArsonist,
+    MiraBarkeeper,
     MiraBlackmailer,
     MiraCleric,
     MiraChef,
@@ -92,6 +95,7 @@ export const MiraRoles = [
     MiraJanitor,
     MiraEngineer,
     MiraFairy,
+    MiraBootlegger,
     MiraBomber,
     MiraDeputy,
     MiraForensic,
@@ -129,7 +133,7 @@ export const MiraRoles = [
     MiraSeer,
     MiraSentry,
     MiraSheriff,
-    MiraSoulCollector,
+    MiraMedusa,
     MiraSpectre,
     MiraUndertaker,
     MiraSnitch,

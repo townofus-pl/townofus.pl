@@ -27,7 +27,7 @@ export const MiraTransporter: Role = {
             value: 25,
             type: SettingTypes.Time,
         },
-        'Max Uses': {
+        'Initial Uses': {
             value: 5,
             type: SettingTypes.Number,
         },

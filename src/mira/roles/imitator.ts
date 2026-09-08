@@ -23,13 +23,26 @@ export const MiraImitator: Role = {
     description: 'Imitator może używać ról martwych graczy. Podczas spotkania wybiera martwego gracza i w następnej rundzie przejmuje jego rolę oraz umiejętności.',
     settings: {
         ...probabilityOfAppearing(0),
-        'Imitate Specific Neutrals to be Similar Crew Roles': {
+        'Imitate Neutral Counterparts': {
             value: true,
             type: SettingTypes.Boolean,
         },
-        'Imitate Specific Impostor to be Similar Crew Roles': {
+        'Imitate Impostor Counterparts': {
             value: true,
             type: SettingTypes.Boolean,
+        },
+        'Imitate Basic Crewmate': {
+            value: true,
+            type: SettingTypes.Boolean,
+        },
+        'Imitator Must Be Guessed As': {
+            value: 2,
+            type: SettingTypes.Number,
+            description: {
+                0: 'Imitator',
+                1: 'Imitated Role',
+                2: 'Imitator or Imitated Role',
+            },
         },
     },
     abilities: [MiraImitatorAbilities.Imitate],

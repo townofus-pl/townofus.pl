@@ -23,12 +23,24 @@ export const MiraPlaguebearer: Role = {
     description: 'Plaguebearer wygrywa jako ostatni zabójca. Musi zarazić wszystkich żywych graczy, aby przemienić się w Pestilence.',
     settings: {
         ...probabilityOfAppearing(0),
+        'Instant Pestilence Chance': {
+            value: 0,
+            type: SettingTypes.Percentage,
+        },
         'Infect Cooldown': {
             value: 25,
             type: SettingTypes.Time,
         },
         'Announce Pestilence Transformation': {
             value: true,
+            type: SettingTypes.Boolean,
+        },
+        'Pestilence Kill Cooldown': {
+            value: 25,
+            type: SettingTypes.Time,
+        },
+        'Pestilence Can Vent': {
+            value: false,
             type: SettingTypes.Boolean,
         },
     },

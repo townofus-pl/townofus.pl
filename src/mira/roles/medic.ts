@@ -24,25 +24,25 @@ export const MiraMedic: Role = {
     settings: {
         ...probabilityOfAppearing(0),
         'Show Shielded Player': {
-            value: 'Shielded + Medic',
-            type: SettingTypes.Text,
+            value: 2,
+            type: SettingTypes.Number,
             description: {
-                0: 'Shielded + Medic',
-                1: 'Medic',
-                2: 'Shielded',
+                0: 'Medic',
+                1: 'Shielded',
+                2: 'Shielded + Medic',
                 3: 'Everyone',
-                4: 'No One',
+                4: 'Nobody',
             },
         },
         'Who Gets Murder Attempt Indicator': {
-            value: 'Medic',
-            type: SettingTypes.Text,
+            value: 0,
+            type: SettingTypes.Number,
             description: {
-                0: 'Shielded + Medic',
-                1: 'Medic',
-                2: 'Shielded',
+                0: 'Medic',
+                1: 'Shielded',
+                2: 'Shielded + Medic',
                 3: 'Everyone',
-                4: 'No One',
+                4: 'Nobody',
             },
         },
         'Can Give Shield Away Next Round': {
@@ -53,7 +53,7 @@ export const MiraMedic: Role = {
             value: 3,
             type: SettingTypes.Number,
         },
-        'Shield Breaks on Murder Attempt': {
+        'Shield Breaks On Murder Attempt': {
             value: false,
             type: SettingTypes.Boolean,
         },

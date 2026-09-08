@@ -23,15 +23,15 @@ export const MiraExecutioner: Role = {
     description: 'Executioner wygrywa, gdy jego cel zostanie wyrzucony na spotkaniu. Jeżeli ustawiono odpowiednią opcję: Po wygranej Executioner może zabić jedną z osób, które zagłosowały na jego cel.',
     settings: {
         ...probabilityOfAppearing(0),
-        'On Target Death, Executioner Becomes': {
-            value: 'Jester',
-            type: SettingTypes.Text,
+        'On Target Death. Executioner Becomes': {
+            value: 4,
+            type: SettingTypes.Number,
             description: {
-                0: 'Jester',
-                1: 'Crew',
-                2: 'Amnesiac',
-                3: 'Survivor',
-                4: 'Mercenary',
+                0: 'Crewmate',
+                1: 'Amnesiac',
+                2: 'Survivor',
+                3: 'Mercenary',
+                4: 'Jester',
             },
         },
         'Executioner Can Button': {
@@ -39,13 +39,17 @@ export const MiraExecutioner: Role = {
             type: SettingTypes.Boolean,
         },
         'Executioner Win': {
-            value: 'Leaves & Torments',
-            type: SettingTypes.Text,
+            value: 1,
+            type: SettingTypes.Number,
             description: {
-                0: 'Leaves & Torments',
-                1: 'Ends Game',
+                0: 'Ends Game',
+                1: 'Leaves & Torments',
                 2: 'Nothing',
             },
+        },
+        'Hide Role On Win Notification': {
+            value: false,
+            type: SettingTypes.Boolean,
         },
     },
     abilities: [MiraExecutionerAbilities.Torment],

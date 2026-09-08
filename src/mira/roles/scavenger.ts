@@ -21,15 +21,15 @@ export const MiraScavenger: Role = {
             value: 25,
             type: SettingTypes.Time,
         },
-        'Increased Duration': {
+        'Scavenge Duration Increase Per Kill': {
             value: 10,
             type: SettingTypes.Time,
         },
-        'Correct Kill Cooldown': {
+        'Scavenge Kill Cooldown On Correct Kill': {
             value: 10,
             type: SettingTypes.Time,
         },
-        'Incorrect Kill Multiplier': {
+        'Kill Cooldown Multiplier On Incorrect Kill': {
             value: 3,
             type: SettingTypes.Multiplier,
         },

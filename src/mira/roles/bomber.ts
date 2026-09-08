@@ -24,7 +24,7 @@ export const MiraBomber: Role = {
     description: 'Bomber może podkładać bomby, które eksplodują po chwili i zabijają wszystkich graczy w promieniu wybuchu.',
     settings: {
         ...probabilityOfAppearing(0),
-        'Max Bombs': {
+        'Bomb Uses Per Game': {
             value: 3,
             type: SettingTypes.Number,
         },
@@ -36,15 +36,19 @@ export const MiraBomber: Role = {
             value: 0.25,
             type: SettingTypes.Multiplier,
         },
-        'Max Kills': {
+        'Max Kills In Detonation': {
             value: 5,
             type: SettingTypes.Number,
         },
-        'All Imps See Bomb': {
+        'All Impostors See Bomb': {
             value: true,
             type: SettingTypes.Boolean,
         },
-        'Can Vent': {
+        'Allow Bombing in First Round': {
+            value: true,
+            type: SettingTypes.Boolean,
+        },
+        'Bomber Can Vent': {
             value: true,
             type: SettingTypes.Boolean,
         },

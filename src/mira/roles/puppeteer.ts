@@ -28,7 +28,7 @@ export const MiraPuppeteer: Role = {
             value: 3,
             type: SettingTypes.Number,
         },
-        'Kills Required for Additional Control Use': {
+        'Kills Required For Additional Control Use': {
             value: 2,
             type: SettingTypes.Number,
         },

@@ -13,6 +13,7 @@ export enum RoleSubgroups {
     CrewmateModifier = 'crewmate',
     ImpostorModifier = 'impostor',
     UniversalModifier = 'universal',
+    AssailantModifier = 'assailant',
     Unknown = 'unknown',
 }
 
@@ -31,5 +32,6 @@ export const roleSubgroupLabels: Record<RoleSubgroups, string> = {
     [RoleSubgroups.CrewmateModifier]: 'Załoga',
     [RoleSubgroups.ImpostorModifier]: 'Impostor',
     [RoleSubgroups.UniversalModifier]: 'Uniwersalne',
+    [RoleSubgroups.AssailantModifier]: 'Atakujący',
     [RoleSubgroups.Unknown]: '[???]',
 };
