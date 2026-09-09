@@ -238,11 +238,12 @@ export default async function ChangelogPage() {
                     
                     // Jeśli oba są rolami, sortuj według drużyn
                     if (roleA && roleB) {
-                        const teamOrder = {
+                        const teamOrder: Record<Teams, number> = {
                             [Teams.Crewmate]: 1,
                             [Teams.Neutral]: 2,
-                            [Teams.Impostor]: 3,
-                            [Teams.All]: 4  // dla modyfikatorów, ale tu nie będzie używane
+                            [Teams.Assailant]: 3,
+                            [Teams.Impostor]: 4,
+                            [Teams.All]: 5  // dla modyfikatorów, ale tu nie będzie używane
                         };
                         
                         const teamOrderA = teamOrder[roleA.team] || 999;
