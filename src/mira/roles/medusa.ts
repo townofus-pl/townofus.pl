@@ -8,15 +8,15 @@ import {probabilityOfAppearing, SettingTypes} from '@/constants/settings';
 export const MiraMedusaAbilities = {
     Petrify: {
         name: 'Petrify (Petryfikuj)',
-        icon: '/images/mira/abilities/Petrify.png',
+        icon: '/images/mira/abilities/MedusaPetrify.png',
     },
     StoneGaze: {
         name: 'Stone Gaze (Kamienny Wzrok)',
-        icon: '/images/mira/abilities/StoneGaze.png',
+        icon: '/images/mira/abilities/MedusaStoneGaze.png',
     },
     Vent: {
         name: 'Vent (Wentylacja)',
-        icon: '/images/mira/abilities/ReaperVentButton.png',
+        icon: '/images/mira/abilities/MedusaVent.png',
     },
 };
 export const MiraMedusa: Role = {
@@ -25,7 +25,7 @@ export const MiraMedusa: Role = {
     subgroup: RoleSubgroups.Killing,
     name: 'Medusa',
     id: 'mira_medusa',
-    color: '#99FFCC',
+    color: '#783edc',
     team: Teams.Neutral,
     icon: '/images/mira/roles/Medusa.png',
     description: 'Medusa wygrywa jako ostatni zabójca. Zabija graczy zamieniając ich w kamienne posągi których nie można zreportować.',
