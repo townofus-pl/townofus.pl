@@ -564,8 +564,9 @@ export default function MiraChangelogPage() {
                 const teamOrder: Record<Teams, number> = {
                     [Teams.Crewmate]: 1,
                     [Teams.Neutral]: 2,
-                    [Teams.Impostor]: 3,
-                    [Teams.All]: 4,
+                    [Teams.Assailant]: 3,
+                    [Teams.Impostor]: 4,
+                    [Teams.All]: 5,
                 };
 
                 const leftTeamOrder = left.groupTeam ? teamOrder[left.groupTeam] : 999;
