@@ -8,15 +8,15 @@ import {probabilityOfAppearing, SettingTypes} from '@/constants/settings';
 export const MiraMedusaAbilities = {
     Petrify: {
         name: 'Petrify (Petryfikuj)',
-        icon: '/images/mira/abilities/MedusaPetrify.png',
+        icon: '/images/mira/abilities/MedusaPetrifyButton.png',
     },
     StoneGaze: {
         name: 'Stone Gaze (Kamienny Wzrok)',
-        icon: '/images/mira/abilities/MedusaStoneGaze.png',
+        icon: '/images/mira/abilities/MedusaStoneGazeButton.png',
     },
     Vent: {
         name: 'Vent (Wentylacja)',
-        icon: '/images/mira/abilities/MedusaVent.png',
+        icon: '/images/mira/abilities/MedusaVentButton.png',
     },
 };
 export const MiraMedusa: Role = {
