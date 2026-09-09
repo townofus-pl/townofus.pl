@@ -230,7 +230,7 @@ export default function PodsumowanieClient({
             // Uruchom muzykę w tle - używamy Ref zamiast state żeby uniknąć cleanup
             // Muzyka uruchamia się PO kliknięciu, więc przeglądarka już nie blokuje autoplay
             if (!backgroundMusicRef.current) {
-                const audio = new Audio('/sounds/Bamboleo.mp3');
+                const audio = new Audio('/sounds/among us DRAMA AFERA.mp3');
                 audio.loop = true;
                 audio.volume = 1.0;
                 
