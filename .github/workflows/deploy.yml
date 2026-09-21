@@ -1,67 +1,68 @@
-name: Deploy to Cloudflare Workers
+name: Deploy
 
-# Deployment Process:
-# 1. Generate Prisma client for D1 database
-# 2. Apply any pending database migrations to remote D1
-# 3. Build and deploy the application to Cloudflare Workers
-# 4. Includes API authentication environment variables
+# Push to main deploys to **staging**. Production is manual only.
 #
-# Required GitHub Secrets:
-# - CLOUDFLARE_API_TOKEN: Cloudflare API token with Workers and D1 permissions
-# - API_USERNAME: Basic auth username for API endpoints
-# - API_PASSWORD: Basic auth password for API endpoints
-
+# This is a deliberate change: merging to main used to be a production release,
+# with no typecheck and no tests in front of it.
 on:
   push:
     branches:
       - main
   workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Deployment target'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - production
 
 jobs:
+  check:
+    uses: ./.github/workflows/check.yml
+
   deploy:
+    needs: check
     runs-on: ubuntu-latest
-    name: Deploy
+
+    # A push is always staging; only an explicit dispatch can pick production.
+    environment: ${{ github.event_name == 'push' && 'staging' || inputs.environment }}
+
+    env:
+      HUSKY: 0
+      TARGET: ${{ github.event_name == 'push' && 'staging' || inputs.environment }}
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: d1287f321cc95882fc773ab71241b51a
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - uses: actions/setup-node@v4
         with:
           node-version: '22'
           cache: 'npm'
-      - name: Restore cache
-        uses: actions/cache@v4
+
+      - uses: actions/cache@v4
         with:
-            # See here for caching with `yarn`, `bun` or other package managers https://github.com/actions/cache/blob/main/examples.md or you can leverage caching with actions/setup-node https://github.com/actions/setup-node
-            path: |
-              ~/.npm
-              ${{ github.workspace }}/.next/cache
-            # Generate a new cache whenever packages or source files change.
-            key: ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}-${{ hashFiles('**/*.js', '**/*.jsx', '**/*.ts', '**/*.tsx') }}
-            # If source files changed but packages didn't, rebuild from a prior cache.
-            restore-keys: |
-              ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}-
-      - name: Install dependencies
-        run: npm ci
+          path: ${{ github.workspace }}/.next/cache
+          key: ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}-${{ hashFiles('**/*.[jt]s', '**/*.[jt]sx') }}
+          restore-keys: |
+            ${{ runner.os }}-nextjs-${{ hashFiles('**/package-lock.json') }}-
 
-      # Generate Prisma client with D1 adapter for database operations
-      - name: Generate Prisma client
-        run: npm run db:generate
+      - run: npm ci
 
-      # Apply any pending database migrations to the remote D1 database
-      # This ensures the production database schema is up-to-date before deployment
-      # Will gracefully skip if no new migrations are available
-      - name: Apply database migrations to remote D1
-        run: npm run db:migrate:apply:remote
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: d1287f321cc95882fc773ab71241b51a
+      # Migrations gate the rollout: if this fails the job fails and no code
+      # ships against a half-migrated database. That matters for any migration
+      # that is not purely additive — #302 renames a column.
+      - name: Apply database migrations (${{ env.TARGET }})
+        run: npm run db:migrate:apply:${{ env.TARGET }}
 
-      # Build the application and deploy to Cloudflare Workers
-      - name: Build and deploy
-        run: npm run deploy
-        env:
-          CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
-          CLOUDFLARE_ACCOUNT_ID: d1287f321cc95882fc773ab71241b51a
+      - name: Build and deploy (${{ env.TARGET }})
+        run: |
+          if [ "$TARGET" = "production" ]; then
+            npm run deploy
+          else
+            npm run deploy:staging
+          fi

@@ -7,7 +7,8 @@
         "nx": "next",
         "build": "next build",
         "next-typegen": "next typegen",
-        "test": "jest",
+        "typecheck": "tsc --noEmit",
+        "test": "jest --passWithNoTests",
         "test:watch": "jest --watch",
         "test:coverage": "jest --coverage",
         "prepare": "husky && npm run cf-typegen && npm run db:generate",
@@ -25,7 +26,7 @@
         "db:migrate:auto": "node scripts/auto-migrate.js",
         "db:migrate:apply:local": "wrangler d1 migrations apply townofus-pl --local",
         "db:migrate:apply:staging": "wrangler d1 migrations apply townofus_pl_preview --remote --env staging",
-        "db:migrate:apply:remote": "wrangler d1 migrations apply townofus-pl --remote --env production",
+        "db:migrate:apply:production": "wrangler d1 migrations apply townofus-pl --remote --env production",
         "db:import:local": "tsx scripts/import-d1-database.ts",
         "db:seed:staging": "tsx scripts/import-d1-database.ts --target staging --no-export",
         "validate": "tsx scripts/validate.ts",
@@ -33,7 +34,7 @@
         "replay": "tsx scripts/replay-payload.ts",
         "db:execute:local": "wrangler d1 execute townofus-pl --local",
         "db:execute:staging": "wrangler d1 execute townofus_pl_preview --remote --env staging",
-        "db:execute:remote": "wrangler d1 execute townofus-pl --remote --env production",
+        "db:execute:production": "wrangler d1 execute townofus-pl --remote --env production",
         "db:studio": "npx d1s"
     },
     "dependencies": {

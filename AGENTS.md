@@ -21,11 +21,36 @@ npm run cf-typegen                   # Regenerate cloudflare-env.d.ts
 npm run db:generate                  # Generate Prisma client + Zod schemas
 npm run db:migrate:create            # Create migration + diff against local D1
 npm run db:migrate:apply:local       # Apply migrations to local D1
-npm run db:migrate:apply:preview     # Apply to preview D1
-npm run db:migrate:apply:remote      # Apply to production D1
+npm run db:migrate:apply:staging     # Apply to staging D1
+npm run db:migrate:apply:production  # Apply to production D1
 npm run preview                      # Build + preview on Cloudflare
+npm run validate                     # 18 integrity checks (--target local|staging|production)
+npm run ranking:oracle               # Replay a season's ELO, diff against stored
+npm run replay -- --file <p.json>    # POST a payload, show the per-table row delta
+npm run db:seed:staging              # Wipe + reseed staging from the dump
+npm run deploy:staging               # Build + deploy to staging
 npm run deploy                       # Build + deploy to production
 ```
+
+## Environments and deploys
+
+`wrangler.toml`'s top level is a **dev** config that deploys nowhere useful. Every real target is
+a named environment, so nothing deploys by accident:
+
+| | worker | D1 |
+|---|---|---|
+| staging | `townofus-pl-staging` | `townofus_pl_preview` (`44f0d77c-…`) |
+| production | `townofus-pl` | `townofus-pl` (`0edadde7-…`) |
+
+**Named environments do not inherit bindings** — `[[d1_databases]]`, `[assets]` and `[vars]` are
+redeclared in full inside each `[env.*]` block. `[env.*.secrets] required` is **enforced** by
+wrangler: a deploy is refused outright if a listed secret is unset.
+
+**Push to `main` deploys to staging. Production is `workflow_dispatch` only.** Both run
+`check.yml` (typecheck + tests) first, and migrations are applied in the same job as the deploy,
+so a failed migration means no code ships against a half-migrated database.
+
+See `docs/ops/LOCAL_TESTING.md` for the local loop and a symptom → cause → fix table.
 
 ## AI Tools
 
