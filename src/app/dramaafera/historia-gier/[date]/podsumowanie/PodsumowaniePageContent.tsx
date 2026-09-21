@@ -67,8 +67,19 @@ export async function PodsumowaniePageContent({ date, seasonId }: PodsumowaniePa
 
     const weeklyStats = weeklyStatsResult.players;
 
+    // An empty week is not a missing page. getWeeklyStats only counts players with at least
+    // three games, so a season's opening night — or any short session — would otherwise 404 the
+    // whole summary, emperor poll and final ranking included. See #310.
     if (weeklyStats.length === 0) {
-        notFound();
+        return (
+            <div className="max-w-2xl mx-auto px-4 py-16 text-center">
+                <h1 className="font-brook text-4xl mb-4">Podsumowanie</h1>
+                <p className="font-barlow text-gray-400">
+                    Za mało gier tego dnia, żeby zbudować podsumowanie. Wymagane są co najmniej
+                    trzy gry rozegrane przez jednego gracza w danym tygodniu.
+                </p>
+            </div>
+        );
     }
 
     // Extract top sigmas and cwele from the result (getTopSigmas already returns 3)
