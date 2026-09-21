@@ -26,6 +26,8 @@ jobs:
 
       - run: npm run typecheck
 
-      # Passes with no tests today — there is no jest config and no test file in
-      # the repo yet. #304 adds the first one.
       - run: npm test
+
+      # The manifest's hashes must match the files served beside it. A mismatch makes every
+      # player's auto-update fail silently, visible only in their own log.
+      - run: npm run mod:publish -- --check

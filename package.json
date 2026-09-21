@@ -30,6 +30,7 @@
         "db:import:local": "tsx scripts/import-d1-database.ts",
         "db:seed:staging": "tsx scripts/import-d1-database.ts --target staging --no-export",
         "validate": "tsx scripts/validate.ts",
+        "mod:publish": "tsx scripts/publish-client-mod.ts",
         "ranking:oracle": "tsx scripts/ranking-oracle.ts",
         "replay": "tsx scripts/replay-payload.ts",
         "db:execute:local": "wrangler d1 execute townofus-pl --local",

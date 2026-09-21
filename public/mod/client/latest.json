@@ -1,0 +1,10 @@
+{
+  "version": "1.0.0",
+  "files": [
+    {
+      "name": "DramaAferaStats.Client.dll",
+      "url": "https://townofus.pl/mod/client/DramaAferaStats.Client.dll",
+      "sha256": "ba2edf317fc10671af85f151aa85f22ee081eaf931578e5b72ff0ac314e77b3d"
+    }
+  ]
+}
