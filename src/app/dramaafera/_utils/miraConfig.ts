@@ -31,7 +31,15 @@ export function stripConfigAffixes(value: string): string {
         .replace(/Tou$/i, '');
 }
 
+// One-entry memo. The settings page resolves 77 roles and 37 modifiers against the same ~100 KB
+// config in a single render, and re-parsing it 114 times is pure waste. Keyed on string identity,
+// so a new upload misses and re-parses.
+let lastParsedContent: string | null = null;
+let lastParsedSections: CfgSection[] = [];
+
 export function parseCfgSections(content: string): CfgSection[] {
+    if (content === lastParsedContent) return lastParsedSections;
+
     const sections: CfgSection[] = [];
 
     for (const raw of content.split(/\r?\n/)) {
@@ -52,6 +60,8 @@ export function parseCfgSections(content: string): CfgSection[] {
         });
     }
 
+    lastParsedContent = content;
+    lastParsedSections = sections;
     return sections;
 }
 
@@ -141,4 +151,49 @@ export function buildMiraRoleSettings(cfgContent: string, roleName: string): Rec
 /** A BepInEx config always opens its role block with a `[Roles]` section. */
 export function looksLikeMiraConfig(content: string): boolean {
     return /^\s*\[Roles\]\s*$/m.test(content);
+}
+
+/**
+ * Appearance odds for every modifier, keyed by normalised name.
+ *
+ * Modifiers are not in `[Roles]` — TOU-Mira puts them in the per-team `*ModifierOptions`
+ * sections as `<Name>Chance` and `<Name>Amount`. One pass over the config rather than a scan
+ * per modifier.
+ *
+ * Only the odds, deliberately. A modifier's own options live in
+ * `Modifiers.<Team>.<Name>Options`, but nothing generates their labels yet — `MIRA_ROLE_SETTINGS`
+ * covers role option classes only — so naming them would mean guessing. The odds are what decides
+ * whether a modifier is shown at all, which is the question this page answers. See #317.
+ */
+export function getMiraModifierOdds(cfgContent: string): Map<string, { chance?: number; amount?: number }> {
+    const odds = new Map<string, { chance?: number; amount?: number }>();
+
+    for (const section of parseCfgSections(cfgContent)) {
+        if (!/ModifierOptions$/.test(section.name)) continue;
+
+        for (const entry of section.entries) {
+            const match = entry.key.match(/^(.*?)(Chance|Amount)$/);
+            if (!match) continue;
+
+            const token = normalizeLookupKey(match[1]);
+            const parsed = Number(entry.value);
+            if (!token || Number.isNaN(parsed)) continue;
+
+            const field = match[2].toLowerCase();
+            odds.set(token, { ...(odds.get(token) ?? {}), [field]: parsed });
+
+            // A few modifiers are declared per team — ImpOverclockerChance / NeutOverclockerChance
+            // — while the registry knows one "Overclocker". Index the bare name too, keeping the
+            // higher of the two so a modifier enabled for either side shows as enabled. An exact
+            // key always wins, because it is written last only if it exists.
+            const bare = token.replace(/^(imp|neut)/, '');
+            if (bare !== token && bare) {
+                const previous = odds.get(bare) ?? {};
+                const merged = Math.max(previous[field as 'chance' | 'amount'] ?? 0, parsed);
+                odds.set(bare, { ...previous, [field]: merged });
+            }
+        }
+    }
+
+    return odds;
 }
