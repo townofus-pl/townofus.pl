@@ -28,3 +28,17 @@ export function buildSeasonUrl(path: string, seasonId: number): string {
   }
   return `/dramaafera/sezon/${seasonId}${normalizedPath}`;
 }
+
+/**
+ * Sub-paths that have a `sezon/[seasonId]/` variant. Mirrors the directories under
+ * `src/app/dramaafera/sezon/[seasonId]/` — keep the two in step.
+ *
+ * Without this the season switcher built `/dramaafera/sezon/N/<anything>` from whatever page you
+ * happened to be on, so switching season from `/changelog`, `/informacje`, `/playlista`,
+ * `/do_pobrania`, `/host` or `/lista-cweli` hard-404'd. See #313.
+ */
+export const SEASON_SCOPED_SUBPATHS = ['/historia-gier', '/ranking', '/role', '/user', '/wyniki'] as const;
+
+export function isSeasonScopedSubPath(subPath: string): boolean {
+  return SEASON_SCOPED_SUBPATHS.some((root) => subPath === root || subPath.startsWith(`${root}/`));
+}

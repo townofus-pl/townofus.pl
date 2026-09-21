@@ -8,13 +8,15 @@ import {
   MIRA_ROLE_INDEX,
   type SlimRole,
 } from '@/roles/_generated/roleIndex';
+import { FIRST_MIRA_SEASON } from '@/app/dramaafera/_constants/seasons';
 
 // ---------------------------------------------------------------------------
 // Season-aware role registry
 // ---------------------------------------------------------------------------
 
-/** Season 4 onward is played on TOU-Mira. Earlier seasons used the legacy role set. */
-export const FIRST_MIRA_SEASON = 4;
+// Re-exported so the many role-resolution callers keep one import. Defined in _constants/seasons
+// so a client component can branch on the era without pulling the generated role index in.
+export { FIRST_MIRA_SEASON };
 
 /**
  * Which role registry a season's data must be read against.

@@ -3,7 +3,7 @@
 import { useRouter, usePathname } from 'next/navigation';
 import { SEASONS } from '../../_constants/seasons';
 import { useSeason } from '../../_hooks/useSeason';
-import { extractDramaAferaSubPath, buildSeasonUrl } from '../../_utils/seasonHelpers';
+import { extractDramaAferaSubPath, buildSeasonUrl, isSeasonScopedSubPath } from '../../_utils/seasonHelpers';
 
 export default function SeasonSwitcher({ className }: { className?: string }) {
     const router = useRouter();
@@ -13,7 +13,11 @@ export default function SeasonSwitcher({ className }: { className?: string }) {
     const handleChange = (event: React.ChangeEvent<HTMLSelectElement>) => {
         const newSeasonId = parseInt(event.target.value, 10);
         const subPath = extractDramaAferaSubPath(pathname);
-        router.push(buildSeasonUrl(subPath, newSeasonId));
+
+        // Only some pages have a season variant. Carrying the current sub-path across
+        // unconditionally is what produced `/dramaafera/sezon/3/informacje` and a hard 404;
+        // everything else lands on the season root, which redirects to that season's ranking.
+        router.push(buildSeasonUrl(isSeasonScopedSubPath(subPath) ? subPath : '/', newSeasonId));
     };
 
     return (
