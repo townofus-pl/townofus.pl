@@ -16,16 +16,42 @@ type UploadStatus = {
     message?: string;
 };
 
+// `createErrorResponse` puts a plain string in `error`, not an object. The old shape here typed
+// it as `{ message?: string }`, so the real reason was unreadable and the page fell back to one
+// generic sentence for every failure.
 type UploadApiResponse = {
     success: boolean;
     data?: {
-        gameId?: string;
-        message?: string;
+        gameIdentifier?: string;
+        playersCreated?: number;
+        actionsCreated?: number;
+        rankingCalculated?: boolean;
+        rankingError?: string;
     };
-    error?: {
-        message?: string;
-    };
+    error?: string;
 };
+
+/**
+ * v2 rejects for six distinct reasons and the host is the person who has to act on each. The
+ * prefix says what kind of problem it is; the server's own message follows verbatim, because it
+ * names the offending role, player or identifier and paraphrasing it would lose that.
+ */
+function describeUploadFailure(status: number, error: string | undefined): string {
+    const detail = error?.trim() ? ` ${error.trim()}` : '';
+
+    switch (status) {
+        case 400:
+            return `Plik nie pasuje do schematu v2 — prawdopodobnie pochodzi ze starej wersji moda.${detail}`;
+        case 401:
+            return 'Błędny login lub hasło.';
+        case 409:
+            return `Ta gra jest już w bazie i nic nie zostało nadpisane.${detail}`;
+        case 422:
+            return `Serwer odrzucił zawartość gry.${detail}`;
+        default:
+            return `Błąd serwera (${status}). Spróbuj ponownie; jeśli się powtórzy, zachowaj plik.${detail}`;
+    }
+}
 
 interface HostClientProps {
     initialDates: GameDateEntry[];
@@ -97,29 +123,40 @@ export default function HostClient({ initialDates, seasonId }: HostClientProps) 
         setUploadStatus({ status: 'uploading' });
 
         try {
-            const formData = new FormData();
-            formData.append('gameDataFile', selectedFile);
+            // The manual re-submit path. The mod writes game_data.json to disk on every match and
+            // has no retry queue, so this page is how a failed submission gets in — which means it
+            // has to speak exactly the same protocol the mod does. Sending the file's text at
+            // /api/v2/games rather than multipart at /api/games/upload keeps one ingest path
+            // instead of two that can drift.
+            const payload = await selectedFile.text();
 
-            // Utwórz nagłówek autoryzacji Basic Auth
             const auth = btoa(`${credentials.username}:${credentials.password}`);
 
-            // Użycie fetch zamiast server action — konieczne do przesłania multipart/form-data
-            // z nagłówkiem Basic Auth. Server actions nie obsługują tego scenariusza
-            // (nie można przekazać formData z własnym nagłówkiem Authorization przez "use server").
-            const response = await fetch('/api/games/upload', {
+            const response = await fetch('/api/v2/games', {
                 method: 'POST',
                 headers: {
-                    'Authorization': `Basic ${auth}`
+                    'Authorization': `Basic ${auth}`,
+                    'Content-Type': 'application/json',
                 },
-                body: formData
+                body: payload,
             });
 
             const data = await response.json() as UploadApiResponse;
 
             if (response.ok) {
+                const identifier = data.data?.gameIdentifier ?? '';
+                const players = data.data?.playersCreated;
+                const actions = data.data?.actionsCreated;
+                // A ranking failure does not undo the ingest, so it must not look like success.
+                const rankingNote = data.data?.rankingCalculated === false
+                    ? ` Uwaga: ranking się nie przeliczył (${data.data?.rankingError ?? 'nieznany błąd'}).`
+                    : '';
+
                 setUploadStatus({
                     status: 'success',
-                    message: `Gra została pomyślnie wgrana: ${data.data?.gameId || ''}`
+                    message: `Gra ${identifier} wgrana` +
+                        (players !== undefined ? ` — ${players} graczy, ${actions ?? 0} akcji.` : '.') +
+                        rankingNote,
                 });
                 setCredentials({ username: '', password: '' });
                 setSelectedFile(null);
@@ -134,7 +171,7 @@ export default function HostClient({ initialDates, seasonId }: HostClientProps) 
                 });
                 setUploadStatus({
                     status: 'error',
-                    message: 'Nie udało się wgrać gry. Sprawdź dane pliku i spróbuj ponownie.',
+                    message: describeUploadFailure(response.status, data.error),
                 });
             }
         } catch (err) {
@@ -265,9 +302,10 @@ export default function HostClient({ initialDates, seasonId }: HostClientProps) 
                                 )}
                             </div>
 
-                            {/* Status uploadu */}
+                            {/* Status uploadu. break-words: a rejection quotes the offending role
+                                or identifier verbatim, and an unbroken name must not widen the panel. */}
                             {uploadStatus.message && (
-                                <div className={`mt-4 p-4 rounded-lg text-center ${
+                                <div className={`mt-4 p-4 rounded-lg text-center break-words ${
                                     uploadStatus.status === 'success'
                                         ? 'bg-green-900/30 border border-green-700/50 text-green-300'
                                         : 'bg-red-900/30 border border-red-700/50 text-red-300'

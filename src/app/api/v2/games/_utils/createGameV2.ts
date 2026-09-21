@@ -124,30 +124,37 @@ async function resolvePlayers(
     const byHash = new Map(existing.filter((p) => p.hashedProductUserId).map((p) => [p.hashedProductUserId!, p]));
     const byName = new Map(existing.map((p) => [p.name, p]));
 
-    const dbIdByPlayerId = new Map<number, number>();
+    // Two passes on purpose. A collision on the twelfth player must not leave the first eleven
+    // created or renamed: the core writes are atomic, and a rejection that half-populates the
+    // players table would undo that guarantee from outside the batch. Nothing below writes.
+    type Plan =
+        | { kind: 'rename'; id: number }
+        | { kind: 'backfill'; id: number }
+        | { kind: 'reuse'; id: number }
+        | { kind: 'create' };
+
+    const plans: Array<{ player: (typeof players)[number]; hash: string | null; plan: Plan }> = [];
 
     for (const player of players) {
         const hash = player.hashedProductUserId ?? null;
         const matchedByHash = hash ? byHash.get(hash) : undefined;
 
         if (matchedByHash) {
-            if (matchedByHash.name !== player.name) {
-                const squatter = byName.get(player.name);
-                if (squatter && squatter.id !== matchedByHash.id) {
-                    throw new IngestRejected(
-                        `"${player.name}" is already held by player ${squatter.id}, but this payload's ` +
-                            `hashedProductUserId belongs to player ${matchedByHash.id} ("${matchedByHash.name}"). ` +
-                            `Two accounts cannot share a name — resolve it by hand.`,
-                        422,
-                    );
-                }
-                // Rename in place: the account is the same person, the display name moved.
-                await prisma.player.update({
-                    where: { id: matchedByHash.id },
-                    data: { name: player.name, friendCode: player.friendCode ?? undefined },
-                });
+            if (matchedByHash.name === player.name) {
+                plans.push({ player, hash, plan: { kind: 'reuse', id: matchedByHash.id } });
+                continue;
             }
-            dbIdByPlayerId.set(player.playerId, matchedByHash.id);
+            const squatter = byName.get(player.name);
+            if (squatter && squatter.id !== matchedByHash.id) {
+                throw new IngestRejected(
+                    `"${player.name}" is already held by player ${squatter.id}, but this payload's ` +
+                        `hashedProductUserId belongs to player ${matchedByHash.id} ("${matchedByHash.name}"). ` +
+                        `Two accounts cannot share a name — resolve it by hand.`,
+                    422,
+                );
+            }
+            // The account is the same person; the display name moved.
+            plans.push({ player, hash, plan: { kind: 'rename', id: matchedByHash.id } });
             continue;
         }
 
@@ -160,27 +167,43 @@ async function resolvePlayers(
                     422,
                 );
             }
-            if (hash && !matchedByName.hashedProductUserId) {
-                // First sighting of this account's identity — backfill rather than create a twin.
-                await prisma.player.update({
-                    where: { id: matchedByName.id },
-                    data: { hashedProductUserId: hash, friendCode: player.friendCode ?? undefined },
-                });
-            }
-            dbIdByPlayerId.set(player.playerId, matchedByName.id);
+            plans.push({
+                player,
+                hash,
+                plan: hash && !matchedByName.hashedProductUserId
+                    ? { kind: 'backfill', id: matchedByName.id } // first sighting of this identity
+                    : { kind: 'reuse', id: matchedByName.id },
+            });
             continue;
         }
 
-        const created = await prisma.player.create({
-            data: {
-                name: player.name,
-                friendCode: player.friendCode ?? null,
-                hashedProductUserId: hash,
-            },
-            select: { id: true },
-        });
-        byName.set(player.name, { id: created.id, name: player.name, hashedProductUserId: hash });
-        dbIdByPlayerId.set(player.playerId, created.id);
+        plans.push({ player, hash, plan: { kind: 'create' } });
+    }
+
+    const dbIdByPlayerId = new Map<number, number>();
+
+    for (const { player, hash, plan } of plans) {
+        if (plan.kind === 'reuse') {
+            dbIdByPlayerId.set(player.playerId, plan.id);
+        } else if (plan.kind === 'rename') {
+            await prisma.player.update({
+                where: { id: plan.id },
+                data: { name: player.name, friendCode: player.friendCode ?? undefined },
+            });
+            dbIdByPlayerId.set(player.playerId, plan.id);
+        } else if (plan.kind === 'backfill') {
+            await prisma.player.update({
+                where: { id: plan.id },
+                data: { hashedProductUserId: hash, friendCode: player.friendCode ?? undefined },
+            });
+            dbIdByPlayerId.set(player.playerId, plan.id);
+        } else {
+            const created = await prisma.player.create({
+                data: { name: player.name, friendCode: player.friendCode ?? null, hashedProductUserId: hash },
+                select: { id: true },
+            });
+            dbIdByPlayerId.set(player.playerId, created.id);
+        }
     }
 
     return dbIdByPlayerId;
