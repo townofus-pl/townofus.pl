@@ -223,6 +223,25 @@ function nullifyPlayerRanking(statement: string): string {
     return rewritten;
 }
 
+/**
+ * Renames applied by migrations the dump predates.
+ *
+ * The seed dump is a `wrangler d1 export` of production, which still has the pre-#302 column
+ * names, while the import applies every migration before loading it. Without this the load dies
+ * on `table game_player_statistics has no column named correctMedicShields`.
+ *
+ * Keyed on the quoted name so it only ever touches an INSERT's column list, never a value.
+ * Becomes a no-op the moment the dump is refreshed after 0009 ships.
+ */
+const COLUMN_RENAMES: ReadonlyArray<readonly [string, string]> = [
+    ['"correctMedicShields"', '"correctProtects"'],
+    ['"incorrectMedicShields"', '"incorrectProtects"'],
+];
+
+function applyColumnRenames(statement: string): string {
+    return COLUMN_RENAMES.reduce((sql, [from, to]) => sql.replace(from, to), statement);
+}
+
 function buildPreparedData(insertStatements: string[]): { importStatements: string[]; restoreStatements: string[] } {
     const groupedStatements = new Map<string, string[]>();
     const restoreStatements: string[] = [];
@@ -246,7 +265,9 @@ function buildPreparedData(insertStatements: string[]): { importStatements: stri
             );
         }
 
-        const normalizedStatement = tableName === 'players' ? nullifyPlayerRanking(statement) : statement;
+        const normalizedStatement = applyColumnRenames(
+            tableName === 'players' ? nullifyPlayerRanking(statement) : statement,
+        );
 
         const currentGroup = groupedStatements.get(tableName) ?? [];
         currentGroup.push(normalizedStatement);

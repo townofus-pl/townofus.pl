@@ -6,8 +6,8 @@
  * actually write?" and "what happens when the same payload arrives twice?".
  *
  * Start a server first — `npm run dev` (port 3000) or `npm run preview` (port 8787) —
- * and point `--url` at whichever endpoint is being exercised. `/api/v2/games` does not
- * exist yet; until it does, this runs against v1's `/api/games` with a v1-shaped payload.
+ * and point `--url` at whichever endpoint is being exercised. Defaults to `/api/v2/games`;
+ * pass `--url http://localhost:3000/api/games` for a v1-shaped payload.
  *
  * Usage:
  *   npm run replay -- --file fixtures/game.json
@@ -33,6 +33,7 @@ const TRACKED_TABLES = [
     'meeting_no_votes',
     'meeting_blackmailed_players',
     'meeting_jailed_players',
+    'game_actions',
 ] as const;
 
 type Options = { file: string; url: string; twice: boolean };
