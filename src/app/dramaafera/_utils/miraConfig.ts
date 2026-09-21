@@ -197,3 +197,19 @@ export function getMiraModifierOdds(cfgContent: string): Map<string, { chance?: 
 
     return odds;
 }
+
+/**
+ * Whether the uploaded pair can be diffed as TOU:Mira.
+ *
+ * Both sides have to be configs. Right after the first `.cfg` of a season `old` is still the
+ * previous era's legacy `.txt`, and diffing a config against that yields nothing — so that case
+ * falls through to the committed snapshot instead of rendering an empty changelog.
+ */
+export function pickMiraPair(
+    current: string | null,
+    old: string | null,
+): { current: string; old: string } | null {
+    if (!current || !old) return null;
+    if (!looksLikeMiraConfig(current) || !looksLikeMiraConfig(old)) return null;
+    return { current, old };
+}

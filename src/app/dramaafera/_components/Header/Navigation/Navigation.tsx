@@ -7,18 +7,12 @@ import {NavigationItem, type NavigationItemProps} from "./NavigationItem";
 import {NavigationLabel} from "./NavigationLabel";
 import {useSeason} from "../../../_hooks/useSeason";
 import {buildSeasonUrl, extractDramaAferaSubPath} from "../../../_utils/seasonHelpers";
-import {FIRST_MIRA_SEASON} from "../../../_constants/seasons";
 
 type NavigationItemConfig = NavigationItemProps & {
     /** Czy link zależy od sezonu (zyskuje prefiks /sezon/{id}/ dla nie-bieżących sezonów) */
     seasonDependent: boolean;
     /** Ścieżka bazowa (bez /dramaafera), używana do wykrywania aktywnej strony */
     subPath: string;
-    /**
-     * Strona, która ma inny wariant dla ery TOU:Mira, ale nie ma trasy pod /sezon/{id}/.
-     * To osobna sprawa niż `seasonDependent`: tu zmienia się cel linku, nie prefiks.
-     */
-    miraHref?: string;
 };
 
 const navigationItemConfigs: NavigationItemConfig[] = [
@@ -30,11 +24,9 @@ const navigationItemConfigs: NavigationItemConfig[] = [
     },
     {
         subPath: '/changelog',
+        // Jeden adres dla obu er — /changelog sam wybiera widok po formacie wgranego pliku.
+        // W URL-ach nie ma "mira". Zob. #317.
         href: "/dramaafera/changelog",
-        // Sezon 4+ gra na TOU:Mira, a /changelog czyta stary rejestr i stary parser — na pliku
-        // .cfg nie znajduje nic. /changelog/mira istniał, działał i nic do niego nie linkowało,
-        // więc gracze nowego sezonu nie mieli jak dojść do changelogu swojego moda. Zob. #313.
-        miraHref: "/dramaafera/changelog/mira",
         label: "Changelog",
         seasonDependent: false,
     },
@@ -94,12 +86,10 @@ export const Navigation = () => {
     // Budujemy właściwe href z uwzględnieniem aktywnego sezonu.
     // Aktywny element wyznaczamy po subPath (prefix match), więc `selected` porównuje subPath.
     const navigationItems: (NavigationItemProps & { subPath: string })[] = useMemo(
-        () => navigationItemConfigs.map(({subPath, seasonDependent, miraHref, ...rest}) => ({
+        () => navigationItemConfigs.map(({subPath, seasonDependent, ...rest}) => ({
             ...rest,
             subPath,
-            href: seasonDependent
-                ? buildSeasonUrl(subPath, seasonId)
-                : (miraHref && seasonId >= FIRST_MIRA_SEASON ? miraHref : rest.href),
+            href: seasonDependent ? buildSeasonUrl(subPath, seasonId) : rest.href,
         })),
         [seasonId]
     );
