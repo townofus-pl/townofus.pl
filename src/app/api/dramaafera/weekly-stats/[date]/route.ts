@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getWeeklyStats } from '@/app/dramaafera/_services';
 import { withCors } from '@/app/api/_middlewares';
+import { resolveSeasonParam } from '@/app/api/_utils';
 import { z } from 'zod';
 
 const DateParamSchema = z.string().regex(/^\d{8}$/, 'Data musi być w formacie YYYYMMDD');
@@ -21,7 +22,15 @@ async function getHandler(
         }
 
         const date = dateResult.data;
-        const data = await getWeeklyStats(date);
+        const season = resolveSeasonParam(request);
+        if (season === null) {
+            return NextResponse.json(
+                { success: false, error: 'Nieprawidłowy numer sezonu — wymagana liczba całkowita' },
+                { status: 400 }
+            );
+        }
+
+        const data = await getWeeklyStats(date, season);
 
         return NextResponse.json({ success: true, data });
 

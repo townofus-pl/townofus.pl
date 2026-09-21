@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getTopSigmas } from '@/app/dramaafera/_services';
 import { withCors } from '@/app/api/_middlewares';
+import { resolveSeasonParam } from '@/app/api/_utils';
 
 async function getHandler(
     request: NextRequest,
@@ -8,7 +9,15 @@ async function getHandler(
 ) {
     try {
         const { date } = await params;
-        const result = await getTopSigmas(date);
+        const season = resolveSeasonParam(request);
+        if (season === null) {
+            return NextResponse.json(
+                { success: false, error: 'Nieprawidłowy numer sezonu — wymagana liczba całkowita' },
+                { status: 400 }
+            );
+        }
+
+        const result = await getTopSigmas(date, season);
 
         if (!result) {
             return NextResponse.json(

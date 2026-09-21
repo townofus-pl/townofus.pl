@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { getPlayerRankingHistory } from '@/app/dramaafera/_services';
 import { withCors } from '@/app/api/_middlewares';
+import { resolveSeasonParam } from '@/app/api/_utils';
 
 async function getHandler(
     request: NextRequest,
@@ -10,8 +11,16 @@ async function getHandler(
         const { nickname } = await params;
         const decodedNickname = decodeURIComponent(nickname);
 
+        const season = resolveSeasonParam(request);
+        if (season === null) {
+            return NextResponse.json(
+                { success: false, error: 'Nieprawidłowy numer sezonu — wymagana liczba całkowita' },
+                { status: 400 }
+            );
+        }
+
         // Pobierz historię rankingu z serwisu
-        const rankingHistory = await getPlayerRankingHistory(decodedNickname);
+        const rankingHistory = await getPlayerRankingHistory(decodedNickname, season);
 
         if (!rankingHistory || rankingHistory.length === 0) {
             return NextResponse.json(

@@ -1,7 +1,6 @@
 import { NextRequest } from 'next/server';
 import { getRanking } from '@/app/dramaafera/_services';
-import { CURRENT_SEASON } from '@/app/dramaafera/_constants/seasons';
-import { createSuccessResponse, createErrorResponse } from '../_utils';
+import { createSuccessResponse, createErrorResponse, resolveSeasonParam } from '../_utils';
 
 // Delegates to the `getRanking` service rather than carrying its own query.
 //
@@ -18,9 +17,8 @@ export async function GET(request: NextRequest) {
     const limit = Math.min(Math.max(parseInt(url.searchParams.get('limit') || '50', 10) || 50, 1), 100);
     const offset = Math.max(parseInt(url.searchParams.get('offset') || '0', 10) || 0, 0);
 
-    const seasonParam = url.searchParams.get('season');
-    const season = seasonParam ? parseInt(seasonParam, 10) : CURRENT_SEASON;
-    if (Number.isNaN(season)) {
+    const season = resolveSeasonParam(request);
+    if (season === null) {
       return createErrorResponse('Invalid season parameter', 400);
     }
 
