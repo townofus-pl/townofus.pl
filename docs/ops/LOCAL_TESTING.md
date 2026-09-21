@@ -58,6 +58,39 @@ Auth comes from `API_USERNAME`/`API_PASSWORD` in `.dev.vars` (ingest is HTTP Bas
 Default URL is `/api/v2/games`, **which does not exist yet**. Until it does, point `--url` at
 v1's `/api/games`.
 
+## Staging
+
+A deployed environment separate from production, used so the mod can POST v2 payloads at
+something real while production still runs v1.
+
+```bash
+npm run db:seed:staging                  # wipe + reseed staging from the local dump
+npm run db:migrate:apply:staging         # apply pending migrations to staging
+npm run validate -- --target staging     # the same 18 checks, against the deployed DB
+npm run deploy:staging                   # build + deploy
+npm run replay -- --file <p.json> --url https://<staging-host>/api/v2/games --twice
+```
+
+**Every deploy target is explicit.** The top level of `wrangler.toml` is a dev config that
+deploys nowhere useful; `npm run deploy` is `-e production` and `npm run deploy:staging` is
+`-e staging`. Nothing deploys by accident.
+
+**Named environments do not inherit bindings.** `[[d1_databases]]`, `[assets]` and `[vars]` are
+redeclared in full inside each `[env.*]` block. A binding present only at the top level is simply
+absent from the deployed environment.
+
+**Staging uses the pre-existing `townofus_pl_preview` D1 database** (`44f0d77c-…`), which is a
+genuinely separate database from production's `townofus-pl` (`0edadde7-…`).
+
+**`db:seed:staging` wipes staging first**, in reverse FK order, breaking the
+`players.currentRankingId` → `player_rankings` cycle before the deletes. Locally the whole
+miniflare directory is deleted instead; remotely there is no directory to delete.
+
+**The mod must authenticate against staging.** Its host build has the league's API credentials
+compiled in (`Secrets.cs` in the mod repo, gitignored), so **staging needs the same
+`API_USERNAME` / `API_PASSWORD` as production** — otherwise pointing the mod at staging returns
+401. Point the mod with `DRAMAAFERA_API_URL`, or the BepInEx config key `Api.BaseUrl`.
+
 ## ⚠️ `db:import:local` reaches for production by default
 
 Without `--no-export` the script first runs `wrangler d1 export townofus-pl --remote`, i.e. it
@@ -81,12 +114,11 @@ enough for everything in this document.
 | Ingest returns 201 but `rankingCalculated: false` | The ranking calculator refuses any game whose `startTime` is older than the newest already-ranked game | Give the payload a `startTime` after the newest seeded game |
 | `npm test` finds nothing | There is no `jest.config.*` and no test files yet | Expected today |
 | `npm run db:migrate:diff` errors about multiple databases | Same `metadata.sqlite` cause as above | Fixed; `prisma.config.ts` now shares `scripts/lib/localD1.ts` |
+| A deploy fails with `The following required secrets have not been set` | The `[env.*.secrets] required` list is **enforced** by wrangler, not just documentation | `wrangler secret put <NAME> --env <env>` before deploying |
+| Any remote wrangler command says `More than one account available` | The account is ambiguous for that subcommand | `export CLOUDFLARE_ACCOUNT_ID=d1287f321cc95882fc773ab71241b51a` |
 
 ## What does not exist yet
 
-- **No named staging environment.** `wrangler.toml` has no `[env.*]` blocks; "preview" is only
-  wrangler's `--preview` flag against `preview_database_id` on the single D1 binding. Local D1 is
-  the whole story today, and it is enough for the ingest work.
 - **No test suite.** `jest`, `ts-jest` and `@types/jest` are installed and `npm test` is wired, but
   there is no config and no test files.
 - **No schema-valid v2 fixture.** See [#293](https://github.com/townofus-pl/townofus.pl/issues/293) —

@@ -2,7 +2,10 @@ import { mkdir, readFile, rm, writeFile } from 'node:fs/promises';
 import { spawnSync } from 'node:child_process';
 import path from 'node:path';
 
+type Target = 'local' | 'staging';
+
 type ParsedOptions = {
+    target: Target;
     databaseName: string;
     exportFile: string;
     stateDir: string;
@@ -18,6 +21,7 @@ type RankingReference = {
 };
 
 const DEFAULT_DATABASE_NAME = 'townofus-pl';
+const STAGING_DATABASE_NAME = 'townofus_pl_preview';
 const DEFAULT_EXPORT_FILE = 'db-backups/townofus-pl-remote.sql';
 const DEFAULT_STATE_DIR = '.wrangler/state/v3/d1';
 const TEMP_DIR = '.wrangler/tmp/import-d1';
@@ -45,6 +49,7 @@ const TABLE_ORDER = [
 
 function parseArgs(argv: string[]): ParsedOptions {
     const options: ParsedOptions = {
+        target: 'local',
         databaseName: DEFAULT_DATABASE_NAME,
         exportFile: DEFAULT_EXPORT_FILE,
         stateDir: DEFAULT_STATE_DIR,
@@ -60,6 +65,16 @@ function parseArgs(argv: string[]): ParsedOptions {
 
     for (let index = 0; index < argv.length; index += 1) {
         const argument = argv[index];
+
+        if (argument === '--target') {
+            const value = argv[(index += 1)];
+            if (value !== 'local' && value !== 'staging') {
+                throw new Error(`--target expects "local" or "staging" (got "${value}")`);
+            }
+            options.target = value;
+            if (value === 'staging') options.databaseName = STAGING_DATABASE_NAME;
+            continue;
+        }
 
         if (argument === '--help' || argument === '-h') {
             printHelp();
@@ -122,6 +137,7 @@ function printHelp(): void {
         '  npm run db:import:local -- [opcje]',
         '',
         'Opcje:',
+        '  --target <cel>         local (domyślnie) | staging — dokąd importować',
         '  --dry-run              Pokaż plan bez uruchamiania wrangler',
         '  --no-export            Pomiń ponowny export z Cloudflare',
         '  --database <nazwa>     Domyślnie: townofus-pl',
@@ -283,8 +299,10 @@ async function main(): Promise<void> {
         runCommand(wranglerCommand, ['d1', 'export', options.databaseName, '--remote', '--output', options.exportFile]);
     }
 
-    console.log('Czyścię lokalny stan D1...');
-    await ensureFreshDirectory(options.stateDir);
+    if (options.target === 'local') {
+        console.log('Czyścię lokalny stan D1...');
+        await ensureFreshDirectory(options.stateDir);
+    }
 
     console.log('Przygotowuję dane importu...');
     const rawExport = await readFile(options.exportFile, 'utf8');
@@ -298,36 +316,53 @@ async function main(): Promise<void> {
     console.log(`INSERT-ów do importu: ${importStatements.length}`);
     console.log(`UPDATE-ów do odtworzenia currentRankingId: ${restoreStatements.length}`);
 
-    console.log('Aplikuję migracje do świeżego stanu lokalnego...');
-    runCommand(wranglerCommand, ['d1', 'migrations', 'apply', options.databaseName, '--local', '--persist-to', persistToDir], 'y\n');
+    // Local and remote differ only in how the target is addressed — and in how it is emptied.
+    // Locally the whole miniflare directory is deleted above; remotely there is no directory, so
+    // the tables have to be cleared explicitly in reverse FK order before the INSERTs land, or
+    // the import duplicates every row.
+    const where: string[] =
+        options.target === 'local'
+            ? ['--local', '--persist-to', persistToDir]
+            : ['--remote', '--env', 'staging'];
+
+    if (options.target === 'staging') {
+        console.log('Czyszczę tabele stagingu w odwrotnej kolejności FK...');
+        const deleteOrder = [...TABLE_ORDER].reverse().filter((t) => t !== 'sqlite_sequence');
+        // currentRankingId points at player_rankings, so break the cycle first.
+        const statements = [
+            'UPDATE players SET currentRankingId = NULL;',
+            ...deleteOrder.map((table) => `DELETE FROM ${table};`),
+        ];
+        const wipeFile = path.join(TEMP_DIR, 'wipe-staging.sql');
+        await writeFile(wipeFile, `${statements.join('\n')}\n`, 'utf8');
+        runCommand(wranglerCommand, ['d1', 'execute', options.databaseName, ...where, '--file', wipeFile, '--yes']);
+    }
+
+    console.log('Aplikuję migracje...');
+    runCommand(
+        wranglerCommand,
+        ['d1', 'migrations', 'apply', options.databaseName, ...where],
+        'y\n',
+    );
 
     console.log('Importuję dane...');
-    runCommand(wranglerCommand, ['d1', 'execute', options.databaseName, '--local', '--file', options.importFile, '--persist-to', persistToDir]);
+    runCommand(wranglerCommand, ['d1', 'execute', options.databaseName, ...where, '--file', options.importFile, '--yes']);
 
     console.log('Odtwarzam currentRankingId...');
-    runCommand(wranglerCommand, ['d1', 'execute', options.databaseName, '--local', '--file', options.restoreFile, '--persist-to', persistToDir]);
+    runCommand(wranglerCommand, ['d1', 'execute', options.databaseName, ...where, '--file', options.restoreFile, '--yes']);
 
     console.log('Sprawdzam spójność kluczy obcych...');
-    runCommand(wranglerCommand, ['d1', 'execute', options.databaseName, '--local', '--persist-to', persistToDir, '--command', 'PRAGMA foreign_key_check;']);
+    runCommand(wranglerCommand, ['d1', 'execute', options.databaseName, ...where, '--command', 'PRAGMA foreign_key_check;', '--yes']);
 
     console.log('Sprawdzam liczbę rekordów w kluczowych tabelach...');
     for (const tableName of ['players', 'games', 'player_rankings', 'game_player_statistics', 'meetings', 'game_events']) {
         runCommand(
             wranglerCommand,
-            [
-                'd1',
-                'execute',
-                options.databaseName,
-                '--local',
-                '--persist-to',
-                persistToDir,
-                '--command',
-                `SELECT COUNT(*) AS c FROM ${tableName};`,
-            ],
+            ['d1', 'execute', options.databaseName, ...where, '--command', `SELECT COUNT(*) AS c FROM ${tableName};`, '--yes'],
         );
     }
 
-    console.log('Gotowe. Lokalna baza została zaktualizowana.');
+    console.log(`Gotowe. Baza (${options.target}) została zaktualizowana.`);
 }
 
 main().catch((error: unknown) => {

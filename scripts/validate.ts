@@ -5,21 +5,32 @@
  * count — real data drifts and an exact assertion would red the build every week.
  * Read the actual totals from this tool's output, not from any document.
  *
- * Usage: npm run validate
+ * Usage:
+ *   npm run validate                        # local D1
+ *   npm run validate -- --target staging    # against the deployed staging database
  */
-import { openLocalD1, count, queryAll, queryOne } from './lib/localD1';
+import { makeRunner, parseTarget, describeTarget, type Runner } from './lib/d1Runner';
 
 type Check = { name: string; run: () => string | null }; // null = pass, string = failure reason
 
 const START_RATING = 2000;
 
 function main(): void {
-    const db = openLocalD1();
+    const argv = process.argv.slice(2);
+    const targetFlag = argv.includes('--target') ? argv[argv.indexOf('--target') + 1] : undefined;
+    const target = parseTarget(targetFlag);
+    const run: Runner = makeRunner(target);
+
+    console.log(`Validating ${describeTarget(target)}\n`);
+
+    const count = (sql: string): number => Number((run(sql)[0] as { c?: number })?.c ?? 0);
+    const queryAll = (sql: string) => run(sql);
+    const queryOne = (sql: string) => run(sql)[0];
 
     const floor = (name: string, sql: string, min: number): Check => ({
         name,
         run: () => {
-            const n = count(db, sql);
+            const n = count(sql);
             return n >= min ? null : `got ${n}, expected at least ${min}`;
         },
     });
@@ -28,7 +39,7 @@ function main(): void {
     const empty = (name: string, sql: string): Check => ({
         name,
         run: () => {
-            const rows = queryAll<Record<string, unknown>>(db, sql);
+            const rows = queryAll(sql);
             if (rows.length === 0) return null;
             const sample = JSON.stringify(rows[0]);
             return `${rows.length} offending row(s), e.g. ${sample}`;
@@ -133,8 +144,7 @@ function main(): void {
         }
     }
 
-    const totals = queryOne<{ games: number; players: number; rankings: number; latest: string }>(
-        db,
+    const totals = queryOne(
         `select (select count(*) from games where deletedAt is null) games,
                 (select count(*) from players where deletedAt is null) players,
                 (select count(*) from player_rankings where deletedAt is null) rankings,
@@ -146,8 +156,6 @@ function main(): void {
             `${totals?.games} games · ${totals?.players} players · ${totals?.rankings} rankings · ` +
             `newest game ${String(totals?.latest ?? '?').slice(0, 10)}`,
     );
-
-    db.close();
 
     if (failed > 0) process.exit(1);
 }

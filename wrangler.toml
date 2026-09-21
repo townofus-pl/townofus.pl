@@ -1,11 +1,23 @@
+# Wrangler environments.
+#
+# The top level is the **dev / local** configuration and deploys nowhere useful on purpose:
+# every real target lives in a named environment, so no deploy can happen by accident.
+#
+#   npm run deploy:staging     -> env.staging     (townofus-pl-staging, preview D1)
+#   npm run deploy             -> env.production  (townofus.pl, production D1)
+#
+# ⚠️ Named environments do **not** inherit bindings. `[[d1_databases]]`, `[assets]` and `[vars]`
+# must be redeclared in full inside every `[env.*]` block — a binding present only at the top
+# level is simply absent from the deployed environment. Verbose, but you can read one block and
+# know exactly what that environment talks to.
+
 main = ".open-next/worker.js"
-name = "townofus-pl"
+name = "townofus-pl-dev"
 compatibility_date = "2025-07-12"
 compatibility_flags = ["nodejs_compat"]
 account_id = "d1287f321cc95882fc773ab71241b51a"
 
 workers_dev = false
-route = { pattern = "townofus.pl", custom_domain = true }
 
 [assets]
 binding = "ASSETS"
@@ -16,4 +28,49 @@ binding = "DB"
 database_name = "townofus-pl"
 database_id = "0edadde7-395f-4e3c-a69d-7d40ece774ad"
 preview_database_id = "44f0d77c-c0b4-43d1-b3a3-7777be86d5d6"
+migrations_dir = "prisma/migrations"
+
+# --------------------------------------------------------------------------------------------
+# staging — where the mod points during v2 testing (DRAMAAFERA_API_URL)
+# --------------------------------------------------------------------------------------------
+[env.staging]
+name = "townofus-pl-staging"
+workers_dev = true
+
+# Enforced by wrangler: a deploy is refused outright if any of these is unset in the
+# environment, rather than shipping a Worker that 500s the moment auth is exercised.
+[env.staging.secrets]
+required = ["API_USERNAME", "API_PASSWORD"]
+
+[env.staging.assets]
+binding = "ASSETS"
+directory = ".open-next/assets"
+
+# Uses the pre-existing `townofus_pl_preview` database. Separate from production, already
+# seeded, and the same database `db:migrate:apply:preview` targets.
+[[env.staging.d1_databases]]
+binding = "DB"
+database_name = "townofus_pl_preview"
+database_id = "44f0d77c-c0b4-43d1-b3a3-7777be86d5d6"
+migrations_dir = "prisma/migrations"
+
+# --------------------------------------------------------------------------------------------
+# production
+# --------------------------------------------------------------------------------------------
+[env.production]
+name = "townofus-pl"
+workers_dev = false
+route = { pattern = "townofus.pl", custom_domain = true }
+
+[env.production.secrets]
+required = ["API_USERNAME", "API_PASSWORD"]
+
+[env.production.assets]
+binding = "ASSETS"
+directory = ".open-next/assets"
+
+[[env.production.d1_databases]]
+binding = "DB"
+database_name = "townofus-pl"
+database_id = "0edadde7-395f-4e3c-a69d-7d40ece774ad"
 migrations_dir = "prisma/migrations"
