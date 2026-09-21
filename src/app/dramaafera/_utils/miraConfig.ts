@@ -4,7 +4,7 @@
 // component. The role pages need the same thing, and a second copy would drift exactly the way
 // the four role→icon maps already had. See #317.
 
-import type { Role } from '@/constants/rolesAndModifiers';
+import { MIRA_ROLE_SETTINGS } from '@/roles/_generated/miraSettings';
 
 export interface CfgSection {
     name: string;
@@ -54,23 +54,25 @@ export function parseCfgSections(content: string): CfgSection[] {
 }
 
 /**
- * The settings a `.cfg` records for one role, keyed by the registry's own setting labels so the
- * result can be overlaid onto `role.settings` directly.
+ * The settings a `.cfg` records for one role, keyed by the label TOU-Mira itself uses.
+ *
+ * The bridge is generated from the mod source (`MIRA_ROLE_SETTINGS`), not guessed: the option
+ * attribute in the C# carries the locale key, the property name is the `.cfg` key, and
+ * `en_US.xml` turns the locale key into a label. Matching on the hand-written labels in
+ * `src/mira/roles` only reached 41%, because those were transcribed by hand and had drifted —
+ * the source says "Can Shoot Neutral Benign Roles", the registry says "Can Shot". See #317.
  *
  * Two sources, because the config splits them:
- *   [Roles]                                          `Num`/`Chance <FQN>` — how often it appears
- *   [TownOfUs.Options.Roles.<Team>.<Role>Options]    everything else, in camelCase
+ *   [Roles]                                       `Num`/`Chance <FQN>` — how often it appears
+ *   [TownOfUs.Options.Roles.<Team>.<Role>Options] everything else, keyed by property name
  */
-export function getMiraRoleSettings(cfgContent: string, role: Role): Record<string, string> {
+export function getMiraRoleSettings(cfgContent: string, roleName: string): Record<string, string> {
     const sections = parseCfgSections(cfgContent);
-    const roleToken = normalizeLookupKey(stripConfigAffixes(role.name));
+    const roleToken = normalizeLookupKey(stripConfigAffixes(roleName));
     const out: Record<string, string> = {};
 
-    // Registry labels, indexed by their normalised form, so a cfg key can find its label.
-    const labelByKey = new Map<string, string>();
-    for (const label of Object.keys(role.settings)) {
-        labelByKey.set(normalizeLookupKey(label), label);
-    }
+    const declared = MIRA_ROLE_SETTINGS[roleName] ?? [];
+    const labelByCfgKey = new Map(declared.map((d) => [normalizeLookupKey(d.cfgKey), d.label]));
 
     for (const section of sections) {
         if (section.name === 'Roles') {
@@ -79,10 +81,7 @@ export function getMiraRoleSettings(cfgContent: string, role: Role): Record<stri
                 if (!m) continue;
                 const token = normalizeLookupKey(stripConfigAffixes(m[2].split('.').at(-1) ?? ''));
                 if (token !== roleToken) continue;
-
-                // The registry calls these "Probability Of Appearing" and "Maximum".
-                const label = labelByKey.get(normalizeLookupKey(m[1] === 'Chance' ? 'Probability Of Appearing' : 'Maximum'));
-                if (label) out[label] = entry.value;
+                out[m[1] === 'Chance' ? 'Probability Of Appearing' : 'Maximum'] = entry.value;
             }
             continue;
         }
@@ -91,7 +90,7 @@ export function getMiraRoleSettings(cfgContent: string, role: Role): Record<stri
         if (sectionToken !== roleToken) continue;
 
         for (const entry of section.entries) {
-            const label = labelByKey.get(normalizeLookupKey(entry.key));
+            const label = labelByCfgKey.get(normalizeLookupKey(entry.key));
             if (label) out[label] = entry.value;
         }
     }
