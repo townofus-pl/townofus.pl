@@ -14,9 +14,9 @@ import { writeFileSync } from 'node:fs';
 import { Roles } from '../src/roles';
 import { MiraRoles } from '../src/mira';
 
-type Slim = { id: string; name: string; team: string; color: string; icon: string };
+type Slim = { id: string; name: string; team: string; color: string; icon: string; subgroup: string | null };
 
-const slim = (r: { id: string; name: string; team: string; color: string; icon: string }): Slim => ({
+const slim = (r: { id: string; name: string; team: string; color: string; icon: string; subgroup?: string }): Slim => ({
     id: r.id,
     name: r.name,
     team: r.team,
@@ -25,6 +25,9 @@ const slim = (r: { id: string; name: string; team: string; color: string; icon: 
     // /images/roles/, Mira's are PascalCase under /images/mira/roles/, and every role declares
     // its own path.
     icon: r.icon,
+    // Lets callers ask "is this a killing role?" from the registry instead of hardcoding a list
+    // that silently goes stale — RoleDetailContent had one missing four Mira killers. See #308.
+    subgroup: r.subgroup ?? null,
 });
 
 const legacy = Roles.map(slim).sort((a, b) => a.id.localeCompare(b.id));
@@ -43,6 +46,7 @@ export interface SlimRole {
     team: string;
     color: string;
     icon: string;
+    subgroup: string | null;
 }
 
 /** Roles as they existed up to and including season 3. */

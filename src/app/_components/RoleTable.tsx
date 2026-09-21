@@ -6,6 +6,7 @@ import Link from 'next/link';
 import type { UIGameData, UIPlayerData } from '@/app/dramaafera/_services/games/types';
 import { buildSeasonUrl } from '@/app/dramaafera/_utils/seasonHelpers';
 import { convertRoleToUrlSlug } from '@/app/dramaafera/_utils/gameUtils';
+import { getRoleIconPath } from '@/app/dramaafera/_utils/gameUtils';
 
 interface RoleDayStats {
   name: string;
@@ -31,78 +32,10 @@ interface RoleTableProps {
 export default function RoleTable({ roles, reversedGames, detailedGames, date, hideZeroStats = false, seasonId }: RoleTableProps) {
   const [expandedRoles, setExpandedRoles] = useState<Set<string>>(new Set());
 
-  // Funkcja do pobierania ikony roli - przeniesiona z komponentu serwerowego
-  const getRoleIcon = (roleName: string): string => {
-    const roleIconMappings: Record<string, string> = {
-      'Crewmate': 'placeholder.png',
-      'Impostor': 'placeholder.png',
-      'Sheriff': 'sheriff.png',
-      'Engineer': 'engineer.png',
-      'Medic': 'medic.png',
-      'Investigator': 'investigator.png',
-      'Mystic': 'mystic.png',
-      'Detective': 'detective.png',
-      'Seer': 'seer.png',
-      'Spy': 'spy.png',
-      'Snitch': 'snitch.png',
-      'Altruist': 'altruist.png',
-      'Medium': 'medium.png',
-      'Swapper': 'swapper.png',
-      'Transporter': 'transporter.png',
-      'Tracker': 'tracker.png',
-      'Trapper': 'trapper.png',
-      'Mayor': 'politician.png',
-      'Politician': 'politician.png',
-      'Vigilante': 'vigilante.png',
-      'Veteran': 'veteran.png',
-      'Hunter': 'hunter.png',
-      'Deputy': 'deputy.png',
-      'Undertaker': 'undertaker.png',
-      'Imitator': 'imitator.png',
-      'Prosecutor': 'prosecutor.png',
-      'Oracle': 'oracle.png',
-      'Aurial': 'aurial.png',
-      'Lookout': 'lookout.png',
-      'Jailor': 'jailor.png',
-      'Morphling': 'morphling.png',
-      'Swooper': 'swooper.png',
-      'Miner': 'miner.png',
-      'Escapist': 'escapist.png',
-      'Grenadier': 'grenadier.png',
-      'Traitor': 'traitor.png',
-      'Blackmailer': 'blackmailer.png',
-      'Janitor': 'janitor.png',
-      'Vampire': 'vampire.png',
-      'Hypnotist': 'hypnotist.png',
-      'Bomber': 'bomber.png',
-      'Warlock': 'warlock.png',
-      'Venerer': 'venerer.png',
-      'Jester': 'jester.png',
-      'Executioner': 'executioner.png',
-      'Arsonist': 'arsonist.png',
-      'Plaguebearer': 'plaguebearer.png',
-      'Pestilence': 'plaguebearer.png',
-      'Glitch': 'glitch.png',
-      'Juggernaut': 'juggernaut.png',
-      'Survivor': 'survivor.png',
-      'Guardian Angel': 'guardian_angel.png',
-      'GuardianAngel': 'guardian_angel.png',
-      'Amnesiac': 'amnesiac.png',
-      'Phantom': 'phantom.png',
-      'Doomsayer': 'doomsayer.png',
-      'Scavenger': 'scavenger.png',
-      'Soul Collector': 'soul_collector.png',
-      'Mercenary': 'mercenary.png',
-      'Cleric': 'cleric.png',
-      'Warden': 'warden.png',
-      'Plumber': 'plumber.png',
-      'Eclipsal': 'eclipsal.png',
-      'Haunter': 'haunter.png',
-      'Werewolf': 'werewolf.png'
-    };
-    
-    return roleIconMappings[roleName] || 'placeholder.png';
-  };
+  // Icons come from the season-aware resolver, not a local map. There were four independent
+  // role->icon mechanisms in this repo and they had already drifted: this one hardcoded 63
+  // pairs under /images/roles/ and fell back to placeholder.png, so every TOU-Mira role rendered
+  // blank. See #308.
 
   const toggleRoleExpansion = (roleName: string) => {
     const newExpanded = new Set(expandedRoles);
@@ -281,7 +214,7 @@ export default function RoleTable({ roles, reversedGames, detailedGames, date, h
                   </td>
                   <td className="px-2 py-1 flex items-center gap-2">
                     <Image 
-                      src={`/images/roles/${getRoleIcon(role.name)}`} 
+                      src={getRoleIconPath(role.name, seasonId)} 
                       alt={role.displayName} 
                       width={32} 
                       height={32} 

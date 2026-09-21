@@ -11,6 +11,7 @@ export interface SlimRole {
     team: string;
     color: string;
     icon: string;
+    subgroup: string | null;
 }
 
 /** Roles as they existed up to and including season 3. */
@@ -20,420 +21,480 @@ export const LEGACY_ROLE_INDEX: readonly SlimRole[] = [
         "name": "Altruist",
         "team": "Crewmate",
         "color": "#660000",
-        "icon": "/images/roles/altruist.png"
+        "icon": "/images/roles/altruist.png",
+        "subgroup": "protective"
     },
     {
         "id": "amnesiac",
         "name": "Amnesiac",
         "team": "Neutral",
         "color": "#80B2FF",
-        "icon": "/images/roles/amnesiac.png"
+        "icon": "/images/roles/amnesiac.png",
+        "subgroup": "benign"
     },
     {
         "id": "arsonist",
         "name": "Arsonist",
         "team": "Neutral",
         "color": "#FF4D00",
-        "icon": "/images/roles/arsonist.png"
+        "icon": "/images/roles/arsonist.png",
+        "subgroup": "killing"
     },
     {
         "id": "aurial",
         "name": "Aurial",
         "team": "Crewmate",
         "color": "#B23CB3",
-        "icon": "/images/roles/aurial.png"
+        "icon": "/images/roles/aurial.png",
+        "subgroup": "investigative"
     },
     {
         "id": "blackmailer",
         "name": "Blackmailer",
         "team": "Impostor",
         "color": "#FF0000",
-        "icon": "/images/roles/blackmailer.png"
+        "icon": "/images/roles/blackmailer.png",
+        "subgroup": "support"
     },
     {
         "id": "bomber",
         "name": "Bomber",
         "team": "Impostor",
         "color": "#FF0000",
-        "icon": "/images/roles/bomber.png"
+        "icon": "/images/roles/bomber.png",
+        "subgroup": "killing"
     },
     {
         "id": "cleric",
         "name": "Cleric",
         "team": "Crewmate",
         "color": "#00FFB2",
-        "icon": "/images/roles/cleric.png"
+        "icon": "/images/roles/cleric.png",
+        "subgroup": "protective"
     },
     {
         "id": "deputy",
         "name": "Deputy",
         "team": "Crewmate",
         "color": "#FFCC00",
-        "icon": "/images/roles/deputy.png"
+        "icon": "/images/roles/deputy.png",
+        "subgroup": "killing"
     },
     {
         "id": "detective",
         "name": "Detective",
         "team": "Crewmate",
         "color": "#4D4DFF",
-        "icon": "/images/roles/detective.png"
+        "icon": "/images/roles/detective.png",
+        "subgroup": "unknown"
     },
     {
         "id": "doomsayer",
         "name": "Doomsayer",
         "team": "Neutral",
         "color": "#00d96d",
-        "icon": "/images/roles/doomsayer.png"
+        "icon": "/images/roles/doomsayer.png",
+        "subgroup": "evil"
     },
     {
         "id": "eclipsal",
         "name": "Eclipsal",
         "team": "Impostor",
         "color": "#FF0000",
-        "icon": "/images/roles/eclipsal.png"
+        "icon": "/images/roles/eclipsal.png",
+        "subgroup": "concealing"
     },
     {
         "id": "engineer",
         "name": "Engineer",
         "team": "Crewmate",
         "color": "#FFA604",
-        "icon": "/images/roles/engineer.png"
+        "icon": "/images/roles/engineer.png",
+        "subgroup": "support"
     },
     {
         "id": "escapist",
         "name": "Escapist",
         "team": "Impostor",
         "color": "#FF0000",
-        "icon": "/images/roles/escapist.png"
+        "icon": "/images/roles/escapist.png",
+        "subgroup": "concealing"
     },
     {
         "id": "executioner",
         "name": "Executioner",
         "team": "Neutral",
         "color": "#8C4005",
-        "icon": "/images/roles/executioner.png"
+        "icon": "/images/roles/executioner.png",
+        "subgroup": "evil"
     },
     {
         "id": "glitch",
         "name": "Glitch",
         "team": "Neutral",
         "color": "#00FF00",
-        "icon": "/images/roles/glitch.png"
+        "icon": "/images/roles/glitch.png",
+        "subgroup": "killing"
     },
     {
         "id": "grenadier",
         "name": "Grenadier",
         "team": "Impostor",
         "color": "#FF0000",
-        "icon": "/images/roles/grenadier.png"
+        "icon": "/images/roles/grenadier.png",
+        "subgroup": "concealing"
     },
     {
         "id": "guardian_angel",
         "name": "Guardian Angel",
         "team": "Neutral",
         "color": "#B3FFFF",
-        "icon": "/images/roles/guardian_angel.png"
+        "icon": "/images/roles/guardian_angel.png",
+        "subgroup": "unknown"
     },
     {
         "id": "haunter",
         "name": "Haunter",
         "team": "Crewmate",
         "color": "#D4D4D4",
-        "icon": "/images/roles/haunter.png"
+        "icon": "/images/roles/haunter.png",
+        "subgroup": "afterlife"
     },
     {
         "id": "hunter",
         "name": "Hunter",
         "team": "Crewmate",
         "color": "#29AA88",
-        "icon": "/images/roles/hunter.png"
+        "icon": "/images/roles/hunter.png",
+        "subgroup": "killing"
     },
     {
         "id": "hypnotist",
         "name": "Hypnotist",
         "team": "Impostor",
         "color": "#FF0000",
-        "icon": "/images/roles/hypnotist.png"
+        "icon": "/images/roles/hypnotist.png",
+        "subgroup": "support"
     },
     {
         "id": "imitator",
         "name": "Imitator",
         "team": "Crewmate",
         "color": "#B3D94D",
-        "icon": "/images/roles/imitator.png"
+        "icon": "/images/roles/imitator.png",
+        "subgroup": "support"
     },
     {
         "id": "investigator",
         "name": "Investigator",
         "team": "Crewmate",
         "color": "#00B2B2",
-        "icon": "/images/roles/investigator.png"
+        "icon": "/images/roles/investigator.png",
+        "subgroup": "investigative"
     },
     {
         "id": "jailor",
         "name": "Jailor",
         "team": "Crewmate",
         "color": "#A5A5A5",
-        "icon": "/images/roles/jailor.png"
+        "icon": "/images/roles/jailor.png",
+        "subgroup": "power"
     },
     {
         "id": "janitor",
         "name": "Janitor",
         "team": "Impostor",
         "color": "#FF0000",
-        "icon": "/images/roles/janitor.png"
+        "icon": "/images/roles/janitor.png",
+        "subgroup": "support"
     },
     {
         "id": "jester",
         "name": "Jester",
         "team": "Neutral",
         "color": "#FFBFCF",
-        "icon": "/images/roles/jester.png"
+        "icon": "/images/roles/jester.png",
+        "subgroup": "evil"
     },
     {
         "id": "juggernaut",
         "name": "Juggernaut",
         "team": "Neutral",
         "color": "#8C004D",
-        "icon": "/images/roles/juggernaut.png"
+        "icon": "/images/roles/juggernaut.png",
+        "subgroup": "killing"
     },
     {
         "id": "lookout",
         "name": "Lookout",
         "team": "Crewmate",
         "color": "#33FF66",
-        "icon": "/images/roles/lookout.png"
+        "icon": "/images/roles/lookout.png",
+        "subgroup": "investigative"
     },
     {
         "id": "medic",
         "name": "Medic",
         "team": "Crewmate",
         "color": "#006400",
-        "icon": "/images/roles/medic.png"
+        "icon": "/images/roles/medic.png",
+        "subgroup": "protective"
     },
     {
         "id": "medium",
         "name": "Medium",
         "team": "Crewmate",
         "color": "#A680FF",
-        "icon": "/images/roles/medium.png"
+        "icon": "/images/roles/medium.png",
+        "subgroup": "investigative"
     },
     {
         "id": "mercenary",
         "name": "Mercenary",
         "team": "Neutral",
         "color": "#8C6699",
-        "icon": "/images/roles/mercenary.png"
+        "icon": "/images/roles/mercenary.png",
+        "subgroup": "benign"
     },
     {
         "id": "miner",
         "name": "Miner",
         "team": "Impostor",
         "color": "#FF0000",
-        "icon": "/images/roles/miner.png"
+        "icon": "/images/roles/miner.png",
+        "subgroup": "support"
     },
     {
         "id": "morphling",
         "name": "Morphling",
         "team": "Impostor",
         "color": "#FF0000",
-        "icon": "/images/roles/morphling.png"
+        "icon": "/images/roles/morphling.png",
+        "subgroup": "concealing"
     },
     {
         "id": "mystic",
         "name": "Mystic",
         "team": "Crewmate",
         "color": "#4C99E5",
-        "icon": "/images/roles/mystic.png"
+        "icon": "/images/roles/mystic.png",
+        "subgroup": "investigative"
     },
     {
         "id": "oracle",
         "name": "Oracle",
         "team": "Crewmate",
         "color": "#BF00BF",
-        "icon": "/images/roles/oracle.png"
+        "icon": "/images/roles/oracle.png",
+        "subgroup": "protective"
     },
     {
         "id": "phantom",
         "name": "Phantom",
         "team": "Neutral",
         "color": "#662966",
-        "icon": "/images/roles/phantom.png"
+        "icon": "/images/roles/phantom.png",
+        "subgroup": "unknown"
     },
     {
         "id": "plaguebearer",
         "name": "Plaguebearer / Pestilence",
         "team": "Neutral",
         "color": "#E6FFB3",
-        "icon": "/images/roles/plaguebearer.png"
+        "icon": "/images/roles/plaguebearer.png",
+        "subgroup": "killing"
     },
     {
         "id": "plumber",
         "name": "Plumber",
         "team": "Crewmate",
         "color": "#CC6600",
-        "icon": "/images/roles/plumber.png"
+        "icon": "/images/roles/plumber.png",
+        "subgroup": "support"
     },
     {
         "id": "politician",
         "name": "Politician / Mayor",
         "team": "Crewmate",
         "color": "#660099",
-        "icon": "/images/roles/politician.png"
+        "icon": "/images/roles/politician.png",
+        "subgroup": "power"
     },
     {
         "id": "prosecutor",
         "name": "Prosecutor",
         "team": "Crewmate",
         "color": "#B38000",
-        "icon": "/images/roles/prosecutor.png"
+        "icon": "/images/roles/prosecutor.png",
+        "subgroup": "power"
     },
     {
         "id": "scavenger",
         "name": "Scavenger",
         "team": "Impostor",
         "color": "#FF0000",
-        "icon": "/images/roles/scavenger.png"
+        "icon": "/images/roles/scavenger.png",
+        "subgroup": "killing"
     },
     {
         "id": "seer",
         "name": "Seer",
         "team": "Crewmate",
         "color": "#FFCC80",
-        "icon": "/images/roles/seer.png"
+        "icon": "/images/roles/seer.png",
+        "subgroup": "investigative"
     },
     {
         "id": "sheriff",
         "name": "Sheriff",
         "team": "Crewmate",
         "color": "#FFFF00",
-        "icon": "/images/roles/sheriff.png"
+        "icon": "/images/roles/sheriff.png",
+        "subgroup": "killing"
     },
     {
         "id": "snitch",
         "name": "Snitch",
         "team": "Crewmate",
         "color": "#D4B11A",
-        "icon": "/images/roles/snitch.png"
+        "icon": "/images/roles/snitch.png",
+        "subgroup": "investigative"
     },
     {
         "id": "soul_collector",
         "name": "Soul Collector",
         "team": "Neutral",
         "color": "#12e2bb",
-        "icon": "/images/roles/soul_collector.png"
+        "icon": "/images/roles/soul_collector.png",
+        "subgroup": "killing"
     },
     {
         "id": "spy",
         "name": "Spy",
         "team": "Crewmate",
         "color": "#CCA3CC",
-        "icon": "/images/roles/spy.png"
+        "icon": "/images/roles/spy.png",
+        "subgroup": "investigative"
     },
     {
         "id": "survivor",
         "name": "Survivor",
         "team": "Neutral",
         "color": "#FFEB4D",
-        "icon": "/images/roles/survivor.png"
+        "icon": "/images/roles/survivor.png",
+        "subgroup": "benign"
     },
     {
         "id": "swapper",
         "name": "Swapper",
         "team": "Crewmate",
         "color": "#66E666",
-        "icon": "/images/roles/swapper.png"
+        "icon": "/images/roles/swapper.png",
+        "subgroup": "power"
     },
     {
         "id": "swooper",
         "name": "Swooper",
         "team": "Impostor",
         "color": "#FF0000",
-        "icon": "/images/roles/swooper.png"
+        "icon": "/images/roles/swooper.png",
+        "subgroup": "concealing"
     },
     {
         "id": "tracker",
         "name": "Tracker",
         "team": "Crewmate",
         "color": "#009900",
-        "icon": "/images/roles/tracker.png"
+        "icon": "/images/roles/tracker.png",
+        "subgroup": null
     },
     {
         "id": "traitor",
         "name": "Traitor",
         "team": "Impostor",
         "color": "#FF0000",
-        "icon": "/images/roles/traitor.png"
+        "icon": "/images/roles/traitor.png",
+        "subgroup": "power"
     },
     {
         "id": "transporter",
         "name": "Transporter",
         "team": "Crewmate",
         "color": "#00ECFF",
-        "icon": "/images/roles/transporter.png"
+        "icon": "/images/roles/transporter.png",
+        "subgroup": "support"
     },
     {
         "id": "trapper",
         "name": "Trapper",
         "team": "Crewmate",
         "color": "#A5D1B2",
-        "icon": "/images/roles/trapper.png"
+        "icon": "/images/roles/trapper.png",
+        "subgroup": "investigative"
     },
     {
         "id": "undertaker",
         "name": "Undertaker",
         "team": "Impostor",
         "color": "#FF0000",
-        "icon": "/images/roles/undertaker.png"
+        "icon": "/images/roles/undertaker.png",
+        "subgroup": "support"
     },
     {
         "id": "vampire",
         "name": "Vampire",
         "team": "Neutral",
         "color": "#747474",
-        "icon": "/images/roles/vampire.png"
+        "icon": "/images/roles/vampire.png",
+        "subgroup": "killing"
     },
     {
         "id": "venerer",
         "name": "Venerer",
         "team": "Impostor",
         "color": "#FF0000",
-        "icon": "/images/roles/venerer.png"
+        "icon": "/images/roles/venerer.png",
+        "subgroup": "concealing"
     },
     {
         "id": "veteran",
         "name": "Veteran",
         "team": "Crewmate",
         "color": "#998033",
-        "icon": "/images/roles/veteran.png"
+        "icon": "/images/roles/veteran.png",
+        "subgroup": "killing"
     },
     {
         "id": "vigilante",
         "name": "Vigilante",
         "team": "Crewmate",
         "color": "#FFFF99",
-        "icon": "/images/roles/vigilante.png"
+        "icon": "/images/roles/vigilante.png",
+        "subgroup": "killing"
     },
     {
         "id": "warden",
         "name": "Warden",
         "team": "Crewmate",
         "color": "#9900FF",
-        "icon": "/images/roles/warden.png"
+        "icon": "/images/roles/warden.png",
+        "subgroup": "protective"
     },
     {
         "id": "warlock",
         "name": "Warlock",
         "team": "Impostor",
         "color": "#FF0000",
-        "icon": "/images/roles/warlock.png"
+        "icon": "/images/roles/warlock.png",
+        "subgroup": "killing"
     },
     {
         "id": "werewolf",
         "name": "Werewolf",
         "team": "Neutral",
         "color": "#8F4C18",
-        "icon": "/images/roles/werewolf.png"
+        "icon": "/images/roles/werewolf.png",
+        "subgroup": "killing"
     }
 ];
 
@@ -444,538 +505,615 @@ export const MIRA_ROLE_INDEX: readonly SlimRole[] = [
         "name": "Altruist",
         "team": "Crewmate",
         "color": "#660000",
-        "icon": "/images/mira/roles/Altruist.png"
+        "icon": "/images/mira/roles/Altruist.png",
+        "subgroup": "protective"
     },
     {
         "id": "mira_ambassador",
         "name": "Ambassador",
         "team": "Impostor",
         "color": "#FF1919",
-        "icon": "/images/mira/roles/Ambassador.png"
+        "icon": "/images/mira/roles/Ambassador.png",
+        "subgroup": "power"
     },
     {
         "id": "mira_ambusher",
         "name": "Ambusher",
         "team": "Impostor",
         "color": "#FF1919",
-        "icon": "/images/mira/roles/Ambusher.png"
+        "icon": "/images/mira/roles/Ambusher.png",
+        "subgroup": "killing"
     },
     {
         "id": "mira_amnesiac",
         "name": "Amnesiac",
         "team": "Neutral",
         "color": "#80B3FF",
-        "icon": "/images/mira/roles/Amnesiac.png"
+        "icon": "/images/mira/roles/Amnesiac.png",
+        "subgroup": "benign"
     },
     {
         "id": "mira_arsonist",
         "name": "Arsonist",
         "team": "Neutral",
         "color": "#FF4D00",
-        "icon": "/images/mira/roles/Arsonist.png"
+        "icon": "/images/mira/roles/Arsonist.png",
+        "subgroup": "killing"
     },
     {
         "id": "mira_aurial",
         "name": "Aurial",
         "team": "Crewmate",
         "color": "#B34D99",
-        "icon": "/images/mira/roles/Aurial.png"
+        "icon": "/images/mira/roles/Aurial.png",
+        "subgroup": "investigative"
     },
     {
         "id": "mira_barkeeper",
         "name": "Barkeeper",
         "team": "Crewmate",
         "color": "#e3d477",
-        "icon": "/images/mira/roles/Barkeeper.png"
+        "icon": "/images/mira/roles/Barkeeper.png",
+        "subgroup": "protective"
     },
     {
         "id": "mira_blackmailer",
         "name": "Blackmailer",
         "team": "Impostor",
         "color": "#FF1919",
-        "icon": "/images/mira/roles/Blackmailer.png"
+        "icon": "/images/mira/roles/Blackmailer.png",
+        "subgroup": "support"
     },
     {
         "id": "mira_bomber",
         "name": "Bomber",
         "team": "Impostor",
         "color": "#FF1919",
-        "icon": "/images/mira/roles/Bomber.png"
+        "icon": "/images/mira/roles/Bomber.png",
+        "subgroup": "killing"
     },
     {
         "id": "mira_bootlegger",
         "name": "Bootlegger",
         "team": "Impostor",
         "color": "#FF1919",
-        "icon": "/images/mira/roles/Bootlegger.png"
+        "icon": "/images/mira/roles/Bootlegger.png",
+        "subgroup": "support"
     },
     {
         "id": "mira_chef",
         "name": "Chef",
         "team": "Neutral",
         "color": "#DAA267",
-        "icon": "/images/mira/roles/Chef.png"
+        "icon": "/images/mira/roles/Chef.png",
+        "subgroup": "outlier"
     },
     {
         "id": "mira_cleric",
         "name": "Cleric",
         "team": "Crewmate",
         "color": "#00FFB2",
-        "icon": "/images/mira/roles/Cleric.png"
+        "icon": "/images/mira/roles/Cleric.png",
+        "subgroup": "protective"
     },
     {
         "id": "mira_deputy",
         "name": "Deputy",
         "team": "Crewmate",
         "color": "#FFCC00",
-        "icon": "/images/mira/roles/Deputy.png"
+        "icon": "/images/mira/roles/Deputy.png",
+        "subgroup": "killing"
     },
     {
         "id": "mira_doomsayer",
         "name": "Doomsayer",
         "team": "Neutral",
         "color": "#00FF80",
-        "icon": "/images/mira/roles/Doomsayer.png"
+        "icon": "/images/mira/roles/Doomsayer.png",
+        "subgroup": "evil"
     },
     {
         "id": "mira_eclipsal",
         "name": "Eclipsal",
         "team": "Impostor",
         "color": "#FF1919",
-        "icon": "/images/mira/roles/Eclipsal.png"
+        "icon": "/images/mira/roles/Eclipsal.png",
+        "subgroup": "concealing"
     },
     {
         "id": "mira_engineer",
         "name": "Engineer",
         "team": "Crewmate",
         "color": "#FFA60A",
-        "icon": "/images/mira/roles/Engineer.png"
+        "icon": "/images/mira/roles/Engineer.png",
+        "subgroup": "support"
     },
     {
         "id": "mira_escapist",
         "name": "Escapist",
         "team": "Impostor",
         "color": "#FF1919",
-        "icon": "/images/mira/roles/Escapist.png"
+        "icon": "/images/mira/roles/Escapist.png",
+        "subgroup": "concealing"
     },
     {
         "id": "mira_executioner",
         "name": "Executioner",
         "team": "Neutral",
         "color": "#633B1F",
-        "icon": "/images/mira/roles/Executioner.png"
+        "icon": "/images/mira/roles/Executioner.png",
+        "subgroup": "evil"
     },
     {
         "id": "mira_fairy",
         "name": "Fairy",
         "team": "Neutral",
         "color": "#B3FFFF",
-        "icon": "/images/mira/roles/Fairy.png"
+        "icon": "/images/mira/roles/Fairy.png",
+        "subgroup": "benign"
     },
     {
         "id": "mira_forensic",
         "name": "Forensic",
         "team": "Crewmate",
         "color": "#4D4DFF",
-        "icon": "/images/mira/roles/Forensic.png"
+        "icon": "/images/mira/roles/Forensic.png",
+        "subgroup": "investigative"
     },
     {
         "id": "mira_glitch",
         "name": "Glitch",
         "team": "Neutral",
         "color": "#00FF00",
-        "icon": "/images/mira/roles/Glitch.png"
+        "icon": "/images/mira/roles/Glitch.png",
+        "subgroup": "killing"
     },
     {
         "id": "mira_grenadier",
         "name": "Grenadier",
         "team": "Impostor",
         "color": "#FF1919",
-        "icon": "/images/mira/roles/Grenadier.png"
+        "icon": "/images/mira/roles/Grenadier.png",
+        "subgroup": "concealing"
     },
     {
         "id": "mira_haunter",
         "name": "Haunter",
         "team": "Crewmate",
         "color": "#D4D4D4",
-        "icon": "/images/mira/roles/Haunter.png"
+        "icon": "/images/mira/roles/Haunter.png",
+        "subgroup": "afterlife"
     },
     {
         "id": "mira_herbalist",
         "name": "Herbalist",
         "team": "Impostor",
         "color": "#FF1919",
-        "icon": "/images/mira/roles/Herbalist.png"
+        "icon": "/images/mira/roles/Herbalist.png",
+        "subgroup": "power"
     },
     {
         "id": "mira_hunter",
         "name": "Hunter",
         "team": "Crewmate",
         "color": "#29AB87",
-        "icon": "/images/mira/roles/Hunter.png"
+        "icon": "/images/mira/roles/Hunter.png",
+        "subgroup": "killing"
     },
     {
         "id": "mira_hypnotist",
         "name": "Hypnotist",
         "team": "Impostor",
         "color": "#FF1919",
-        "icon": "/images/mira/roles/Hypnotist.png"
+        "icon": "/images/mira/roles/Hypnotist.png",
+        "subgroup": "support"
     },
     {
         "id": "mira_imitator",
         "name": "Imitator",
         "team": "Crewmate",
         "color": "#B3D94D",
-        "icon": "/images/mira/roles/Imitator.png"
+        "icon": "/images/mira/roles/Imitator.png",
+        "subgroup": "support"
     },
     {
         "id": "mira_inquisitor",
         "name": "Inquisitor",
         "team": "Neutral",
         "color": "#D94291",
-        "icon": "/images/mira/roles/Inquisitor.png"
+        "icon": "/images/mira/roles/Inquisitor.png",
+        "subgroup": "outlier"
     },
     {
         "id": "mira_investigator",
         "name": "Investigator",
         "team": "Crewmate",
         "color": "#00B3B3",
-        "icon": "/images/mira/roles/Investigator.png"
+        "icon": "/images/mira/roles/Investigator.png",
+        "subgroup": "investigative"
     },
     {
         "id": "mira_jailor",
         "name": "Jailor",
         "team": "Crewmate",
         "color": "#A6A6A6",
-        "icon": "/images/mira/roles/Jailor.png"
+        "icon": "/images/mira/roles/Jailor.png",
+        "subgroup": "power"
     },
     {
         "id": "mira_janitor",
         "name": "Janitor",
         "team": "Impostor",
         "color": "#FF1919",
-        "icon": "/images/mira/roles/Janitor.png"
+        "icon": "/images/mira/roles/Janitor.png",
+        "subgroup": "support"
     },
     {
         "id": "mira_jester",
         "name": "Jester",
         "team": "Neutral",
         "color": "#FFBFCC",
-        "icon": "/images/mira/roles/Jester.png"
+        "icon": "/images/mira/roles/Jester.png",
+        "subgroup": "evil"
     },
     {
         "id": "mira_juggernaut",
         "name": "Juggernaut",
         "team": "Neutral",
         "color": "#8C004D",
-        "icon": "/images/mira/roles/Juggernaut.png"
+        "icon": "/images/mira/roles/Juggernaut.png",
+        "subgroup": "killing"
     },
     {
         "id": "mira_lookout",
         "name": "Lookout",
         "team": "Crewmate",
         "color": "#33FF66",
-        "icon": "/images/mira/roles/Lookout.png"
+        "icon": "/images/mira/roles/Lookout.png",
+        "subgroup": "investigative"
     },
     {
         "id": "mira_mayor",
         "name": "Mayor",
         "team": "Crewmate",
         "color": "#660099",
-        "icon": "/images/mira/roles/Mayor.png"
+        "icon": "/images/mira/roles/Mayor.png",
+        "subgroup": "power"
     },
     {
         "id": "mira_medic",
         "name": "Medic",
         "team": "Crewmate",
         "color": "#006400",
-        "icon": "/images/mira/roles/Medic.png"
+        "icon": "/images/mira/roles/Medic.png",
+        "subgroup": "protective"
     },
     {
         "id": "mira_medium",
         "name": "Medium",
         "team": "Crewmate",
         "color": "#A680FF",
-        "icon": "/images/mira/roles/Medium.png"
+        "icon": "/images/mira/roles/Medium.png",
+        "subgroup": "investigative"
     },
     {
         "id": "mira_medusa",
         "name": "Medusa",
         "team": "Neutral",
         "color": "#783edc",
-        "icon": "/images/mira/roles/Medusa.png"
+        "icon": "/images/mira/roles/Medusa.png",
+        "subgroup": "killing"
     },
     {
         "id": "mira_mercenary",
         "name": "Mercenary",
         "team": "Neutral",
         "color": "#8C6699",
-        "icon": "/images/mira/roles/Mercenary.png"
+        "icon": "/images/mira/roles/Mercenary.png",
+        "subgroup": "benign"
     },
     {
         "id": "mira_miner",
         "name": "Miner",
         "team": "Impostor",
         "color": "#FF1919",
-        "icon": "/images/mira/roles/Miner.png"
+        "icon": "/images/mira/roles/Miner.png",
+        "subgroup": "support"
     },
     {
         "id": "mira_mirrorcaster",
         "name": "Mirrorcaster",
         "team": "Crewmate",
         "color": "#90A2C3",
-        "icon": "/images/mira/roles/Mirrorcaster.png"
+        "icon": "/images/mira/roles/Mirrorcaster.png",
+        "subgroup": "protective"
     },
     {
         "id": "mira_monarch",
         "name": "Monarch",
         "team": "Crewmate",
         "color": "#EA535B",
-        "icon": "/images/mira/roles/Monarch.png"
+        "icon": "/images/mira/roles/Monarch.png",
+        "subgroup": "power"
     },
     {
         "id": "mira_morphling",
         "name": "Morphling",
         "team": "Impostor",
         "color": "#FF1919",
-        "icon": "/images/mira/roles/Morphling.png"
+        "icon": "/images/mira/roles/Morphling.png",
+        "subgroup": "concealing"
     },
     {
         "id": "mira_mystic",
         "name": "Mystic",
         "team": "Crewmate",
         "color": "#4D99E6",
-        "icon": "/images/mira/roles/Mystic.png"
+        "icon": "/images/mira/roles/Mystic.png",
+        "subgroup": "investigative"
     },
     {
         "id": "mira_officer",
         "name": "Officer",
         "team": "Crewmate",
         "color": "#4D99FF",
-        "icon": "/images/mira/roles/Officer.png"
+        "icon": "/images/mira/roles/Officer.png",
+        "subgroup": "killing"
     },
     {
         "id": "mira_oracle",
         "name": "Oracle",
         "team": "Crewmate",
         "color": "#BF00BF",
-        "icon": "/images/mira/roles/Oracle.png"
+        "icon": "/images/mira/roles/Oracle.png",
+        "subgroup": "protective"
     },
     {
         "id": "mira_parasite",
         "name": "Parasite",
         "team": "Impostor",
         "color": "#FF1919",
-        "icon": "/images/mira/roles/Parasite.png"
+        "icon": "/images/mira/roles/Parasite.png",
+        "subgroup": "killing"
     },
     {
         "id": "mira_pestilence",
         "name": "Pestilence",
         "team": "Neutral",
         "color": "#606870",
-        "icon": "/images/mira/roles/Pestilence.png"
+        "icon": "/images/mira/roles/Pestilence.png",
+        "subgroup": "killing"
     },
     {
         "id": "mira_plaguebearer",
         "name": "Plaguebearer",
         "team": "Neutral",
         "color": "#E6FFB3",
-        "icon": "/images/mira/roles/Plaguebearer.png"
+        "icon": "/images/mira/roles/Plaguebearer.png",
+        "subgroup": "killing"
     },
     {
         "id": "mira_plumber",
         "name": "Plumber",
         "team": "Crewmate",
         "color": "#CC6600",
-        "icon": "/images/mira/roles/Plumber.png"
+        "icon": "/images/mira/roles/Plumber.png",
+        "subgroup": "support"
     },
     {
         "id": "mira_politician",
         "name": "Politician",
         "team": "Crewmate",
         "color": "#660099",
-        "icon": "/images/mira/roles/Politician.png"
+        "icon": "/images/mira/roles/Politician.png",
+        "subgroup": "power"
     },
     {
         "id": "mira_prosecutor",
         "name": "Prosecutor",
         "team": "Crewmate",
         "color": "#B38000",
-        "icon": "/images/mira/roles/Prosecutor.png"
+        "icon": "/images/mira/roles/Prosecutor.png",
+        "subgroup": "power"
     },
     {
         "id": "mira_puppeteer",
         "name": "Puppeteer",
         "team": "Impostor",
         "color": "#FF1919",
-        "icon": "/images/mira/roles/Puppeteer.png"
+        "icon": "/images/mira/roles/Puppeteer.png",
+        "subgroup": "power"
     },
     {
         "id": "mira_scavenger",
         "name": "Scavenger",
         "team": "Impostor",
         "color": "#FF1919",
-        "icon": "/images/mira/roles/Scavenger.png"
+        "icon": "/images/mira/roles/Scavenger.png",
+        "subgroup": "killing"
     },
     {
         "id": "mira_seer",
         "name": "Seer",
         "team": "Crewmate",
         "color": "#FFCC80",
-        "icon": "/images/mira/roles/Seer.png"
+        "icon": "/images/mira/roles/Seer.png",
+        "subgroup": "investigative"
     },
     {
         "id": "mira_sentry",
         "name": "Sentry",
         "team": "Crewmate",
         "color": "#6496C8",
-        "icon": "/images/mira/roles/Sentry.png"
+        "icon": "/images/mira/roles/Sentry.png",
+        "subgroup": "support"
     },
     {
         "id": "mira_sheriff",
         "name": "Sheriff",
         "team": "Crewmate",
         "color": "#FFFF00",
-        "icon": "/images/mira/roles/Sheriff.png"
+        "icon": "/images/mira/roles/Sheriff.png",
+        "subgroup": "killing"
     },
     {
         "id": "mira_snitch",
         "name": "Snitch",
         "team": "Crewmate",
         "color": "#D4AF37",
-        "icon": "/images/mira/roles/Snitch.png"
+        "icon": "/images/mira/roles/Snitch.png",
+        "subgroup": "investigative"
     },
     {
         "id": "mira_sonar",
         "name": "Sonar",
         "team": "Crewmate",
         "color": "#4ECF88",
-        "icon": "/images/mira/roles/Sonar.png"
+        "icon": "/images/mira/roles/Sonar.png",
+        "subgroup": "investigative"
     },
     {
         "id": "mira_spectre",
         "name": "Spectre",
         "team": "Neutral",
         "color": "#662961",
-        "icon": "/images/mira/roles/Spectre.png"
+        "icon": "/images/mira/roles/Spectre.png",
+        "subgroup": "afterlife"
     },
     {
         "id": "mira_spellslinger",
         "name": "Spellslinger",
         "team": "Impostor",
         "color": "#FF1919",
-        "icon": "/images/mira/roles/Spellslinger.png"
+        "icon": "/images/mira/roles/Spellslinger.png",
+        "subgroup": "power"
     },
     {
         "id": "mira_spy",
         "name": "Spy",
         "team": "Crewmate",
         "color": "#CCA3CC",
-        "icon": "/images/mira/roles/Spy.png"
+        "icon": "/images/mira/roles/Spy.png",
+        "subgroup": "investigative"
     },
     {
         "id": "mira_survivor",
         "name": "Survivor",
         "team": "Neutral",
         "color": "#FFE64D",
-        "icon": "/images/mira/roles/Survivor.png"
+        "icon": "/images/mira/roles/Survivor.png",
+        "subgroup": "benign"
     },
     {
         "id": "mira_swapper",
         "name": "Swapper",
         "team": "Crewmate",
         "color": "#66E666",
-        "icon": "/images/mira/roles/Swapper.png"
+        "icon": "/images/mira/roles/Swapper.png",
+        "subgroup": "power"
     },
     {
         "id": "mira_swooper",
         "name": "Swooper",
         "team": "Impostor",
         "color": "#FF1919",
-        "icon": "/images/mira/roles/Swooper.png"
+        "icon": "/images/mira/roles/Swooper.png",
+        "subgroup": "concealing"
     },
     {
         "id": "mira_time_lord",
         "name": "Time Lord",
         "team": "Crewmate",
         "color": "#8789D3",
-        "icon": "/images/mira/roles/TimeLord.png"
+        "icon": "/images/mira/roles/TimeLord.png",
+        "subgroup": "power"
     },
     {
         "id": "mira_traitor",
         "name": "Traitor",
         "team": "Impostor",
         "color": "#FF1919",
-        "icon": "/images/mira/roles/Traitor.png"
+        "icon": "/images/mira/roles/Traitor.png",
+        "subgroup": "power"
     },
     {
         "id": "mira_transporter",
         "name": "Transporter",
         "team": "Crewmate",
         "color": "#00EDFF",
-        "icon": "/images/mira/roles/Transporter.png"
+        "icon": "/images/mira/roles/Transporter.png",
+        "subgroup": "support"
     },
     {
         "id": "mira_trapper",
         "name": "Trapper",
         "team": "Crewmate",
         "color": "#A7D1B3",
-        "icon": "/images/mira/roles/Trapper.png"
+        "icon": "/images/mira/roles/Trapper.png",
+        "subgroup": "investigative"
     },
     {
         "id": "mira_undertaker",
         "name": "Undertaker",
         "team": "Impostor",
         "color": "#FF1919",
-        "icon": "/images/mira/roles/Undertaker.png"
+        "icon": "/images/mira/roles/Undertaker.png",
+        "subgroup": "support"
     },
     {
         "id": "mira_vampire",
         "name": "Vampire",
         "team": "Neutral",
         "color": "#A32929",
-        "icon": "/images/mira/roles/Vampire.png"
+        "icon": "/images/mira/roles/Vampire.png",
+        "subgroup": "killing"
     },
     {
         "id": "mira_venerer",
         "name": "Venerer",
         "team": "Impostor",
         "color": "#FF1919",
-        "icon": "/images/mira/roles/Venerer.png"
+        "icon": "/images/mira/roles/Venerer.png",
+        "subgroup": "concealing"
     },
     {
         "id": "mira_veteran",
         "name": "Veteran",
         "team": "Crewmate",
         "color": "#998040",
-        "icon": "/images/mira/roles/Veteran.png"
+        "icon": "/images/mira/roles/Veteran.png",
+        "subgroup": "killing"
     },
     {
         "id": "mira_vigilante",
         "name": "Vigilante",
         "team": "Crewmate",
         "color": "#FFFF99",
-        "icon": "/images/mira/roles/Vigilante.png"
+        "icon": "/images/mira/roles/Vigilante.png",
+        "subgroup": "killing"
     },
     {
         "id": "mira_warden",
         "name": "Warden",
         "team": "Crewmate",
         "color": "#9900FF",
-        "icon": "/images/mira/roles/Warden.png"
+        "icon": "/images/mira/roles/Warden.png",
+        "subgroup": "protective"
     },
     {
         "id": "mira_warlock",
         "name": "Warlock",
         "team": "Impostor",
         "color": "#FF1919",
-        "icon": "/images/mira/roles/Warlock.png"
+        "icon": "/images/mira/roles/Warlock.png",
+        "subgroup": "killing"
     },
     {
         "id": "mira_werewolf",
         "name": "Werewolf",
         "team": "Neutral",
         "color": "#A86629",
-        "icon": "/images/mira/roles/Werewolf.png"
+        "icon": "/images/mira/roles/Werewolf.png",
+        "subgroup": "killing"
     }
 ];

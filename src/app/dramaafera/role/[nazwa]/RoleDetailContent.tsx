@@ -3,7 +3,7 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import { RoleImage } from "../_components/RoleImage";
 import { getAllGamesData, getDramaAferaSettings } from "../../_services";
-import { getRoleColor, convertRoleNameForDisplay, convertUrlSlugToRole, convertNickToUrlSlug, getPlayerAvatarPath } from "@/app/dramaafera/_utils/gameUtils";
+import { isKillerRole, getRoleColor, convertRoleNameForDisplay, convertUrlSlugToRole, convertNickToUrlSlug, getPlayerAvatarPath } from "@/app/dramaafera/_utils/gameUtils";
 import { buildSeasonUrl } from "@/app/dramaafera/_utils/seasonHelpers";
 import type { UIGameData, UIPlayerData } from "../../_services";
 import { Roles } from "@/roles";
@@ -55,20 +55,9 @@ interface PlayerRoleStats {
     incorrectKills?: number;
 }
 
-// Funkcja do sprawdzania czy rola jest rolą zabijającą
-function isKillerRole(roleName: string): boolean {
-    const killerRoles = [
-        'Impostor', 'Miner', 'Shapeshifter', 'Camouflager', 'Morphling', 'Swooper',
-        'Escapist', 'Grenadier', 'Venerer', 'Blackmailer', 'Janitor', 'Bomber',
-        'Warlock', 'Hypnotist', 'Eclipsal', 'Undertaker', 'Scavenger',
-        'Arsonist', 'Glitch', 'Juggernaut', 'Pestilence', 'Soul Collector', 'Vampire', 'Werewolf',
-        'Sheriff', 'Hunter', 'Veteran'
-    ];
-    return killerRoles.includes(roleName);
-}
 
 // Funkcja do generowania statystyk roli
-function generateRoleStats(allGames: UIGameData[], targetRole: string): RoleStats {
+function generateRoleStats(allGames: UIGameData[], targetRole: string, seasonId: number): RoleStats {
     let totalGamesPlayed = 0;
     let totalAppearances = 0;
     let totalWins = 0;
@@ -96,7 +85,7 @@ function generateRoleStats(allGames: UIGameData[], targetRole: string): RoleStat
     let correctSwaps = 0;
     let incorrectSwaps = 0;
 
-    const isKiller = isKillerRole(targetRole);
+    const isKiller = isKillerRole(targetRole, seasonId);
 
     const playerStats = new Map<string, {
         games: number;
@@ -280,7 +269,7 @@ export async function RoleDetailContent({ nazwa, seasonId }: RoleDetailContentPr
     const roleName = convertUrlSlugToRole(nazwa, allRoles);
 
     // Wygeneruj statystyki dla roli
-    const roleStats = generateRoleStats(games, roleName);
+    const roleStats = generateRoleStats(games, roleName, seasonId);
 
     if (roleStats.gamesPlayed === 0) {
         notFound();
@@ -364,6 +353,7 @@ export async function RoleDetailContent({ nazwa, seasonId }: RoleDetailContentPr
                             <div className="relative">
                                 <RoleImage
                                     roleName={roleName}
+                                    seasonId={seasonId}
                                     width={128}
                                     height={128}
                                     className="scale-[1.7]"

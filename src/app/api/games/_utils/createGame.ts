@@ -61,7 +61,7 @@ export async function createGameFromData(
     // role from roleHistory — a Traitor/Amnesiac wins with the team they ended
     // on, not the one they started in. Priority Impostor > Crewmate > Neutral
     // mirrors `calculateWinnerFromStats`, so the API and the UI agree.
-    const winnerTeams = winners.map(w => determineTeam(w.roleHistory, season));
+    const winnerTeams = winners.map(w => determineTeam(w.roleHistory, season, { strict: true }));
 
     if (winnerTeams.includes(Teams.Impostor)) {
       winnerTeam = Teams.Impostor;

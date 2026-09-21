@@ -30,18 +30,45 @@ function registryForSeason(season: number): readonly SlimRole[] {
   return season >= FIRST_MIRA_SEASON ? MIRA_ROLE_INDEX : LEGACY_ROLE_INDEX;
 }
 
+/**
+ * Vanilla Among Us roles, which exist in neither registry.
+ *
+ * `CorrectnessChecker.GetRoleName` in the mod falls back to `role.Role.ToString()` for anything
+ * that is not an `ICustomRole`, which emits the Among Us `RoleTypes` enum name. Real captures
+ * contain all four of these, and `NeutralGhostRole` additionally emits the literal
+ * `"Neutral Ghost"` when it has no underlying player. Without them the resolvers would reject or
+ * mangle every real match. Era-independent — vanilla is vanilla. See #308.
+ */
+const BASE_ROLES: readonly SlimRole[] = [
+  // Icons: the legacy set has no crewmate/impostor art, only Mira ships it, so both eras point
+  // at Mira's. Verified present.
+  { id: 'crewmate', name: 'Crewmate', team: Teams.Crewmate, color: '#00FFFF', icon: '/images/mira/roles/Crewmate.png', subgroup: null },
+  { id: 'impostor', name: 'Impostor', team: Teams.Impostor, color: '#FF0000', icon: '/images/mira/roles/Impostor.png', subgroup: null },
+  { id: 'crewmateghost', name: 'CrewmateGhost', team: Teams.Crewmate, color: '#00FFFF', icon: '/images/mira/roles/Crewmate.png', subgroup: null },
+  { id: 'impostorghost', name: 'ImpostorGhost', team: Teams.Impostor, color: '#FF0000', icon: '/images/mira/roles/Impostor.png', subgroup: null },
+  { id: 'neutralghost', name: 'Neutral Ghost', team: Teams.Neutral, color: '#A7A7A7', icon: '/images/roles/placeholder.png', subgroup: null },
+];
+
 /** Single lookup shared by every resolver, so they can never disagree about a role. */
 function findRole(roleName: string, season: number): SlimRole | undefined {
   const displayName = convertRoleNameForDisplay(roleName);
   const lowerRole = roleName.toLowerCase();
   const lowerDisplay = displayName.toLowerCase();
 
-  return registryForSeason(season).find(
-    (r) =>
-      r.id.toLowerCase() === lowerRole ||
-      r.name.toLowerCase() === lowerDisplay ||
-      r.name.toLowerCase() === lowerRole,
-  );
+  // Legacy bundles Plaguebearer and Pestilence into one entry named "Plaguebearer / Pestilence",
+  // so a season <= 3 game logging `Pestilence` has no direct match. Mira splits them and needs no
+  // alias. src/roles/pestilence.ts is a 0-byte file; this is the alias rather than a new role,
+  // because under legacy rules they really were the same entry. 88 rows in the database. See #308.
+  const aliased =
+    season < FIRST_MIRA_SEASON && lowerRole === 'pestilence' ? 'plaguebearer' : lowerRole;
+
+  const match = (r: SlimRole) =>
+    r.id.toLowerCase() === aliased ||
+    r.name.toLowerCase() === lowerDisplay ||
+    r.name.toLowerCase() === lowerRole;
+
+  // Era registry first, then the vanilla roles that live in neither.
+  return registryForSeason(season).find(match) ?? BASE_ROLES.find(match);
 }
 
 // ---------------------------------------------------------------------------
@@ -115,6 +142,24 @@ export function getRoleIconPath(roleName: string, season: number): string {
   return `/images/roles/${roleName.replace(/([a-z])([A-Z])/g, '$1_$2').toLowerCase()}.png`;
 }
 
+/**
+ * Can this role make a kill?
+ *
+ * Derived from the registry rather than listed by hand. `RoleDetailContent` carried a hardcoded
+ * list of 27 names that was already missing Deputy, Vigilante and Plaguebearer, and would have
+ * missed four more under TOU-Mira (Ambusher, Officer, Medusa, Parasite). When it said no, the
+ * kill counters were computed and then thrown away — the numbers were in the database and never
+ * rendered. See #308.
+ *
+ * Two sources, because "killing" is a subgroup but every Impostor role can kill regardless of
+ * whether it is filed under Killing, Concealing or Support.
+ */
+export function isKillerRole(roleName: string, season: number): boolean {
+  const role = findRole(roleName, season);
+  if (!role) return false;
+  return role.team === Teams.Impostor || role.subgroup === 'killing';
+}
+
 // ---------------------------------------------------------------------------
 // Color helpers
 // ---------------------------------------------------------------------------
@@ -160,8 +205,11 @@ export function getRoleColor(roleName: string, season: number): string {
 }
 
 export function getModifierColor(modifierName: string): string {
+  // The database stores the singular `Lover`; both registries call it `Lovers`. Without this the
+  // lookup misses and the modifier renders white. See #308.
+  const lookup = modifierName.toLowerCase() === 'lover' ? 'lovers' : modifierName;
   const modifier = Modifiers.find(m =>
-    m.name.toLowerCase() === modifierName.toLowerCase() ||
+    m.name.toLowerCase() === lookup.toLowerCase() ||
     m.id.toLowerCase() === modifierName.toLowerCase()
   );
   if (modifier) {
@@ -211,7 +259,19 @@ export function convertNickToUrlSlug(nick: string): string {
 // Team determination
 // ---------------------------------------------------------------------------
 
-export function determineTeam(roleName: string | string[], season: number): string {
+/**
+ * `strict` is for the ingest path only.
+ *
+ * A wrong team silently corrupts stored data — `createGame` derives `Game.winnerTeam` from this —
+ * so there it must fail loudly rather than guess, per #295. Rendering is different: throwing
+ * would 500 a whole stats page over one unrecognised role, which is worse than an imperfect
+ * label, so the display sites keep the lenient fallback and get a warning in the log instead.
+ */
+export function determineTeam(
+  roleName: string | string[],
+  season: number,
+  opts: { strict?: boolean } = {},
+): string {
   // Handle array input - use last role (final role) like old system
   if (Array.isArray(roleName) && roleName.length === 0) {
     return Teams.Crewmate;
@@ -227,8 +287,15 @@ export function determineTeam(roleName: string | string[], season: number): stri
     return role.team;
   }
 
-  // The silent Crewmate default below is a known defect — #308 owns replacing it. Kept here so
-  // this change stays behaviour-preserving for seasons 2 and 3.
+  if (opts.strict) {
+    throw new Error(
+      `Unknown role "${roleToCheck}" for season ${season}. ` +
+        `Add it to ${season >= FIRST_MIRA_SEASON ? 'src/mira/roles' : 'src/roles'} and re-run ` +
+        `\`npm run db:generate\`, or fix the role name at the source.`,
+    );
+  }
+
+  console.warn(`determineTeam: unresolved role "${roleToCheck}" for season ${season}; guessing.`);
 
   const impostorRoles = ['impostor', 'shapeshifter', 'morphling', 'swooper', 'glitch', 'venerer'];
   const neutralRoles = ['jester', 'executioner', 'arsonist', 'plaguebearer', 'doomsayer', 'amnesiac'];
