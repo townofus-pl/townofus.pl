@@ -209,7 +209,8 @@ export default function WynikiClient({ initialDates, initialResults, seasonId, l
             } else if (selectedDateType === 'lista') {
                 fetchListaCweliData(selectedPlainDate, true);
             }
-        }, 30000);
+            // 5 minut, nie 30 s — zob. #299. Dane zmieniają się tylko po wrzuceniu gry.
+        }, 300000);
 
         return () => clearInterval(interval);
     }, [seasonId, selectedDate, selectedDateType, selectedPlainDate, combinedDates, fetchResultsData, fetchListaCweliData]);

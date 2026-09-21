@@ -1,3 +1,4 @@
+import { cache } from 'react';
 import type { PrismaClient } from '@prisma/client';
 import { getDatabaseClient, buildSeasonGameWhere } from '../db';
 import { chunkedInQuery } from '@/app/api/_database';
@@ -172,7 +173,15 @@ export async function getGamesList(seasonId?: number): Promise<GameSummary[]> {
 }
 
 // Fetch games by specific date — direct DB query to avoid loading all games
-export async function getGamesListByDate(date: string, seasonId?: number): Promise<GameSummary[]> {
+// Wrapped in React `cache()` so it runs once per request, not once per caller. The podsumowanie
+// page calls it three times in one render — from getTopSigmas, getRankingAfterSession and
+// getSessionSummaryByDate — and each call re-reads the day's games and their stats. This is
+// request-scoped memoisation only; it does not survive the response, so it needs no invalidation.
+// See #299.
+export const getGamesListByDate = cache(async function getGamesListByDate(
+  date: string,
+  seasonId?: number,
+): Promise<GameSummary[]> {
   const prisma = await getDatabaseClient();
   if (!prisma) return [];
 
@@ -201,7 +210,7 @@ export async function getGamesListByDate(date: string, seasonId?: number): Promi
   });
 
   return games;
-}
+});
 
 // Fetch list of dates with games
 export async function getGameDatesList(seasonId?: number): Promise<DateWithGames[]> {

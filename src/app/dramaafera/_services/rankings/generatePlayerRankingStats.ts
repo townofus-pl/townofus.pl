@@ -1,6 +1,5 @@
 import type { PlayerRankingStats } from './types';
 import { getDatabaseClient } from '../db';
-import { withoutDeleted } from '@/app/api/schema/common';
 import { CURRENT_SEASON } from '@/app/dramaafera/_constants/seasons';
 
 // Generate player ranking statistics
@@ -10,43 +9,29 @@ export async function generatePlayerRankingStats(seasonId?: number): Promise<Pla
 
   const season = seasonId ?? CURRENT_SEASON;
 
-  const stats = await prisma.gamePlayerStatistics.findMany({
-    where: {
-      player: withoutDeleted,
-      game: {
-        ...withoutDeleted,
-        season,
-      },
-    },
-    select: {
-      win: true,
-      player: {
-        select: { name: true },
-      },
-    },
+  // Aggregate in SQL, not in JS: this read every stat row in the season (~5k) to return ~55
+  // grouped rows. D1 bills on rows read. See #299.
+  const rows = await prisma.$queryRaw<Array<{ name: string; played: number; won: number }>>`
+    SELECT
+      p.name,
+      COUNT(*) AS played,
+      SUM(CASE WHEN gps.win = 1 THEN 1 ELSE 0 END) AS won
+    FROM game_player_statistics gps
+    JOIN games g   ON g.id = gps.gameId AND g.season = ${season} AND g.deletedAt IS NULL
+    JOIN players p ON p.id = gps.playerId AND p.deletedAt IS NULL
+    GROUP BY p.name
+  `;
+
+  const rankingStats: PlayerRankingStats[] = rows.map((row) => {
+    const gamesPlayed = Number(row.played);
+    const wins = Number(row.won);
+    return {
+      name: row.name,
+      gamesPlayed,
+      wins,
+      winRate: gamesPlayed > 0 ? Math.round((wins / gamesPlayed) * 100) : 0,
+    };
   });
-
-  const playerStats = new Map<string, { played: number; won: number }>();
-
-  stats.forEach(stat => {
-    const playerName = stat.player?.name;
-    if (!playerName) return;
-    if (!playerStats.has(playerName)) {
-      playerStats.set(playerName, { played: 0, won: 0 });
-    }
-    const entry = playerStats.get(playerName)!;
-    entry.played += 1;
-    if (stat.win) {
-      entry.won += 1;
-    }
-  });
-
-  const rankingStats: PlayerRankingStats[] = Array.from(playerStats.entries()).map(([playerName, s]) => ({
-    name: playerName,
-    gamesPlayed: s.played,
-    wins: s.won,
-    winRate: s.played > 0 ? Math.round((s.won / s.played) * 100) : 0,
-  }));
 
   rankingStats.sort((a, b) => {
     if (a.winRate !== b.winRate) {

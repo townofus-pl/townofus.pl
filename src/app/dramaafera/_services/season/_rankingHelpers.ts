@@ -75,20 +75,28 @@ export async function getRankingSnapshots(
 
   // Mirror /ranking eligibility: include only players with a ranking row in the season
   // and at least one game stat in that season.
+  //
+  // Two EXISTS rather than two INNER JOINs + DISTINCT: the joins produced the full cross product
+  // of a player's ranking rows and their game stats before collapsing it, which measured 857 ms
+  // and ~10M rows read to return 52 names. EXISTS short-circuits on the first match.
+  // Measured 857 ms -> 1.28 ms, identical output. See #299.
   const seasonActiveRows = await prisma.$queryRaw<Array<{ playerName: string }>>`
-    SELECT DISTINCT p.name AS playerName
+    SELECT p.name AS playerName
     FROM players p
-    INNER JOIN player_rankings pr
-      ON pr.playerId = p.id
-      AND pr.season = ${season}
-      AND pr.deletedAt IS NULL
-    INNER JOIN game_player_statistics gps
-      ON gps.playerId = p.id
-    INNER JOIN games g
-      ON g.id = gps.gameId
-      AND g.season = ${season}
-      AND g.deletedAt IS NULL
     WHERE p.deletedAt IS NULL
+      AND EXISTS (
+        SELECT 1 FROM player_rankings pr
+        WHERE pr.playerId = p.id
+          AND pr.season = ${season}
+          AND pr.deletedAt IS NULL
+      )
+      AND EXISTS (
+        SELECT 1 FROM game_player_statistics gps
+        INNER JOIN games g ON g.id = gps.gameId
+        WHERE gps.playerId = p.id
+          AND g.season = ${season}
+          AND g.deletedAt IS NULL
+      )
   `;
 
   const seasonActiveNames = new Set(seasonActiveRows.map((r) => r.playerName));

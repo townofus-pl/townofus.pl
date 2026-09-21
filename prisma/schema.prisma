@@ -140,6 +140,9 @@ model GamePlayerStatistics {
     @@index([survivedRounds])
     @@index([gameId, win])
     @@index([playerId, win])
+    // Covering index for the per-season ranking aggregate (COUNT + SUM(win) grouped by player).
+    // Lets the planner satisfy it from the index alone instead of reading ~5k table rows. See #299.
+    @@index([gameId, playerId, win])
     @@map("game_player_statistics")
 }
 
@@ -336,6 +339,10 @@ model PlayerRanking {
     @@index([deletedAt])
     @@index([season])
     @@index([playerId, season, createdAt])
+    // Partial + covering: every "latest ranking per player within a season" query filters
+    // deletedAt IS NULL and groups by playerId. Keeps the biggest table (O(players x games),
+    // 28k rows and growing) out of the read path. See #299.
+    @@index([season, playerId, gameId, id], where: { deletedAt: null })
     @@map("player_rankings")
 }
 

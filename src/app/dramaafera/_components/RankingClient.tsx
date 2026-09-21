@@ -88,13 +88,16 @@ export default function RankingClient({ initialData, seasonId }: RankingClientPr
         }
     }, [seasonId]);
 
-    // Auto-odświeżanie co 30 sekund (tylko bieżący sezon)
+    // Auto-odświeżanie co 5 minut (tylko bieżący sezon).
+    // Było 30 s, co przy ~157 tys. odczytanych wierszy na wywołanie zjadało ~19 mln wierszy
+    // na godzinę z jednej otwartej karty — przy dziennym limicie D1 wynoszącym 5 mln. Dane
+    // zmieniają się wyłącznie po wrzuceniu gry, czyli kilka razy w trakcie wieczoru. Zob. #299.
     useEffect(() => {
         if (seasonId !== CURRENT_SEASON) return;
 
         const interval = setInterval(() => {
             fetchRankingData();
-        }, 30000);
+        }, 300000);
 
         return () => clearInterval(interval);
     }, [seasonId, fetchRankingData]);
