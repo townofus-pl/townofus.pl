@@ -137,3 +137,8 @@ export function buildMiraRoleSettings(cfgContent: string, roleName: string): Rec
 
     return out;
 }
+
+/** A BepInEx config always opens its role block with a `[Roles]` section. */
+export function looksLikeMiraConfig(content: string): boolean {
+    return /^\s*\[Roles\]\s*$/m.test(content);
+}

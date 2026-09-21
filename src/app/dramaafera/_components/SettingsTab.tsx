@@ -5,7 +5,7 @@ import { uploadSettingsAction } from '@/app/dramaafera/_actions/uploadSettingsAc
 import { MAX_SETTINGS_FILE_SIZE_BYTES } from '@/app/api/dramaafera/settings/utils';
 
 function validateClientFile(file: File): string | null {
-  if (!file.name.endsWith('.txt')) return 'Plik musi być w formacie .txt';
+  if (!file.name.endsWith('.cfg')) return 'Plik musi być w formacie .cfg';
   if (file.size === 0) return 'Plik nie może być pusty';
   if (file.size > MAX_SETTINGS_FILE_SIZE_BYTES) return 'Plik nie może być większy niż 5MB';
   return null;
@@ -132,12 +132,12 @@ export function SettingsTab() {
           </div>
           <div>
             <label htmlFor={normalFileInputId} className="block text-sm font-medium text-gray-300 mb-2">
-              Wybierz plik .txt
+              Wybierz plik .cfg
             </label>
             <input
               id={normalFileInputId}
               type="file"
-              accept=".txt"
+              accept=".cfg"
               onChange={(e) => {
                 setSelectedFile(e.target.files?.[0] ?? null);
                 setMessage(null);
@@ -221,12 +221,12 @@ export function SettingsTab() {
 
             <div>
               <label htmlFor={advancedFileInputId} className="block text-sm font-medium text-gray-300 mb-2">
-                Wybierz plik .txt
+                Wybierz plik .cfg
               </label>
               <input
                 id={advancedFileInputId}
                 type="file"
-                accept=".txt"
+                accept=".cfg"
                 onChange={(e) => {
                   setSelectedAdvancedFile(e.target.files?.[0] ?? null);
                   setMessage(null);

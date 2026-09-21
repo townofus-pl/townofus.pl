@@ -10,7 +10,7 @@ import { findFullRole } from "@/app/dramaafera/_utils/roleRegistry";
 import type { Role } from "@/constants/rolesAndModifiers";
 import { SettingsList } from "@/app/_components/RolesList/RoleCard/SettingsList";
 import { parseSettingsFile, getMatchingFileName, updateSettingValue } from '../../_utils/settingsParser';
-import { buildMiraRoleSettings } from "@/app/dramaafera/_utils/miraConfig";
+import { buildMiraRoleSettings, looksLikeMiraConfig } from "@/app/dramaafera/_utils/miraConfig";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
 
 // Interface dla statystyk roli
@@ -313,14 +313,24 @@ export async function RoleDetailContent({ nazwa, seasonId }: RoleDetailContentPr
 
     if (roleDefinition && seasonId >= FIRST_MIRA_SEASON) {
         try {
-            const { env } = await getCloudflareContext();
-            if (env.ASSETS) {
-                const response = await env.ASSETS.fetch(new Request('http://localhost/settings/mira.cfg'));
-                if (response.ok) {
-                    const settings = buildMiraRoleSettings(await response.text(), roleDefinition.name);
-                    if (Object.keys(settings).length > 0) {
-                        roleDefinitionWithSettings = { ...roleDefinition, settings };
-                    }
+            // The host panel uploads a .cfg to the database, so prefer that. Until the first
+            // upload of a season it still holds the previous era's legacy file, which is not a
+            // config at all — fall back to the snapshot committed at public/settings/mira.cfg.
+            const { current } = await getDramaAferaSettings();
+            let cfg = looksLikeMiraConfig(current) ? current : null;
+
+            if (!cfg) {
+                const { env } = await getCloudflareContext();
+                if (env.ASSETS) {
+                    const response = await env.ASSETS.fetch(new Request('http://localhost/settings/mira.cfg'));
+                    if (response.ok) cfg = await response.text();
+                }
+            }
+
+            if (cfg) {
+                const settings = buildMiraRoleSettings(cfg, roleDefinition.name);
+                if (Object.keys(settings).length > 0) {
+                    roleDefinitionWithSettings = { ...roleDefinition, settings };
                 }
             }
         } catch {
