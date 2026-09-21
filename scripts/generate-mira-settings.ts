@@ -48,6 +48,45 @@ interface RoleSetting {
     /** The property name, which is what appears as a key in the .cfg. */
     cfgKey: string;
     label: string;
+    /** Matches the SettingTypes enum, so the existing SettingsList renders it unchanged. */
+    type: 'Percentage' | 'Time' | 'Number' | 'Multiplier' | 'Boolean' | 'Text';
+    /** Enum options carry a label per value; that is exactly Setting.description. */
+    description?: Record<number, string>;
+}
+
+/** `MiraNumberSuffixes.Seconds` and friends decide how a number is formatted. */
+function numberType(args: string): RoleSetting['type'] {
+    if (/MiraNumberSuffixes\.Seconds/.test(args)) return 'Time';
+    if (/MiraNumberSuffixes\.Multiplier/.test(args)) return 'Multiplier';
+    if (/MiraNumberSuffixes\.Percent/.test(args)) return 'Percentage';
+    return 'Number';
+}
+
+/** Type, plus per-value labels for enums. */
+function describe(
+    kind: string,
+    args: string,
+    resolve: (token: string) => string | null,
+): Pick<RoleSetting, 'type' | 'description'> {
+    if (/^Toggle$/i.test(kind)) return { type: 'Boolean' };
+
+    if (/^Enum$/i.test(kind)) {
+        // The attribute lists a locale key per enum value, in order.
+        const arr = args.match(/\[([^\]]*"[^\]]*)\]/);
+        const description: Record<number, string> = {};
+        if (arr) {
+            const tokens = [...arr[1].matchAll(/"([^"]+)"/g)].map((t) => t[1]);
+            tokens.forEach((token, index) => {
+                const label = resolve(token);
+                if (label) description[index] = label;
+            });
+        }
+        return Object.keys(description).length > 0
+            ? { type: 'Number', description }
+            : { type: 'Number' };
+    }
+
+    return { type: numberType(args) };
 }
 
 function main(): void {
@@ -94,10 +133,12 @@ function main(): void {
 
         // [ModdedNumberOption("Key", …)] \n public float PropName
         for (const m of src.matchAll(
-            /\[Modded\w+Option\(\s*"([^"]+)"[\s\S]*?\]\s*public\s+[\w<>.?]+\s+(\w+)\s*\{/g,
+            /\[Modded(\w+)Option\(\s*"([^"]+)"([\s\S]*?)\]\s*public\s+[\w<>.?]+\s+(\w+)\s*\{/g,
         )) {
-            const label = resolve(m[1]);
-            if (label) { settings.push({ cfgKey: m[2], label }); fromAttribute += 1; }
+            const label = resolve(m[2]);
+            if (!label) continue;
+            settings.push({ cfgKey: m[4], label, ...describe(m[1], m[3], resolve) });
+            fromAttribute += 1;
         }
 
         // public ModdedToggleOption PropName { get; set; } = new("Key", …)
@@ -105,10 +146,12 @@ function main(): void {
         // public ModdedEnumOption ReviveMode { get; } =
         //     new("TouOptionAltruistReviveType", …);
         for (const m of src.matchAll(
-            /public\s+Modded\w+Option\s+(\w+)\s*\{\s*get;(?:\s*set;)?\s*\}\s*=\s*new\(\s*"([^"]+)"/g,
+            /public\s+Modded(\w+)Option\s+(\w+)\s*\{\s*get;(?:\s*set;)?\s*\}\s*=\s*new\(\s*"([^"]+)"([^;]*)/g,
         )) {
-            const label = resolve(m[2]);
-            if (label) { settings.push({ cfgKey: m[1], label }); fromInline += 1; }
+            const label = resolve(m[3]);
+            if (!label) continue;
+            settings.push({ cfgKey: m[2], label, ...describe(m[1], m[4], resolve) });
+            fromInline += 1;
         }
 
         if (settings.length > 0) {
@@ -129,6 +172,10 @@ export interface MiraRoleSetting {
     /** Key as it appears in a BepInEx .cfg. */
     cfgKey: string;
     label: string;
+    /** Name of a SettingTypes member. */
+    type: 'Percentage' | 'Time' | 'Number' | 'Multiplier' | 'Boolean' | 'Text';
+    /** Enum values, indexed as they appear in the config. */
+    description?: Record<number, string>;
 }
 
 export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSetting[]>> = ${JSON.stringify(

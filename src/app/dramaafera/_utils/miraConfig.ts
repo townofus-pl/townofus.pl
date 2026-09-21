@@ -4,7 +4,9 @@
 // component. The role pages need the same thing, and a second copy would drift exactly the way
 // the four role→icon maps already had. See #317.
 
+import { updateSettingValue } from './settingsParser';
 import { MIRA_ROLE_SETTINGS } from '@/roles/_generated/miraSettings';
+import { SettingTypes, type Setting } from '@/constants/settings';
 
 export interface CfgSection {
     name: string;
@@ -93,6 +95,44 @@ export function getMiraRoleSettings(cfgContent: string, roleName: string): Recor
             const label = labelByCfgKey.get(normalizeLookupKey(entry.key));
             if (label) out[label] = entry.value;
         }
+    }
+
+    return out;
+}
+
+/**
+ * A TOU-Mira role's settings in the shape `SettingsList` already renders, so the role page needs
+ * no new component.
+ *
+ * Built entirely from generated data plus the live `.cfg` — the hand-written `settings` on
+ * `src/mira/roles/*` are not consulted. They were a transcription that had already drifted:
+ * a typo in four labels, 55 entries describing options the mod no longer has, and no way to
+ * match 59% of config keys. See #317.
+ */
+export function buildMiraRoleSettings(cfgContent: string, roleName: string): Record<string, Setting> {
+    const values = getMiraRoleSettings(cfgContent, roleName);
+    const declared = MIRA_ROLE_SETTINGS[roleName] ?? [];
+    const out: Record<string, Setting> = {};
+
+    // Probability first, so it heads the list as it does for legacy roles.
+    const chance = values['Probability Of Appearing'];
+    if (chance !== undefined) {
+        out['Probability Of Appearing'] = {
+            value: Number(chance),
+            type: SettingTypes.Percentage,
+        };
+    }
+
+    for (const def of declared) {
+        const raw = values[def.label];
+        if (raw === undefined) continue;
+
+        const type = SettingTypes[def.type];
+        out[def.label] = {
+            value: updateSettingValue(type, raw),
+            type,
+            ...(def.description ? { description: def.description } : {}),
+        } as Setting;
     }
 
     return out;

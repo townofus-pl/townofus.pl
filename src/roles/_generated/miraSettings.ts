@@ -10,2021 +10,2687 @@ export interface MiraRoleSetting {
     /** Key as it appears in a BepInEx .cfg. */
     cfgKey: string;
     label: string;
+    /** Name of a SettingTypes member. */
+    type: 'Percentage' | 'Time' | 'Number' | 'Multiplier' | 'Boolean' | 'Text';
+    /** Enum values, indexed as they appear in the config. */
+    description?: Record<number, string>;
 }
 
 export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSetting[]>> = {
     "Altruist": [
         {
             "cfgKey": "ReviveMode",
-            "label": "Revive Type"
+            "label": "Revive Type",
+            "type": "Number",
+            "description": {
+                "0": "Sacrifice",
+                "1": "Group Sacrifice",
+                "2": "Group Revive"
+            }
         },
         {
             "cfgKey": "ReviveRange",
-            "label": "Revive Range"
+            "label": "Revive Range",
+            "type": "Multiplier"
         },
         {
             "cfgKey": "ReviveDuration",
-            "label": "Revive Duration"
+            "label": "Revive Duration",
+            "type": "Time"
         },
         {
             "cfgKey": "MaxRevives",
-            "label": "Revive Uses"
+            "label": "Revive Uses",
+            "type": "Number"
         },
         {
             "cfgKey": "KillOnStartRevive",
-            "label": "Kill Altruist When Starting Revive"
+            "label": "Kill Altruist When Starting Revive",
+            "type": "Boolean"
         },
         {
             "cfgKey": "FreezeDuringRevive",
-            "label": "Freeze Altruist During Revive"
+            "label": "Freeze Altruist During Revive",
+            "type": "Boolean"
         },
         {
             "cfgKey": "HideAtBeginningOfRevive",
-            "label": "Hide Bodies at Beginning Of Revive"
+            "label": "Hide Bodies at Beginning Of Revive",
+            "type": "Boolean"
         },
         {
             "cfgKey": "KillersAlertedAtStart",
-            "label": "Killers Alerted Before Revive"
+            "label": "Killers Alerted Before Revive",
+            "type": "Number",
+            "description": {
+                "0": "Nobody",
+                "1": "Neutrals",
+                "2": "Impostors",
+                "3": "Neutrals and Impostors"
+            }
         },
         {
             "cfgKey": "KillersAlertedAtEnd",
-            "label": "Killers Alerted After Revive"
+            "label": "Killers Alerted After Revive",
+            "type": "Number",
+            "description": {
+                "0": "Nobody",
+                "1": "Neutrals",
+                "2": "Impostors",
+                "3": "Neutrals and Impostors"
+            }
         }
     ],
     "Ambassador": [
         {
             "cfgKey": "MaxRetrains",
-            "label": "Max Retrains Available"
+            "label": "Max Retrains Available",
+            "type": "Number"
         },
         {
             "cfgKey": "RetrainConfirmation",
-            "label": "Retrain Requires Confirmation"
+            "label": "Retrain Requires Confirmation",
+            "type": "Boolean"
         },
         {
             "cfgKey": "KillsNeeded",
-            "label": "Kills Needed By Ambassador Or Teammate To Retrain"
+            "label": "Kills Needed By Ambassador Or Teammate To Retrain",
+            "type": "Number"
         },
         {
             "cfgKey": "RoundWhenAvailable",
-            "label": "Round In Which Retraining Is Possible"
+            "label": "Round In Which Retraining Is Possible",
+            "type": "Number"
         },
         {
             "cfgKey": "RoundCooldown",
-            "label": "Rounds Needed To Retrain Again"
+            "label": "Rounds Needed To Retrain Again",
+            "type": "Number"
         }
     ],
     "Ambusher": [
         {
             "cfgKey": "MaxAmbushes",
-            "label": "Ambush Uses Per Game"
+            "label": "Ambush Uses Per Game",
+            "type": "Number"
         },
         {
             "cfgKey": "AmbushCooldown",
-            "label": "Ambush Cooldown"
+            "label": "Ambush Cooldown",
+            "type": "Time"
         },
         {
             "cfgKey": "UpdateInterval",
-            "label": "Pursue Arrow Update Interval"
+            "label": "Pursue Arrow Update Interval",
+            "type": "Time"
         },
         {
             "cfgKey": "ResetAmbush",
-            "label": "Stop Pursuing Player On Ambush"
+            "label": "Stop Pursuing Player On Ambush",
+            "type": "Boolean"
         },
         {
             "cfgKey": "CanVent",
-            "label": "Ambusher Can Vent"
+            "label": "Ambusher Can Vent",
+            "type": "Boolean"
         }
     ],
     "Amnesiac": [
         {
             "cfgKey": "InheritFactionModifier",
-            "label": "Inherit Faction Modifiers"
+            "label": "Inherit Faction Modifiers",
+            "type": "Boolean"
         },
         {
             "cfgKey": "RememberArrows",
-            "label": "Show Arrows Pointing To Dead Bodies"
+            "label": "Show Arrows Pointing To Dead Bodies",
+            "type": "Boolean"
         },
         {
             "cfgKey": "RememberArrowDelay",
-            "label": "Time After Death Arrow Appears"
+            "label": "Time After Death Arrow Appears",
+            "type": "Time"
         }
     ],
     "Arsonist": [
         {
             "cfgKey": "DouseCooldown",
-            "label": "Douse Cooldown"
+            "label": "Douse Cooldown",
+            "type": "Time"
         },
         {
             "cfgKey": "DouseInteractions",
-            "label": "Douse From Interactions"
+            "label": "Douse From Interactions",
+            "type": "Boolean"
         },
         {
             "cfgKey": "LegacyArsonist",
-            "label": "Legacy Mode (No Radius)"
+            "label": "Legacy Mode (No Radius)",
+            "type": "Boolean"
         },
         {
             "cfgKey": "CanVent",
-            "label": "Arsonist Can Vent"
+            "label": "Arsonist Can Vent",
+            "type": "Boolean"
         },
         {
             "cfgKey": "ImpostorVision",
-            "label": "Has Impostor Vision"
+            "label": "Has Impostor Vision",
+            "type": "Boolean"
         },
         {
             "cfgKey": "DouseUses",
-            "label": "Douses Possible at Once"
+            "label": "Douses Possible at Once",
+            "type": "Number"
         },
         {
             "cfgKey": "IgniteRadius",
-            "label": "Ignite Radius"
+            "label": "Ignite Radius",
+            "type": "Multiplier"
         }
     ],
     "Aurial": [
         {
             "cfgKey": "AuraInnerRadius",
-            "label": "Radiate Color Range"
+            "label": "Radiate Color Range",
+            "type": "Multiplier"
         },
         {
             "cfgKey": "AuraOuterRadius",
-            "label": "Radiate Max Range"
+            "label": "Radiate Max Range",
+            "type": "Multiplier"
         },
         {
             "cfgKey": "SenseDuration",
-            "label": "Sense Duration"
+            "label": "Sense Duration",
+            "type": "Time"
         }
     ],
     "Barkeeper": [
         {
             "cfgKey": "RoleblockCooldown",
-            "label": "Roleblock Cooldown"
+            "label": "Roleblock Cooldown",
+            "type": "Time"
         },
         {
             "cfgKey": "RoleblockDelayMin",
-            "label": "Minimum Roleblock Delay"
+            "label": "Minimum Roleblock Delay",
+            "type": "Time"
         },
         {
             "cfgKey": "RoleblockDelayMax",
-            "label": "Maximum Roleblock Delay"
+            "label": "Maximum Roleblock Delay",
+            "type": "Time"
         },
         {
             "cfgKey": "SpillDelay",
-            "label": "Spill Settle Delay"
+            "label": "Spill Settle Delay",
+            "type": "Time"
         },
         {
             "cfgKey": "SpillBuffDuration",
-            "label": "Time Before Spill Slows Players Down"
+            "label": "Time Before Spill Slows Players Down",
+            "type": "Time"
         },
         {
             "cfgKey": "SpillCleanUpDuration",
-            "label": "Additional Time For Spill To Be Removed"
+            "label": "Additional Time For Spill To Be Removed",
+            "type": "Time"
         },
         {
             "cfgKey": "SpillEffectDuration",
-            "label": "Amount of Time Player is Affected By Spill"
+            "label": "Amount of Time Player is Affected By Spill",
+            "type": "Time"
         },
         {
             "cfgKey": "SpillEffectBuffMultiplier",
-            "label": "Spill Speed Buff Multiplier"
+            "label": "Spill Speed Buff Multiplier",
+            "type": "Multiplier"
         },
         {
             "cfgKey": "SpillEffectDebuffMultiplier",
-            "label": "Spill Speed Debuff Multiplier"
+            "label": "Spill Speed Debuff Multiplier",
+            "type": "Multiplier"
         }
     ],
     "Blackmailer": [
         {
             "cfgKey": "MaxBlackmails",
-            "label": "Number Of Blackmail Uses Per Game"
+            "label": "Number Of Blackmail Uses Per Game",
+            "type": "Number"
         },
         {
             "cfgKey": "BlackmailCooldown",
-            "label": "Blackmail Cooldown"
+            "label": "Blackmail Cooldown",
+            "type": "Time"
         },
         {
             "cfgKey": "MaxAliveForVoting",
-            "label": "Max Players Alive To Allow Voting"
+            "label": "Max Players Alive To Allow Voting",
+            "type": "Number"
         },
         {
             "cfgKey": "BlackmailInARow",
-            "label": "Blackmail Same Person Twice In A Row"
+            "label": "Blackmail Same Person Twice In A Row",
+            "type": "Boolean"
         },
         {
             "cfgKey": "OnlyTargetSeesBlackmail",
-            "label": "Only Target Sees Blackmail"
+            "label": "Only Target Sees Blackmail",
+            "type": "Boolean"
         },
         {
             "cfgKey": "BlackmailerKill",
-            "label": "Blackmailer Can Kill With Teammate"
+            "label": "Blackmailer Can Kill With Teammate",
+            "type": "Boolean"
         }
     ],
     "Bomber": [
         {
             "cfgKey": "MaxBombs",
-            "label": "Bomb Uses Per Game"
+            "label": "Bomb Uses Per Game",
+            "type": "Number"
         },
         {
             "cfgKey": "DetonateDelay",
-            "label": "Detonate Delay"
+            "label": "Detonate Delay",
+            "type": "Time"
         },
         {
             "cfgKey": "DetonateRadius",
-            "label": "Detonate Radius"
+            "label": "Detonate Radius",
+            "type": "Multiplier"
         },
         {
             "cfgKey": "MaxKillsInDetonation",
-            "label": "Max Kills In Detonation"
+            "label": "Max Kills In Detonation",
+            "type": "Number"
         },
         {
             "cfgKey": "AllImpsSeeBomb",
-            "label": "All Impostors See Bomb"
+            "label": "All Impostors See Bomb",
+            "type": "Boolean"
         },
         {
             "cfgKey": "CanBombFirstRound",
-            "label": "Allow Bombing in First Round"
+            "label": "Allow Bombing in First Round",
+            "type": "Boolean"
         },
         {
             "cfgKey": "CanVent",
-            "label": "Bomber Can Vent"
+            "label": "Bomber Can Vent",
+            "type": "Boolean"
         }
     ],
     "Bootlegger": [
         {
             "cfgKey": "RoleblockCooldown",
-            "label": "Roleblock Cooldown"
+            "label": "Roleblock Cooldown",
+            "type": "Time"
         },
         {
             "cfgKey": "RoleblockDelayMin",
-            "label": "Minimum Roleblock Delay"
+            "label": "Minimum Roleblock Delay",
+            "type": "Time"
         },
         {
             "cfgKey": "RoleblockDelayMax",
-            "label": "Maximum Roleblock Delay"
+            "label": "Maximum Roleblock Delay",
+            "type": "Time"
         },
         {
             "cfgKey": "PoisonRoleblockTrigger",
-            "label": "Poison Triggers On"
+            "label": "Poison Triggers On",
+            "type": "Number",
+            "description": {
+                "0": "Delay End",
+                "1": "Meeting Start",
+                "2": "Meeting End"
+            }
         },
         {
             "cfgKey": "ForcedPoisonDelay",
-            "label": "Poison Delay"
+            "label": "Poison Delay",
+            "type": "Time"
         }
     ],
     "Chef": [
         {
             "cfgKey": "CookCooldown",
-            "label": "Cook Cooldown"
+            "label": "Cook Cooldown",
+            "type": "Time"
         },
         {
             "cfgKey": "ServeCooldown",
-            "label": "Serve Cooldown"
+            "label": "Serve Cooldown",
+            "type": "Time"
         },
         {
             "cfgKey": "ResetCooldowns",
-            "label": "Reset Cook [and] Serve Cooldowns Together"
+            "label": "Reset Cook [and] Serve Cooldowns Together",
+            "type": "Boolean"
         },
         {
             "cfgKey": "ServingsNeeded",
-            "label": "Amount Of Servings Needed"
+            "label": "Amount Of Servings Needed",
+            "type": "Number"
         },
         {
             "cfgKey": "ChefArrows",
-            "label": "Show Arrows Pointing To Dead Bodies"
+            "label": "Show Arrows Pointing To Dead Bodies",
+            "type": "Boolean"
         },
         {
             "cfgKey": "ChefAnonymizeWin",
-            "label": "Hide Role On Win Notification"
+            "label": "Hide Role On Win Notification",
+            "type": "Boolean"
         },
         {
             "cfgKey": "SideEffectDuration",
-            "label": "Duration of Side Effects"
+            "label": "Duration of Side Effects",
+            "type": "Time"
         },
         {
             "cfgKey": "ChefArrowDelay",
-            "label": "Dead Body Arrow Delay"
+            "label": "Dead Body Arrow Delay",
+            "type": "Time"
         },
         {
             "cfgKey": "ChefArrowDuration",
-            "label": "Dead Body Arrow Duration"
+            "label": "Dead Body Arrow Duration",
+            "type": "Time"
         }
     ],
     "Cleric": [
         {
             "cfgKey": "BarrierCooldown",
-            "label": "Barrier Cooldown"
+            "label": "Barrier Cooldown",
+            "type": "Time"
         },
         {
             "cfgKey": "BarrierDuration",
-            "label": "Barrier Duration"
+            "label": "Barrier Duration",
+            "type": "Time"
         },
         {
             "cfgKey": "CleanseCooldown",
-            "label": "Cleanse Cooldown"
+            "label": "Cleanse Cooldown",
+            "type": "Time"
         },
         {
             "cfgKey": "ShowBarrier",
-            "label": "Protected Player Sees Barrier"
+            "label": "Protected Player Sees Barrier",
+            "type": "Boolean"
         },
         {
             "cfgKey": "AttackNotif",
-            "label": "Cleric Gets Attack Notification"
+            "label": "Cleric Gets Attack Notification",
+            "type": "Boolean"
         }
     ],
     "Deputy": [
         {
             "cfgKey": "WarnKiller",
-            "label": "Warn Killer Upon Killing Camped Target"
+            "label": "Warn Killer Upon Killing Camped Target",
+            "type": "Boolean"
         },
         {
             "cfgKey": "RevealDeputyUponShot",
-            "label": "Reveal Deputy Upon Successful Shot"
+            "label": "Reveal Deputy Upon Successful Shot",
+            "type": "Number",
+            "description": {
+                "0": "Disabled",
+                "1": "Announce Role",
+                "2": "Reveal Deputy"
+            }
         }
     ],
     "Doomsayer": [
         {
             "cfgKey": "ObserveCooldown",
-            "label": "Observe Cooldown"
+            "label": "Observe Cooldown",
+            "type": "Time"
         },
         {
             "cfgKey": "DoomsayerGuessesToWin",
-            "label": "Number Of Guesses Needed To Win"
+            "label": "Number Of Guesses Needed To Win",
+            "type": "Number"
         },
         {
             "cfgKey": "DoomGuessInvest",
-            "label": "Doomsayer Can Guess Crew Investigative Roles"
+            "label": "Doomsayer Can Guess Crew Investigative Roles",
+            "type": "Boolean"
         },
         {
             "cfgKey": "DoomsayerGuessAllAtOnce",
-            "label": "Doomsayer Guesses All Roles At Once"
+            "label": "Doomsayer Guesses All Roles At Once",
+            "type": "Boolean"
         },
         {
             "cfgKey": "CantObserve",
-            "label": "Doomsayer Can't Observe"
+            "label": "Doomsayer Can't Observe",
+            "type": "Boolean"
         },
         {
             "cfgKey": "DoomWin",
-            "label": "Doomsayer Win"
+            "label": "Doomsayer Win",
+            "type": "Number",
+            "description": {
+                "0": "Ends Game",
+                "1": "Leaves In Victory",
+                "2": "Nothing"
+            }
         },
         {
             "cfgKey": "DoomsayerKillOnlyLast",
-            "label": "Kill Only The Last Victim"
+            "label": "Kill Only The Last Victim",
+            "type": "Boolean"
         },
         {
             "cfgKey": "DoomAnonymizeWin",
-            "label": "Hide Role On Win Notification"
+            "label": "Hide Role On Win Notification",
+            "type": "Boolean"
         },
         {
             "cfgKey": "DoomContinuesGame",
-            "label": "Doomsayer Continues The Game"
+            "label": "Doomsayer Continues The Game",
+            "type": "Boolean"
         }
     ],
     "Eclipsal": [
         {
             "cfgKey": "BlindCooldown",
-            "label": "Blind Cooldown"
+            "label": "Blind Cooldown",
+            "type": "Time"
         },
         {
             "cfgKey": "BlindDuration",
-            "label": "Blind Duration"
+            "label": "Blind Duration",
+            "type": "Time"
         },
         {
             "cfgKey": "BlindRadius",
-            "label": "Blind Radius"
+            "label": "Blind Radius",
+            "type": "Multiplier"
         }
     ],
     "EngineerTou": [
         {
             "cfgKey": "VentCooldown",
-            "label": "Vent Cooldown"
+            "label": "Vent Cooldown",
+            "type": "Time"
         },
         {
             "cfgKey": "VentDuration",
-            "label": "Vent Duration"
+            "label": "Vent Duration",
+            "type": "Time"
         },
         {
             "cfgKey": "MaxVents",
-            "label": "Vent Uses Per Game"
+            "label": "Vent Uses Per Game",
+            "type": "Number"
         },
         {
             "cfgKey": "VentPerTasks",
-            "label": "Tasks Required For Additional Vent Use"
+            "label": "Tasks Required For Additional Vent Use",
+            "type": "Number"
         },
         {
             "cfgKey": "MaxFixes",
-            "label": "Fix Uses Per Game"
+            "label": "Fix Uses Per Game",
+            "type": "Number"
         },
         {
             "cfgKey": "FixPerTasks",
-            "label": "Tasks Required For Additional Fix Use"
+            "label": "Tasks Required For Additional Fix Use",
+            "type": "Number"
         },
         {
             "cfgKey": "FixDelay",
-            "label": "Fix Delay"
+            "label": "Fix Delay",
+            "type": "Time"
         }
     ],
     "Escapist": [
         {
             "cfgKey": "MaxEscapes",
-            "label": "Recall Uses Per Game"
+            "label": "Recall Uses Per Game",
+            "type": "Number"
         },
         {
             "cfgKey": "RecallCooldown",
-            "label": "Recall Cooldown"
+            "label": "Recall Cooldown",
+            "type": "Time"
         },
         {
             "cfgKey": "CanVent",
-            "label": "Escapist Can Vent"
+            "label": "Escapist Can Vent",
+            "type": "Boolean"
         }
     ],
     "Executioner": [
         {
             "cfgKey": "OnTargetDeath",
-            "label": "On Target Death, Executioner Becomes"
+            "label": "On Target Death, Executioner Becomes",
+            "type": "Number",
+            "description": {
+                "0": "MiraApi.RoleTeam.Crewmate",
+                "1": "TownOfUsMira.Role.Amnesiac",
+                "2": "TownOfUsMira.Role.Survivor",
+                "3": "TownOfUsMira.Role.Mercenary",
+                "4": "TownOfUsMira.Role.Jester"
+            }
         },
         {
             "cfgKey": "CanButton",
-            "label": "Executioner Can Button"
+            "label": "Executioner Can Button",
+            "type": "Boolean"
         },
         {
             "cfgKey": "ExeWin",
-            "label": "Executioner Win"
+            "label": "Executioner Win",
+            "type": "Number",
+            "description": {
+                "0": "Ends Game",
+                "1": "Leaves & Torments",
+                "2": "Nothing"
+            }
         },
         {
             "cfgKey": "ExeAnonymizeWin",
-            "label": "Hide Role On Win Notification"
+            "label": "Hide Role On Win Notification",
+            "type": "Boolean"
         }
     ],
     "Fairy": [
         {
             "cfgKey": "ProtectCooldown",
-            "label": "Protect Cooldown"
+            "label": "Protect Cooldown",
+            "type": "Time"
         },
         {
             "cfgKey": "ProtectDuration",
-            "label": "Protect Duration"
+            "label": "Protect Duration",
+            "type": "Time"
         },
         {
             "cfgKey": "MaxProtects",
-            "label": "Max Number Of Protects"
+            "label": "Max Number Of Protects",
+            "type": "Number"
         },
         {
             "cfgKey": "ShowProtect",
-            "label": "Show Protected Player"
+            "label": "Show Protected Player",
+            "type": "Number",
+            "description": {
+                "0": "Fairy",
+                "1": "Fairy + Target",
+                "2": "Everyone"
+            }
         },
         {
             "cfgKey": "OnTargetDeath",
-            "label": "On Target Death, Fairy Becomes"
+            "label": "On Target Death, Fairy Becomes",
+            "type": "Number",
+            "description": {
+                "0": "MiraApi.RoleTeam.Crewmate",
+                "1": "TownOfUsMira.Role.Amnesiac",
+                "2": "TownOfUsMira.Role.Survivor",
+                "3": "TownOfUsMira.Role.Mercenary",
+                "4": "TownOfUsMira.Role.Jester"
+            }
         },
         {
             "cfgKey": "FairyTargetKnows",
-            "label": "Target Knows Fairy Exists"
+            "label": "Target Knows Fairy Exists",
+            "type": "Boolean"
         },
         {
             "cfgKey": "FairyKnowsTargetRole",
-            "label": "Fairy Knows Target's Role"
+            "label": "Fairy Knows Target's Role",
+            "type": "Boolean"
         },
         {
             "cfgKey": "EvilTargetPercent",
-            "label": "Odds Of Target Being Evil"
+            "label": "Odds Of Target Being Evil",
+            "type": "Percentage"
         }
     ],
     "Forensic": [
         {
             "cfgKey": "ExamineCooldown",
-            "label": "Examine Cooldown"
+            "label": "Examine Cooldown",
+            "type": "Time"
         },
         {
             "cfgKey": "ForensicReportOn",
-            "label": "Show Forensic Reports"
+            "label": "Show Forensic Reports",
+            "type": "Boolean"
         },
         {
             "cfgKey": "ForensicRoleDuration",
-            "label": "Time Where Forensic Will Have Role"
+            "label": "Time Where Forensic Will Have Role",
+            "type": "Time"
         },
         {
             "cfgKey": "ForensicFactionDuration",
-            "label": "Time Where Forensic Will Have Faction"
+            "label": "Time Where Forensic Will Have Faction",
+            "type": "Time"
         }
     ],
     "Glitch": [
         {
             "cfgKey": "KillCooldown",
-            "label": "Kill Cooldown"
+            "label": "Kill Cooldown",
+            "type": "Time"
         },
         {
             "cfgKey": "MimicCooldown",
-            "label": "Mimic Cooldown"
+            "label": "Mimic Cooldown",
+            "type": "Time"
         },
         {
             "cfgKey": "MimicDuration",
-            "label": "Mimic Duration"
+            "label": "Mimic Duration",
+            "type": "Time"
         },
         {
             "cfgKey": "MoveWithMenu",
-            "label": "Move While Using Mimic Menu (KB ONLY)"
+            "label": "Move While Using Mimic Menu (KB ONLY)",
+            "type": "Boolean"
         },
         {
             "cfgKey": "HackCooldown",
-            "label": "Hack Cooldown"
+            "label": "Hack Cooldown",
+            "type": "Time"
         },
         {
             "cfgKey": "HackDuration",
-            "label": "Hack Duration"
+            "label": "Hack Duration",
+            "type": "Time"
         },
         {
             "cfgKey": "CanVent",
-            "label": "Glitch Can Vent"
+            "label": "Glitch Can Vent",
+            "type": "Number",
+            "description": {
+                "0": "Never",
+                "1": "Unless Mimicking",
+                "2": "Always"
+            }
         }
     ],
     "Grenadier": [
         {
             "cfgKey": "MaxFlashes",
-            "label": "Flash Uses Per Game"
+            "label": "Flash Uses Per Game",
+            "type": "Number"
         },
         {
             "cfgKey": "GrenadeCooldown",
-            "label": "Flash Grenade Cooldown"
+            "label": "Flash Grenade Cooldown",
+            "type": "Time"
         },
         {
             "cfgKey": "GrenadeDuration",
-            "label": "Flash Grenade Duration"
+            "label": "Flash Grenade Duration",
+            "type": "Time"
         },
         {
             "cfgKey": "FlashRadius",
-            "label": "Flash Radius"
+            "label": "Flash Radius",
+            "type": "Multiplier"
         },
         {
             "cfgKey": "SabotageFlashing",
-            "label": "Allow Flashing During Sabotage"
+            "label": "Allow Flashing During Sabotage",
+            "type": "Boolean"
         },
         {
             "cfgKey": "CanVent",
-            "label": "Grenadier Can Vent"
+            "label": "Grenadier Can Vent",
+            "type": "Boolean"
         }
     ],
     "Haunter": [
         {
             "cfgKey": "NumTasksLeftBeforeClickable",
-            "label": "Tasks Left Before Clickable"
+            "label": "Tasks Left Before Clickable",
+            "type": "Number"
         },
         {
             "cfgKey": "NumTasksLeftBeforeAlerted",
-            "label": "Tasks Left Before Alerted"
+            "label": "Tasks Left Before Alerted",
+            "type": "Number"
         },
         {
             "cfgKey": "RevealNeutralRoles",
-            "label": "Reveal Neutral Roles"
+            "label": "Reveal Neutral Roles",
+            "type": "Boolean"
         },
         {
             "cfgKey": "HaunterCanBeClickedBy",
-            "label": "Can Be Clicked By"
+            "label": "Can Be Clicked By",
+            "type": "Number",
+            "description": {
+                "0": "Everyone",
+                "1": "Non-Crew",
+                "2": "Impostors Only"
+            }
         }
     ],
     "Herbalist": [
         {
             "cfgKey": "HerbCooldown",
-            "label": "Herb Cooldown"
+            "label": "Herb Cooldown",
+            "type": "Time"
         },
         {
             "cfgKey": "ConfuseDelay",
-            "label": "Confuse Delay"
+            "label": "Confuse Delay",
+            "type": "Time"
         },
         {
             "cfgKey": "ConfuseDuration",
-            "label": "Confuse Duration"
+            "label": "Confuse Duration",
+            "type": "Time"
         },
         {
             "cfgKey": "GlamourDuration",
-            "label": "Glamour Duration"
+            "label": "Glamour Duration",
+            "type": "Time"
         },
         {
             "cfgKey": "ProtectDuration",
-            "label": "Protect Duration"
+            "label": "Protect Duration",
+            "type": "Time"
         },
         {
             "cfgKey": "ShowBarrier",
-            "label": "Protected Player Sees Barrier"
+            "label": "Protected Player Sees Barrier",
+            "type": "Boolean"
         },
         {
             "cfgKey": "AttackNotif",
-            "label": "Notify Herbalist Upon Attack"
+            "label": "Notify Herbalist Upon Attack",
+            "type": "Boolean"
         },
         {
             "cfgKey": "MaxExposeUses",
-            "label": "Max Expose Uses"
+            "label": "Max Expose Uses",
+            "type": "Number"
         },
         {
             "cfgKey": "MaxConfuseUses",
-            "label": "Max Confuse Uses"
+            "label": "Max Confuse Uses",
+            "type": "Number"
         },
         {
             "cfgKey": "MaxProtectUses",
-            "label": "Max Protect Uses"
+            "label": "Max Protect Uses",
+            "type": "Number"
         }
     ],
     "HnsCamouflager": [
         {
             "cfgKey": "MaxCamoUses",
-            "label": "TownOfUsMira.HideAndSeek.Role.Option.CamouflagerCamoUses"
+            "label": "TownOfUsMira.HideAndSeek.Role.Option.CamouflagerCamoUses",
+            "type": "Number"
         },
         {
             "cfgKey": "CamoCooldown",
-            "label": "TownOfUsMira.HideAndSeek.Role.Option.CamouflagerCamoCooldown"
+            "label": "TownOfUsMira.HideAndSeek.Role.Option.CamouflagerCamoCooldown",
+            "type": "Time"
         },
         {
             "cfgKey": "CamoDuration",
-            "label": "TownOfUsMira.HideAndSeek.Role.Option.CamouflagerCamoDuration"
+            "label": "TownOfUsMira.HideAndSeek.Role.Option.CamouflagerCamoDuration",
+            "type": "Time"
         },
         {
             "cfgKey": "CamoDisablesProxBar",
-            "label": "TownOfUsMira.HideAndSeek.Role.Option.CamouflagerCamoDisablesProxBar"
+            "label": "TownOfUsMira.HideAndSeek.Role.Option.CamouflagerCamoDisablesProxBar",
+            "type": "Boolean"
         }
     ],
     "HnsChameleon": [
         {
             "cfgKey": "MaxSwoops",
-            "label": "TownOfUsMira.HideAndSeek.Role.Option.ChameleonSwoopUsesPerRound"
+            "label": "TownOfUsMira.HideAndSeek.Role.Option.ChameleonSwoopUsesPerRound",
+            "type": "Number"
         },
         {
             "cfgKey": "SwoopCooldown",
-            "label": "TownOfUsMira.HideAndSeek.Role.Option.ChameleonSwoopCooldown"
+            "label": "TownOfUsMira.HideAndSeek.Role.Option.ChameleonSwoopCooldown",
+            "type": "Time"
         },
         {
             "cfgKey": "SwoopDuration",
-            "label": "TownOfUsMira.HideAndSeek.Role.Option.ChameleonSwoopDuration"
+            "label": "TownOfUsMira.HideAndSeek.Role.Option.ChameleonSwoopDuration",
+            "type": "Time"
         },
         {
             "cfgKey": "CanVent",
-            "label": "Swooper Can Vent"
+            "label": "Swooper Can Vent",
+            "type": "Boolean"
         }
     ],
     "HnsMystic": [
         {
             "cfgKey": "MysticArrowDuration",
-            "label": "TownOfUsMira.HideAndSeek.Modifier.Option.MysticDeadBodyArrowDuration"
+            "label": "TownOfUsMira.HideAndSeek.Modifier.Option.MysticDeadBodyArrowDuration",
+            "type": "Time"
         }
     ],
     "HnsSnitch": [
         {
             "cfgKey": "CommonTaskMultiplier",
-            "label": "TownOfUsMira.HideAndSeek.Role.Option.SnitchCommonTaskMultiplier"
+            "label": "TownOfUsMira.HideAndSeek.Role.Option.SnitchCommonTaskMultiplier",
+            "type": "Multiplier"
         },
         {
             "cfgKey": "ShortTaskMultiplier",
-            "label": "TownOfUsMira.HideAndSeek.Role.Option.SnitchShortTaskMultiplier"
+            "label": "TownOfUsMira.HideAndSeek.Role.Option.SnitchShortTaskMultiplier",
+            "type": "Multiplier"
         },
         {
             "cfgKey": "LongTaskMultiplier",
-            "label": "TownOfUsMira.HideAndSeek.Role.Option.SnitchLongTaskMultiplier"
+            "label": "TownOfUsMira.HideAndSeek.Role.Option.SnitchLongTaskMultiplier",
+            "type": "Multiplier"
         },
         {
             "cfgKey": "SnitchNotifyDuration",
-            "label": "TownOfUsMira.HideAndSeek.Role.Option.SnitchNotifyDuration"
+            "label": "TownOfUsMira.HideAndSeek.Role.Option.SnitchNotifyDuration",
+            "type": "Time"
         }
     ],
     "Hunter": [
         {
             "cfgKey": "HunterKillCooldown",
-            "label": "Hunter Kill Cooldown"
+            "label": "Hunter Kill Cooldown",
+            "type": "Time"
         },
         {
             "cfgKey": "HunterStalkCooldown",
-            "label": "Hunter Stalk Cooldown"
+            "label": "Hunter Stalk Cooldown",
+            "type": "Time"
         },
         {
             "cfgKey": "HunterStalkDuration",
-            "label": "Hunter Stalk Duration"
+            "label": "Hunter Stalk Duration",
+            "type": "Time"
         },
         {
             "cfgKey": "RetributionOnVote",
-            "label": "Hunter Kills Last Voter If Voted Out"
+            "label": "Hunter Kills Last Voter If Voted Out",
+            "type": "Boolean"
         },
         {
             "cfgKey": "HunterBodyReport",
-            "label": "Hunter Can Report Who They've Killed"
+            "label": "Hunter Can Report Who They've Killed",
+            "type": "Boolean"
         },
         {
             "cfgKey": "StalkUses",
-            "label": "Initial Stalk Uses"
+            "label": "Initial Stalk Uses",
+            "type": "Number"
         },
         {
             "cfgKey": "StalkPerTasks",
-            "label": "Tasks Required For Additional Stalk Use"
+            "label": "Tasks Required For Additional Stalk Use",
+            "type": "Number"
         },
         {
             "cfgKey": "StalkTriggeredBy",
-            "label": "Stalk Triggered By"
+            "label": "Stalk Triggered By",
+            "type": "Number",
+            "description": {
+                "0": "All Abilities",
+                "1": "Interactions"
+            }
         },
         {
             "cfgKey": "SeesTypeOfInteraction",
-            "label": "Hunter Sees Interaction Type"
+            "label": "Hunter Sees Interaction Type",
+            "type": "Boolean"
         }
     ],
     "Hypnotist": [
         {
             "cfgKey": "HypnotiseCooldown",
-            "label": "Hypnotize Cooldown"
+            "label": "Hypnotize Cooldown",
+            "type": "Time"
         },
         {
             "cfgKey": "HypnoKill",
-            "label": "Hypnotist Can Kill With Teammate"
+            "label": "Hypnotist Can Kill With Teammate",
+            "type": "Boolean"
         }
     ],
     "Imitator": [
         {
             "cfgKey": "ImitateNeutrals",
-            "label": "Imitate Neutral Counterparts"
+            "label": "Imitate Neutral Counterparts",
+            "type": "Boolean"
         },
         {
             "cfgKey": "ImitateImpostors",
-            "label": "Imitate Impostor Counterparts"
+            "label": "Imitate Impostor Counterparts",
+            "type": "Boolean"
         },
         {
             "cfgKey": "ImitateBasicCrewmate",
-            "label": "Imitate Basic Crewmate"
+            "label": "Imitate Basic Crewmate",
+            "type": "Boolean"
         },
         {
             "cfgKey": "ImitatorGuess",
-            "label": "Imitator Must Be Guessed As"
+            "label": "Imitator Must Be Guessed As",
+            "type": "Number",
+            "description": {
+                "0": "Imitator",
+                "1": "Imitated Role",
+                "2": "Imitator or Imitated Role"
+            }
         }
     ],
     "Inquisitor": [
         {
             "cfgKey": "VanquishCooldown",
-            "label": "Vanquish Cooldown"
+            "label": "Vanquish Cooldown",
+            "type": "Time"
         },
         {
             "cfgKey": "FirstRoundUse",
-            "label": "Allow Vanquish in First Round"
+            "label": "Allow Vanquish in First Round",
+            "type": "Boolean"
         },
         {
             "cfgKey": "StallGame",
-            "label": "Inquisitor Continues Game In Final 3"
+            "label": "Inquisitor Continues Game In Final 3",
+            "type": "Boolean"
         },
         {
             "cfgKey": "CantInquire",
-            "label": "Inquisitor Can't Inquire"
+            "label": "Inquisitor Can't Inquire",
+            "type": "Boolean"
         },
         {
             "cfgKey": "InquisAnonymizeWin",
-            "label": "Hide Role On Win Notification"
+            "label": "Hide Role On Win Notification",
+            "type": "Boolean"
         },
         {
             "cfgKey": "InquireCooldown",
-            "label": "Inquire Cooldown"
+            "label": "Inquire Cooldown",
+            "type": "Time"
         },
         {
             "cfgKey": "MaxUses",
-            "label": "Max Number Of Inquiries"
+            "label": "Max Number Of Inquiries",
+            "type": "Number"
         },
         {
             "cfgKey": "AmountOfHeretics",
-            "label": "Amount Of Heretics Needed"
+            "label": "Amount Of Heretics Needed",
+            "type": "Number"
         }
     ],
     "Investigator": [
         {
             "cfgKey": "FootprintSize",
-            "label": "Footprint Size"
+            "label": "Footprint Size",
+            "type": "Multiplier"
         },
         {
             "cfgKey": "FootprintDuration",
-            "label": "Footprint Duration"
+            "label": "Footprint Duration",
+            "type": "Time"
         },
         {
             "cfgKey": "ShowAnonymousFootprints",
-            "label": "Anonymous Footprint"
+            "label": "Anonymous Footprint",
+            "type": "Boolean"
         },
         {
             "cfgKey": "ShowFootprintVent",
-            "label": "Footprint Vent Visible"
+            "label": "Footprint Vent Visible",
+            "type": "Boolean"
         },
         {
             "cfgKey": "FootprintMode",
-            "label": "Footprints Added Based On"
+            "label": "Footprints Added Based On",
+            "type": "Number"
         },
         {
             "cfgKey": "FootprintIntervalDistance",
-            "label": "Footprint Interval"
+            "label": "Footprint Interval",
+            "type": "Number"
         },
         {
             "cfgKey": "FootprintIntervalTime",
-            "label": "Footprint Interval"
+            "label": "Footprint Interval",
+            "type": "Time"
         }
     ],
     "Jailor": [
         {
             "cfgKey": "JailCooldown",
-            "label": "Jail Cooldown"
+            "label": "Jail Cooldown",
+            "type": "Time"
         },
         {
             "cfgKey": "MaxExecutes",
-            "label": "Max Number Of Executes"
+            "label": "Max Number Of Executes",
+            "type": "Number"
         },
         {
             "cfgKey": "JailInARow",
-            "label": "Jail Same Person Twice In A Row"
+            "label": "Jail Same Person Twice In A Row",
+            "type": "Boolean"
         },
         {
             "cfgKey": "JaileePublicChat",
-            "label": "Jailee Can Use Public Chat"
+            "label": "Jailee Can Use Public Chat",
+            "type": "Boolean"
         }
     ],
     "Janitor": [
         {
             "cfgKey": "MaxClean",
-            "label": "Clean Uses Per Game"
+            "label": "Clean Uses Per Game",
+            "type": "Number"
         },
         {
             "cfgKey": "CleanCooldown",
-            "label": "Clean Cooldown"
+            "label": "Clean Cooldown",
+            "type": "Time"
         },
         {
             "cfgKey": "CleanDelay",
-            "label": "Clean Delay"
+            "label": "Clean Delay",
+            "type": "Time"
         },
         {
             "cfgKey": "CooldownSync",
-            "label": "Reset Kill & Clean Cooldowns Together"
+            "label": "Reset Kill & Clean Cooldowns Together",
+            "type": "Number",
+            "description": {
+                "0": "Unlinked",
+                "1": "With Teammates",
+                "2": "Always"
+            }
         },
         {
             "cfgKey": "JanitorKill",
-            "label": "Janitor Can Kill With Teammate"
+            "label": "Janitor Can Kill With Teammate",
+            "type": "Boolean"
         }
     ],
     "Jester": [
         {
             "cfgKey": "CanButton",
-            "label": "Can Use Button"
+            "label": "Can Use Button",
+            "type": "Boolean"
         },
         {
             "cfgKey": "ImpostorVision",
-            "label": "Has Impostor Vision"
+            "label": "Has Impostor Vision",
+            "type": "Boolean"
         },
         {
             "cfgKey": "JestWin",
-            "label": "After Win Type"
+            "label": "After Win Type",
+            "type": "Number",
+            "description": {
+                "0": "Ends Game",
+                "1": "Haunts",
+                "2": "Nothing"
+            }
         },
         {
             "cfgKey": "CanVent",
-            "label": "Can Hide In Vents"
+            "label": "Can Hide In Vents",
+            "type": "Boolean"
         },
         {
             "cfgKey": "VentCooldown",
-            "label": "Vent Cooldown"
+            "label": "Vent Cooldown",
+            "type": "Time"
         },
         {
             "cfgKey": "VentDuration",
-            "label": "Vent Duration"
+            "label": "Vent Duration",
+            "type": "Time"
         },
         {
             "cfgKey": "CanPoke",
-            "label": "Can Poke Others"
+            "label": "Can Poke Others",
+            "type": "Boolean"
         },
         {
             "cfgKey": "PokeCooldown",
-            "label": "Poke Cooldown"
+            "label": "Poke Cooldown",
+            "type": "Time"
         },
         {
             "cfgKey": "ScatterOn",
-            "label": "Scatter Mechanic Enabled"
+            "label": "Scatter Mechanic Enabled",
+            "type": "Boolean"
         },
         {
             "cfgKey": "ScatterTimer",
-            "label": "Scatter Timer"
+            "label": "Scatter Timer",
+            "type": "Time"
         },
         {
             "cfgKey": "JestAnnounceWin",
-            "label": "Notify Others On Win"
+            "label": "Notify Others On Win",
+            "type": "Boolean"
         }
     ],
     "Juggernaut": [
         {
             "cfgKey": "KillCooldown",
-            "label": "Initial Kill Cooldown"
+            "label": "Initial Kill Cooldown",
+            "type": "Time"
         },
         {
             "cfgKey": "CanVent",
-            "label": "Juggernaut Can Vent"
+            "label": "Juggernaut Can Vent",
+            "type": "Boolean"
         },
         {
             "cfgKey": "KillCooldownReduction",
-            "label": "Kill Cooldown Reduction"
+            "label": "Kill Cooldown Reduction",
+            "type": "Time"
         }
     ],
     "Lookout": [
         {
             "cfgKey": "WatchCooldown",
-            "label": "Watch Cooldown"
+            "label": "Watch Cooldown",
+            "type": "Time"
         },
         {
             "cfgKey": "MaxWatches",
-            "label": "Initial Players That Can be Watched"
+            "label": "Initial Players That Can be Watched",
+            "type": "Number"
         },
         {
             "cfgKey": "LoResetOnNewRound",
-            "label": "Lookout Watches Reset After Each Round"
+            "label": "Lookout Watches Reset After Each Round",
+            "type": "Boolean"
         },
         {
             "cfgKey": "WatchType",
-            "label": "Watched Player Feedback Reveals"
+            "label": "Watched Player Feedback Reveals",
+            "type": "Number"
         },
         {
             "cfgKey": "LookoutSeesIndirectAttacks",
-            "label": "See Indirect Attacks"
+            "label": "See Indirect Attacks",
+            "type": "Boolean"
         },
         {
             "cfgKey": "TaskUses",
-            "label": "Get More Uses From Completing Tasks"
+            "label": "Get More Uses From Completing Tasks",
+            "type": "Boolean"
         }
     ],
     "Medic": [
         {
             "cfgKey": "ShowShielded",
-            "label": "Show Shielded Player"
+            "label": "Show Shielded Player",
+            "type": "Number",
+            "description": {
+                "0": "Medic",
+                "1": "Shielded",
+                "2": "Shielded + Medic",
+                "3": "Everyone",
+                "4": "Nobody"
+            }
         },
         {
             "cfgKey": "WhoGetsNotification",
-            "label": "Who Gets Murder Attempt Indicator"
+            "label": "Who Gets Murder Attempt Indicator",
+            "type": "Number",
+            "description": {
+                "0": "Medic",
+                "1": "Shielded",
+                "2": "Shielded + Medic",
+                "3": "Everyone",
+                "4": "Nobody"
+            }
         },
         {
             "cfgKey": "ChangeTarget",
-            "label": "Can Give Shield Away Next Round"
+            "label": "Can Give Shield Away Next Round",
+            "type": "Boolean"
         },
         {
             "cfgKey": "ShieldBreaks",
-            "label": "Shield Breaks On Murder Attempt"
+            "label": "Shield Breaks On Murder Attempt",
+            "type": "Boolean"
         },
         {
             "cfgKey": "ShowReports",
-            "label": "Show Reports in Chat"
+            "label": "Show Reports in Chat",
+            "type": "Boolean"
         },
         {
             "cfgKey": "MedicShieldUses",
-            "label": "Max Amount of Shield Uses"
+            "label": "Max Amount of Shield Uses",
+            "type": "Number"
         },
         {
             "cfgKey": "MedicReportNameDuration",
-            "label": "Time Where Medic Will Have Name"
+            "label": "Time Where Medic Will Have Name",
+            "type": "Time"
         },
         {
             "cfgKey": "MedicReportColorDuration",
-            "label": "Time Where Medic Will Have Color Type"
+            "label": "Time Where Medic Will Have Color Type",
+            "type": "Time"
         }
     ],
     "Medium": [
         {
             "cfgKey": "MediateCooldown",
-            "label": "Mediate Cooldown"
+            "label": "Mediate Cooldown",
+            "type": "Time"
         },
         {
             "cfgKey": "MediateDuration",
-            "label": "Mediate Duration"
+            "label": "Mediate Duration",
+            "type": "Time"
         },
         {
             "cfgKey": "MediatingSpeed",
-            "label": "Spirit Speed When Mediating"
+            "label": "Spirit Speed When Mediating",
+            "type": "Multiplier"
         },
         {
             "cfgKey": "LivingSeeSpiritTimer",
-            "label": "Time Before Spirit is Visible to Others"
+            "label": "Time Before Spirit is Visible to Others",
+            "type": "Time"
         },
         {
             "cfgKey": "PlayerVisibility",
-            "label": "Medium can Identify"
+            "label": "Medium can Identify",
+            "type": "Number",
+            "description": {
+                "0": "Living",
+                "1": "Ghosts",
+                "2": "Living + Ghosts",
+                "3": "Nobody"
+            }
         },
         {
             "cfgKey": "ArrowVisibility",
-            "label": "Arrow Visibility"
+            "label": "Arrow Visibility",
+            "type": "Number",
+            "description": {
+                "0": "Medium",
+                "1": "Mediated",
+                "2": "Medium + Mediated",
+                "3": "Disabled"
+            }
         },
         {
             "cfgKey": "WhoIsRevealed",
-            "label": "Who is Revealed"
+            "label": "Who is Revealed",
+            "type": "Number",
+            "description": {
+                "0": "Oldest Dead",
+                "1": "Newest Dead",
+                "2": "Random Dead",
+                "3": "All Dead"
+            }
         }
     ],
     "Medusa": [
         {
             "cfgKey": "KillCooldown",
-            "label": "Petrify Cooldown"
+            "label": "Petrify Cooldown",
+            "type": "Time"
         },
         {
             "cfgKey": "StoneDelay",
-            "label": "Time For Victim To Become Stoned"
+            "label": "Time For Victim To Become Stoned",
+            "type": "Time"
         },
         {
             "cfgKey": "StoneCompletion",
-            "label": "Time Before Stone Shatters"
+            "label": "Time Before Stone Shatters",
+            "type": "Time"
         },
         {
             "cfgKey": "CanVent",
-            "label": "Medusa Can Vent"
+            "label": "Medusa Can Vent",
+            "type": "Boolean"
         },
         {
             "cfgKey": "StoneGazeAvailable",
-            "label": "Allow Stone Gazing"
+            "label": "Allow Stone Gazing",
+            "type": "Boolean"
         },
         {
             "cfgKey": "StoneGazeCooldown",
-            "label": "Stone Gaze Cooldown"
+            "label": "Stone Gaze Cooldown",
+            "type": "Time"
         },
         {
             "cfgKey": "StoneGazeDuration",
-            "label": "Stone Gaze Duration"
+            "label": "Stone Gaze Duration",
+            "type": "Time"
         },
         {
             "cfgKey": "StoneGazeUses",
-            "label": "Stone Gaze Uses"
+            "label": "Stone Gaze Uses",
+            "type": "Number"
         }
     ],
     "Mercenary": [
         {
             "cfgKey": "GuardCooldown",
-            "label": "Guard Cooldown"
+            "label": "Guard Cooldown",
+            "type": "Time"
         },
         {
             "cfgKey": "MaxUses",
-            "label": "Max Number Of Guards"
+            "label": "Max Number Of Guards",
+            "type": "Number"
         },
         {
             "cfgKey": "BribeCost",
-            "label": "Bribe Cost"
+            "label": "Bribe Cost",
+            "type": "Number"
         },
         {
             "cfgKey": "GuardProtection",
-            "label": "Guarding Stops Attacks"
+            "label": "Guarding Stops Attacks",
+            "type": "Boolean"
         },
         {
             "cfgKey": "GoldGivenFromAttack",
-            "label": "Gold Given From An Attack"
+            "label": "Gold Given From An Attack",
+            "type": "Number"
         }
     ],
     "Miner": [
         {
             "cfgKey": "MaxMines",
-            "label": "Number Of Miner Vents Per Game"
+            "label": "Number Of Miner Vents Per Game",
+            "type": "Number"
         },
         {
             "cfgKey": "MineCooldown",
-            "label": "Mine Cooldown"
+            "label": "Mine Cooldown",
+            "type": "Time"
         },
         {
             "cfgKey": "MineVisibility",
-            "label": "Mine Visiblity"
+            "label": "Mine Visiblity",
+            "type": "Number",
+            "description": {
+                "0": "Immediate",
+                "1": "After Use"
+            }
         },
         {
             "cfgKey": "MinerKill",
-            "label": "Miner Can Kill With Teammate"
+            "label": "Miner Can Kill With Teammate",
+            "type": "Boolean"
         },
         {
             "cfgKey": "MineDelay",
-            "label": "Mine Delay"
+            "label": "Mine Delay",
+            "type": "Time"
         }
     ],
     "Mirrorcaster": [
         {
             "cfgKey": "WhoGetsNotification",
-            "label": "Who Gets Murder Attempt Indicator"
+            "label": "Who Gets Murder Attempt Indicator",
+            "type": "Number",
+            "description": {
+                "0": "Mirrorcaster",
+                "1": "Mirrorcaster + Killer"
+            }
         },
         {
             "cfgKey": "MultiUnleash",
-            "label": "Accumulate Multiple Unleashes"
+            "label": "Accumulate Multiple Unleashes",
+            "type": "Boolean"
         },
         {
             "cfgKey": "MaxMirrors",
-            "label": "Max Number Of Magic Mirrors"
+            "label": "Max Number Of Magic Mirrors",
+            "type": "Number"
         },
         {
             "cfgKey": "AttackInformationGiven",
-            "label": "Information Received Upon Attack"
+            "label": "Information Received Upon Attack",
+            "type": "Number",
+            "description": {
+                "0": "Role",
+                "1": "Subalignment",
+                "2": "Faction",
+                "3": "Nothing"
+            }
         }
     ],
     "Monarch": [
         {
             "cfgKey": "KnightCooldown",
-            "label": "Knight Cooldown"
+            "label": "Knight Cooldown",
+            "type": "Time"
         },
         {
             "cfgKey": "MaxKnights",
-            "label": "Maximum Knights"
+            "label": "Maximum Knights",
+            "type": "Number"
         },
         {
             "cfgKey": "VotesPerKnight",
-            "label": "Votes Per Knight"
+            "label": "Votes Per Knight",
+            "type": "Number"
         },
         {
             "cfgKey": "KnightDelay",
-            "label": "Knight Delay (Cancellable)"
+            "label": "Knight Delay (Cancellable)",
+            "type": "Time"
         },
         {
             "cfgKey": "RevealAtMeeting",
-            "label": "Reveal Knighting At Meeting"
+            "label": "Reveal Knighting At Meeting",
+            "type": "Boolean"
         },
         {
             "cfgKey": "ShowKnightedVotes",
-            "label": "Show Knighted Votes"
+            "label": "Show Knighted Votes",
+            "type": "Boolean"
         },
         {
             "cfgKey": "FirstRoundUse",
-            "label": "Allow Round One Knighting"
+            "label": "Allow Round One Knighting",
+            "type": "Boolean"
         },
         {
             "cfgKey": "InformWhenKnightDies",
-            "label": "Inform Monarch If a Knight Dies"
+            "label": "Inform Monarch If a Knight Dies",
+            "type": "Boolean"
         },
         {
             "cfgKey": "CrewKnightsGrantKillImmunity",
-            "label": "Crew Knights Grant Kill Immunity"
+            "label": "Crew Knights Grant Kill Immunity",
+            "type": "Boolean"
         }
     ],
     "Morphling": [
         {
             "cfgKey": "MaxSamples",
-            "label": "Samples Per Game"
+            "label": "Samples Per Game",
+            "type": "Number"
         },
         {
             "cfgKey": "MaxMorphs",
-            "label": "Morph Uses Per Round"
+            "label": "Morph Uses Per Round",
+            "type": "Number"
         },
         {
             "cfgKey": "MorphlingCooldown",
-            "label": "Morph Cooldown"
+            "label": "Morph Cooldown",
+            "type": "Time"
         },
         {
             "cfgKey": "MorphlingDuration",
-            "label": "Morph Duration"
+            "label": "Morph Duration",
+            "type": "Time"
         },
         {
             "cfgKey": "CanVent",
-            "label": "Morphling Can Vent"
+            "label": "Morphling Can Vent",
+            "type": "Number",
+            "description": {
+                "0": "Never",
+                "1": "Unless Morphed",
+                "2": "Always"
+            }
         }
     ],
     "Mystic": [
         {
             "cfgKey": "MysticArrowDuration",
-            "label": "Dead Body Arrow Duration"
+            "label": "Dead Body Arrow Duration",
+            "type": "Time"
         },
         {
             "cfgKey": "MysticHnsPopUp",
-            "label": "Show Death Pop-Up"
+            "label": "Show Death Pop-Up",
+            "type": "Boolean"
         }
     ],
     "Officer": [
         {
             "cfgKey": "ShootCooldown",
-            "label": "Shoot Cooldown"
+            "label": "Shoot Cooldown",
+            "type": "Time"
         },
         {
             "cfgKey": "LoadCooldown",
-            "label": "Load Cooldown"
+            "label": "Load Cooldown",
+            "type": "Time"
         },
         {
             "cfgKey": "CanSelfReport",
-            "label": "Can Self Report"
+            "label": "Can Self Report",
+            "type": "Boolean"
         },
         {
             "cfgKey": "FirstRoundShooting",
-            "label": "Allow Shooting in First Round"
+            "label": "Allow Shooting in First Round",
+            "type": "Boolean"
         },
         {
             "cfgKey": "CanOnlyShootActiveKillers",
-            "label": "Officer Can Only Shoot Players That Have Killed"
+            "label": "Officer Can Only Shoot Players That Have Killed",
+            "type": "Boolean"
         },
         {
             "cfgKey": "CrewKillingAreInnocent",
-            "label": "Crewmate Killing Roles are Innocent"
+            "label": "Crewmate Killing Roles are Innocent",
+            "type": "Boolean"
         },
         {
             "cfgKey": "NonKillingNeutralsAreInnocent",
-            "label": "Non-Killing Neutrals are Innocent"
+            "label": "Non-Killing Neutrals are Innocent",
+            "type": "Boolean"
         },
         {
             "cfgKey": "MaxBulletsTotal",
-            "label": "Maximum Bullets in Total"
+            "label": "Maximum Bullets in Total",
+            "type": "Number"
         },
         {
             "cfgKey": "MaxBulletsAtOnce",
-            "label": "Maximum Bullets at Once"
+            "label": "Maximum Bullets at Once",
+            "type": "Number"
         },
         {
             "cfgKey": "RoundsPunished",
-            "label": "# of Rounds to Shoot Again After Misfire"
+            "label": "# of Rounds to Shoot Again After Misfire",
+            "type": "Number"
         }
     ],
     "Oracle": [
         {
             "cfgKey": "ConfessCooldown",
-            "label": "Confess Cooldown"
+            "label": "Confess Cooldown",
+            "type": "Time"
         },
         {
             "cfgKey": "BlessCooldown",
-            "label": "Bless Cooldown"
+            "label": "Bless Cooldown",
+            "type": "Time"
         },
         {
             "cfgKey": "RevealAccuracyPercentage",
-            "label": "Reveal Accuracy"
+            "label": "Reveal Accuracy",
+            "type": "Percentage"
         },
         {
             "cfgKey": "ShowNeutralBenignAsEvil",
-            "label": "Neutral Benign Show Up As Evil"
+            "label": "Neutral Benign Show Up As Evil",
+            "type": "Boolean"
         },
         {
             "cfgKey": "ShowNeutralEvilAsEvil",
-            "label": "Neutral Evils Show Up As Evil"
+            "label": "Neutral Evils Show Up As Evil",
+            "type": "Boolean"
         },
         {
             "cfgKey": "ShowNeutralKillingAsEvil",
-            "label": "Neutral Killers Show Up As Evil"
+            "label": "Neutral Killers Show Up As Evil",
+            "type": "Boolean"
         },
         {
             "cfgKey": "ShowNeutralOutlierAsEvil",
-            "label": "Neutral Outliers Show Up As Evil"
+            "label": "Neutral Outliers Show Up As Evil",
+            "type": "Boolean"
         }
     ],
     "Parasite": [
         {
             "cfgKey": "OvertakeCooldown",
-            "label": "Overtake Cooldown"
+            "label": "Overtake Cooldown",
+            "type": "Time"
         },
         {
             "cfgKey": "OvertakeKillCooldown",
-            "label": "Kill Cooldown"
+            "label": "Kill Cooldown",
+            "type": "Time"
         },
         {
             "cfgKey": "ControlDuration",
-            "label": "Control Duration"
+            "label": "Control Duration",
+            "type": "Time"
         },
         {
             "cfgKey": "SaveVictimIfParasiteDies",
-            "label": "Save Victim If Parasite Dies"
+            "label": "Save Victim If Parasite Dies",
+            "type": "Boolean"
         },
         {
             "cfgKey": "SaveVictimIfMeetingCalled",
-            "label": "Save Victim If Meeting Called"
+            "label": "Save Victim If Meeting Called",
+            "type": "Boolean"
         },
         {
             "cfgKey": "CanVent",
-            "label": "Parasite Can Vent"
+            "label": "Parasite Can Vent",
+            "type": "Boolean"
         },
         {
             "cfgKey": "CanMoveIndependently",
-            "label": "Parasite Can Move Independently"
+            "label": "Parasite Can Move Independently",
+            "type": "Boolean"
         },
         {
             "cfgKey": "OvertakenLooksLikeParasite",
-            "label": "Overtaken Looks Like Parasite"
+            "label": "Overtaken Looks Like Parasite",
+            "type": "Boolean"
         }
     ],
     "Plaguebearer": [
         {
             "cfgKey": "PestChance",
-            "label": "Instant Pestilence Chance"
+            "label": "Instant Pestilence Chance",
+            "type": "Percentage"
         },
         {
             "cfgKey": "InfectCooldown",
-            "label": "Infect Cooldown"
+            "label": "Infect Cooldown",
+            "type": "Time"
         },
         {
             "cfgKey": "AnnouncePest",
-            "label": "Announce Pestilence Transformation"
+            "label": "Announce Pestilence Transformation",
+            "type": "Boolean"
         },
         {
             "cfgKey": "PestKillCooldown",
-            "label": "Pestilence Kill Cooldown"
+            "label": "Pestilence Kill Cooldown",
+            "type": "Time"
         },
         {
             "cfgKey": "CanVent",
-            "label": "Pestilence Can Vent"
+            "label": "Pestilence Can Vent",
+            "type": "Boolean"
         }
     ],
     "Plumber": [
         {
             "cfgKey": "FlushCooldown",
-            "label": "Flush Cooldown"
+            "label": "Flush Cooldown",
+            "type": "Time"
         },
         {
             "cfgKey": "FlushDuration",
-            "label": "Flush Duration"
+            "label": "Flush Duration",
+            "type": "Time"
         },
         {
             "cfgKey": "BlockCooldown",
-            "label": "Block Cooldown"
+            "label": "Block Cooldown",
+            "type": "Time"
         },
         {
             "cfgKey": "MaxBarricades",
-            "label": "Initial Number Of Barricades"
+            "label": "Initial Number Of Barricades",
+            "type": "Number"
         },
         {
             "cfgKey": "BarricadeRoundDuration",
-            "label": "Amount Of Rounds Barricades Last"
+            "label": "Amount Of Rounds Barricades Last",
+            "type": "Number"
         },
         {
             "cfgKey": "TaskUses",
-            "label": "Get More Barricades From Completing Tasks"
+            "label": "Get More Barricades From Completing Tasks",
+            "type": "Boolean"
         }
     ],
     "Politician": [
         {
             "cfgKey": "CampaignCooldown",
-            "label": "Campaign Cooldown"
+            "label": "Campaign Cooldown",
+            "type": "Time"
         },
         {
             "cfgKey": "PreventCampaign",
-            "label": "Prevent Campaigning on Failed Reveal"
+            "label": "Prevent Campaigning on Failed Reveal",
+            "type": "Boolean"
         }
     ],
     "PolusSerialKiller": [
         {
             "cfgKey": "KillCooldown",
-            "label": "Kill Cooldown"
+            "label": "Kill Cooldown",
+            "type": "Time"
         },
         {
             "cfgKey": "CooldownKillStreakReduction",
-            "label": "Cooldown Reduction For Kills In A Round"
+            "label": "Cooldown Reduction For Kills In A Round",
+            "type": "Time"
         },
         {
             "cfgKey": "MinPlayers",
-            "label": "Minimum Players to Kill"
+            "label": "Minimum Players to Kill",
+            "type": "Number"
         }
     ],
     "PolusSwooper": [
         {
             "cfgKey": "SwoopCooldown",
-            "label": "Swoop Cooldown"
+            "label": "Swoop Cooldown",
+            "type": "Time"
         },
         {
             "cfgKey": "SwoopDuration",
-            "label": "Swoop Duration"
+            "label": "Swoop Duration",
+            "type": "Time"
         }
     ],
     "Prosecutor": [
         {
             "cfgKey": "MaxProsecutions",
-            "label": "Max Prosecutions"
+            "label": "Max Prosecutions",
+            "type": "Number"
         },
         {
             "cfgKey": "WrongfulProsecutionResult",
-            "label": "On Wrongful Prosecution"
+            "label": "On Wrongful Prosecution",
+            "type": "Number",
+            "description": {
+                "0": "Eject Prosecutor",
+                "1": "Eject Victim, Lose Uses",
+                "2": "Eject Both"
+            }
         }
     ],
     "Puppeteer": [
         {
             "cfgKey": "ControlPerKills",
-            "label": "Kills Required For Additional Control Use"
+            "label": "Kills Required For Additional Control Use",
+            "type": "Number"
         }
     ],
     "Scavenger": [
         {
             "cfgKey": "ScavengeDuration",
-            "label": "Scavenge Duration"
+            "label": "Scavenge Duration",
+            "type": "Time"
         },
         {
             "cfgKey": "ScavengeIncreaseDuration",
-            "label": "Scavenge Duration Increase Per Kill"
+            "label": "Scavenge Duration Increase Per Kill",
+            "type": "Time"
         },
         {
             "cfgKey": "ScavengeCorrectKillCooldown",
-            "label": "Scavenge Kill Cooldown On Correct Kill"
+            "label": "Scavenge Kill Cooldown On Correct Kill",
+            "type": "Time"
         },
         {
             "cfgKey": "ScavengeIncorrectKillCooldown",
-            "label": "Kill Cooldown Multiplier On Incorrect Kill"
+            "label": "Kill Cooldown Multiplier On Incorrect Kill",
+            "type": "Multiplier"
         }
     ],
     "Seer": [
         {
             "cfgKey": "SeerCooldown",
-            "label": "Reveal/Compare Cooldown"
+            "label": "Reveal/Compare Cooldown",
+            "type": "Time"
         },
         {
             "cfgKey": "MaxCompares",
-            "label": "Max Uses of Reveal/Compare"
+            "label": "Max Uses of Reveal/Compare",
+            "type": "Number"
         },
         {
             "cfgKey": "SalemSeer",
-            "label": "Compare Players Instead of Checking Alignments"
+            "label": "Compare Players Instead of Checking Alignments",
+            "type": "Boolean"
         },
         {
             "cfgKey": "CanUseMultiplePerRound",
-            "label": "Can Reveal/Compare More Than Once Per Round"
+            "label": "Can Reveal/Compare More Than Once Per Round",
+            "type": "Boolean"
         },
         {
             "cfgKey": "CompareEachPlayerOnce",
-            "label": "Can Only Compare Each Player Once"
+            "label": "Can Only Compare Each Player Once",
+            "type": "Boolean"
         },
         {
             "cfgKey": "BenignShowFriendlyToAll",
-            "label": "Neutral Benign Show Friends To All"
+            "label": "Neutral Benign Show Friends To All",
+            "type": "Boolean"
         },
         {
             "cfgKey": "EvilShowFriendlyToAll",
-            "label": "Neutral Evils Show Friends To All"
+            "label": "Neutral Evils Show Friends To All",
+            "type": "Boolean"
         },
         {
             "cfgKey": "OutlierShowFriendlyToAll",
-            "label": "Neutral Outliers Show Friends To All"
+            "label": "Neutral Outliers Show Friends To All",
+            "type": "Boolean"
         },
         {
             "cfgKey": "ShowCrewmateKillingAsRed",
-            "label": "Crewmate Killing Roles Are Red"
+            "label": "Crewmate Killing Roles Are Red",
+            "type": "Boolean"
         },
         {
             "cfgKey": "ShowNeutralBenignAsRed",
-            "label": "Neutral Benign Roles Are Red"
+            "label": "Neutral Benign Roles Are Red",
+            "type": "Boolean"
         },
         {
             "cfgKey": "ShowNeutralEvilAsRed",
-            "label": "Neutral Evil Roles Are Red"
+            "label": "Neutral Evil Roles Are Red",
+            "type": "Boolean"
         },
         {
             "cfgKey": "ShowNeutralKillingAsRed",
-            "label": "Neutral Killing Roles Are Red"
+            "label": "Neutral Killing Roles Are Red",
+            "type": "Boolean"
         },
         {
             "cfgKey": "ShowNeutralOutlierAsRed",
-            "label": "Neutral Outlier Roles Are Red"
+            "label": "Neutral Outlier Roles Are Red",
+            "type": "Boolean"
         },
         {
             "cfgKey": "SwapTraitorColors",
-            "label": "Traitor Swaps Colors"
+            "label": "Traitor Swaps Colors",
+            "type": "Boolean"
         }
     ],
     "Sentry": [
         {
             "cfgKey": "PlacementCooldown",
-            "label": "Placement Cooldown"
+            "label": "Placement Cooldown",
+            "type": "Time"
         },
         {
             "cfgKey": "DeployedCamerasVisibility",
-            "label": "Deployed Cameras Visibility"
+            "label": "Deployed Cameras Visibility",
+            "type": "Number",
+            "description": {
+                "0": "Immediately",
+                "1": "After Meeting"
+            }
         },
         {
             "cfgKey": "PortableCamerasMode",
-            "label": "Instant Portable Cameras (or After Tasks)"
+            "label": "Instant Portable Cameras (or After Tasks)",
+            "type": "Number",
+            "description": {
+                "0": "Always",
+                "1": "After Tasks",
+                "2": "Only On Cam-less Maps"
+            }
         },
         {
             "cfgKey": "CameraRoundsLast",
-            "label": "Amount Of Rounds Cameras Last"
+            "label": "Amount Of Rounds Cameras Last",
+            "type": "Number"
         },
         {
             "cfgKey": "MaxCamerasPlaced",
-            "label": "Max Cameras Placed At Once"
+            "label": "Max Cameras Placed At Once",
+            "type": "Number"
         },
         {
             "cfgKey": "PortableCamsBattery",
-            "label": "Portable Cameras Battery"
+            "label": "Portable Cameras Battery",
+            "type": "Time"
         },
         {
             "cfgKey": "CamerasVisibleAfter",
-            "label": "Cameras Visible After"
+            "label": "Cameras Visible After",
+            "type": "Time"
         },
         {
             "cfgKey": "CanMoveWhilePlacingCameras",
-            "label": "Can Move While Placing Cameras"
+            "label": "Can Move While Placing Cameras",
+            "type": "Boolean"
         },
         {
             "cfgKey": "InitialCameras",
-            "label": "Initial Cameras"
+            "label": "Initial Cameras",
+            "type": "Number"
         },
         {
             "cfgKey": "TasksPerCamera",
-            "label": "Tasks Required Per Camera"
+            "label": "Tasks Required Per Camera",
+            "type": "Number"
         },
         {
             "cfgKey": "BlindspotsCount",
-            "label": "Blind Spots"
+            "label": "Blind Spots",
+            "type": "Number"
         },
         {
             "cfgKey": "Blindspot1Room",
-            "label": "Blindspot 1 Room"
+            "label": "Blindspot 1 Room",
+            "type": "Number"
         },
         {
             "cfgKey": "Blindspot2Room",
-            "label": "Blindspot 2 Room"
+            "label": "Blindspot 2 Room",
+            "type": "Number"
         },
         {
             "cfgKey": "Blindspot3Room",
-            "label": "Blindspot 3 Room"
+            "label": "Blindspot 3 Room",
+            "type": "Number"
         },
         {
             "cfgKey": "Blindspot4Room",
-            "label": "Blindspot 4 Room"
+            "label": "Blindspot 4 Room",
+            "type": "Number"
         },
         {
             "cfgKey": "Blindspot5Room",
-            "label": "Blindspot 5 Room"
+            "label": "Blindspot 5 Room",
+            "type": "Number"
         },
         {
             "cfgKey": "Blindspot6Room",
-            "label": "Blindspot 6 Room"
+            "label": "Blindspot 6 Room",
+            "type": "Number"
         },
         {
             "cfgKey": "Blindspot7Room",
-            "label": "Blindspot 7 Room"
+            "label": "Blindspot 7 Room",
+            "type": "Number"
         },
         {
             "cfgKey": "Blindspot8Room",
-            "label": "Blindspot 8 Room"
+            "label": "Blindspot 8 Room",
+            "type": "Number"
         },
         {
             "cfgKey": "Blindspot9Room",
-            "label": "Blindspot 9 Room"
+            "label": "Blindspot 9 Room",
+            "type": "Number"
         },
         {
             "cfgKey": "Blindspot10Room",
-            "label": "Blindspot 10 Room"
+            "label": "Blindspot 10 Room",
+            "type": "Number"
         }
     ],
     "Sheriff": [
         {
             "cfgKey": "KillCooldown",
-            "label": "Kill Cooldown"
+            "label": "Kill Cooldown",
+            "type": "Time"
         },
         {
             "cfgKey": "SheriffBodyReport",
-            "label": "Can Self Report"
+            "label": "Can Self Report",
+            "type": "Boolean"
         },
         {
             "cfgKey": "FirstRoundUse",
-            "label": "Allow Shooting in First Round"
+            "label": "Allow Shooting in First Round",
+            "type": "Boolean"
         },
         {
             "cfgKey": "MisfireType",
-            "label": "Misfire Kills"
+            "label": "Misfire Kills",
+            "type": "Number",
+            "description": {
+                "0": "Self",
+                "1": "Target",
+                "2": "Self + Target",
+                "3": "Nobody"
+            }
         },
         {
             "cfgKey": "ShootNeutralBenign",
-            "label": "Can Shoot Neutral Benign Roles"
+            "label": "Can Shoot Neutral Benign Roles",
+            "type": "Boolean"
         },
         {
             "cfgKey": "ShootNeutralEvil",
-            "label": "Can Shoot Neutral Evil Roles"
+            "label": "Can Shoot Neutral Evil Roles",
+            "type": "Boolean"
         },
         {
             "cfgKey": "ShootNeutralKiller",
-            "label": "Can Shoot Neutral Killing Roles"
+            "label": "Can Shoot Neutral Killing Roles",
+            "type": "Boolean"
         },
         {
             "cfgKey": "ShootNeutralOutlier",
-            "label": "Can Shoot Neutral Outlier Roles"
+            "label": "Can Shoot Neutral Outlier Roles",
+            "type": "Boolean"
         }
     ],
     "Snitch": [
         {
             "cfgKey": "SnitchNeutralRoles",
-            "label": "Snitch Reveals Neutral Killers"
+            "label": "Snitch Reveals Neutral Killers",
+            "type": "Boolean"
         },
         {
             "cfgKey": "SnitchSeesTraitor",
-            "label": "Snitch Sees Traitor"
+            "label": "Snitch Sees Traitor",
+            "type": "Boolean"
         },
         {
             "cfgKey": "SnitchSeesImpostorsMeetings",
-            "label": "Snitch Sees Impostors In Meetings"
+            "label": "Snitch Sees Impostors In Meetings",
+            "type": "Boolean"
         },
         {
             "cfgKey": "TaskRemainingWhenRevealed",
-            "label": "Tasks Remaining When Revealed"
+            "label": "Tasks Remaining When Revealed",
+            "type": "Number"
         }
     ],
     "Sonar": [
         {
             "cfgKey": "TrackCooldown",
-            "label": "Track Cooldown"
+            "label": "Track Cooldown",
+            "type": "Time"
         },
         {
             "cfgKey": "MaxTracks",
-            "label": "Initial Number Of Tracks"
+            "label": "Initial Number Of Tracks",
+            "type": "Number"
         },
         {
             "cfgKey": "UpdateInterval",
-            "label": "Arrow Update Interval"
+            "label": "Arrow Update Interval",
+            "type": "Time"
         },
         {
             "cfgKey": "SoundOnDeactivate",
-            "label": "Trackers Make Sound On Death"
+            "label": "Trackers Make Sound On Death",
+            "type": "Boolean"
         },
         {
             "cfgKey": "ResetOnNewRound",
-            "label": "Trackers Reset After Each Round"
+            "label": "Trackers Reset After Each Round",
+            "type": "Boolean"
         },
         {
             "cfgKey": "TaskUses",
-            "label": "Get More Uses From Completing Tasks"
+            "label": "Get More Uses From Completing Tasks",
+            "type": "Boolean"
         }
     ],
     "Spectre": [
         {
             "cfgKey": "NumTasksLeftBeforeClickable",
-            "label": "Tasks Left Before Clickable"
+            "label": "Tasks Left Before Clickable",
+            "type": "Number"
         },
         {
             "cfgKey": "SpectreWin",
-            "label": "Spectre Win"
+            "label": "Spectre Win",
+            "type": "Number",
+            "description": {
+                "0": "Ends Game",
+                "1": "Spooks",
+                "2": "Nothing"
+            }
         }
     ],
     "Spellslinger": [
         {
             "cfgKey": "HexCooldown",
-            "label": "Hex Cooldown"
+            "label": "Hex Cooldown",
+            "type": "Time"
         },
         {
             "cfgKey": "MaxHexes",
-            "label": "Max Hexes"
+            "label": "Max Hexes",
+            "type": "Number"
         },
         {
             "cfgKey": "HexBombDuration",
-            "label": "Hex Bomb Countdown Duration"
+            "label": "Hex Bomb Countdown Duration",
+            "type": "Time"
         }
     ],
     "Spy": [
         {
             "cfgKey": "WhoSeesDead",
-            "label": "Who Sees Dead Bodies On Admin"
+            "label": "Who Sees Dead Bodies On Admin",
+            "type": "Number",
+            "description": {
+                "0": "Nobody",
+                "1": "Spy",
+                "2": "Everyone But Spy",
+                "3": "Everyone"
+            }
         },
         {
             "cfgKey": "HasPortableAdmin",
-            "label": "Allow Portable Admin Table For"
+            "label": "Allow Portable Admin Table For",
+            "type": "Number",
+            "description": {
+                "0": "Role",
+                "1": "Modifier",
+                "2": "Role + Modifier",
+                "3": "Disabled"
+            }
         },
         {
             "cfgKey": "MoveWithMenu",
-            "label": "Move While Using Portable Admin"
+            "label": "Move While Using Portable Admin",
+            "type": "Boolean"
         },
         {
             "cfgKey": "StartingCharge",
-            "label": "Starting Charge"
+            "label": "Starting Charge",
+            "type": "Time"
         },
         {
             "cfgKey": "RoundCharge",
-            "label": "Battery Charged Each Round"
+            "label": "Battery Charged Each Round",
+            "type": "Time"
         },
         {
             "cfgKey": "TaskCharge",
-            "label": "Battery Charged Per Task"
+            "label": "Battery Charged Per Task",
+            "type": "Time"
         },
         {
             "cfgKey": "DisplayCooldown",
-            "label": "Portable Admin Display Cooldown"
+            "label": "Portable Admin Display Cooldown",
+            "type": "Time"
         },
         {
             "cfgKey": "DisplayDuration",
-            "label": "Portable Admin Display Duration"
+            "label": "Portable Admin Display Duration",
+            "type": "Time"
         }
     ],
     "Survivor": [
         {
             "cfgKey": "VestCooldown",
-            "label": "Vest Cooldown"
+            "label": "Vest Cooldown",
+            "type": "Time"
         },
         {
             "cfgKey": "VestDuration",
-            "label": "Vest Duration"
+            "label": "Vest Duration",
+            "type": "Time"
         },
         {
             "cfgKey": "MaxVests",
-            "label": "Max Number Of Vests"
+            "label": "Max Number Of Vests",
+            "type": "Number"
         },
         {
             "cfgKey": "ScatterOn",
-            "label": "Survivor Scatter Mechanic Enabled"
+            "label": "Survivor Scatter Mechanic Enabled",
+            "type": "Boolean"
         },
         {
             "cfgKey": "ScatterTimer",
-            "label": "Survivor Scatter Timer"
+            "label": "Survivor Scatter Timer",
+            "type": "Time"
         }
     ],
     "Swapper": [
         {
             "cfgKey": "CanButton",
-            "label": "Can Call Button"
+            "label": "Can Call Button",
+            "type": "Boolean"
         }
     ],
     "Swooper": [
         {
             "cfgKey": "MaxSwoops",
-            "label": "Swoop Uses Per Round"
+            "label": "Swoop Uses Per Round",
+            "type": "Number"
         },
         {
             "cfgKey": "SwoopCooldown",
-            "label": "Swoop Cooldown"
+            "label": "Swoop Cooldown",
+            "type": "Time"
         },
         {
             "cfgKey": "SwoopDuration",
-            "label": "Swoop Duration"
+            "label": "Swoop Duration",
+            "type": "Time"
         },
         {
             "cfgKey": "TrackedMidSwoop",
-            "label": "Can be Tracked while Invisible"
+            "label": "Can be Tracked while Invisible",
+            "type": "Number",
+            "description": {
+                "0": "Never",
+                "1": "Not by Radar",
+                "2": "Always"
+            }
         },
         {
             "cfgKey": "CanVent",
-            "label": "Swooper Can Vent"
+            "label": "Swooper Can Vent",
+            "type": "Number",
+            "description": {
+                "0": "Never",
+                "1": "While Visible",
+                "2": "Always"
+            }
         }
     ],
     "TimeLord": [
         {
             "cfgKey": "RewindCooldown",
-            "label": "Rewind Cooldown"
+            "label": "Rewind Cooldown",
+            "type": "Time"
         },
         {
             "cfgKey": "RewindDuration",
-            "label": "Rewind Duration"
+            "label": "Rewind Duration",
+            "type": "Time"
         },
         {
             "cfgKey": "RewindHistorySeconds",
-            "label": "Rewind History"
+            "label": "Rewind History",
+            "type": "Time"
         },
         {
             "cfgKey": "CanUseVitals",
-            "label": "Can Use Vitals"
+            "label": "Can Use Vitals",
+            "type": "Boolean"
         },
         {
             "cfgKey": "UndoTasksOnRewind",
-            "label": "Undo Tasks On Rewind"
+            "label": "Undo Tasks On Rewind",
+            "type": "Boolean"
         },
         {
             "cfgKey": "UncleanBodiesOnRewind",
-            "label": "Unclean Bodies On Rewind"
+            "label": "Unclean Bodies On Rewind",
+            "type": "Boolean"
         },
         {
             "cfgKey": "NotifyOnRevive",
-            "label": "Notify Time Lord On Revive"
+            "label": "Notify Time Lord On Revive",
+            "type": "Boolean"
         },
         {
             "cfgKey": "MaxUses",
-            "label": "Initial Uses"
+            "label": "Initial Uses",
+            "type": "Number"
         },
         {
             "cfgKey": "UsesPerTasks",
-            "label": "Tasks Required For Additional Rewind Use"
+            "label": "Tasks Required For Additional Rewind Use",
+            "type": "Number"
         },
         {
             "cfgKey": "ReviveOnRewind",
-            "label": "Revive On Rewind"
+            "label": "Revive On Rewind",
+            "type": "Number",
+            "description": {
+                "0": "Disabled",
+                "1": "Until Next Round",
+                "2": "Fully"
+            }
         }
     ],
     "Traitor": [
         {
             "cfgKey": "LatestSpawn",
-            "label": "Minimum People Alive When Traitor Can Spawn"
+            "label": "Minimum People Alive When Traitor Can Spawn",
+            "type": "Number"
         },
         {
             "cfgKey": "NeutralKillingStopsTraitor",
-            "label": "Traitor Won't Spawn If NK Is Alive"
+            "label": "Traitor Won't Spawn If NK Is Alive",
+            "type": "Boolean"
         },
         {
             "cfgKey": "RemoveExistingRoles",
-            "label": "Disable Existing Impostor Roles"
+            "label": "Disable Existing Impostor Roles",
+            "type": "Boolean"
         },
         {
             "cfgKey": "TraitorGuess",
-            "label": "Traitor Must Be Guessed As"
+            "label": "Traitor Must Be Guessed As",
+            "type": "Number",
+            "description": {
+                "0": "Traitor",
+                "1": "New Role",
+                "2": "Traitor or New Role"
+            }
         },
         {
             "cfgKey": "TraitorCanAssassin",
-            "label": "Traitor Becomes Assassin"
+            "label": "Traitor Becomes Assassin",
+            "type": "Boolean"
         }
     ],
     "Transporter": [
         {
             "cfgKey": "TransporterCooldown",
-            "label": "Transport Cooldown"
+            "label": "Transport Cooldown",
+            "type": "Time"
         },
         {
             "cfgKey": "MaxNumTransports",
-            "label": "Initial Uses"
+            "label": "Initial Uses",
+            "type": "Number"
         },
         {
             "cfgKey": "MoveWithMenu",
-            "label": "Move While Using Transport Menu (KB ONLY)"
+            "label": "Move While Using Transport Menu (KB ONLY)",
+            "type": "Boolean"
         },
         {
             "cfgKey": "CanUseVitals",
-            "label": "Can Use Vitals"
+            "label": "Can Use Vitals",
+            "type": "Boolean"
         },
         {
             "cfgKey": "TaskUses",
-            "label": "Get More Uses From Completing Tasks"
+            "label": "Get More Uses From Completing Tasks",
+            "type": "Boolean"
         }
     ],
     "Trapper": [
         {
             "cfgKey": "TrapCooldown",
-            "label": "Trap Cooldown"
+            "label": "Trap Cooldown",
+            "type": "Time"
         },
         {
             "cfgKey": "MinAmountOfTimeInTrap",
-            "label": "Min Amount Of Time In Trap To Register"
+            "label": "Min Amount Of Time In Trap To Register",
+            "type": "Time"
         },
         {
             "cfgKey": "MaxTraps",
-            "label": "Initial Number Of Traps"
+            "label": "Initial Number Of Traps",
+            "type": "Number"
         },
         {
             "cfgKey": "TrapSize",
-            "label": "Trap Size"
+            "label": "Trap Size",
+            "type": "Multiplier"
         },
         {
             "cfgKey": "TrapsRemoveOnNewRound",
-            "label": "Traps Reset After Each Round"
+            "label": "Traps Reset After Each Round",
+            "type": "Boolean"
         },
         {
             "cfgKey": "MinAmountOfPlayersInTrap",
-            "label": "Minimum Number Of Roles Required To Trigger Trap"
+            "label": "Minimum Number Of Roles Required To Trigger Trap",
+            "type": "Number"
         },
         {
             "cfgKey": "TaskUses",
-            "label": "Get More Uses From Completing Tasks"
+            "label": "Get More Uses From Completing Tasks",
+            "type": "Boolean"
         }
     ],
     "Undertaker": [
         {
             "cfgKey": "DragCooldown",
-            "label": "Drag Cooldown"
+            "label": "Drag Cooldown",
+            "type": "Time"
         },
         {
             "cfgKey": "DragSpeedMultiplier",
-            "label": "Drag Speed"
+            "label": "Drag Speed",
+            "type": "Multiplier"
         },
         {
             "cfgKey": "AffectedSpeed",
-            "label": "Dragging Speed Is Affected by Body Size"
+            "label": "Dragging Speed Is Affected by Body Size",
+            "type": "Boolean"
         },
         {
             "cfgKey": "CanVent",
-            "label": "Undertaker Can Vent"
+            "label": "Undertaker Can Vent",
+            "type": "Boolean"
         },
         {
             "cfgKey": "UndertakerKill",
-            "label": "Undertaker Can Kill With Teammate"
+            "label": "Undertaker Can Kill With Teammate",
+            "type": "Boolean"
         },
         {
             "cfgKey": "CanVentWithBody",
-            "label": "Can Vent With Body"
+            "label": "Can Vent With Body",
+            "type": "Boolean"
         }
     ],
     "Vampire": [
         {
             "cfgKey": "BiteCooldown",
-            "label": "Bite Cooldown"
+            "label": "Bite Cooldown",
+            "type": "Time"
         },
         {
             "cfgKey": "MaxVampires",
-            "label": "Max Number Of Vampires Per Game"
+            "label": "Max Number Of Vampires Per Game",
+            "type": "Number"
         },
         {
             "cfgKey": "HasVision",
-            "label": "Vampires Have Impostor Vision"
+            "label": "Vampires Have Impostor Vision",
+            "type": "Boolean"
         },
         {
             "cfgKey": "CanGuessAsNewVamp",
-            "label": "New Vampires Can Assassinate"
+            "label": "New Vampires Can Assassinate",
+            "type": "Boolean"
         },
         {
             "cfgKey": "CanConvertAsNewVamp",
-            "label": "New Vampires Can Convert"
+            "label": "New Vampires Can Convert",
+            "type": "Boolean"
         },
         {
             "cfgKey": "CanVent",
-            "label": "Vampires Can Vent"
+            "label": "Vampires Can Vent",
+            "type": "Boolean"
         },
         {
             "cfgKey": "ConvertNeutralBenign",
-            "label": "Can Convert Neutral Benign Roles"
+            "label": "Can Convert Neutral Benign Roles",
+            "type": "Boolean"
         },
         {
             "cfgKey": "ConvertNeutralEvil",
-            "label": "Can Convert Neutral Evil Roles"
+            "label": "Can Convert Neutral Evil Roles",
+            "type": "Boolean"
         },
         {
             "cfgKey": "ConvertNeutralOutlier",
-            "label": "Can Convert Neutral Outlier Roles"
+            "label": "Can Convert Neutral Outlier Roles",
+            "type": "Boolean"
         },
         {
             "cfgKey": "ConvertLovers",
-            "label": "Can Convert Lovers"
+            "label": "Can Convert Lovers",
+            "type": "Boolean"
         }
     ],
     "Venerer": [
         {
             "cfgKey": "AbilityCooldown",
-            "label": "Ability Cooldown"
+            "label": "Ability Cooldown",
+            "type": "Time"
         },
         {
             "cfgKey": "AbilityDuration",
-            "label": "Ability Duration"
+            "label": "Ability Duration",
+            "type": "Time"
         },
         {
             "cfgKey": "NumSprintSpeed",
-            "label": "Sprint Speed"
+            "label": "Sprint Speed",
+            "type": "Multiplier"
         },
         {
             "cfgKey": "MinFreezeSpeed",
-            "label": "Minimum Freeze Speed"
+            "label": "Minimum Freeze Speed",
+            "type": "Multiplier"
         },
         {
             "cfgKey": "FreezeRadius",
-            "label": "Freeze Radius"
+            "label": "Freeze Radius",
+            "type": "Multiplier"
         }
     ],
     "Veteran": [
         {
             "cfgKey": "AlertCooldown",
-            "label": "Alert Cooldown"
+            "label": "Alert Cooldown",
+            "type": "Time"
         },
         {
             "cfgKey": "AlertDuration",
-            "label": "Alert Duration"
+            "label": "Alert Duration",
+            "type": "Time"
         },
         {
             "cfgKey": "MaxNumAlerts",
-            "label": "Initial Number of Alerts"
+            "label": "Initial Number of Alerts",
+            "type": "Number"
         },
         {
             "cfgKey": "KilledOnAlert",
-            "label": "Can Be Killed On Alert"
+            "label": "Can Be Killed On Alert",
+            "type": "Boolean"
         },
         {
             "cfgKey": "TaskUses",
-            "label": "Get More Uses From Completing Tasks"
+            "label": "Get More Uses From Completing Tasks",
+            "type": "Boolean"
         },
         {
             "cfgKey": "KnowWhenAttackedInMeeting",
-            "label": "Knows When Attacked In Meeting"
+            "label": "Knows When Attacked In Meeting",
+            "type": "Boolean"
         }
     ],
     "Vigilante": [
         {
             "cfgKey": "VigilanteKills",
-            "label": "Number Of Guesses"
+            "label": "Number Of Guesses",
+            "type": "Number"
         },
         {
             "cfgKey": "VigilanteMultiKill",
-            "label": "Can Guess More Than Once Per Meeting"
+            "label": "Can Guess More Than Once Per Meeting",
+            "type": "Boolean"
         },
         {
             "cfgKey": "VigilanteGuessKillerMods",
-            "label": "Can Guess Killer Modifiers"
+            "label": "Can Guess Killer Modifiers",
+            "type": "Boolean"
         },
         {
             "cfgKey": "VigilanteGuessAlliances",
-            "label": "Can Guess Alliance Modifiers"
+            "label": "Can Guess Alliance Modifiers",
+            "type": "Boolean"
         },
         {
             "cfgKey": "MultiShots",
-            "label": "Safe Shots Available"
+            "label": "Safe Shots Available",
+            "type": "Number"
         },
         {
             "cfgKey": "VigilanteGuessNeutralBenign",
-            "label": "Can Guess Neutral Benign Roles"
+            "label": "Can Guess Neutral Benign Roles",
+            "type": "Boolean"
         },
         {
             "cfgKey": "VigilanteGuessNeutralEvil",
-            "label": "Can Guess Neutral Evil Roles"
+            "label": "Can Guess Neutral Evil Roles",
+            "type": "Boolean"
         },
         {
             "cfgKey": "VigilanteGuessNeutralKilling",
-            "label": "Can Guess Neutral Killing Roles"
+            "label": "Can Guess Neutral Killing Roles",
+            "type": "Boolean"
         },
         {
             "cfgKey": "VigilanteGuessNeutralOutlier",
-            "label": "Can Guess Neutral Outlier Roles"
+            "label": "Can Guess Neutral Outlier Roles",
+            "type": "Boolean"
         }
     ],
     "Warden": [
         {
             "cfgKey": "ShowFortified",
-            "label": "Show Fortified Player"
+            "label": "Show Fortified Player",
+            "type": "Number",
+            "description": {
+                "0": "Fortified",
+                "1": "Warden",
+                "2": "Fortified + Warden",
+                "3": "Everyone"
+            }
         }
     ],
     "Warlock": [
         {
             "cfgKey": "ChargeTimeDuration",
-            "label": "Time It Takes To Fully Charge"
+            "label": "Time It Takes To Fully Charge",
+            "type": "Time"
         },
         {
             "cfgKey": "AddedTimeDuration",
-            "label": "Time Multiplier Added Per Kill For Next Charge"
+            "label": "Time Multiplier Added Per Kill For Next Charge",
+            "type": "Multiplier"
         },
         {
             "cfgKey": "DischargeTimeDuration",
-            "label": "Time It Takes To Use Full Charge"
+            "label": "Time It Takes To Use Full Charge",
+            "type": "Time"
         }
     ],
     "Werewolf": [
         {
             "cfgKey": "RampageCooldown",
-            "label": "Rampage Cooldown"
+            "label": "Rampage Cooldown",
+            "type": "Time"
         },
         {
             "cfgKey": "RampageDuration",
-            "label": "Rampage Duration"
+            "label": "Rampage Duration",
+            "type": "Time"
         },
         {
             "cfgKey": "RampageKillCooldown",
-            "label": "Rampage Kill Cooldown"
+            "label": "Rampage Kill Cooldown",
+            "type": "Time"
         },
         {
             "cfgKey": "CanVent",
-            "label": "Werewolf Can Vent When Rampaged"
+            "label": "Werewolf Can Vent When Rampaged",
+            "type": "Boolean"
         }
     ]
 };

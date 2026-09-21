@@ -3,13 +3,15 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import { RoleImage } from "../_components/RoleImage";
 import { getAllGamesData, getDramaAferaSettings } from "../../_services";
-import { isKillerRole, getRoleColor, convertRoleNameForDisplay, convertUrlSlugToRole, convertNickToUrlSlug, getPlayerAvatarPath } from "@/app/dramaafera/_utils/gameUtils";
+import { FIRST_MIRA_SEASON, isKillerRole, getRoleColor, convertRoleNameForDisplay, convertUrlSlugToRole, convertNickToUrlSlug, getPlayerAvatarPath } from "@/app/dramaafera/_utils/gameUtils";
 import { buildSeasonUrl } from "@/app/dramaafera/_utils/seasonHelpers";
 import type { UIGameData, UIPlayerData } from "../../_services";
 import { findFullRole } from "@/app/dramaafera/_utils/roleRegistry";
 import type { Role } from "@/constants/rolesAndModifiers";
 import { SettingsList } from "@/app/_components/RolesList/RoleCard/SettingsList";
 import { parseSettingsFile, getMatchingFileName, updateSettingValue } from '../../_utils/settingsParser';
+import { buildMiraRoleSettings } from "@/app/dramaafera/_utils/miraConfig";
+import { getCloudflareContext } from "@opennextjs/cloudflare";
 
 // Interface dla statystyk roli
 interface RoleStats {
@@ -301,9 +303,30 @@ export async function RoleDetailContent({ nazwa, seasonId }: RoleDetailContentPr
     // findFullRole for why that restriction matters.
     const roleDefinition: Role | undefined = findFullRole(roleName, seasonId);
 
-    // Wczytaj ustawienia z API i zaktualizuj wartości ustawień
+    // Settings come from whichever source matches the era.
+    //
+    // Season >= 4 reads TOU-Mira's own .cfg and the labels generated from the mod source, not
+    // the hand-written `settings` on the role — those had drifted (a typo in four labels, 55
+    // entries for options the mod no longer has, 59% of config keys unmatchable). Season <= 3
+    // keeps the database upload and the legacy parser, unchanged. See #317.
     let roleDefinitionWithSettings = roleDefinition;
-    if (roleDefinition) {
+
+    if (roleDefinition && seasonId >= FIRST_MIRA_SEASON) {
+        try {
+            const { env } = await getCloudflareContext();
+            if (env.ASSETS) {
+                const response = await env.ASSETS.fetch(new Request('http://localhost/settings/mira.cfg'));
+                if (response.ok) {
+                    const settings = buildMiraRoleSettings(await response.text(), roleDefinition.name);
+                    if (Object.keys(settings).length > 0) {
+                        roleDefinitionWithSettings = { ...roleDefinition, settings };
+                    }
+                }
+            }
+        } catch {
+            // Settings are decoration; the rest of the page stands without them.
+        }
+    } else if (roleDefinition) {
         try {
             const { current: fileContent } = await getDramaAferaSettings();
 
