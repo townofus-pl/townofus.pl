@@ -6,15 +6,25 @@ import { CURRENT_SEASON } from '@/app/dramaafera/_constants/seasons';
 // NOTE: By default this implementation covers ALL players using COALESCE(…, 2000)
 // so that even players who have never played a game can appear.
 // Callers may opt into season-active filtering to match /ranking behavior.
+//
+// `isFirstSessionAfterSeasonReset` travels with the snapshots because it is a fact about them,
+// not about any one caller. On the first session of a reset season every `before` score is 2000,
+// so `buildRankPositionMap` sorts an all-tie map and hands out 1..N in whatever order SQLite
+// returned — a "rank change" computed from that is noise. The probe used to live inside
+// getTopSigmas, which is why getHostInfo shipped that noise. See #315.
 export async function getRankingSnapshots(
   firstGameDbId: number,
   lastGameDbId: number,
   seasonId?: number,
   options?: { onlySeasonActivePlayers?: boolean },
-): Promise<{ before: Map<string, number>; after: Map<string, number> }> {
+): Promise<{
+  before: Map<string, number>;
+  after: Map<string, number>;
+  isFirstSessionAfterSeasonReset: boolean;
+}> {
   const prisma = await getDatabaseClient();
   if (!prisma) {
-    return { before: new Map(), after: new Map() };
+    return { before: new Map(), after: new Map(), isFirstSessionAfterSeasonReset: false };
   }
 
   const season = seasonId ?? CURRENT_SEASON;
@@ -69,8 +79,25 @@ export async function getRankingSnapshots(
     afterQuery.map((r) => [r.playerName, Number(r.score)]),
   );
 
+  // The season has been reset and no game in it produced a ranking row before this session.
+  const [seasonResetRows, priorSeasonGameRankingRows] = await Promise.all([
+    prisma.$queryRaw<Array<{ id: number }>>`
+      SELECT pr.id FROM player_rankings pr
+      WHERE pr.season = ${season} AND pr.deletedAt IS NULL AND pr.reason = 'season_reset'
+      LIMIT 1
+    `,
+    prisma.$queryRaw<Array<{ id: number }>>`
+      SELECT pr.id FROM player_rankings pr
+      WHERE pr.season = ${season} AND pr.deletedAt IS NULL
+        AND pr.gameId IS NOT NULL AND pr.gameId < ${firstGameDbId}
+      LIMIT 1
+    `,
+  ]);
+  const isFirstSessionAfterSeasonReset =
+    seasonResetRows.length > 0 && priorSeasonGameRankingRows.length === 0;
+
   if (!onlySeasonActivePlayers) {
-    return { before, after };
+    return { before, after, isFirstSessionAfterSeasonReset };
   }
 
   // Mirror /ranking eligibility: include only players with a ranking row in the season
@@ -107,7 +134,7 @@ export async function getRankingSnapshots(
     Array.from(after.entries()).filter(([name]) => seasonActiveNames.has(name)),
   );
 
-  return { before: filteredBefore, after: filteredAfter };
+  return { before: filteredBefore, after: filteredAfter, isFirstSessionAfterSeasonReset };
 }
 
 // Internal helper: convert a score map to a rank-position map (1-based, highest score = rank 1)
