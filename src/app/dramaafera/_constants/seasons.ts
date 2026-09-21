@@ -12,9 +12,10 @@ export interface Season {
 export const SEASONS: Season[] = [
   { id: 2, startDate: null },
   { id: 3, startDate: '2026-03-23' },
+  { id: 4, startDate: '2026-09-23' },
 ];
 
-export const CURRENT_SEASON = 3;
+export const CURRENT_SEASON = 4;
 
 export function getSeasonById(id: number): Season | undefined {
   return SEASONS.find((s) => s.id === id);
