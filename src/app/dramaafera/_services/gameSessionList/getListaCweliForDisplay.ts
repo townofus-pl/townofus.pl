@@ -1,12 +1,21 @@
 import { getDatabaseClient } from '@/app/dramaafera/_services/db';
-import { chunkedInQuery } from '@/app/api/_database';
 import { withoutDeleted } from '@/app/api/schema/common';
 import type { ListaCweliDisplayEntry } from './types';
 
 /**
- * Fetches lista cweli entries for display, enriched with current ELO ranking.
- * Players are sorted by ELO descending, then alphabetically.
- * Returns empty array gracefully on build-time or DB error.
+ * Fetches lista cweli entries for display, enriched with the ELO each player held
+ * **in that list's own season**.
+ *
+ * Deliberately not `players.currentRankingId`: that column is season-agnostic and points at a
+ * player's latest ranking row in any season. The moment a new season is reset it points at that
+ * season's 2000-point row, so every earlier season's list would render as 69 players tied on
+ * 2000 and sort alphabetically. Measured before the fix: one distinct ELO across the whole
+ * roster, against a real season-3 finish of ziomson 2746.7 / Cleopatrie 2644.7. See #309.
+ *
+ * `getRanking.ts` documents and defends against the same trap.
+ *
+ * Players sorted by ELO descending, then alphabetically. Returns an empty array gracefully on
+ * build-time or DB error.
  */
 export async function getListaCweliForDisplay(seasonId: number): Promise<ListaCweliDisplayEntry[]> {
     const prisma = await getDatabaseClient();
@@ -25,41 +34,24 @@ export async function getListaCweliForDisplay(seasonId: number): Promise<ListaCw
 
         if (lists.length === 0) return [];
 
-        const uniquePlayerNames = Array.from(
-            new Set(
-                lists.flatMap((list) => JSON.parse(list.playerNames) as string[])
+        // One statement, two bound parameters, no IN clause — so no D1 parameter-cap concern
+        // however many names accumulate across the season's lists. Returns the terminal ranking
+        // row per player *within this season*.
+        const seasonScores = await prisma.$queryRaw<Array<{ name: string; score: number }>>`
+            WITH latest AS (
+                SELECT playerId, MAX(id) AS id
+                FROM player_rankings
+                WHERE season = ${seasonId} AND deletedAt IS NULL
+                GROUP BY playerId
             )
-        );
-
-        // Chunked: `name: { in: uniquePlayerNames }` + `include: currentRanking`
-        // emits two IN-clauses (player names + currentRanking ids) — sum can
-        // exceed D1's 98 bound-parameter cap on Prisma 7 once a list of lists
-        // accumulates many unique names.
-        const players = await chunkedInQuery(uniquePlayerNames, (chunk) =>
-            prisma.player.findMany({
-                where: { ...withoutDeleted, name: { in: chunk } },
-                select: { id: true, name: true, currentRankingId: true },
-            }),
-        );
-
-        const currentRankingIds = players
-            .map((p) => p.currentRankingId)
-            .filter((id): id is number => id !== null);
-        const rankings = await chunkedInQuery(currentRankingIds, (chunk) =>
-            prisma.playerRanking.findMany({
-                where: { id: { in: chunk } },
-                select: { id: true, score: true },
-            }),
-        );
-        const scoreByRankingId = new Map(rankings.map((r) => [r.id, r.score]));
+            SELECT p.name, r.score
+            FROM latest l
+            JOIN player_rankings r ON r.id = l.id
+            JOIN players p ON p.id = r.playerId AND p.deletedAt IS NULL
+        `;
 
         const eloByPlayerName = new Map(
-            players.map((player) => {
-                const score = player.currentRankingId !== null
-                    ? scoreByRankingId.get(player.currentRankingId)
-                    : null;
-                return [player.name, score != null ? Math.round(score) : null];
-            })
+            seasonScores.map((row) => [row.name, Math.round(Number(row.score))]),
         );
 
         return lists.map((list) => {
