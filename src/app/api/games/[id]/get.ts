@@ -161,8 +161,8 @@ export async function GET(request: NextRequest, authContext: { user: { username:
       incorrectJailorExecutes: stat.incorrectJailorExecutes,
       
       // Support statistics
-      correctMedicShields: stat.correctMedicShields,
-      incorrectMedicShields: stat.incorrectMedicShields,
+      correctProtects: stat.correctProtects,
+      incorrectProtects: stat.incorrectProtects,
       correctWardenFortifies: stat.correctWardenFortifies,
       incorrectWardenFortifies: stat.incorrectWardenFortifies,
       correctAltruistRevives: stat.correctAltruistRevives,

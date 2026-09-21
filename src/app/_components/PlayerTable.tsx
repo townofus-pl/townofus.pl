@@ -53,8 +53,8 @@ export default function PlayerTable({ players, reversedGames, detailedGames, dat
       incorrectDeputyShoots: 0,
       correctJailorExecutes: 0,
       incorrectJailorExecutes: 0,
-      correctMedicShields: 0,
-      incorrectMedicShields: 0,
+      correctProtects: 0,
+      incorrectProtects: 0,
       correctWardenFortifies: 0,
       incorrectWardenFortifies: 0,
       janitorCleans: 0,
@@ -94,8 +94,8 @@ export default function PlayerTable({ players, reversedGames, detailedGames, dat
       // Sumuj wszystkie statystyki oprócz tasków i rund
       aggregatedStats.correctKills += stats.correctKills || 0;
       aggregatedStats.incorrectKills += stats.incorrectKills || 0;
-      aggregatedStats.correctMedicShields += stats.correctMedicShields || 0;
-      aggregatedStats.incorrectMedicShields += stats.incorrectMedicShields || 0;
+      aggregatedStats.correctProtects += stats.correctProtects || 0;
+      aggregatedStats.incorrectProtects += stats.incorrectProtects || 0;
       aggregatedStats.correctJailorExecutes += stats.correctJailorExecutes || 0;
       aggregatedStats.incorrectJailorExecutes += stats.incorrectJailorExecutes || 0;
       aggregatedStats.correctDeputyShoots += stats.correctDeputyShoots || 0;
@@ -254,7 +254,7 @@ export default function PlayerTable({ players, reversedGames, detailedGames, dat
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-center">
                               <div>
                                 <div className="text-lg font-bold text-green-400">
-                                  {playerStats.correctKills + playerStats.correctGuesses + playerStats.correctMedicShields + 
+                                  {playerStats.correctKills + playerStats.correctGuesses + playerStats.correctProtects + 
                                    playerStats.correctJailorExecutes + playerStats.correctDeputyShoots + playerStats.correctProsecutes +
                                    playerStats.correctWardenFortifies + playerStats.correctAltruistRevives + playerStats.correctSwaps}
                                 </div>
@@ -262,7 +262,7 @@ export default function PlayerTable({ players, reversedGames, detailedGames, dat
                               </div>
                               <div>
                                 <div className="text-lg font-bold text-red-400">
-                                  {playerStats.incorrectKills + playerStats.incorrectGuesses + playerStats.incorrectMedicShields + 
+                                  {playerStats.incorrectKills + playerStats.incorrectGuesses + playerStats.incorrectProtects + 
                                    playerStats.incorrectJailorExecutes + playerStats.incorrectDeputyShoots + playerStats.incorrectProsecutes +
                                    playerStats.incorrectWardenFortifies + playerStats.incorrectAltruistRevives + playerStats.incorrectSwaps}
                                 </div>
@@ -270,10 +270,10 @@ export default function PlayerTable({ players, reversedGames, detailedGames, dat
                               </div>
                               <div>
                                 <div className="text-lg font-bold text-blue-300">
-                                  {(playerStats.correctKills + playerStats.correctGuesses + playerStats.correctMedicShields + 
+                                  {(playerStats.correctKills + playerStats.correctGuesses + playerStats.correctProtects + 
                                     playerStats.correctJailorExecutes + playerStats.correctDeputyShoots + playerStats.correctProsecutes +
                                     playerStats.correctWardenFortifies + playerStats.correctAltruistRevives + playerStats.correctSwaps) +
-                                   (playerStats.incorrectKills + playerStats.incorrectGuesses + playerStats.incorrectMedicShields + 
+                                   (playerStats.incorrectKills + playerStats.incorrectGuesses + playerStats.incorrectProtects + 
                                     playerStats.incorrectJailorExecutes + playerStats.incorrectDeputyShoots + playerStats.incorrectProsecutes +
                                     playerStats.incorrectWardenFortifies + playerStats.incorrectAltruistRevives + playerStats.incorrectSwaps)}
                                 </div>
@@ -282,10 +282,10 @@ export default function PlayerTable({ players, reversedGames, detailedGames, dat
                               <div>
                                 <div className="text-lg font-bold text-yellow-400">
                                   {(() => {
-                                    const totalCorrect = playerStats.correctKills + playerStats.correctGuesses + playerStats.correctMedicShields + 
+                                    const totalCorrect = playerStats.correctKills + playerStats.correctGuesses + playerStats.correctProtects + 
                                                         playerStats.correctJailorExecutes + playerStats.correctDeputyShoots + playerStats.correctProsecutes +
                                                         playerStats.correctWardenFortifies + playerStats.correctAltruistRevives + playerStats.correctSwaps;
-                                    const totalIncorrect = playerStats.incorrectKills + playerStats.incorrectGuesses + playerStats.incorrectMedicShields + 
+                                    const totalIncorrect = playerStats.incorrectKills + playerStats.incorrectGuesses + playerStats.incorrectProtects + 
                                                            playerStats.incorrectJailorExecutes + playerStats.incorrectDeputyShoots + playerStats.incorrectProsecutes +
                                                            playerStats.incorrectWardenFortifies + playerStats.incorrectAltruistRevives + playerStats.incorrectSwaps;
                                     const total = totalCorrect + totalIncorrect;
@@ -313,15 +313,15 @@ export default function PlayerTable({ players, reversedGames, detailedGames, dat
                             </div>
                           )}
 
-                          {/* Statystyki tarcz medyka */}
-                          {(!hideZeroStats || (playerStats.correctMedicShields > 0 || playerStats.incorrectMedicShields > 0)) && (
+                          {/* Statystyki protectów */}
+                          {(!hideZeroStats || (playerStats.correctProtects > 0 || playerStats.incorrectProtects > 0)) && (
                             <div className="bg-zinc-700/60 rounded-lg p-3">
-                              <div className="text-sm font-medium text-zinc-300 mb-1">Medic Shields</div>
-                              {(!hideZeroStats || playerStats.correctMedicShields > 0) && (
-                                <div className="text-green-400">Correct: {playerStats.correctMedicShields}</div>
+                              <div className="text-sm font-medium text-zinc-300 mb-1">Protects</div>
+                              {(!hideZeroStats || playerStats.correctProtects > 0) && (
+                                <div className="text-green-400">Correct: {playerStats.correctProtects}</div>
                               )}
-                              {(!hideZeroStats || playerStats.incorrectMedicShields > 0) && (
-                                <div className="text-red-400">Incorrect: {playerStats.incorrectMedicShields}</div>
+                              {(!hideZeroStats || playerStats.incorrectProtects > 0) && (
+                                <div className="text-red-400">Incorrect: {playerStats.incorrectProtects}</div>
                               )}
                             </div>
                           )}

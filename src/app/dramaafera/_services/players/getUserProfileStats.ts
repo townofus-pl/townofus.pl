@@ -44,8 +44,8 @@ export async function getUserProfileStats(playerName: string, seasonId?: number)
       incorrectDeputyShoots: true,
       correctJailorExecutes: true,
       incorrectJailorExecutes: true,
-      correctMedicShields: true,
-      incorrectMedicShields: true,
+      correctProtects: true,
+      incorrectProtects: true,
       correctWardenFortifies: true,
       incorrectWardenFortifies: true,
       janitorCleans: true,
@@ -99,8 +99,8 @@ export async function getUserProfileStats(playerName: string, seasonId?: number)
   let incorrectDeputyShoots = 0;
   let correctJailorExecutes = 0;
   let incorrectJailorExecutes = 0;
-  let correctMedicShields = 0;
-  let incorrectMedicShields = 0;
+  let correctProtects = 0;
+  let incorrectProtects = 0;
   let correctWardenFortifies = 0;
   let incorrectWardenFortifies = 0;
   let janitorCleans = 0;
@@ -136,8 +136,8 @@ export async function getUserProfileStats(playerName: string, seasonId?: number)
     incorrectDeputyShoots += stat.incorrectDeputyShoots || 0;
     correctJailorExecutes += stat.correctJailorExecutes || 0;
     incorrectJailorExecutes += stat.incorrectJailorExecutes || 0;
-    correctMedicShields += stat.correctMedicShields || 0;
-    incorrectMedicShields += stat.incorrectMedicShields || 0;
+    correctProtects += stat.correctProtects || 0;
+    incorrectProtects += stat.incorrectProtects || 0;
     correctWardenFortifies += stat.correctWardenFortifies || 0;
     incorrectWardenFortifies += stat.incorrectWardenFortifies || 0;
     janitorCleans += stat.janitorCleans || 0;
@@ -172,8 +172,8 @@ export async function getUserProfileStats(playerName: string, seasonId?: number)
     incorrectDeputyShoots,
     correctJailorExecutes,
     incorrectJailorExecutes,
-    correctMedicShields,
-    incorrectMedicShields,
+    correctProtects,
+    incorrectProtects,
     correctWardenFortifies,
     incorrectWardenFortifies,
     janitorCleans,

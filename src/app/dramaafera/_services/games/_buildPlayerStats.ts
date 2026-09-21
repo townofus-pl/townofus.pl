@@ -23,8 +23,8 @@ export type StatWithRolesAndModifiers = {
   incorrectDeputyShoots: number;
   correctJailorExecutes: number;
   incorrectJailorExecutes: number;
-  correctMedicShields: number;
-  incorrectMedicShields: number;
+  correctProtects: number;
+  incorrectProtects: number;
   correctWardenFortifies: number;
   incorrectWardenFortifies: number;
   janitorCleans: number;
@@ -94,8 +94,8 @@ export function buildPlayerStats(stat: StatWithRolesAndModifiers, opts: BuildPla
     incorrectDeputyShoots: stat.incorrectDeputyShoots,
     correctJailorExecutes: stat.correctJailorExecutes,
     incorrectJailorExecutes: stat.incorrectJailorExecutes,
-    correctMedicShields: stat.correctMedicShields,
-    incorrectMedicShields: stat.incorrectMedicShields,
+    correctProtects: stat.correctProtects,
+    incorrectProtects: stat.incorrectProtects,
     correctWardenFortifies: stat.correctWardenFortifies,
     incorrectWardenFortifies: stat.incorrectWardenFortifies,
     janitorCleans: stat.janitorCleans,
@@ -122,8 +122,8 @@ export function buildPlayerStats(stat: StatWithRolesAndModifiers, opts: BuildPla
       incorrectDeputyShoots: stat.incorrectDeputyShoots,
       correctJailorExecutes: stat.correctJailorExecutes,
       incorrectJailorExecutes: stat.incorrectJailorExecutes,
-      correctMedicShields: stat.correctMedicShields,
-      incorrectMedicShields: stat.incorrectMedicShields,
+      correctProtects: stat.correctProtects,
+      incorrectProtects: stat.incorrectProtects,
       correctWardenFortifies: stat.correctWardenFortifies,
       incorrectWardenFortifies: stat.incorrectWardenFortifies,
       janitorCleans: stat.janitorCleans,

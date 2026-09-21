@@ -2,20 +2,20 @@
 // learn more about it in the docs: https://pris.ly/d/prisma-schema
 
 generator client {
-    provider        = "prisma-client-js"
-    previewFeatures = ["partialIndexes"]
+  provider        = "prisma-client-js"
+  previewFeatures = ["partialIndexes"]
 }
 
 generator zod {
-    provider = "prisma-zod-generator"
-    output   = "../src/generated/zod"
+  provider = "prisma-zod-generator"
+  output   = "../src/generated/zod"
 }
 
 datasource db {
-    provider = "sqlite"
-    // Prisma 7: connection URL lives in `prisma.config.ts` (read by `migrate
-    // diff --from-config-datasource`). At runtime, `src/app/api/_database/
-    // index.ts` constructs the D1 adapter and passes it to `new PrismaClient`.
+  provider = "sqlite"
+  // Prisma 7: connection URL lives in `prisma.config.ts` (read by `migrate
+  // diff --from-config-datasource`). At runtime, `src/app/api/_database/
+  // index.ts` constructs the D1 adapter and passes it to `new PrismaClient`.
 }
 
 // =============================================================================
@@ -23,156 +23,174 @@ datasource db {
 // =============================================================================
 
 model Game {
-    id              Int      @id @default(autoincrement())
-    gameIdentifier  String   @unique // Format: YYYYMMDD_HHMM for URL access
+  id             Int    @id @default(autoincrement())
+  gameIdentifier String @unique // Format: YYYYMMDD_HHMM for URL access
 
-    // Game metadata
-    startTime       DateTime
-    endTime         DateTime
-    map             String
-    maxTasks        Int?
+  // Game metadata
+  startTime DateTime
+  endTime   DateTime
+  map       String
+  maxTasks  Int?
 
-    // Computed winner information (cached for performance)
-    winnerTeam      String?  // 'Crewmate', 'Impostor', 'Neutral'
-    winCondition    String?  // Description of how the game was won
-    season          Int
+  // Computed winner information (cached for performance)
+  winnerTeam   String? // 'Crewmate', 'Impostor', 'Neutral'
+  winCondition String? // Description of how the game was won
+  season       Int
 
-    // Timestamps
-    createdAt       DateTime @default(now())
-    updatedAt       DateTime @updatedAt
-    deletedAt       DateTime? // Soft delete
+  // v2 ingest (#302). Null on every v1 game — the v1 payload carried neither.
+  modVersion     String? // mod build that scored the match, e.g. "1.0.0+910decf"
+  winningFaction String? // TOU-Mira's authoritative end-game result, colour markup stripped
 
-    // Relationships
-    gamePlayerStatistics GamePlayerStatistics[]
-    gameEvents          GameEvent[]
-    meetings            Meeting[]
-    playerRankings      PlayerRanking[]
+  // Timestamps
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime? // Soft delete
 
-    @@index([gameIdentifier])
-    @@index([startTime])
-    @@index([createdAt])
-    @@index([deletedAt])
-    @@index([winnerTeam])
-    @@index([season])
-    @@index([season, deletedAt])
-    @@index([season, winnerTeam])
-    @@map("games")
+  // Relationships
+  gamePlayerStatistics GamePlayerStatistics[]
+  gameEvents           GameEvent[]
+  meetings             Meeting[]
+  playerRankings       PlayerRanking[]
+  gameActions          GameAction[]
+
+  @@index([gameIdentifier])
+  @@index([startTime])
+  @@index([createdAt])
+  @@index([deletedAt])
+  @@index([winnerTeam])
+  @@index([season])
+  @@index([season, deletedAt])
+  @@index([season, winnerTeam])
+  @@map("games")
 }
 
 model Player {
-    id        Int      @id @default(autoincrement())
-    name      String   @unique
+  id   Int    @id @default(autoincrement())
+  name String @unique
 
-    // Timestamps
-    createdAt DateTime @default(now())
-    updatedAt DateTime @updatedAt
-    deletedAt DateTime? // Soft delete
+  // Timestamps
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime? // Soft delete
 
-    // Current ranking reference
-    currentRankingId Int? @unique
+  // Current ranking reference
+  currentRankingId Int? @unique
 
-    // Relationships
-    gamePlayerStatistics GamePlayerStatistics[]
-    gameEvents           GameEvent[] @relation("EventPlayer")
-    targetEvents         GameEvent[] @relation("EventTarget")
-    meetingVotesFor      MeetingVote[] @relation("VoteTarget")
-    meetingVotesBy       MeetingVote[] @relation("VoteVoter")
-    skipVotes            MeetingSkipVote[] @relation("SkipVotes")
-    noVotes              MeetingNoVote[] @relation("NoVotes")
-    blackmailedIn        MeetingBlackmailedPlayer[] @relation("BlackmailedIn")
-    jailedIn             MeetingJailedPlayer[] @relation("JailedIn")
-    currentRanking       PlayerRanking? @relation("CurrentRanking", fields: [currentRankingId], references: [id])
-    rankingHistory       PlayerRanking[] @relation("RankingHistory")
+  // v2 identity (#302, #287). Nullable and NOT unique: a rename keeps the same friend code, and
+  // `name` stays the identity key. Never selected into a response body — see getGameData.ts.
+  friendCode          String?
+  hashedProductUserId String? // SHA-256(ProductUserId)[0..8]
 
-    @@index([name], map: "players_name_idx")
-    @@index([currentRankingId])
-    @@index([deletedAt])
-    @@map("players")
+  // Relationships
+  gamePlayerStatistics GamePlayerStatistics[]
+  gameEvents           GameEvent[]                @relation("EventPlayer")
+  targetEvents         GameEvent[]                @relation("EventTarget")
+  meetingVotesFor      MeetingVote[]              @relation("VoteTarget")
+  meetingVotesBy       MeetingVote[]              @relation("VoteVoter")
+  skipVotes            MeetingSkipVote[]          @relation("SkipVotes")
+  noVotes              MeetingNoVote[]            @relation("NoVotes")
+  blackmailedIn        MeetingBlackmailedPlayer[] @relation("BlackmailedIn")
+  jailedIn             MeetingJailedPlayer[]      @relation("JailedIn")
+  currentRanking       PlayerRanking?             @relation("CurrentRanking", fields: [currentRankingId], references: [id])
+  rankingHistory       PlayerRanking[]            @relation("RankingHistory")
+  actionsPerformed     GameAction[]               @relation("ActionPerformer")
+  actionsTargeted      GameAction[]               @relation("ActionTarget")
+
+  @@index([name], map: "players_name_idx")
+  @@index([currentRankingId])
+  @@index([deletedAt])
+  @@map("players")
 }
 
 model GamePlayerStatistics {
-    id       Int @id @default(autoincrement())
-    gameId   Int
-    playerId Int
+  id       Int @id @default(autoincrement())
+  gameId   Int
+  playerId Int
 
-    // Player statistics (from PlayerStats interface)
-    win                         Boolean @default(false)
-    disconnected               Boolean @default(false)
-    initialRolePoints          Int     @default(0)
-    correctKills               Int     @default(0)
-    incorrectKills             Int     @default(0)
-    correctProsecutes          Int     @default(0)
-    incorrectProsecutes        Int     @default(0)
-    correctGuesses             Int     @default(0)
-    incorrectGuesses           Int     @default(0)
-    correctDeputyShoots        Int     @default(0)
-    incorrectDeputyShoots      Int     @default(0)
-    correctJailorExecutes      Int     @default(0)
-    incorrectJailorExecutes    Int     @default(0)
-    correctMedicShields        Int     @default(0)
-    incorrectMedicShields      Int     @default(0)
-    correctWardenFortifies     Int     @default(0)
-    incorrectWardenFortifies   Int     @default(0)
-    janitorCleans              Int     @default(0)
-    completedTasks             Int     @default(0)
-    survivedRounds             Int     @default(0)
-    correctAltruistRevives     Int     @default(0)
-    incorrectAltruistRevives   Int     @default(0)
-    correctSwaps               Int     @default(0)
-    incorrectSwaps             Int     @default(0)
-    totalPoints                Float   @default(0)
+  // Player statistics (from PlayerStats interface)
+  win                      Boolean @default(false)
+  disconnected             Boolean @default(false)
+  initialRolePoints        Int     @default(0)
+  correctKills             Int     @default(0)
+  incorrectKills           Int     @default(0)
+  correctProsecutes        Int     @default(0)
+  incorrectProsecutes      Int     @default(0)
+  correctGuesses           Int     @default(0)
+  incorrectGuesses         Int     @default(0)
+  correctDeputyShoots      Int     @default(0)
+  incorrectDeputyShoots    Int     @default(0)
+  correctJailorExecutes    Int     @default(0)
+  incorrectJailorExecutes  Int     @default(0)
+  // Renamed from correct/incorrectMedicShields on #302: these already collect Mercenary
+  // (Neutral) and Monarch (Crewmate), so the Medic-specific name was wrong.
+  correctProtects          Int     @default(0)
+  incorrectProtects        Int     @default(0)
+  correctWardenFortifies   Int     @default(0)
+  incorrectWardenFortifies Int     @default(0)
+  janitorCleans            Int     @default(0)
+  completedTasks           Int     @default(0)
+  survivedRounds           Int     @default(0)
+  correctAltruistRevives   Int     @default(0)
+  incorrectAltruistRevives Int     @default(0)
+  correctSwaps             Int     @default(0)
+  incorrectSwaps           Int     @default(0)
+  totalPoints              Float   @default(0)
 
-    // Relationships
-    game         Game           @relation(fields: [gameId], references: [id], onDelete: Cascade)
-    player       Player         @relation(fields: [playerId], references: [id], onDelete: Cascade)
-    roleHistory  PlayerRole[]
-    modifiers    PlayerModifier[]
+  // v2 (#302): JSON array of the roles an Imitator copied, in order. A column rather than a
+  // table — it is read whole, written once, and empty for all but one player per match.
+  imitatorRoles String? // JSON: ["Sheriff", "Medic"]
 
-    @@unique([gameId, playerId])
-    @@index([gameId])
-    @@index([playerId])
-    @@index([win])
-    @@index([disconnected])
-    @@index([totalPoints])
-    @@index([correctKills])
-    @@index([correctGuesses])
-    @@index([completedTasks])
-    @@index([survivedRounds])
-    @@index([gameId, win])
-    @@index([playerId, win])
-    // Covering index for the per-season ranking aggregate (COUNT + SUM(win) grouped by player).
-    // Lets the planner satisfy it from the index alone instead of reading ~5k table rows. See #299.
-    @@index([gameId, playerId, win])
-    @@map("game_player_statistics")
+  // Relationships
+  game        Game             @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  player      Player           @relation(fields: [playerId], references: [id], onDelete: Cascade)
+  roleHistory PlayerRole[]
+  modifiers   PlayerModifier[]
+
+  @@unique([gameId, playerId])
+  @@index([gameId])
+  @@index([playerId])
+  @@index([win])
+  @@index([disconnected])
+  @@index([totalPoints])
+  @@index([correctKills])
+  @@index([correctGuesses])
+  @@index([completedTasks])
+  @@index([survivedRounds])
+  @@index([gameId, win])
+  @@index([playerId, win])
+  // Covering index for the per-season ranking aggregate (COUNT + SUM(win) grouped by player).
+  // Lets the planner satisfy it from the index alone instead of reading ~5k table rows. See #299.
+  @@index([gameId, playerId, win])
+  @@map("game_player_statistics")
 }
 
 model PlayerRole {
-    id                      Int @id @default(autoincrement())
-    gamePlayerStatisticsId  Int
-    roleName                String
-    order                   Int    // Position in role history (0 = first/initial role)
+  id                     Int    @id @default(autoincrement())
+  gamePlayerStatisticsId Int
+  roleName               String
+  order                  Int // Position in role history (0 = first/initial role)
 
-    // Relationships
-    gamePlayerStatistics GamePlayerStatistics @relation(fields: [gamePlayerStatisticsId], references: [id], onDelete: Cascade)
+  // Relationships
+  gamePlayerStatistics GamePlayerStatistics @relation(fields: [gamePlayerStatisticsId], references: [id], onDelete: Cascade)
 
-    @@index([gamePlayerStatisticsId])
-    @@index([roleName])
-    @@index([roleName, order])
-    @@index([order])
-    @@map("player_roles")
+  @@index([gamePlayerStatisticsId])
+  @@index([roleName])
+  @@index([roleName, order])
+  @@index([order])
+  @@map("player_roles")
 }
 
 model PlayerModifier {
-    id                      Int @id @default(autoincrement())
-    gamePlayerStatisticsId  Int
-    modifierName            String
+  id                     Int    @id @default(autoincrement())
+  gamePlayerStatisticsId Int
+  modifierName           String
 
-    // Relationships
-    gamePlayerStatistics GamePlayerStatistics @relation(fields: [gamePlayerStatisticsId], references: [id], onDelete: Cascade)
+  // Relationships
+  gamePlayerStatistics GamePlayerStatistics @relation(fields: [gamePlayerStatisticsId], references: [id], onDelete: Cascade)
 
-    @@index([gamePlayerStatisticsId])
-    @@index([modifierName])
-    @@map("player_modifiers")
+  @@index([gamePlayerStatisticsId])
+  @@index([modifierName])
+  @@map("player_modifiers")
 }
 
 // =============================================================================
@@ -180,134 +198,174 @@ model PlayerModifier {
 // =============================================================================
 
 model GameEvent {
-    id          Int     @id @default(autoincrement())
-    gameId      Int
-    timestamp   String  // Format: "HH:MM:SS"
-    description String
+  id          Int    @id @default(autoincrement())
+  gameId      Int
+  timestamp   String // Format: "HH:MM:SS"
+  description String
 
-    // Event categorization (derived from converter.ts)
-    eventType   String? // 'kill', 'meeting', 'vote', 'task', 'sabotage', 'fix', 'vent', 'other'
-    playerId    Int? // Main player involved in event
-    targetId    Int? // Target player (for kills, etc.)
+  // Event categorization (derived from converter.ts)
+  eventType String? // 'kill', 'meeting', 'vote', 'task', 'sabotage', 'fix', 'vent', 'other'
+  playerId  Int? // Main player involved in event
+  targetId  Int? // Target player (for kills, etc.)
 
-    // Timestamps
-    deletedAt   DateTime? // Soft delete
+  // Timestamps
+  deletedAt DateTime? // Soft delete
 
-    // Relationships
-    game   Game    @relation(fields: [gameId], references: [id], onDelete: Cascade)
-    player Player? @relation("EventPlayer", fields: [playerId], references: [id], onDelete: SetNull)
-    target Player? @relation("EventTarget", fields: [targetId], references: [id], onDelete: SetNull)
+  // Relationships
+  game   Game    @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  player Player? @relation("EventPlayer", fields: [playerId], references: [id], onDelete: SetNull)
+  target Player? @relation("EventTarget", fields: [targetId], references: [id], onDelete: SetNull)
 
-    @@index([gameId])
-    @@index([timestamp])
-    @@index([eventType])
-    @@index([playerId])
-    @@index([targetId])
-    @@index([deletedAt])
-    @@map("game_events")
+  @@index([gameId])
+  @@index([timestamp])
+  @@index([eventType])
+  @@index([playerId])
+  @@index([targetId])
+  @@index([deletedAt])
+  @@map("game_events")
+}
+
+// v2 raw action log (#286, #302). Append-only; `game_events` is frozen and never written again,
+// so a v2 game's timeline is rendered from these rows instead. Prose and the type filter happen at
+// render time on purpose — a wording change is then one line, not a re-ingest.
+model GameAction {
+  id            Int      @id @default(autoincrement())
+  gameId        Int
+  type          String // kill, death, protect, revive, swap, ability_used, vent_use, ...
+  timestampMs   Int // milliseconds since IntroEndEvent — the match's ordering authority
+  pointsChange  Float    @default(0)
+  performerRole String
+  performerId   Int
+  targetId      Int?
+  targetRole    String?
+  // Three-valued: true -> correct* counter, false -> incorrect*, null -> neither (the mod could
+  // not classify, which scores nothing and is not the actor's failure).
+  isCorrect     Boolean?
+  // JSON bag for the 12 sparse type-specific fields (ability, system, entryVent/exitVent,
+  // taskType, room, causeOfDeath, isGuess, platter, target2, imitatedRole, modifier). Twelve
+  // mostly-empty columns would cost forever and pay back never.
+  detail        String?
+
+  // Timestamps
+  deletedAt DateTime? // Soft delete
+
+  // Relationships
+  game      Game    @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  performer Player  @relation("ActionPerformer", fields: [performerId], references: [id], onDelete: Cascade)
+  target    Player? @relation("ActionTarget", fields: [targetId], references: [id], onDelete: SetNull)
+
+  // Only index measured as load-bearing on #286: the rich game-detail timeline seeks per type
+  // and reads 46 rows. `gameId` alone is served by this index's prefix. No index on performerId
+  // or targetId — players are only ever soft-deleted, and 107k rows/season makes each unused
+  // index real disk.
+  @@index([gameId, type])
+  @@map("game_actions")
 }
 
 model Meeting {
-    id                        Int @id @default(autoincrement())
-    gameId                    Int
-    meetingNumber             Int
-    deathsSinceLastMeeting    String // JSON array of death descriptions
-    wasTie                    Boolean @default(false)
-    wasBlessed                Boolean @default(false)
+  id                     Int     @id @default(autoincrement())
+  gameId                 Int
+  meetingNumber          Int
+  deathsSinceLastMeeting String // JSON array of death descriptions
+  wasTie                 Boolean @default(false)
+  wasBlessed             Boolean @default(false)
+  // v2 (#302). Null on v1 meetings and on a meeting that exiled nobody — v1 left the exile
+  // recoverable only by parsing the prose in deathsSinceLastMeeting.
+  exiledPlayer           String?
 
-    // Timestamps
-    deletedAt                 DateTime? // Soft delete
+  // Timestamps
+  deletedAt DateTime? // Soft delete
 
-    // Relationships
-    game              Game          @relation(fields: [gameId], references: [id], onDelete: Cascade)
-    meetingVotes      MeetingVote[]
-    skipVotes         MeetingSkipVote[]
-    noVotes           MeetingNoVote[]
-    blackmailedPlayers MeetingBlackmailedPlayer[]
-    jailedPlayers     MeetingJailedPlayer[]
+  // Relationships
+  game               Game                       @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  meetingVotes       MeetingVote[]
+  skipVotes          MeetingSkipVote[]
+  noVotes            MeetingNoVote[]
+  blackmailedPlayers MeetingBlackmailedPlayer[]
+  jailedPlayers      MeetingJailedPlayer[]
 
-    @@unique([gameId, meetingNumber])
-    @@index([gameId])
-    @@index([meetingNumber])
-    @@index([deletedAt])
-    @@map("meetings")
+  @@unique([gameId, meetingNumber])
+  @@index([gameId])
+  @@index([meetingNumber])
+  @@index([deletedAt])
+  @@map("meetings")
 }
 
 model MeetingSkipVote {
-    id        Int @id @default(autoincrement())
-    meetingId Int
-    playerId  Int
+  id        Int @id @default(autoincrement())
+  meetingId Int
+  playerId  Int
 
-    // Relationships
-    meeting Meeting @relation(fields: [meetingId], references: [id], onDelete: Cascade)
-    player  Player  @relation("SkipVotes", fields: [playerId], references: [id], onDelete: Cascade)
+  // Relationships
+  meeting Meeting @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  player  Player  @relation("SkipVotes", fields: [playerId], references: [id], onDelete: Cascade)
 
-    @@unique([meetingId, playerId])
-    @@index([meetingId])
-    @@index([playerId])
-    @@map("meeting_skip_votes")
+  @@unique([meetingId, playerId])
+  @@index([meetingId])
+  @@index([playerId])
+  @@map("meeting_skip_votes")
 }
 
 model MeetingNoVote {
-    id        Int @id @default(autoincrement())
-    meetingId Int
-    playerId  Int
+  id        Int @id @default(autoincrement())
+  meetingId Int
+  playerId  Int
 
-    // Relationships
-    meeting Meeting @relation(fields: [meetingId], references: [id], onDelete: Cascade)
-    player  Player  @relation("NoVotes", fields: [playerId], references: [id], onDelete: Cascade)
+  // Relationships
+  meeting Meeting @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  player  Player  @relation("NoVotes", fields: [playerId], references: [id], onDelete: Cascade)
 
-    @@unique([meetingId, playerId])
-    @@index([meetingId])
-    @@index([playerId])
-    @@map("meeting_no_votes")
+  @@unique([meetingId, playerId])
+  @@index([meetingId])
+  @@index([playerId])
+  @@map("meeting_no_votes")
 }
 
 model MeetingBlackmailedPlayer {
-    id        Int @id @default(autoincrement())
-    meetingId Int
-    playerId  Int
+  id        Int @id @default(autoincrement())
+  meetingId Int
+  playerId  Int
 
-    // Relationships
-    meeting Meeting @relation(fields: [meetingId], references: [id], onDelete: Cascade)
-    player  Player  @relation("BlackmailedIn", fields: [playerId], references: [id], onDelete: Cascade)
+  // Relationships
+  meeting Meeting @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  player  Player  @relation("BlackmailedIn", fields: [playerId], references: [id], onDelete: Cascade)
 
-    @@unique([meetingId, playerId])
-    @@index([meetingId])
-    @@index([playerId])
-    @@map("meeting_blackmailed_players")
+  @@unique([meetingId, playerId])
+  @@index([meetingId])
+  @@index([playerId])
+  @@map("meeting_blackmailed_players")
 }
 
 model MeetingJailedPlayer {
-    id        Int @id @default(autoincrement())
-    meetingId Int
-    playerId  Int
+  id        Int @id @default(autoincrement())
+  meetingId Int
+  playerId  Int
 
-    // Relationships
-    meeting Meeting @relation(fields: [meetingId], references: [id], onDelete: Cascade)
-    player  Player  @relation("JailedIn", fields: [playerId], references: [id], onDelete: Cascade)
+  // Relationships
+  meeting Meeting @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  player  Player  @relation("JailedIn", fields: [playerId], references: [id], onDelete: Cascade)
 
-    @@unique([meetingId, playerId])
-    @@index([meetingId])
-    @@index([playerId])
-    @@map("meeting_jailed_players")
+  @@unique([meetingId, playerId])
+  @@index([meetingId])
+  @@index([playerId])
+  @@map("meeting_jailed_players")
 }
 
 model MeetingVote {
-    id        Int @id @default(autoincrement())
-    meetingId Int
-    targetId  Int // Who was voted for
-    voterId   Int // Who cast the vote
+  id        Int @id @default(autoincrement())
+  meetingId Int
+  targetId  Int // Who was voted for
+  voterId   Int // Who cast the vote
 
-    // Relationships
-    meeting Meeting @relation(fields: [meetingId], references: [id], onDelete: Cascade)
-    target  Player  @relation("VoteTarget", fields: [targetId], references: [id], onDelete: Cascade)
-    voter   Player  @relation("VoteVoter", fields: [voterId], references: [id], onDelete: Cascade)
+  // Relationships
+  meeting Meeting @relation(fields: [meetingId], references: [id], onDelete: Cascade)
+  target  Player  @relation("VoteTarget", fields: [targetId], references: [id], onDelete: Cascade)
+  voter   Player  @relation("VoteVoter", fields: [voterId], references: [id], onDelete: Cascade)
 
-    @@index([meetingId])
-    @@index([targetId])
-    @@index([voterId])
-    @@map("meeting_votes")
+  @@index([meetingId])
+  @@index([targetId])
+  @@index([voterId])
+  @@map("meeting_votes")
 }
 
 // =============================================================================
@@ -315,35 +373,35 @@ model MeetingVote {
 // =============================================================================
 
 model PlayerRanking {
-    id       Int     @id @default(autoincrement())
-    playerId Int
-    gameId   Int? // Optional - null for base values, penalties, rewards
-    score    Float   // Ranking points
-    reason   String? // Optional description: "base_value", "game_result", "penalty", "reward"
-    season   Int
+  id       Int     @id @default(autoincrement())
+  playerId Int
+  gameId   Int? // Optional - null for base values, penalties, rewards
+  score    Float // Ranking points
+  reason   String? // Optional description: "base_value", "game_result", "penalty", "reward"
+  season   Int
 
-    // Timestamps
-    createdAt DateTime @default(now())
-    deletedAt DateTime? // Soft delete
+  // Timestamps
+  createdAt DateTime  @default(now())
+  deletedAt DateTime? // Soft delete
 
-    // Relationships
-    player         Player  @relation("RankingHistory", fields: [playerId], references: [id], onDelete: Cascade)
-    game           Game?   @relation(fields: [gameId], references: [id], onDelete: Cascade)
-    currentForPlayer Player? @relation("CurrentRanking")
+  // Relationships
+  player           Player  @relation("RankingHistory", fields: [playerId], references: [id], onDelete: Cascade)
+  game             Game?   @relation(fields: [gameId], references: [id], onDelete: Cascade)
+  currentForPlayer Player? @relation("CurrentRanking")
 
-    @@index([playerId, createdAt])
-    @@index([score])
-    @@index([gameId])
-    @@index([createdAt])
-    @@index([reason])
-    @@index([deletedAt])
-    @@index([season])
-    @@index([playerId, season, createdAt])
-    // Partial + covering: every "latest ranking per player within a season" query filters
-    // deletedAt IS NULL and groups by playerId. Keeps the biggest table (O(players x games),
-    // 28k rows and growing) out of the read path. See #299.
-    @@index([season, playerId, gameId, id], where: { deletedAt: null })
-    @@map("player_rankings")
+  @@index([playerId, createdAt])
+  @@index([score])
+  @@index([gameId])
+  @@index([createdAt])
+  @@index([reason])
+  @@index([deletedAt])
+  @@index([season])
+  @@index([playerId, season, createdAt])
+  // Partial + covering: every "latest ranking per player within a season" query filters
+  // deletedAt IS NULL and groups by playerId. Keeps the biggest table (O(players x games),
+  // 28k rows and growing) out of the read path. See #299.
+  @@index([season, playerId, gameId, id], where: { deletedAt: null })
+  @@map("player_rankings")
 }
 
 // =============================================================================
@@ -351,27 +409,27 @@ model PlayerRanking {
 // =============================================================================
 
 model ListaCweli {
-    id          Int     @id @default(autoincrement())
-    season      Int
-    date        DateTime  // Session date (stored as date, format: YYYY-MM-DD HH:mm:ss)
-    playerNames String    // JSON array of player names: ["nick1", "nick2", ...]
+  id          Int      @id @default(autoincrement())
+  season      Int
+  date        DateTime // Session date (stored as date, format: YYYY-MM-DD HH:mm:ss)
+  playerNames String // JSON array of player names: ["nick1", "nick2", ...]
 
-    // Timestamps
-    createdAt   DateTime @default(now())
-    updatedAt   DateTime @updatedAt
-    deletedAt   DateTime? // Soft delete
+  // Timestamps
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime? // Soft delete
 
-    // `map:` points at SQLite's auto-index name so `prisma migrate diff` doesn't
-    // try to RedefineIndex (which would fail — SQLite rejects DROP INDEX on
-    // auto-indexes backing inline UNIQUE constraints). The original constraint
-    // in 0005_add_lista_cweli.sql is `CONSTRAINT "lista_cweli_season_date_key"
-    // UNIQUE (...)`, but SQLite reports the backing index as
-    // `sqlite_autoindex_lista_cweli_1` regardless of the constraint name.
-    @@unique([season, date], map: "sqlite_autoindex_lista_cweli_1")
-    @@index([season])
-    @@index([date])
-    @@index([deletedAt])
-    @@map("lista_cweli")
+  // `map:` points at SQLite's auto-index name so `prisma migrate diff` doesn't
+  // try to RedefineIndex (which would fail — SQLite rejects DROP INDEX on
+  // auto-indexes backing inline UNIQUE constraints). The original constraint
+  // in 0005_add_lista_cweli.sql is `CONSTRAINT "lista_cweli_season_date_key"
+  // UNIQUE (...)`, but SQLite reports the backing index as
+  // `sqlite_autoindex_lista_cweli_1` regardless of the constraint name.
+  @@unique([season, date], map: "sqlite_autoindex_lista_cweli_1")
+  @@index([season])
+  @@index([date])
+  @@index([deletedAt])
+  @@map("lista_cweli")
 }
 
 // =============================================================================
@@ -379,28 +437,28 @@ model ListaCweli {
 // =============================================================================
 
 model DramaAferaSettings {
-    id            Int      @id @default(autoincrement())
-    versionType   String   @default("current")  // "current" | "old"
-    content       String                        // Full .txt file content — saved as-is
-    uploadedAt    DateTime @default(now())
+  id          Int      @id @default(autoincrement())
+  versionType String   @default("current") // "current" | "old"
+  content     String // Full .txt file content — saved as-is
+  uploadedAt  DateTime @default(now())
 
-    // Timestamps
-    createdAt     DateTime @default(now())
-    updatedAt     DateTime @updatedAt
-    deletedAt     DateTime? // Soft delete
+  // Timestamps
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime? // Soft delete
 
-    @@index([versionType])
-    @@index([uploadedAt])
-    @@index([deletedAt])
-    // Partial unique index: at most one active row per versionType. Defined in
-    // 0006_add_drama_afera_settings.sql and normalized by 0007_cleanup.sql
-    // (quoting drift). Declared here via the `partialIndexes` preview feature
-    // so the Prisma client and Zod generator see the constraint.
-    //
-    // If `db:migrate:create` ever regenerates a no-op `DROP INDEX
-    // "idx_drama_afera_settings_version_type"; CREATE UNIQUE INDEX ... WHERE
-    // "deletedAt" IS NULL;` pair, strip it before applying (prisma/prisma#23734,
-    // #29289). Currently clean as of 0007.
-    @@unique([versionType], map: "idx_drama_afera_settings_version_type", where: { deletedAt: null })
-    @@map("drama_afera_settings")
+  // Partial unique index: at most one active row per versionType. Defined in
+  // 0006_add_drama_afera_settings.sql and normalized by 0007_cleanup.sql
+  // (quoting drift). Declared here via the `partialIndexes` preview feature
+  // so the Prisma client and Zod generator see the constraint.
+  //
+  // If `db:migrate:create` ever regenerates a no-op `DROP INDEX
+  // "idx_drama_afera_settings_version_type"; CREATE UNIQUE INDEX ... WHERE
+  // "deletedAt" IS NULL;` pair, strip it before applying (prisma/prisma#23734,
+  // #29289). Currently clean as of 0007.
+  @@unique([versionType], map: "idx_drama_afera_settings_version_type", where: { deletedAt: null })
+  @@index([versionType])
+  @@index([uploadedAt])
+  @@index([deletedAt])
+  @@map("drama_afera_settings")
 }

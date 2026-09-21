@@ -58,8 +58,8 @@ export const PlayerGameStatsSchema = GamePlayerStatisticsModelSchema.pick({
   incorrectDeputyShoots: true,
   correctJailorExecutes: true,
   incorrectJailorExecutes: true,
-  correctMedicShields: true,
-  incorrectMedicShields: true,
+  correctProtects: true,
+  incorrectProtects: true,
   correctWardenFortifies: true,
   incorrectWardenFortifies: true,
   janitorCleans: true,
@@ -88,8 +88,8 @@ export const PlayerGameStatsSchema = GamePlayerStatisticsModelSchema.pick({
     incorrectDeputyShoots: 0,
     correctJailorExecutes: 0,
     incorrectJailorExecutes: 0,
-    correctMedicShields: 0,
-    incorrectMedicShields: 0,
+    correctProtects: 0,
+    incorrectProtects: 0,
     correctWardenFortifies: 0,
     incorrectWardenFortifies: 0,
     janitorCleans: 0,
@@ -239,12 +239,12 @@ export const PlayerStatsSchema = z.object({
     description: 'Number of incorrect jailor executes',
     example: 0
   }),
-  correctMedicShields: z.number().int().min(0).openapi({
-    description: 'Number of correct medic shields',
+  correctProtects: z.number().int().min(0).openapi({
+    description: 'Number of correct protects (Medic, Mirrorcaster, Oracle, Monarch)',
     example: 0
   }),
-  incorrectMedicShields: z.number().int().min(0).openapi({
-    description: 'Number of incorrect medic shields',
+  incorrectProtects: z.number().int().min(0).openapi({
+    description: 'Number of incorrect protects (Medic, Mirrorcaster, Oracle, Monarch)',
     example: 0
   }),
   correctWardenFortifies: z.number().int().min(0).openapi({

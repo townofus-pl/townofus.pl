@@ -60,8 +60,8 @@ export default function RoleTable({ roles, reversedGames, detailedGames, date, h
       incorrectDeputyShoots: 0,
       correctJailorExecutes: 0,
       incorrectJailorExecutes: 0,
-      correctMedicShields: 0,
-      incorrectMedicShields: 0,
+      correctProtects: 0,
+      incorrectProtects: 0,
       correctWardenFortifies: 0,
       incorrectWardenFortifies: 0,
       janitorCleans: 0,
@@ -124,8 +124,8 @@ export default function RoleTable({ roles, reversedGames, detailedGames, date, h
         // Sumuj wszystkie statystyki oprócz tasków i rund
         aggregatedStats.correctKills += stats.correctKills || 0;
         aggregatedStats.incorrectKills += stats.incorrectKills || 0;
-        aggregatedStats.correctMedicShields += stats.correctMedicShields || 0;
-        aggregatedStats.incorrectMedicShields += stats.incorrectMedicShields || 0;
+        aggregatedStats.correctProtects += stats.correctProtects || 0;
+        aggregatedStats.incorrectProtects += stats.incorrectProtects || 0;
         aggregatedStats.correctJailorExecutes += stats.correctJailorExecutes || 0;
         aggregatedStats.incorrectJailorExecutes += stats.incorrectJailorExecutes || 0;
         aggregatedStats.correctDeputyShoots += stats.correctDeputyShoots || 0;
@@ -284,7 +284,7 @@ export default function RoleTable({ roles, reversedGames, detailedGames, date, h
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-center">
                               <div>
                                 <div className="text-lg font-bold text-green-400">
-                                  {roleStats.correctKills + roleStats.correctGuesses + roleStats.correctMedicShields + 
+                                  {roleStats.correctKills + roleStats.correctGuesses + roleStats.correctProtects + 
                                    roleStats.correctJailorExecutes + roleStats.correctDeputyShoots + roleStats.correctProsecutes +
                                    roleStats.correctWardenFortifies + roleStats.correctAltruistRevives + roleStats.correctSwaps}
                                 </div>
@@ -292,7 +292,7 @@ export default function RoleTable({ roles, reversedGames, detailedGames, date, h
                               </div>
                               <div>
                                 <div className="text-lg font-bold text-red-400">
-                                  {roleStats.incorrectKills + roleStats.incorrectGuesses + roleStats.incorrectMedicShields + 
+                                  {roleStats.incorrectKills + roleStats.incorrectGuesses + roleStats.incorrectProtects + 
                                    roleStats.incorrectJailorExecutes + roleStats.incorrectDeputyShoots + roleStats.incorrectProsecutes +
                                    roleStats.incorrectWardenFortifies + roleStats.incorrectAltruistRevives + roleStats.incorrectSwaps}
                                 </div>
@@ -300,10 +300,10 @@ export default function RoleTable({ roles, reversedGames, detailedGames, date, h
                               </div>
                               <div>
                                 <div className="text-lg font-bold text-blue-300">
-                                  {(roleStats.correctKills + roleStats.correctGuesses + roleStats.correctMedicShields + 
+                                  {(roleStats.correctKills + roleStats.correctGuesses + roleStats.correctProtects + 
                                     roleStats.correctJailorExecutes + roleStats.correctDeputyShoots + roleStats.correctProsecutes +
                                     roleStats.correctWardenFortifies + roleStats.correctAltruistRevives + roleStats.correctSwaps) +
-                                   (roleStats.incorrectKills + roleStats.incorrectGuesses + roleStats.incorrectMedicShields + 
+                                   (roleStats.incorrectKills + roleStats.incorrectGuesses + roleStats.incorrectProtects + 
                                     roleStats.incorrectJailorExecutes + roleStats.incorrectDeputyShoots + roleStats.incorrectProsecutes +
                                     roleStats.incorrectWardenFortifies + roleStats.incorrectAltruistRevives + roleStats.incorrectSwaps)}
                                 </div>
@@ -312,10 +312,10 @@ export default function RoleTable({ roles, reversedGames, detailedGames, date, h
                               <div>
                                 <div className="text-lg font-bold text-yellow-400">
                                   {(() => {
-                                    const totalCorrect = roleStats.correctKills + roleStats.correctGuesses + roleStats.correctMedicShields + 
+                                    const totalCorrect = roleStats.correctKills + roleStats.correctGuesses + roleStats.correctProtects + 
                                                         roleStats.correctJailorExecutes + roleStats.correctDeputyShoots + roleStats.correctProsecutes +
                                                         roleStats.correctWardenFortifies + roleStats.correctAltruistRevives + roleStats.correctSwaps;
-                                    const totalIncorrect = roleStats.incorrectKills + roleStats.incorrectGuesses + roleStats.incorrectMedicShields + 
+                                    const totalIncorrect = roleStats.incorrectKills + roleStats.incorrectGuesses + roleStats.incorrectProtects + 
                                                            roleStats.incorrectJailorExecutes + roleStats.incorrectDeputyShoots + roleStats.incorrectProsecutes +
                                                            roleStats.incorrectWardenFortifies + roleStats.incorrectAltruistRevives + roleStats.incorrectSwaps;
                                     const total = totalCorrect + totalIncorrect;
@@ -357,15 +357,15 @@ export default function RoleTable({ roles, reversedGames, detailedGames, date, h
                             </div>
                           )}
 
-                          {/* Statystyki tarcz medyka */}
-                          {(!hideZeroStats || (roleStats.correctMedicShields > 0 || roleStats.incorrectMedicShields > 0)) && (
+                          {/* Statystyki protectów */}
+                          {(!hideZeroStats || (roleStats.correctProtects > 0 || roleStats.incorrectProtects > 0)) && (
                             <div className="bg-zinc-700/60 rounded-lg p-3">
-                              <div className="text-sm font-medium text-zinc-300 mb-1">Medic Shields</div>
-                              {(!hideZeroStats || roleStats.correctMedicShields > 0) && (
-                                <div className="text-green-400">Correct: {roleStats.correctMedicShields}</div>
+                              <div className="text-sm font-medium text-zinc-300 mb-1">Protects</div>
+                              {(!hideZeroStats || roleStats.correctProtects > 0) && (
+                                <div className="text-green-400">Correct: {roleStats.correctProtects}</div>
                               )}
-                              {(!hideZeroStats || roleStats.incorrectMedicShields > 0) && (
-                                <div className="text-red-400">Incorrect: {roleStats.incorrectMedicShields}</div>
+                              {(!hideZeroStats || roleStats.incorrectProtects > 0) && (
+                                <div className="text-red-400">Incorrect: {roleStats.incorrectProtects}</div>
                               )}
                             </div>
                           )}

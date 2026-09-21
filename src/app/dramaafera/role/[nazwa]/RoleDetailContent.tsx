@@ -34,8 +34,8 @@ interface RoleStats {
     incorrectDeputyShoots: number;
     correctJailorExecutes: number;
     incorrectJailorExecutes: number;
-    correctMedicShields: number;
-    incorrectMedicShields: number;
+    correctProtects: number;
+    incorrectProtects: number;
     correctWardenFortifies: number;
     incorrectWardenFortifies: number;
     janitorCleans: number;
@@ -75,8 +75,8 @@ function generateRoleStats(allGames: UIGameData[], targetRole: string, seasonId:
     let incorrectDeputyShoots = 0;
     let correctJailorExecutes = 0;
     let incorrectJailorExecutes = 0;
-    let correctMedicShields = 0;
-    let incorrectMedicShields = 0;
+    let correctProtects = 0;
+    let incorrectProtects = 0;
     let correctWardenFortifies = 0;
     let incorrectWardenFortifies = 0;
     let janitorCleans = 0;
@@ -157,8 +157,8 @@ function generateRoleStats(allGames: UIGameData[], targetRole: string, seasonId:
                 incorrectDeputyShoots += player.incorrectDeputyShoots || 0;
                 correctJailorExecutes += player.correctJailorExecutes || 0;
                 incorrectJailorExecutes += player.incorrectJailorExecutes || 0;
-                correctMedicShields += player.correctMedicShields || 0;
-                incorrectMedicShields += player.incorrectMedicShields || 0;
+                correctProtects += player.correctProtects || 0;
+                incorrectProtects += player.incorrectProtects || 0;
                 correctWardenFortifies += player.correctWardenFortifies || 0;
                 incorrectWardenFortifies += player.incorrectWardenFortifies || 0;
                 janitorCleans += player.janitorCleans || 0;
@@ -218,8 +218,8 @@ function generateRoleStats(allGames: UIGameData[], targetRole: string, seasonId:
         incorrectDeputyShoots,
         correctJailorExecutes,
         incorrectJailorExecutes,
-        correctMedicShields,
-        incorrectMedicShields,
+        correctProtects,
+        incorrectProtects,
         correctWardenFortifies,
         incorrectWardenFortifies,
         janitorCleans,
@@ -608,24 +608,24 @@ export async function RoleDetailContent({ nazwa, seasonId }: RoleDetailContentPr
                             </div>
                         )}
 
-                        {roleStats.correctMedicShields > 0 && (
+                        {roleStats.correctProtects > 0 && (
                             <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
                                 <div className="text-xl font-bold text-green-400">
-                                    {roleStats.correctMedicShields}
+                                    {roleStats.correctProtects}
                                 </div>
                                 <div className="text-sm text-zinc-400">
-                                    Correct shields
+                                    Correct protects
                                 </div>
                             </div>
                         )}
 
-                        {roleStats.incorrectMedicShields > 0 && (
+                        {roleStats.incorrectProtects > 0 && (
                             <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
                                 <div className="text-xl font-bold text-red-400">
-                                    {roleStats.incorrectMedicShields}
+                                    {roleStats.incorrectProtects}
                                 </div>
                                 <div className="text-sm text-zinc-400">
-                                    Incorrect shields
+                                    Incorrect protects
                                 </div>
                             </div>
                         )}

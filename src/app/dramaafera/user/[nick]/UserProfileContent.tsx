@@ -65,13 +65,13 @@ export async function UserProfileContent({ nick, seasonId }: UserProfileContentP
 
     // Oblicz sumę poprawnych i niepoprawnych zagrań
     const totalCorrectPlays = playerStats.correctKills + playerStats.correctGuesses + 
-                             playerStats.correctMedicShields + playerStats.correctJailorExecutes +
+                             playerStats.correctProtects + playerStats.correctJailorExecutes +
                              playerStats.correctDeputyShoots + playerStats.correctProsecutes +
                              playerStats.correctWardenFortifies + playerStats.correctAltruistRevives +
                              playerStats.correctSwaps;
 
     const totalIncorrectPlays = playerStats.incorrectKills + playerStats.incorrectGuesses + 
-                               playerStats.incorrectMedicShields + playerStats.incorrectJailorExecutes +
+                               playerStats.incorrectProtects + playerStats.incorrectJailorExecutes +
                                playerStats.incorrectDeputyShoots + playerStats.incorrectProsecutes +
                                playerStats.incorrectWardenFortifies + playerStats.incorrectAltruistRevives +
                                playerStats.incorrectSwaps;
@@ -274,22 +274,22 @@ export async function UserProfileContent({ nick, seasonId }: UserProfileContentP
                             </div>
                         </div>
 
-                        {/* Statystyki tarcz medyka */}
+                        {/* Statystyki protectów */}
                         <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
                             <div className="text-xl font-bold text-green-400">
-                                {playerStats.correctMedicShields}
+                                {playerStats.correctProtects}
                             </div>
                             <div className="text-sm text-zinc-400">
-                                Correct shields
+                                Correct protects
                             </div>
                         </div>
 
                         <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
                             <div className="text-xl font-bold text-red-400">
-                                {playerStats.incorrectMedicShields}
+                                {playerStats.incorrectProtects}
                             </div>
                             <div className="text-sm text-zinc-400">
-                                Incorrect shields
+                                Incorrect protects
                             </div>
                         </div>
 

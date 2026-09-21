@@ -7,7 +7,7 @@ production — with one exception, called out below.
 
 ```bash
 npm run db:import:local -- --no-export   # seed local D1 from db-backups/townofus-pl-remote.sql
-npm run validate                         # 18 integrity checks, exits 1 on any failure
+npm run validate                         # 19 integrity checks, exits 1 on any failure
 npm run ranking:oracle                   # replay the season's ELO and diff against stored
 
 npm run dev                              # server on :3000  (or `npm run preview` on :8787)

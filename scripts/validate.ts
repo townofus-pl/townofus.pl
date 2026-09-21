@@ -101,6 +101,13 @@ function main(): void {
                 or not exists (select 1 from players p where p.id = v.targetId)`,
         ),
         empty(
+            'no orphan game_actions',
+            `select a.id from game_actions a
+             where not exists (select 1 from games g where g.id = a.gameId)
+                or not exists (select 1 from players p where p.id = a.performerId)
+                or (a.targetId is not null and not exists (select 1 from players p where p.id = a.targetId))`,
+        ),
+        empty(
             'currentRankingId points at a live ranking row',
             `select p.id, p.name from players p
              where p.deletedAt is null and p.currentRankingId is not null

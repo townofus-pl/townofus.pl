@@ -24,7 +24,7 @@ npm run db:migrate:apply:local       # Apply migrations to local D1
 npm run db:migrate:apply:staging     # Apply to staging D1
 npm run db:migrate:apply:production  # Apply to production D1
 npm run preview                      # Build + preview on Cloudflare
-npm run validate                     # 18 integrity checks (--target local|staging|production)
+npm run validate                     # 19 integrity checks (--target local|staging|production)
 npm run ranking:oracle               # Replay a season's ELO, diff against stored
 npm run replay -- --file <p.json>    # POST a payload, show the per-table row delta
 npm run db:seed:staging              # Wipe + reseed staging from the dump
