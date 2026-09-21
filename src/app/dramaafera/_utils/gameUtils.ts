@@ -75,6 +75,16 @@ function findRole(roleName: string, season: number): SlimRole | undefined {
 // Duration & date formatting
 // ---------------------------------------------------------------------------
 
+/**
+ * Whether a role name resolves in the era's registry (or the vanilla five). The v2 ingest
+ * allow-list: an unknown role rejects the upload rather than being quietly bucketed, because
+ * TOU-Mira is never auto-updated and a new name can only arrive through a deliberate version
+ * bump. See #295.
+ */
+export function isKnownRole(roleName: string, season: number): boolean {
+  return findRole(roleName, season) !== undefined;
+}
+
 export function formatDuration(startTime: Date, endTime: Date): string {
   const durationMs = endTime.getTime() - startTime.getTime();
   const minutes = Math.floor(durationMs / 60000);
