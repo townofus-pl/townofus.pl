@@ -286,7 +286,7 @@ export async function RoleDetailContent({ nazwa, seasonId }: RoleDetailContentPr
         notFound();
     }
 
-    const roleColor = getRoleColor(roleName);
+    const roleColor = getRoleColor(roleName, seasonId);
 
     // Znajdź definicję roli z @/roles
     let roleDefinition: Role | undefined = Roles.find(r => r.name === roleName);

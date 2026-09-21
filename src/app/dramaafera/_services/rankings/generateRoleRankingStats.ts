@@ -119,8 +119,8 @@ export async function generateRoleRankingStats(seasonId?: number, dateFrom?: Dat
     const averagePoints = data.gamesPlayed > 0 ? data.totalPoints / data.gamesPlayed : 0;
 
     const displayRoleName = convertRoleNameForDisplay(roleName);
-    const roleColor = getRoleColor(displayRoleName);
-    const roleTeam = determineTeam(roleName);
+    const roleColor = getRoleColor(displayRoleName, season);
+    const roleTeam = determineTeam(roleName, season);
     const teamName = roleTeam === Teams.Impostor ? 'Impostor' :
                     roleTeam === Teams.Neutral ? 'Neutral' : 'Crewmate';
 

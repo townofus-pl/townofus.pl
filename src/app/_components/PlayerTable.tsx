@@ -123,7 +123,7 @@ export default function PlayerTable({ players, reversedGames, detailedGames, dat
         playerData.roleHistory && playerData.roleHistory.length > 0
           ? playerData.roleHistory[0]
           : playerData.role;
-      if (primaryRole && determineTeam(primaryRole) === Teams.Crewmate && game.maxTasks) {
+      if (primaryRole && determineTeam(primaryRole, seasonId) === Teams.Crewmate && game.maxTasks) {
         aggregatedStats.totalTasks += game.maxTasks;
       }
 

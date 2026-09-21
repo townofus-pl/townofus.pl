@@ -1,6 +1,7 @@
 import { getGamesListByDate } from '../games/getGamesList';
 import { getGameData } from '../games/getGameData';
 import { normalizeRoleName, getRoleColor, determineTeam, formatDisplayDate } from '@/app/dramaafera/_utils/gameUtils';
+import { CURRENT_SEASON } from '@/app/dramaafera/_constants/seasons';
 
 export interface SessionPlayer {
   name: string;
@@ -52,6 +53,7 @@ export async function getSessionSummaryByDate(
     neutralWins: 0,
   };
 
+  const season = seasonId ?? CURRENT_SEASON;
   const games = await getGamesListByDate(date, seasonId);
   if (!games || games.length === 0) return empty;
 
@@ -117,9 +119,9 @@ export async function getSessionSummaryByDate(
       if (!roleMap.has(roleName)) {
         roleMap.set(roleName, {
           name: roleName,
-          displayName: normalizeRoleName(roleName),
-          color: getRoleColor(roleName),
-          team: determineTeam([roleName]),
+          displayName: normalizeRoleName(roleName, season),
+          color: getRoleColor(roleName, season),
+          team: determineTeam([roleName], season),
           games: 0,
           wins: 0,
           loses: 0,

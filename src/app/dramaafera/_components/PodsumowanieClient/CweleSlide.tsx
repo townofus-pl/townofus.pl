@@ -6,6 +6,7 @@ import { RankingChart } from './RankingChart';
 import { AvatarImageFill } from './AvatarImage';
 
 interface CweleSlideProps {
+    seasonId: number;
     isFullscreen: boolean;
     currentStep: number;
     isTransitioning: boolean;
@@ -17,7 +18,7 @@ interface CweleSlideProps {
     date: string;
 }
 
-export default function CweleSlide({ isFullscreen, currentStep, isTransitioning, topCwele, weeklyStats, cwelRankingHistory, topPlayerGames, playerRankingChanges, date }: CweleSlideProps) {
+export default function CweleSlide({ isFullscreen, currentStep, isTransitioning, topCwele, weeklyStats, cwelRankingHistory, topPlayerGames, playerRankingChanges, date, seasonId }: CweleSlideProps) {
     if (topCwele.length < 3) return null;
 
     // Sortuj według punktów DAP żeby mieć TOP 3 (do sprawdzenia czy cwel był w top 3)
@@ -54,7 +55,7 @@ export default function CweleSlide({ isFullscreen, currentStep, isTransitioning,
     // Krok 4: Historia TOP 1 (tylko jeśli nie był w top 3)
     if (currentStep === 4) {
         if (!top1WasInTop3 && topPlayerGames.length > 0) {
-            return <PlayerHistory nickname={top1Cwel.nickname} isFullscreen={isFullscreen} topPlayerGames={topPlayerGames} playerRankingChanges={playerRankingChanges} date={date} />;
+            return <PlayerHistory seasonId={seasonId} nickname={top1Cwel.nickname} isFullscreen={isFullscreen} topPlayerGames={topPlayerGames} playerRankingChanges={playerRankingChanges} date={date} />;
         }
         // Jeśli był w top 3, ten krok nie istnieje (slides.steps = 4 zamiast 5)
         return null;

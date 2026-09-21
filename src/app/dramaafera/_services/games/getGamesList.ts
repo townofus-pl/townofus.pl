@@ -101,6 +101,9 @@ type GameLike = {
   startTime: Date;
   endTime: Date;
   map: string | null;
+  // Selected so role resolution reads the era the game actually belongs to, rather than the
+  // season the page happens to be showing. See #311.
+  season: number;
 };
 
 function buildGameSummary(game: GameLike, stats: SummaryStat[]): GameSummary {
@@ -112,10 +115,10 @@ function buildGameSummary(game: GameLike, stats: SummaryStat[]): GameSummary {
   winners.forEach((winner) => {
     const roleHistory = [...winner.roleHistory].sort((a, b) => a.order - b.order);
     const finalRole = roleHistory[roleHistory.length - 1]?.roleName || '';
-    winnerColors[winner.playerName] = getRoleColor(convertRoleNameForDisplay(finalRole));
+    winnerColors[winner.playerName] = getRoleColor(convertRoleNameForDisplay(finalRole), game.season);
   });
 
-  const winnerInfo = calculateWinnerFromStats(stats);
+  const winnerInfo = calculateWinnerFromStats(stats, game.season);
 
   return {
     id: game.gameIdentifier,
@@ -140,7 +143,7 @@ export async function getGamesList(seasonId?: number): Promise<GameSummary[]> {
 
   const dbGames = await prisma.game.findMany({
     where: buildSeasonGameWhere(seasonId),
-    select: { id: true, gameIdentifier: true, startTime: true, endTime: true, map: true },
+    select: { id: true, gameIdentifier: true, startTime: true, endTime: true, map: true, season: true },
     orderBy: { startTime: 'desc' },
   });
 
@@ -190,7 +193,7 @@ export const getGamesListByDate = cache(async function getGamesListByDate(
       ...buildSeasonGameWhere(seasonId),
       gameIdentifier: { startsWith: date },
     },
-    select: { id: true, gameIdentifier: true, startTime: true, endTime: true, map: true },
+    select: { id: true, gameIdentifier: true, startTime: true, endTime: true, map: true, season: true },
     orderBy: { gameIdentifier: 'desc' },
   });
 

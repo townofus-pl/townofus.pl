@@ -55,6 +55,8 @@ export interface PlayerRankingAfterSession {
 }
 
 export interface PodsumowanieClientProps {
+    /** Season the summary belongs to — selects the role registry. See #311. */
+    seasonId: number;
     date: string;
     weeklyStats: WeeklyPlayerStats[];
     emperorPoll: EmperorPoll | null;

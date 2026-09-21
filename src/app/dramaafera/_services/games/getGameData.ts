@@ -93,7 +93,7 @@ export async function getGameData(gameId: string): Promise<UIGameData | null> {
     const roleHistory = [...winner.roleHistory].sort((a, b) => a.order - b.order);
     const finalRole = roleHistory[roleHistory.length - 1]?.roleName || '';
     const displayRoleName = convertRoleNameForDisplay(finalRole);
-    winnerColors[winner.player.name] = getRoleColor(displayRoleName);
+    winnerColors[winner.player.name] = getRoleColor(displayRoleName, game.season);
   });
 
   const playersData: UIPlayerData[] = game.gamePlayerStatistics.map(stat =>
@@ -101,6 +101,7 @@ export async function getGameData(gameId: string): Promise<UIGameData | null> {
       useDisconnectedForDeaths: true,
       maxTasks: game.maxTasks,
       meetingsUndefined: true,
+      season: game.season,
     })
   );
 
@@ -140,7 +141,7 @@ export async function getGameData(gameId: string): Promise<UIGameData | null> {
     description: event.description
   }));
 
-  const winnerInfo = calculateWinnerFromStats(game.gamePlayerStatistics);
+  const winnerInfo = calculateWinnerFromStats(game.gamePlayerStatistics, game.season);
 
   return {
     id: game.gameIdentifier,

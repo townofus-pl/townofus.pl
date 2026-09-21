@@ -10,7 +10,10 @@ export interface GameStatWithWin {
   roleHistory: Array<{ roleName: string; order: number }>;
 }
 
-export function calculateWinnerFromStats(gameStats: GameStatWithWin[]): { winner: string; winnerColor: string; winCondition: string } {
+export function calculateWinnerFromStats(
+  gameStats: GameStatWithWin[],
+  season: number,
+): { winner: string; winnerColor: string; winCondition: string } {
   const winners = gameStats.filter(stat => stat.win);
 
   if (winners.length === 0) {
@@ -33,7 +36,7 @@ export function calculateWinnerFromStats(gameStats: GameStatWithWin[]): { winner
   const impostorWinners = winners.filter(stat => {
     if (!stat.roleHistory || stat.roleHistory.length === 0) return false;
     const finalRole = [...stat.roleHistory].sort((a, b) => a.order - b.order)[stat.roleHistory.length - 1]?.roleName || '';
-    return determineTeam(finalRole) === Teams.Impostor;
+    return determineTeam(finalRole, season) === Teams.Impostor;
   });
   if (impostorWinners.length > 0) {
     return { winner: 'Impostor', winnerColor: getTeamColor('Impostor'), winCondition: 'Impostors won' };
@@ -43,7 +46,7 @@ export function calculateWinnerFromStats(gameStats: GameStatWithWin[]): { winner
   const crewmateWinners = winners.filter(stat => {
     if (!stat.roleHistory || stat.roleHistory.length === 0) return false;
     const finalRole = [...stat.roleHistory].sort((a, b) => a.order - b.order)[stat.roleHistory.length - 1]?.roleName || '';
-    return determineTeam(finalRole) === Teams.Crewmate;
+    return determineTeam(finalRole, season) === Teams.Crewmate;
   });
   if (crewmateWinners.length > 0) {
     return { winner: 'Crewmate', winnerColor: getTeamColor('Crewmate'), winCondition: 'Crewmate won' };
@@ -53,7 +56,7 @@ export function calculateWinnerFromStats(gameStats: GameStatWithWin[]): { winner
   const neutralWinners = winners.filter(stat => {
     if (!stat.roleHistory || stat.roleHistory.length === 0) return false;
     const finalRole = [...stat.roleHistory].sort((a, b) => a.order - b.order)[stat.roleHistory.length - 1]?.roleName || '';
-    return determineTeam(finalRole) === Teams.Neutral;
+    return determineTeam(finalRole, season) === Teams.Neutral;
   });
   if (neutralWinners.length > 0) {
     const firstNeutral = neutralWinners[0];
@@ -62,7 +65,7 @@ export function calculateWinnerFromStats(gameStats: GameStatWithWin[]): { winner
     }
     const finalRole = [...firstNeutral.roleHistory].sort((a, b) => a.order - b.order)[firstNeutral.roleHistory.length - 1]?.roleName || 'Neutral';
     const displayRoleName = convertRoleNameForDisplay(finalRole);
-    const roleColor = getRoleColor(displayRoleName);
+    const roleColor = getRoleColor(displayRoleName, season);
     return { winner: displayRoleName, winnerColor: roleColor, winCondition: `${displayRoleName} won` };
   }
 

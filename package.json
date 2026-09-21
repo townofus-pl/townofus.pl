@@ -20,7 +20,7 @@
         "upload": "opennextjs-cloudflare build && opennextjs-cloudflare upload -e production",
         "wrangler": "wrangler",
         "cf-typegen": "wrangler types --env-interface CloudflareEnv cloudflare-env.d.ts",
-        "db:generate": "prisma generate",
+        "db:generate": "prisma generate && tsx scripts/generate-role-index.ts",
         "db:migrate:create": "wrangler d1 migrations create townofus-pl \"$npm_config_name\" && prisma migrate diff --from-config-datasource --to-schema prisma/schema.prisma --script >> \"$(ls -t prisma/migrations/*.sql | head -n1)\"",
         "db:migrate:diff": "prisma migrate diff --from-config-datasource --to-schema prisma/schema.prisma --script",
         "db:migrate:auto": "node scripts/auto-migrate.js",

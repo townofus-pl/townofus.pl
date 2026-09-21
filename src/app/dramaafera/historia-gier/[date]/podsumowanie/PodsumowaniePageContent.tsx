@@ -163,6 +163,7 @@ export async function PodsumowaniePageContent({ date, seasonId }: PodsumowaniePa
 
     return (
         <PodsumowanieClient
+            seasonId={seasonId}
             date={date}
             weeklyStats={weeklyStats}
             emperorPoll={emperorPoll}

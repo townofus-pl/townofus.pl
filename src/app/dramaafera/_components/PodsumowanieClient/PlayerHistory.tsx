@@ -4,6 +4,7 @@ import { videotext, formatDate } from './constants';
 import { getRoleIconPath } from '@/app/dramaafera/_utils/gameUtils';
 
 interface PlayerHistoryProps {
+    seasonId: number;
     nickname: string;
     isFullscreen: boolean;
     topPlayerGames: UIGameData[];
@@ -11,7 +12,7 @@ interface PlayerHistoryProps {
     date: string;
 }
 
-export default function PlayerHistory({ nickname, isFullscreen, topPlayerGames, playerRankingChanges, date }: PlayerHistoryProps) {
+export default function PlayerHistory({ nickname, isFullscreen, topPlayerGames, playerRankingChanges, date, seasonId }: PlayerHistoryProps) {
     if (topPlayerGames.length === 0) return null;
 
     // Filtruj tylko gry tego gracza
@@ -115,7 +116,7 @@ export default function PlayerHistory({ nickname, isFullscreen, topPlayerGames, 
                                 >
                                     {played && playerData && (
                                         <Image
-                                            src={getRoleIconPath(playerData.role)}
+                                            src={getRoleIconPath(playerData.role, seasonId)}
                                             alt={playerData.role}
                                             width={squareSize}
                                             height={squareSize}

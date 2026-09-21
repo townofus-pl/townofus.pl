@@ -30,6 +30,10 @@ export async function createGameFromData(
     throw new Error('Invalid date format in metadata. Expected format: YYYY-MM-DD HH:MM:SS');
   }
 
+  // Resolved once and reused: it stamps the Game row and also chooses which role registry
+  // determineTeam reads, so the two can never disagree about which era this game belongs to.
+  const season = getSeasonForDate(startTime);
+
   // Generate gameIdentifier from startTime (YYYYMMDD_HHMM format)
   const year = startTime.getFullYear();
   const month = String(startTime.getMonth() + 1).padStart(2, '0');
@@ -57,7 +61,7 @@ export async function createGameFromData(
     // role from roleHistory — a Traitor/Amnesiac wins with the team they ended
     // on, not the one they started in. Priority Impostor > Crewmate > Neutral
     // mirrors `calculateWinnerFromStats`, so the API and the UI agree.
-    const winnerTeams = winners.map(w => determineTeam(w.roleHistory));
+    const winnerTeams = winners.map(w => determineTeam(w.roleHistory, season));
 
     if (winnerTeams.includes(Teams.Impostor)) {
       winnerTeam = Teams.Impostor;
@@ -112,7 +116,7 @@ export async function createGameFromData(
         maxTasks: metadata.maxTasks || null,
         winnerTeam,
         winCondition,
-        season: getSeasonForDate(startTime)
+        season
       }
     });
 

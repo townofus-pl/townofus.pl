@@ -116,7 +116,7 @@ export async function getUserProfileStats(playerName: string, seasonId?: number)
     if (stat.win) wins++;
 
     const primaryRole = primaryRoleByStatId.get(stat.id) ?? '';
-    const teamName = determineTeam(primaryRole);
+    const teamName = determineTeam(primaryRole, season);
 
     if (teamName === Teams.Impostor) impostorGames++;
     else if (teamName === Teams.Neutral) neutralGames++;
