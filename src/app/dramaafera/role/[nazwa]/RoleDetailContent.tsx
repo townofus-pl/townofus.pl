@@ -6,7 +6,7 @@ import { getAllGamesData, getDramaAferaSettings } from "../../_services";
 import { isKillerRole, getRoleColor, convertRoleNameForDisplay, convertUrlSlugToRole, convertNickToUrlSlug, getPlayerAvatarPath } from "@/app/dramaafera/_utils/gameUtils";
 import { buildSeasonUrl } from "@/app/dramaafera/_utils/seasonHelpers";
 import type { UIGameData, UIPlayerData } from "../../_services";
-import { Roles } from "@/roles";
+import { findFullRole } from "@/app/dramaafera/_utils/roleRegistry";
 import type { Role } from "@/constants/rolesAndModifiers";
 import { SettingsList } from "@/app/_components/RolesList/RoleCard/SettingsList";
 import { parseSettingsFile, getMatchingFileName, updateSettingValue } from '../../_utils/settingsParser';
@@ -271,29 +271,35 @@ export async function RoleDetailContent({ nazwa, seasonId }: RoleDetailContentPr
     // Wygeneruj statystyki dla roli
     const roleStats = generateRoleStats(games, roleName, seasonId);
 
+    // A role nobody has played this season is not a missing page — same distinction #310 drew
+    // for user profiles. A role that exists in neither registry for this era still 404s, which
+    // is handled by findFullRole returning undefined below.
     if (roleStats.gamesPlayed === 0) {
-        notFound();
+        const known = findFullRole(roleName, seasonId);
+        if (!known) {
+            notFound();
+        }
+        return (
+            <div className="max-w-2xl mx-auto px-4 py-16 text-center">
+                <h1 className="font-brook text-4xl mb-4">{known.name}</h1>
+                <p className="font-barlow text-gray-400 mb-8">
+                    Nikt nie zagrał tą rolą w sezonie {seasonId}.
+                </p>
+                <Link
+                    href={buildSeasonUrl('/ranking', seasonId)}
+                    className="font-barlow text-cyan-400 hover:text-cyan-300 underline"
+                >
+                    Wróć do rankingu sezonu {seasonId}
+                </Link>
+            </div>
+        );
     }
 
     const roleColor = getRoleColor(roleName, seasonId);
 
-    // Znajdź definicję roli z @/roles
-    let roleDefinition: Role | undefined = Roles.find(r => r.name === roleName);
-
-    if (!roleDefinition) {
-        roleDefinition = Roles.find(r => {
-            if (r.name.includes(' / ')) {
-                const parts = r.name.split(' / ');
-                return parts.some(part => part === roleName);
-            }
-            return false;
-        });
-    }
-
-    if (!roleDefinition) {
-        const normalizedRoleName = roleName.toLowerCase().replace(/\s+/g, '');
-        roleDefinition = Roles.find(r => r.name.toLowerCase().replace(/\s+/g, '') === normalizedRoleName);
-    }
+    // Era-aware, and the ' / ' bundled-name fallback only applies to legacy seasons — see
+    // findFullRole for why that restriction matters.
+    const roleDefinition: Role | undefined = findFullRole(roleName, seasonId);
 
     // Wczytaj ustawienia z API i zaktualizuj wartości ustawień
     let roleDefinitionWithSettings = roleDefinition;
