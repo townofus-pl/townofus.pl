@@ -5,6 +5,8 @@ import Image from "next/image";
 import { MiraModifiers, MiraRoles, MiraSettings } from "@/mira";
 import { RoleOrModifierTypes } from "@/constants/rolesAndModifiers";
 import { SettingTypes, type Setting } from "@/constants/settings";
+import { looksLikeMiraConfig } from "@/app/dramaafera/_utils/miraConfig";
+import { GetDramaAferaSettingsResponseSchema } from "@/app/api/dramaafera/settings/schema";
 import { Teams } from "@/constants/teams";
 
 type GroupKind = "role" | "modifier" | "section";
@@ -462,6 +464,47 @@ function inferTypeFromValue(value: string): SettingTypes {
     return SettingTypes.Text;
 }
 
+/**
+ * The pair to diff: the uploaded settings when they are both TOU:Mira configs, otherwise the
+ * snapshot pair committed in `public/settings/`.
+ *
+ * The legacy `/changelog` has always read the database, so an upload through the host panel moved
+ * it. This page only ever read the two static files, which meant a mid-season upload changed the
+ * settings page and the role pages but left the changelog frozen on whatever was committed.
+ *
+ * The fallback is not a safety net, it is the season-opening case. `drama_afera_settings` is a
+ * two-deep rotation, so right after the first `.cfg` of a season `old` is still the previous
+ * era's legacy `.txt` — parsing that as a config yields nothing to compare. Until the second
+ * upload, `public/settings/mira_old.cfg` is the deliberate "what changed since last season" pair.
+ * See #317.
+ */
+export async function loadConfigPair(): Promise<{ current: string; old: string }> {
+    try {
+        const response = await fetch("/api/dramaafera/settings");
+        if (response.ok) {
+            const parsed = GetDramaAferaSettingsResponseSchema.parse(await response.json());
+            const { current, old } = parsed.data;
+            if (parsed.success && old && looksLikeMiraConfig(current) && looksLikeMiraConfig(old)) {
+                return { current, old };
+            }
+        }
+    } catch {
+        // Fall through to the committed snapshot rather than failing the page.
+    }
+
+    const [currentResponse, oldResponse] = await Promise.all([
+        fetch("/settings/mira.cfg"),
+        fetch("/settings/mira_old.cfg"),
+    ]);
+
+    if (!currentResponse.ok || !oldResponse.ok) {
+        throw new Error("Brak plików cfg Mira");
+    }
+
+    const [current, old] = await Promise.all([currentResponse.text(), oldResponse.text()]);
+    return { current, old };
+}
+
 export default function MiraChangelogPage() {
     const [changes, setChanges] = useState<Change[]>([]);
     const [loading, setLoading] = useState(true);
@@ -470,19 +513,7 @@ export default function MiraChangelogPage() {
     useEffect(() => {
         const loadChanges = async () => {
             try {
-                const [currentResponse, oldResponse] = await Promise.all([
-                    fetch("/settings/mira.cfg"),
-                    fetch("/settings/mira_old.cfg"),
-                ]);
-
-                if (!currentResponse.ok || !oldResponse.ok) {
-                    throw new Error("Brak plików cfg Mira");
-                }
-
-                const [currentContent, oldContent] = await Promise.all([
-                    currentResponse.text(),
-                    oldResponse.text(),
-                ]);
+                const { current: currentContent, old: oldContent } = await loadConfigPair();
 
                 const currentData = parseConfigFile(currentContent);
                 const oldData = parseConfigFile(oldContent);
@@ -514,7 +545,7 @@ export default function MiraChangelogPage() {
                 setChanges(detectedChanges);
             } catch (loadError) {
                 console.error("Błąd podczas ładowania zmian Mira:", loadError);
-                setError("Nie udało się załadować plików `mira.cfg` i `mira_old.cfg` z `public/settings/`.");
+                setError("Nie udało się załadować ustawień TOU:Mira ani pary plików z `public/settings/`.");
             } finally {
                 setLoading(false);
             }
