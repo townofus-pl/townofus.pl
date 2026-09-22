@@ -1,19 +1,91 @@
 import { CURRENT_SEASON } from '../_constants/seasons';
-import { SCORING_GROUPS, DISCONNECT_NOTE, scoringSign } from '../_constants/scoringCopy';
 
 /**
- * What is scored, and at what rate.
+ * What the league scores.
  *
- * **The weights are deliberately not shown.** The page says what counts and whether it helps or
- * hurts, not by how much. The generated table from the mod still drives it: it decides each sign,
- * and a test asserts nothing the mod scores is missing here. Wording lives in
- * `_constants/scoringCopy.ts`.
+ * One two-column list, because that is all this is. Earlier drafts pulled the correctness rules
+ * into their own section and called them exceptions — they are not: "a kill counts when the
+ * target is not on your side" is the rule, not a footnote to it. Folding each condition into the
+ * bullet it belongs to removes a whole section and says the same thing.
  *
- * Deliberately not season-scoped. It describes how the league scores *now*; season 2 and 3 were
- * scored by the server under rules that exist nowhere in a form this page could render, so a
- * `sezon/N/informacje` would be two rule sets with a source for only one. The heading says which
- * season it speaks for instead. See #316.
+ * Rules come from the mod, which owns them — `CorrectnessCore.cs` for the decision table,
+ * `Collectors/CorrectnessChecker.cs` for which role takes which. Two things are summarised rather
+ * than spelled out, on purpose:
+ *
+ *   - **Per-role kill reach.** Deputy, Hunter, Jailor, Mirrorcaster and Veteran may shoot any
+ *     non-Crewmate, while everyone else is limited to Impostors and neutral killers. There is no
+ *     safe blanket sentence, because the Sheriff is *narrower* than the default when a lobby
+ *     turns its `ShootNeutral…` toggles off. So the page points at the role page instead, which
+ *     carries that role's live settings (#317).
+ *   - **Crewpostor and Egotist**, who are crew in name only. Real, but niche enough that naming
+ *     them costs more attention than it returns.
+ *
+ * No weights, and nothing a player cannot influence — the role is dealt, not chosen. The role is
+ * **Fairy**, not Guardian Angel: the latter is legacy-only and does not exist in TOU-Mira, which
+ * is what the previous version of this page still named. See #316.
  */
+
+type Rule = { label: string; detail?: string };
+
+const PLUS: Rule[] = [
+    { label: 'Wygrana gra' },
+    { label: 'Każda przeżyta runda' },
+    {
+        label: 'Wykonane taski',
+        detail: 'Tylko jeśli zaczynałeś grę jako Crewmate — późniejsza zmiana roli tego nie odbiera.',
+    },
+    {
+        label: 'Dobry głos na zebraniu',
+        detail: 'Tylko jeśli grasz jako Crewmate',
+    },
+    {
+        label: 'Zabójstwo kogoś, kto nie jest w twojej drużynie',
+        detail: 'Część ról ma własne zasady, kogo wolno im trafić — sprawdź opis swojej roli.',
+    },
+    {
+        label: 'Ochrona albo wskrzeszenie kogoś ze swojej drużyny',
+        detail: 'Lover i Fairy liczą się jako twoja strona, choćby grali w innej frakcji.',
+    },
+    {
+        label: 'Swap albo skazanie, przez które wylatuje ktoś spoza twojej strony',
+    },
+    { label: 'Sprzątnięcie ciała jako Janitor' },
+];
+
+const MINUS: Rule[] = [
+    {
+        label: 'Zły głos na zebraniu',
+        detail: 'Tylko jeśli grasz jako Crewmate',
+    },
+    {
+        label: 'Zabójstwo kogoś ze swojej drużyny',
+    },
+    { label: 'Ochrona albo wskrzeszenie kogoś spoza swojej drużyny' },
+    {
+        label: 'Swap albo skazanie, przez które wylatuje Crewmate albo Jester',
+    },
+    {
+        label: 'Wyjście z gry przed jej końcem',
+        detail:
+            'Obniża twój wynik do najniższego wśród graczy w danej rozgrywce.'
+    },
+];
+
+function RuleList({ rules }: { rules: Rule[] }) {
+    return (
+        <ul className="list-disc list-inside text-gray-200 space-y-3 text-lg">
+            {rules.map((rule) => (
+                <li key={rule.label}>
+                    {rule.label}
+                    {rule.detail && (
+                        <span className="block text-gray-400 text-sm ml-6 mt-1">{rule.detail}</span>
+                    )}
+                </li>
+            ))}
+        </ul>
+    );
+}
+
 export default function InformacjePage() {
     return (
         <div className="min-h-screen bg-zinc-900/50 rounded-xl text-white">
@@ -23,63 +95,25 @@ export default function InformacjePage() {
                         Informacje
                     </h1>
                     <p className="text-center text-gray-300 mt-4 text-lg">
-                        Co jest punktowane, a co nie — zasady sezonu {CURRENT_SEASON} (TOU:Mira)
+                        Co jest punktowane, a co nie
                     </p>
                 </div>
 
-                <div className="max-w-4xl mx-auto mb-12 space-y-10">
-                    {SCORING_GROUPS.map((group) => (
-                        <section key={group.title}>
-                            <h2 className="text-3xl font-semibold text-blue-400 border-b border-blue-400/30 pb-2 mb-4">
-                                {group.title}
-                            </h2>
-                            {group.intro && <p className="text-gray-300 mb-5 text-lg">{group.intro}</p>}
+                <div className="max-w-4xl mx-auto mb-12">
+                    <h2 className="text-3xl font-semibold text-blue-400 border-b border-blue-400/30 pb-2 mb-6">
+                        Za co są punkty?
+                    </h2>
 
-                            <ul className="space-y-3">
-                                {group.entries.map((entry) => {
-                                    const sign = scoringSign(entry.key);
-                                    const { mark, tone } = {
-                                        plus: { mark: '+', tone: 'text-green-400' },
-                                        minus: { mark: '\u2212', tone: 'text-red-400' },
-                                        none: { mark: '0', tone: 'text-gray-500' },
-                                    }[sign];
-
-                                    return (
-                                        <li
-                                            key={entry.key}
-                                            className="flex items-start gap-4 bg-zinc-800/30 rounded-lg px-4 py-3"
-                                        >
-                                            <span
-                                                className={`${tone} font-bold text-2xl shrink-0 w-6 text-center leading-7`}
-                                                aria-hidden
-                                            >
-                                                {mark}
-                                            </span>
-                                            <span className="flex flex-col">
-                                                <span className="text-gray-100 text-lg">{entry.label}</span>
-                                                {entry.detail && (
-                                                    <span className="text-gray-400 text-sm mt-1">{entry.detail}</span>
-                                                )}
-                                            </span>
-                                        </li>
-                                    );
-                                })}
-                            </ul>
-                        </section>
-                    ))}
-
-                    <section>
-                        <h2 className="text-3xl font-semibold text-red-400 border-b border-red-400/30 pb-2 mb-4">
-                            Wyjście z gry
-                        </h2>
-                        <p className="text-gray-200 text-lg">{DISCONNECT_NOTE}</p>
-                    </section>
-
-                    <p className="text-gray-500 text-sm">
-                        Punkty liczy mod, a strona je tylko sumuje. Nie podajemy tutaj konkretnych wag —
-                        lista tego, co jest punktowane, jest wyciągana wprost ze źródła moda, więc nie
-                        może się z nim rozjechać.
-                    </p>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+                        <div>
+                            <h3 className="text-2xl font-semibold text-green-400 mb-4">Na plus:</h3>
+                            <RuleList rules={PLUS} />
+                        </div>
+                        <div>
+                            <h3 className="text-2xl font-semibold text-red-400 mb-4">Na minus:</h3>
+                            <RuleList rules={MINUS} />
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>
