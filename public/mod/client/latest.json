@@ -4,17 +4,17 @@
     {
       "name": "DramaAferaStats.Client.dll",
       "url": "DramaAferaStats.Client.dll",
-      "sha256": "33e5ac2530ae7106ccc46186f73465208076058406cea8e26c1822e611fdd10d"
+      "sha256": "274431299512cce11c901475e5361185305d7ac12eb428c9a4b08c97294190d5"
     },
     {
       "name": "malkizhats.bundle",
       "url": "malkizhats.bundle",
-      "sha256": "41a2d352d6a4f2ce0b671af610a67ed6452b817c147a0f74cab434947ebf15ed"
+      "sha256": "2fbf03c6cfc6e9ed758ad87bd4072b03fcffc284af52031a5231df958f3e30fc"
     },
     {
       "name": "malkizhats.catalog",
       "url": "malkizhats.catalog",
-      "sha256": "d9fc48f5d277d8b1d1de5e6afcdf364e0a0504ef29d5d43c6d06571089048970"
+      "sha256": "0e9a507233ccd0bbb5c1d3457aed92571760038fbf63e4763b999a3817925579"
     }
   ]
 }
