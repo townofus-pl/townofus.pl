@@ -4,22 +4,11 @@ export async function generateStaticParams() {
   return dates.map(dateGroup => ({ date: dateGroup.date }));
 }
 import { getGameDatesList, getGamesListByDate, getGameData } from '@/data/games';
+import { getSeasonForDate } from '@/app/dramaafera/_constants/seasons';
 import { normalizeRoleName, getRoleColor, determineTeam, UIGameData, UIPlayerData } from '@/data/games/converter';
 import type { UIGameData as ServicesUIGameData } from '@/app/dramaafera/_services/games/types';
 import PlayerTable from '@/app/_components/PlayerTable';
 import RoleTable from '@/app/_components/RoleTable';
-/**
- * This page renders the frozen static data in `src/data/games`, which is season 2 — so role
- * resolution has to read the legacy registry, not whichever season is current.
- *
- * It used to pass `CURRENT_SEASON`, which was harmless while that was 2 or 3. At 4 it resolves
- * these roles against TOU:Mira, where `Tracker`, `Detective`, `Soul Collector` and
- * `Guardian Angel` do not exist; `determineTeam` then falls back to guessing Crewmate, which is
- * wrong for the two Neutral ones and skews the crewmate-win and task counts on this page. It also
- * sent icon paths and links into the wrong era.
- */
-const LEGACY_DATA_SEASON = 2;
-
 interface PlayerDayStats {
   name: string;
   avatar: string;
@@ -45,6 +34,15 @@ interface RoleDayStats {
 export default async function WynikiDniaPage({ params }: { params: Promise<{ date: string }> }) {
   // Pobierz wszystkie gry z danego dnia (GameSummary)
   const { date } = await params;
+
+  // The era comes from the day being rendered, as it does everywhere else — never from
+  // CURRENT_SEASON, which this page used to pass. That was harmless while the current season was
+  // 2 or 3, but at 4 it resolved this page's roles against TOU:Mira, where `Tracker`,
+  // `Detective`, `Soul Collector` and `Guardian Angel` do not exist. `determineTeam` then guessed
+  // Crewmate, which is wrong for the two Neutral ones.
+  const seasonId = getSeasonForDate(
+    new Date(`${date.slice(0, 4)}-${date.slice(4, 6)}-${date.slice(6, 8)}T00:00:00Z`),
+  );
   const games = await getGamesListByDate(date);
   if (!games || games.length === 0) {
     return <div className="text-center text-white py-12">Brak gier dla wybranego dnia.</div>;
@@ -168,7 +166,7 @@ export default async function WynikiDniaPage({ params }: { params: Promise<{ dat
         detailedGames={detailedGames as unknown as (ServicesUIGameData | null)[]}
         date={date}
         hideZeroStats={true}
-        seasonId={LEGACY_DATA_SEASON}
+        seasonId={seasonId}
       />
 
       {/* Tabela ról */}
@@ -180,7 +178,7 @@ export default async function WynikiDniaPage({ params }: { params: Promise<{ dat
         detailedGames={detailedGames as unknown as (ServicesUIGameData | null)[]}
         date={date}
         hideZeroStats={true}
-        seasonId={LEGACY_DATA_SEASON}
+        seasonId={seasonId}
       />
 
       {/* Statystyki zwycięstw pod tabelą */}
