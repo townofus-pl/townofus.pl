@@ -1,10 +1,10 @@
 {
-  "version": "1.0.0",
+  "version": "1.0.0+21391ac",
   "files": [
     {
       "name": "DramaAferaStats.Client.dll",
       "url": "DramaAferaStats.Client.dll",
-      "sha256": "0d2ef19f10257be0d50df00f6a079d4365b5bde69a9481905813569be25c919b"
+      "sha256": "ecd8177d251642b76263201c3978b0b4c5d9d6b14483c80c4aa484a17a57e6cd"
     },
     {
       "name": "malkizhats.bundle",
