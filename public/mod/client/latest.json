@@ -3,17 +3,17 @@
   "files": [
     {
       "name": "DramaAferaStats.Client.dll",
-      "url": "https://townofus.pl/mod/client/DramaAferaStats.Client.dll",
-      "sha256": "ac9b9dd84fc586007834d04a03f5b6b7485ba47cf79c3f912392575c14d0edd3"
+      "url": "DramaAferaStats.Client.dll",
+      "sha256": "33e5ac2530ae7106ccc46186f73465208076058406cea8e26c1822e611fdd10d"
     },
     {
       "name": "malkizhats.bundle",
-      "url": "https://townofus.pl/mod/client/malkizhats.bundle",
+      "url": "malkizhats.bundle",
       "sha256": "41a2d352d6a4f2ce0b671af610a67ed6452b817c147a0f74cab434947ebf15ed"
     },
     {
       "name": "malkizhats.catalog",
-      "url": "https://townofus.pl/mod/client/malkizhats.catalog",
+      "url": "malkizhats.catalog",
       "sha256": "d9fc48f5d277d8b1d1de5e6afcdf364e0a0504ef29d5d43c6d06571089048970"
     }
   ]

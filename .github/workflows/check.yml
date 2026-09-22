@@ -30,4 +30,4 @@ jobs:
 
       # The manifest's hashes must match the files served beside it. A mismatch makes every
       # player's auto-update fail silently, visible only in their own log.
-      - run: npm run mod:publish -- --check
+      - run: npm run mod:publish
