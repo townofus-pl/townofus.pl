@@ -69,10 +69,7 @@ export function SettingsDramaAfera() {
                 modSettings={view.modSettings}
                 impostorSettings={view.impostorSettings}
             />
-            {/* scaleRoleIcons={false} to match the main page. The default is 1.5, and a
-                transform: scale() on a w-28 icon grows it about its centre — so it overflows the
-                card's padding on both sides rather than just looking bigger. */}
-            <RolesList roles={view.roles} modifiers={view.modifiers} scaleRoleIcons={false} />
+            <RolesList roles={view.roles} modifiers={view.modifiers} />
         </div>
     );
 }

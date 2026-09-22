@@ -2,6 +2,7 @@ import type {FC} from "react";
 import Link from "next/link";
 import {Link as LinkIcon} from "@deemlol/next-icons";
 import {type RoleOrModifier} from "@/constants/rolesAndModifiers";
+import {ModSource} from "@/constants/modSources";
 import {SettingsList} from "./SettingsList";
 import {Team} from "./Team";
 import Image from "next/image";
@@ -10,13 +11,12 @@ export const RoleCard: FC<{
     role: RoleOrModifier,
     hideSettings?: boolean,
     hideTips?: boolean,
-    scaleRoleIcon?: boolean | number,
-}> = ({role, hideSettings = false, hideTips = false, scaleRoleIcon = true}) => {
-    const iconScale = typeof scaleRoleIcon === 'number'
-        ? scaleRoleIcon
-        : scaleRoleIcon === false
-            ? 1
-            : 1.5;
+}> = ({role, hideSettings = false, hideTips = false}) => {
+    // The two icon sets are drawn at different sizes, so the scale belongs to the role, never to
+    // the page showing it. It used to be a prop, which meant every caller had to know — and the
+    // dramaafera settings page did not, so it rendered TOU:Mira icons at 1.5 and they overflowed
+    // the card's padding on both sides (scale() grows about the centre). One rule here instead.
+    const iconScale = role.source === ModSource.Mira ? 1 : 1.5;
 
     return (
     <div id={role.id} className="grid grid-cols-1 gap-y-5 p-5 bg-zinc-900/50 rounded-xl border-l-5"

@@ -22,10 +22,9 @@ export const RolesList: FC<{
     modifiers: Modifier[],
     hideSettings?: boolean
     hideTips?: boolean
-    scaleRoleIcons?: boolean
     showModFilter?: boolean
     defaultModSource?: ModSource
-}> = ({roles, modifiers, hideSettings = false, hideTips = false, scaleRoleIcons = true, showModFilter = false, defaultModSource = ModSource.Mira}) => {
+}> = ({roles, modifiers, hideSettings = false, hideTips = false, showModFilter = false, defaultModSource = ModSource.Mira}) => {
     const { searchValue, search } = useSearch();
     const { typeFilterValue, teamFilterValue, modFilterValue, filter } = useFilters({defaultModSource: showModFilter ? defaultModSource : undefined});
 
@@ -90,21 +89,14 @@ export const RolesList: FC<{
                     {results
                         .slice()
                         .sort(sortRolesAndModifiers)
-                        .map(role => {
-                            const roleIconScale = showModFilter
-                                ? (role.source === ModSource.TownOfUs || role.source === undefined ? 1.5 : 1)
-                                : scaleRoleIcons;
-
-                            return (
-                                <RoleCard
-                                    key={`${role.id}-${role.type}-${role.source ?? 'base'}`}
-                                    role={role}
-                                    hideSettings={hideSettings}
-                                    hideTips={hideTips}
-                                    scaleRoleIcon={roleIconScale}
-                                />
-                            );
-                        })}
+                        .map(role => (
+                            <RoleCard
+                                key={`${role.id}-${role.type}-${role.source ?? 'base'}`}
+                                role={role}
+                                hideSettings={hideSettings}
+                                hideTips={hideTips}
+                            />
+                        ))}
                 </div>
             </main>
         </RolesListContext.Provider>
