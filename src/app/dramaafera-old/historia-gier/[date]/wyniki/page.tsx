@@ -8,7 +8,17 @@ import { normalizeRoleName, getRoleColor, determineTeam, UIGameData, UIPlayerDat
 import type { UIGameData as ServicesUIGameData } from '@/app/dramaafera/_services/games/types';
 import PlayerTable from '@/app/_components/PlayerTable';
 import RoleTable from '@/app/_components/RoleTable';
-import { CURRENT_SEASON } from '@/app/dramaafera/_constants/seasons';
+/**
+ * This page renders the frozen static data in `src/data/games`, which is season 2 — so role
+ * resolution has to read the legacy registry, not whichever season is current.
+ *
+ * It used to pass `CURRENT_SEASON`, which was harmless while that was 2 or 3. At 4 it resolves
+ * these roles against TOU:Mira, where `Tracker`, `Detective`, `Soul Collector` and
+ * `Guardian Angel` do not exist; `determineTeam` then falls back to guessing Crewmate, which is
+ * wrong for the two Neutral ones and skews the crewmate-win and task counts on this page. It also
+ * sent icon paths and links into the wrong era.
+ */
+const LEGACY_DATA_SEASON = 2;
 
 interface PlayerDayStats {
   name: string;
@@ -158,7 +168,7 @@ export default async function WynikiDniaPage({ params }: { params: Promise<{ dat
         detailedGames={detailedGames as unknown as (ServicesUIGameData | null)[]}
         date={date}
         hideZeroStats={true}
-        seasonId={CURRENT_SEASON}
+        seasonId={LEGACY_DATA_SEASON}
       />
 
       {/* Tabela ról */}
@@ -170,7 +180,7 @@ export default async function WynikiDniaPage({ params }: { params: Promise<{ dat
         detailedGames={detailedGames as unknown as (ServicesUIGameData | null)[]}
         date={date}
         hideZeroStats={true}
-        seasonId={CURRENT_SEASON}
+        seasonId={LEGACY_DATA_SEASON}
       />
 
       {/* Statystyki zwycięstw pod tabelą */}
