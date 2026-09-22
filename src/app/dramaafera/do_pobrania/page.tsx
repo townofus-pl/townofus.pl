@@ -1,5 +1,6 @@
 import React from 'react';
 import { CURRENT_SEASON } from '../_constants/seasons';
+import { MIRA_VERSION, MIRA_RELEASE_URL, miraDownloadUrl } from '@/roles/_generated/miraVersion';
 import clientManifest from '../../../../public/mod/client/latest.json';
 
 /**
@@ -10,9 +11,18 @@ import clientManifest from '../../../../public/mod/client/latest.json';
  * plugin, and the host kicks anyone without it — so following that page would have got a player
  * kicked rather than merely confused. See #316.
  *
- * The plugin's size and hash are read from the manifest the auto-updater uses, so the page cannot
- * advertise a file that is not the one being served.
+ * The plugin's version and hash are read from the manifest the auto-updater uses, so the page
+ * cannot advertise a file other than the one being served. The TOU:Mira version comes from the
+ * submodule tag the league's mod is built against, so the link can never point at a release the
+ * plugin was not compiled for.
  */
+
+/** Upstream ships one archive per store, because the game's architecture differs between them. */
+const MIRA_BUILDS = [
+    { label: 'Steam / itch.io', asset: `TouMira.v${MIRA_VERSION}-x86-steam-itch.zip` },
+    { label: 'Epic / Microsoft Store', asset: `TouMira.v${MIRA_VERSION}-x64-epic-msstore.zip` },
+    { label: 'macOS / Linux', asset: `TouMira.v${MIRA_VERSION}-x86-macOS-linux.zip` },
+];
 
 const PLUGIN_NAME = 'DramaAferaStats.Client.dll';
 
@@ -25,11 +35,32 @@ export default function DoPobraniaPage() {
                 <h1 className="text-2xl md:text-3xl font-bold mb-2">WYMAGANE PLIKI</h1>
                 <p className="text-[#b0aeb8] mb-6">Sezon {CURRENT_SEASON} gramy na TOU:Mira.</p>
 
-                <h2 className="text-xl font-semibold mb-3">1. TOU:Mira</h2>
-                <p className="text-[#b0aeb8] mb-6">
-                    Paczkę z modem dostaniesz na naszym Discordzie — nie ma jeszcze publicznego
-                    linku. Instalujesz ją do <strong>osobnej kopii</strong> folderu Among Us, bo ta
-                    wersja nie jest zgodna z innymi modami.
+                <h2 className="text-xl font-semibold mb-3">1. TOU:Mira {MIRA_VERSION}</h2>
+                <p className="text-[#b0aeb8] mb-4">
+                    Wybierz paczkę dla swojego sklepu i rozpakuj ją do <strong>osobnej kopii</strong>{' '}
+                    folderu Among Us — ta wersja nie jest zgodna z innymi modami. Nasz mod ligowy jest
+                    zbudowany dokładnie pod {MIRA_VERSION}, więc nie bierz innej wersji.
+                </p>
+
+                <div className="space-y-2 mb-3">
+                    {MIRA_BUILDS.map((build) => (
+                        <a
+                            key={build.asset}
+                            href={miraDownloadUrl(build.asset)}
+                            className="flex items-center justify-between bg-[#23202a] hover:bg-[#2d2936] transition rounded-lg px-4 py-3 shadow border border-[#23202a] gap-4"
+                        >
+                            <span className="font-medium">{build.label}</span>
+                            <span className="text-xs text-[#6b6874] font-mono truncate">{build.asset}</span>
+                        </a>
+                    ))}
+                </div>
+
+                <p className="text-xs text-[#b0aeb8] mb-6">
+                    Pliki pochodzą wprost z{' '}
+                    <a href={MIRA_RELEASE_URL} className="underline hover:text-white">
+                        release’u {MIRA_VERSION} TOU:Mira
+                    </a>
+                    . Nie hostujemy ich u siebie, żeby nie rozjechać się z autorami moda.
                 </p>
 
                 <h2 className="text-xl font-semibold mb-3">2. Wtyczka ligowa</h2>

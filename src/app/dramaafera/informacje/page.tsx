@@ -1,12 +1,13 @@
 import { CURRENT_SEASON } from '../_constants/seasons';
-import { SCORING_GROUPS, DISCONNECT_NOTE, formatPoints } from '../_constants/scoringCopy';
+import { SCORING_GROUPS, DISCONNECT_NOTE, scoringSign } from '../_constants/scoringCopy';
 
 /**
  * What is scored, and at what rate.
  *
- * Every number here comes from `_generated/scoring.ts`, derived from the mod's own
- * `docs/scoring.md` — because scoring lives in the mod (#285) and hand-copied rate tables in this
- * project's history have always gone stale. Wording lives in `_constants/scoringCopy.ts`.
+ * **The weights are deliberately not shown.** The page says what counts and whether it helps or
+ * hurts, not by how much. The generated table from the mod still drives it: it decides each sign,
+ * and a test asserts nothing the mod scores is missing here. Wording lives in
+ * `_constants/scoringCopy.ts`.
  *
  * Deliberately not season-scoped. It describes how the league scores *now*; season 2 and 3 were
  * scored by the server under rules that exist nowhere in a form this page could render, so a
@@ -36,12 +37,12 @@ export default function InformacjePage() {
 
                             <ul className="space-y-3">
                                 {group.entries.map((entry) => {
-                                    const points = formatPoints(entry.key);
-                                    const tone = points.startsWith('-')
-                                        ? 'text-red-400'
-                                        : points.startsWith('+')
-                                          ? 'text-green-400'
-                                          : 'text-gray-400';
+                                    const sign = scoringSign(entry.key);
+                                    const { mark, tone } = {
+                                        plus: { mark: '+', tone: 'text-green-400' },
+                                        minus: { mark: '\u2212', tone: 'text-red-400' },
+                                        none: { mark: '0', tone: 'text-gray-500' },
+                                    }[sign];
 
                                     return (
                                         <li
@@ -49,9 +50,10 @@ export default function InformacjePage() {
                                             className="flex items-start gap-4 bg-zinc-800/30 rounded-lg px-4 py-3"
                                         >
                                             <span
-                                                className={`${tone} font-bold text-xl tabular-nums shrink-0 w-16 text-right`}
+                                                className={`${tone} font-bold text-2xl shrink-0 w-6 text-center leading-7`}
+                                                aria-hidden
                                             >
-                                                {points}
+                                                {mark}
                                             </span>
                                             <span className="flex flex-col">
                                                 <span className="text-gray-100 text-lg">{entry.label}</span>
@@ -74,8 +76,9 @@ export default function InformacjePage() {
                     </section>
 
                     <p className="text-gray-500 text-sm">
-                        Punkty liczy mod, a strona je tylko sumuje — wszystkie stawki na tej stronie są
-                        wyciągane wprost ze źródła moda, więc nie mogą się z nim rozjechać.
+                        Punkty liczy mod, a strona je tylko sumuje. Nie podajemy tutaj konkretnych wag —
+                        lista tego, co jest punktowane, jest wyciągana wprost ze źródła moda, więc nie
+                        może się z nim rozjechać.
                     </p>
                 </div>
             </div>
