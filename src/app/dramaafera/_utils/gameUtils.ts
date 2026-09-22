@@ -64,10 +64,19 @@ function findRole(roleName: string, season: number): SlimRole | undefined {
   const aliased =
     season < FIRST_MIRA_SEASON && lowerRole === 'pestilence' ? 'plaguebearer' : lowerRole;
 
-  // The mod sends `ICustomRole.IdPart` since #83 — a stable key rather than a translated display
-  // name. In English the two differ for exactly the roles whose name has a space: `TimeLord`
-  // against `Time Lord`. Comparing with separators stripped covers that without a translation
-  // table, and is safe because neither registry has two roles that collide once normalised.
+  // The mod sends `ICustomRole.IdPart` since mod #83 — a stable key rather than a translated
+  // display name. In English the two differ for exactly the roles whose name has a space:
+  // `TimeLord` against `Time Lord`. Comparing with separators stripped covers that without a
+  // translation table, and is safe because neither registry has two roles that collide once
+  // normalised.
+  //
+  // Six of TOU-Mira's 85 IdParts are absent from `src/mira/roles` and stay that way on purpose:
+  // Camouflager and Chameleon (Hide and Seek), Outcast (Kill Frenzy), SerialKiller and the base
+  // Neutral (Town of Polus), and Spectator (struck from the roster, mod #48). They cannot reach a
+  // payload — the mod returns early at match-state creation unless
+  // `CustomGameModeManager.IsClassic()`, so no MatchState exists, no capture is written and
+  // nothing is submitted (mod #18). Adding registry entries for them would be inventing roles our
+  // scoring has no rules for.
   const collapse = (value: string) => value.toLowerCase().replace(/[^a-z0-9]/g, '');
   const collapsedRole = collapse(roleName);
 
