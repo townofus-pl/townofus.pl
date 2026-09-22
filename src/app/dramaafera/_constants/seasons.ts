@@ -12,7 +12,11 @@ export interface Season {
 export const SEASONS: Season[] = [
   { id: 2, startDate: null },
   { id: 3, startDate: '2026-03-23' },
-  { id: 4, startDate: '2026-09-23' },
+  // Moved from 2026-09-23 to the 21st so a playtest uploaded on the 22nd is stamped season 4
+  // rather than season 3. Only `getSeasonForDate` reads this, and only at ingest, so it cannot
+  // reclassify anything already stored — the newest existing game is 2026-09-16, and nothing
+  // falls in the 21-23 window.
+  { id: 4, startDate: '2026-09-21' },
 ];
 
 export const CURRENT_SEASON = 4;
