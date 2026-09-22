@@ -28,6 +28,7 @@ npm run validate                     # 19 integrity checks (--target local|stagi
 npm run ranking:oracle               # Replay a season's ELO, diff against stored
 npm run replay -- --file <p.json>    # POST a payload, show the per-table row delta
 npm run mod:publish                  # report: does latest.json match the files beside it
+npx tsx scripts/generate-scoring.ts  # regenerate the points table from the mod's docs/scoring.md
 npm run mod:publish -- --write       # rewrite latest.json from public/mod/client/
 npm run db:seed:staging              # Wipe + reseed staging from the dump
 npm run deploy:staging               # Build + deploy to staging

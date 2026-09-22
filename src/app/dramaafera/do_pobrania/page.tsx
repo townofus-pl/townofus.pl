@@ -1,52 +1,113 @@
-import React from "react";
+import React from 'react';
+import { CURRENT_SEASON } from '../_constants/seasons';
+import clientManifest from '../../../../public/mod/client/latest.json';
 
-const files = [
-  {
-    name: "TownOfUs.dll",
-    size: "2.24 MB",
-    href: "https://github.com/MalkizH3/malkizToU/releases/latest/download/TownOfUs.dll",
-  },
-  {
-    name: "AUnlocker.dll",
-    size: "24.00 KB",
-    href: "/files/AUnlocker.dll",
-  }
-];
+/**
+ * What a player installs to play the league's season.
+ *
+ * The previous version of this page told players to copy a "Town of Us 5.3.1" folder and install
+ * `TownOfUs.dll` from `MalkizH3/malkizToU`. Season 4 runs on TOU:Mira with a separate league
+ * plugin, and the host kicks anyone without it — so following that page would have got a player
+ * kicked rather than merely confused. See #316.
+ *
+ * The plugin's size and hash are read from the manifest the auto-updater uses, so the page cannot
+ * advertise a file that is not the one being served.
+ */
 
-export default function DramaaferaSkinyPage() {
-  return (
-    <main className="min-h-screen rounded-xl bg-zinc-900/50 text-white px-4 py-8 flex flex-col items-center">
-      <div className="max-w-xl w-full">
-        <h1 className="text-2xl md:text-3xl font-bold mb-4">WYMAGANE PLIKI</h1>
-        <ol className="list-decimal list-inside space-y-1 mb-4 text-lg">
-          <li>Skopiuj cały folder z Town of Us 5.3.1</li>
-          <li>
-            Wejdź do kopii, wejdź do <code className="bg-[#23202a] px-1 rounded]">BepInEx</code>, potem do <code className="bg-[#23202a] px-1 rounded   ">plugins</code>
-          </li>
-          <li>Wklej tam wszystkie pliki z załącznika</li>
-        </ol>
-        <p className="text-xs text-[#b0aeb8] mb-6">
-          PS. Robimy kopie bo wersja ta jest niekompatybilna z innymi modami.
-        </p>
-        <div className="space-y-3">
-          {files.map((file) => (
-            <a
-              key={file.name}
-              href={file.href}
-              className="flex items-center bg-[#23202a] hover:bg-[#2d2936] transition rounded-lg px-4 py-3 gap-4 shadow border border-[#23202a]"
-              download
-            >
-              <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-8 h-8 text-[#b0aeb8]">
-                <path strokeLinecap="round" strokeLinejoin="round" d="M19.5 14.25v2.25A2.25 2.25 0 0 1 17.25 18.75H6.75A2.25 2.25 0 0 1 4.5 16.5V14.25m15-6V6.75A2.25 2.25 0 0 0 17.25 4.5H6.75A2.25 2.25 0 0 0 4.5 6.75v1.5m7.5 3.75v6m0 0l-2.25-2.25m2.25 2.25l2.25-2.25" />
-              </svg>
-              <div className="flex flex-col">
-                <span className="font-medium text-base">{file.name}</span>
-                <span className="text-xs text-[#b0aeb8]">{file.size}</span>
-              </div>
-            </a>
-          ))}
-        </div>
-      </div>
-    </main>
-  );
+const PLUGIN_NAME = 'DramaAferaStats.Client.dll';
+
+const plugin = clientManifest.files.find((file) => file.name === PLUGIN_NAME);
+
+export default function DoPobraniaPage() {
+    return (
+        <main className="min-h-screen rounded-xl bg-zinc-900/50 text-white px-4 py-8 flex flex-col items-center">
+            <div className="max-w-2xl w-full">
+                <h1 className="text-2xl md:text-3xl font-bold mb-2">WYMAGANE PLIKI</h1>
+                <p className="text-[#b0aeb8] mb-6">Sezon {CURRENT_SEASON} gramy na TOU:Mira.</p>
+
+                <h2 className="text-xl font-semibold mb-3">1. TOU:Mira</h2>
+                <p className="text-[#b0aeb8] mb-6">
+                    Paczkę z modem dostaniesz na naszym Discordzie — nie ma jeszcze publicznego
+                    linku. Instalujesz ją do <strong>osobnej kopii</strong> folderu Among Us, bo ta
+                    wersja nie jest zgodna z innymi modami.
+                </p>
+
+                <h2 className="text-xl font-semibold mb-3">2. Wtyczka ligowa</h2>
+                <p className="text-[#b0aeb8] mb-4">
+                    Wrzuć poniższy plik do{' '}
+                    <code className="bg-[#23202a] px-1 rounded">BepInEx/plugins</code> w tej kopii.
+                    Bez niej host cię wyrzuci z lobby — to ona zgłasza, kim jesteś, czego host nie
+                    może odczytać sam. Dalsze wersje i czapki wtyczka dociąga sama.
+                </p>
+
+                {plugin && (
+                    <a
+                        href={`/mod/client/${plugin.name}`}
+                        className="flex items-center bg-[#23202a] hover:bg-[#2d2936] transition rounded-lg px-4 py-3 gap-4 shadow border border-[#23202a] mb-6"
+                        download
+                    >
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            strokeWidth={1.5}
+                            stroke="currentColor"
+                            className="w-8 h-8 text-[#b0aeb8] shrink-0"
+                        >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                d="M19.5 14.25v2.25A2.25 2.25 0 0 1 17.25 18.75H6.75A2.25 2.25 0 0 1 4.5 16.5V14.25m15-6V6.75A2.25 2.25 0 0 0 17.25 4.5H6.75A2.25 2.25 0 0 0 4.5 6.75v1.5m7.5 3.75v6m0 0l-2.25-2.25m2.25 2.25l2.25-2.25"
+                            />
+                        </svg>
+                        <div className="flex flex-col min-w-0">
+                            <span className="font-medium text-base">{plugin.name}</span>
+                            <span className="text-xs text-[#b0aeb8]">
+                                wersja {clientManifest.version}
+                            </span>
+                            <span className="text-xs text-[#6b6874] font-mono truncate">
+                                sha256 {plugin.sha256}
+                            </span>
+                        </div>
+                    </a>
+                )}
+
+                <h2 className="text-xl font-semibold mb-3">3. AUnlocker</h2>
+                <p className="text-[#b0aeb8] mb-4">
+                    Tak samo jak wcześniej — do{' '}
+                    <code className="bg-[#23202a] px-1 rounded">BepInEx/plugins</code>. Nie ma nic
+                    wspólnego z ligą ani z wersją moda, więc jeśli już go masz, nic nie zmieniasz.
+                </p>
+
+                <a
+                    href="/files/AUnlocker.dll"
+                    className="flex items-center bg-[#23202a] hover:bg-[#2d2936] transition rounded-lg px-4 py-3 gap-4 shadow border border-[#23202a] mb-6"
+                    download
+                >
+                    <svg
+                        xmlns="http://www.w3.org/2000/svg"
+                        fill="none"
+                        viewBox="0 0 24 24"
+                        strokeWidth={1.5}
+                        stroke="currentColor"
+                        className="w-8 h-8 text-[#b0aeb8] shrink-0"
+                    >
+                        <path
+                            strokeLinecap="round"
+                            strokeLinejoin="round"
+                            d="M19.5 14.25v2.25A2.25 2.25 0 0 1 17.25 18.75H6.75A2.25 2.25 0 0 1 4.5 16.5V14.25m15-6V6.75A2.25 2.25 0 0 0 17.25 4.5H6.75A2.25 2.25 0 0 0 4.5 6.75v1.5m7.5 3.75v6m0 0l-2.25-2.25m2.25 2.25l2.25-2.25"
+                        />
+                    </svg>
+                    <span className="font-medium text-base">AUnlocker.dll</span>
+                </a>
+
+                <h2 className="text-xl font-semibold mb-3">Starsze sezony</h2>
+                <p className="text-[#b0aeb8] text-sm">
+                    Sezony 2 i 3 grane były na Town of Us 5.3.1 i wtyczka ligowa ich nie dotyczy.
+                    Statystyki z tamtych sezonów zostają na stronie — wybierz sezon w przełączniku
+                    u góry.
+                </p>
+            </div>
+        </main>
+    );
 }
