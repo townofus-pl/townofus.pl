@@ -80,25 +80,33 @@ export const RolesList: FC<{
 
     return (
         <RolesListContext.Provider value={{searchValue, search, filter, showModFilter}}>
-            <div className="grid grid-cols-1 gap-y-5 md:grid-cols-5 lg:grid-cols-9 gap-x-0 md:gap-x-5">
-                <Search/>
-                <Filters/>
-            </div>
-            <main>
-                <div className="grid grid-cols-1 gap-y-5">
-                    {results
-                        .slice()
-                        .sort(sortRolesAndModifiers)
-                        .map(role => (
-                            <RoleCard
-                                key={`${role.id}-${role.type}-${role.source ?? 'base'}`}
-                                role={role}
-                                hideSettings={hideSettings}
-                                hideTips={hideTips}
-                            />
-                        ))}
+            {/* The gap between the filter row and the cards belongs to this component. It used to
+                be left to whoever rendered it: / and /tajemniczy happened to wrap it in
+                `grid gap-y-5` and looked right, while /dramaafera, /ustawienia and /custom used a
+                plain div and had the two parts touching. Wrapping them also makes this one grid
+                item in those first two, so their outer gap has nothing left to space and the
+                spacing cannot double up. */}
+            <div className="grid grid-cols-1 gap-y-5">
+                <div className="grid grid-cols-1 gap-y-5 md:grid-cols-5 lg:grid-cols-9 gap-x-0 md:gap-x-5">
+                    <Search/>
+                    <Filters/>
                 </div>
-            </main>
+                <main>
+                    <div className="grid grid-cols-1 gap-y-5">
+                        {results
+                            .slice()
+                            .sort(sortRolesAndModifiers)
+                            .map(role => (
+                                <RoleCard
+                                    key={`${role.id}-${role.type}-${role.source ?? 'base'}`}
+                                    role={role}
+                                    hideSettings={hideSettings}
+                                    hideTips={hideTips}
+                                />
+                            ))}
+                    </div>
+                </main>
+            </div>
         </RolesListContext.Provider>
     );
 }
