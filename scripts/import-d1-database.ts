@@ -195,32 +195,101 @@ function extractTableName(statement: string): string | null {
     return match ? match[1] : null;
 }
 
-function parsePlayerReference(statement: string): RankingReference {
-    const match = statement.match(
-        /^INSERT INTO "players" \("id","name","createdAt","updatedAt","currentRankingId","deletedAt"\) VALUES\((\d+),.+?,.+?,.+?,(NULL|\d+),.+\);$/,
-    );
+/**
+ * Reads `id` and `currentRankingId` out of a `players` INSERT by **looking up the column list**
+ * rather than assuming it.
+ *
+ * The previous version matched a literal six-column header and broke the moment migration 0009
+ * added `friendCode` and `hashedProductUserId`: the very next export refused to parse, with an
+ * error that pointed at the row rather than at the schema change.
+ */
+/** Splits a VALUES tuple on top-level commas, leaving quoted strings (which may contain them). */
+function splitSqlValues(tuple: string): string[] {
+    const values: string[] = [];
+    let current = '';
+    let inString = false;
 
-    if (!match) {
+    for (let i = 0; i < tuple.length; i += 1) {
+        const char = tuple[i];
+
+        if (inString) {
+            // '' is an escaped quote inside a SQLite string literal, not the end of one.
+            if (char === "'" && tuple[i + 1] === "'") {
+                current += "''";
+                i += 1;
+                continue;
+            }
+            if (char === "'") inString = false;
+            current += char;
+            continue;
+        }
+
+        if (char === "'") {
+            inString = true;
+            current += char;
+            continue;
+        }
+        if (char === ',') {
+            values.push(current.trim());
+            current = '';
+            continue;
+        }
+        current += char;
+    }
+
+    values.push(current.trim());
+    return values;
+}
+
+function parsePlayerReference(statement: string): RankingReference {
+    const header = statement.match(/^INSERT INTO "players" \(([^)]*)\) VALUES\((.*)\);$/);
+    if (!header) {
         throw new Error(`Nie udało się sparsować INSERT-a players: ${statement.slice(0, 200)}...`);
     }
 
+    const columns = header[1].split(',').map((column) => column.trim().replace(/^"|"$/g, ''));
+    const values = splitSqlValues(header[2]);
+
+    if (columns.length !== values.length) {
+        throw new Error(
+            `INSERT players ma ${columns.length} kolumn i ${values.length} wartości: ${statement.slice(0, 200)}...`,
+        );
+    }
+
+    const valueOf = (column: string): string => {
+        const index = columns.indexOf(column);
+        if (index === -1) throw new Error(`Brak kolumny "${column}" w INSERT players.`);
+        return values[index];
+    };
+
+    const currentRankingId = valueOf('currentRankingId');
+
     return {
-        playerId: Number.parseInt(match[1], 10),
-        currentRankingId: match[2] === 'NULL' ? null : Number.parseInt(match[2], 10),
+        playerId: Number.parseInt(valueOf('id'), 10),
+        currentRankingId: currentRankingId === 'NULL' ? null : Number.parseInt(currentRankingId, 10),
     };
 }
 
+/**
+ * Rewrites `currentRankingId` to NULL for the first pass, since it points at rows that do not
+ * exist yet. `restoreStatements` puts the real value back afterwards.
+ *
+ * Column-list driven for the same reason as `parsePlayerReference`: the literal header this used
+ * to match stopped existing the moment migration 0009 added two columns.
+ */
 function nullifyPlayerRanking(statement: string): string {
-    const rewritten = statement.replace(
-        /^(INSERT INTO "players" \("id","name","createdAt","updatedAt","currentRankingId","deletedAt"\) VALUES\(\d+,.+?,.+?,.+?,)(NULL|\d+)(,.+\);)$/, 
-        '$1NULL$3',
-    );
-
-    if (rewritten === statement) {
+    const header = statement.match(/^INSERT INTO "players" \(([^)]*)\) VALUES\((.*)\);$/);
+    if (!header) {
         throw new Error(`Nie udało się wyzerować currentRankingId w INSERT players: ${statement.slice(0, 200)}...`);
     }
 
-    return rewritten;
+    const columns = header[1].split(',').map((column) => column.trim().replace(/^"|"$/g, ''));
+    const values = splitSqlValues(header[2]);
+    const index = columns.indexOf('currentRankingId');
+    if (index === -1) throw new Error('Brak kolumny "currentRankingId" w INSERT players.');
+
+    values[index] = 'NULL';
+    return `INSERT INTO "players" (${header[1]}) VALUES(${values.join(',')});`;
 }
 
 /**
