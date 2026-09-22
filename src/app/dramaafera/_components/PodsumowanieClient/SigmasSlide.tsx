@@ -6,6 +6,7 @@ import { RankingChart } from './RankingChart';
 import { AvatarImageFill } from './AvatarImage';
 
 interface SigmasSlideProps {
+    seasonId: number;
     isFullscreen: boolean;
     currentStep: number;
     isTransitioning: boolean;
@@ -27,6 +28,7 @@ export default function SigmasSlide({
     topPlayerGames,
     playerRankingChanges,
     date,
+    seasonId,
 }: SigmasSlideProps) {
     if (topSigmas.length < 3) return null;
 
@@ -64,7 +66,7 @@ export default function SigmasSlide({
     // Krok 4: Historia TOP 1 (tylko jeśli nie był w top 3)
     if (currentStep === 4) {
         if (!top1WasInTop3 && topPlayerGames.length > 0) {
-            return <PlayerHistory nickname={top1Sigma.nickname} isFullscreen={isFullscreen} topPlayerGames={topPlayerGames} playerRankingChanges={playerRankingChanges} date={date} />;
+            return <PlayerHistory seasonId={seasonId} nickname={top1Sigma.nickname} isFullscreen={isFullscreen} topPlayerGames={topPlayerGames} playerRankingChanges={playerRankingChanges} date={date} />;
         }
         // Jeśli był w top 3, ten krok nie istnieje (slides.steps = 4 zamiast 5)
         return null;

@@ -25,6 +25,7 @@ export default function PodsumowanieClient({
     rankingAfterSession,
     topPlayerGames,
     playerRankingChangesCache,
+    seasonId,
 }: PodsumowanieClientProps) {
     const [currentSlide, setCurrentSlide] = useState(0);
     const [currentStep, setCurrentStep] = useState(0);
@@ -713,7 +714,7 @@ export default function PodsumowanieClient({
                                         animation: isTransitioning ? 'none' : 'fadeIn 0.6s ease-in forwards'
                                     }}
                                 >
-                                    <PodiumSlide
+                                    <PodiumSlide seasonId={seasonId}
                                         isFullscreen={isFullscreen}
                                         weeklyStats={weeklyStats}
                                         topPlayerGames={topPlayerGames}
@@ -726,7 +727,7 @@ export default function PodsumowanieClient({
 
                             {/* SLAJD: Największe Sigmy */}
                             {slides[currentSlide]?.id === 'sigmas' && (
-                                <SigmasSlide
+                                <SigmasSlide seasonId={seasonId}
                                     isFullscreen={isFullscreen}
                                     currentStep={currentStep}
                                     isTransitioning={isTransitioning}
@@ -741,7 +742,7 @@ export default function PodsumowanieClient({
 
                             {/* SLAJD: Największe Cwele */}
                             {slides[currentSlide]?.id === 'cwele' && (
-                                <CweleSlide
+                                <CweleSlide seasonId={seasonId}
                                     isFullscreen={isFullscreen}
                                     currentStep={currentStep}
                                     isTransitioning={isTransitioning}

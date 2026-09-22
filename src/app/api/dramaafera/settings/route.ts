@@ -61,7 +61,7 @@ openApiRegistry.registerPath({
           schema: {
             type: 'object',
             properties: {
-              file: { type: 'string', format: 'binary', description: 'Settings .txt file (max 5MB)' },
+              file: { type: 'string', format: 'binary', description: 'Settings .cfg file (max 5MB)' },
             },
             required: ['file'],
           },

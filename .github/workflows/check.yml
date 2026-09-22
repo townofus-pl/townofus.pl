@@ -1,0 +1,33 @@
+name: Check
+
+# Reusable gate. Every deploy job `needs:` this, so nothing ships that does not
+# typecheck and pass its tests.
+on:
+  workflow_call:
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    env:
+      # `npm ci` triggers `prepare`, which runs husky. There are no git hooks to
+      # install in CI and husky exits non-zero when it cannot find a .git dir.
+      HUSKY: 0
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      # `prepare` also runs cf-typegen and prisma generate, both of which the
+      # typecheck depends on. Neither needs Cloudflare credentials.
+      - run: npm ci
+
+      - run: npm run typecheck
+
+      - run: npm test
+
+      # The manifest's hashes must match the files served beside it. A mismatch makes every
+      # player's auto-update fail silently, visible only in their own log.
+      - run: npm run mod:publish

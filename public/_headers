@@ -1,2 +1,10 @@
 /_next/static/*
   Cache-Control: public,max-age=31536000,immutable
+
+# The auto-updater polls latest.json on every game launch and must see a new release
+# immediately, so it cannot be cached. The binaries sit at fixed URLs whose contents change
+# between releases, so caching them would serve players the old bytes and fail the hash check
+# they are verified against — the update would silently never happen. They are only fetched
+# when a hash actually differs, so not caching them costs one transfer per real release.
+/mod/client/*
+  Cache-Control: no-store

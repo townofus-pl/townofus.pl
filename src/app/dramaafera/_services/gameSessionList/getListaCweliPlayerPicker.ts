@@ -26,16 +26,20 @@ export async function getListaCweliPlayerPickerData(seasonId: number): Promise<P
       select: { id: true, name: true },
     });
 
+    const playedThisSeason = await prisma.player.findMany({
+      where: {
+        ...withoutDeleted,
+        gamePlayerStatistics: { some: { game: { season: seasonId, ...withoutDeleted } } },
+      },
+      select: { id: true },
+    });
+
+    // A season with no games yet has no "season players", which would leave the host's main
+    // picker empty and push all 69 names into the secondary "add player" dialog — on exactly the
+    // night the picker matters most. Until the season has any history, treat everyone as a
+    // candidate. See #310.
     const seasonPlayerIds = new Set(
-      (
-        await prisma.player.findMany({
-          where: {
-            ...withoutDeleted,
-            gamePlayerStatistics: { some: { game: { season: seasonId, ...withoutDeleted } } },
-          },
-          select: { id: true },
-        })
-      ).map((p) => p.id)
+      playedThisSeason.length > 0 ? playedThisSeason.map((p) => p.id) : allPlayers.map((p) => p.id)
     );
 
     const withLastGameDate = await Promise.all(

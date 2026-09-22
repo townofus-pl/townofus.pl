@@ -65,7 +65,15 @@ export async function calculateRankingForGame(
     }
 
     // 2. Sprawdź czy gra nie jest za stara dla rankingu
+    //
+    // Scoped to the game's own season and to rows that actually belong to a game. Without both
+    // the guard silently switched itself off for a whole window: a `season_reset` row carries
+    // `gameId = NULL` and is the globally newest row right after a reset, so `lastRanking.game`
+    // was `null` and the comparison below never ran. Season 4's first game was accepted for the
+    // wrong reason, and a backdated season-3 game ingested in that window was accepted too —
+    // writing season-3 ranking rows against season-4 reset scores. See #315.
     const lastRanking = await prisma.playerRanking.findFirst({
+      where: { gameId: { not: null }, season: game.season, ...withoutDeleted },
       orderBy: { createdAt: 'desc' },
       include: { game: true }
     });

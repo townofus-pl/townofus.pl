@@ -3,13 +3,15 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import { RoleImage } from "../_components/RoleImage";
 import { getAllGamesData, getDramaAferaSettings } from "../../_services";
-import { getRoleColor, convertRoleNameForDisplay, convertUrlSlugToRole, convertNickToUrlSlug, getPlayerAvatarPath } from "@/app/dramaafera/_utils/gameUtils";
+import { FIRST_MIRA_SEASON, isKillerRole, getRoleColor, convertRoleNameForDisplay, convertUrlSlugToRole, convertNickToUrlSlug, getPlayerAvatarPath } from "@/app/dramaafera/_utils/gameUtils";
 import { buildSeasonUrl } from "@/app/dramaafera/_utils/seasonHelpers";
 import type { UIGameData, UIPlayerData } from "../../_services";
-import { Roles } from "@/roles";
+import { findFullRole } from "@/app/dramaafera/_utils/roleRegistry";
 import type { Role } from "@/constants/rolesAndModifiers";
 import { SettingsList } from "@/app/_components/RolesList/RoleCard/SettingsList";
 import { parseSettingsFile, getMatchingFileName, updateSettingValue } from '../../_utils/settingsParser';
+import { buildMiraRoleSettings, looksLikeMiraConfig } from "@/app/dramaafera/_utils/miraConfig";
+import { getCloudflareContext } from "@opennextjs/cloudflare";
 
 // Interface dla statystyk roli
 interface RoleStats {
@@ -32,8 +34,8 @@ interface RoleStats {
     incorrectDeputyShoots: number;
     correctJailorExecutes: number;
     incorrectJailorExecutes: number;
-    correctMedicShields: number;
-    incorrectMedicShields: number;
+    correctProtects: number;
+    incorrectProtects: number;
     correctWardenFortifies: number;
     incorrectWardenFortifies: number;
     janitorCleans: number;
@@ -55,20 +57,9 @@ interface PlayerRoleStats {
     incorrectKills?: number;
 }
 
-// Funkcja do sprawdzania czy rola jest rolą zabijającą
-function isKillerRole(roleName: string): boolean {
-    const killerRoles = [
-        'Impostor', 'Miner', 'Shapeshifter', 'Camouflager', 'Morphling', 'Swooper',
-        'Escapist', 'Grenadier', 'Venerer', 'Blackmailer', 'Janitor', 'Bomber',
-        'Warlock', 'Hypnotist', 'Eclipsal', 'Undertaker', 'Scavenger',
-        'Arsonist', 'Glitch', 'Juggernaut', 'Pestilence', 'Soul Collector', 'Vampire', 'Werewolf',
-        'Sheriff', 'Hunter', 'Veteran'
-    ];
-    return killerRoles.includes(roleName);
-}
 
 // Funkcja do generowania statystyk roli
-function generateRoleStats(allGames: UIGameData[], targetRole: string): RoleStats {
+function generateRoleStats(allGames: UIGameData[], targetRole: string, seasonId: number): RoleStats {
     let totalGamesPlayed = 0;
     let totalAppearances = 0;
     let totalWins = 0;
@@ -84,8 +75,8 @@ function generateRoleStats(allGames: UIGameData[], targetRole: string): RoleStat
     let incorrectDeputyShoots = 0;
     let correctJailorExecutes = 0;
     let incorrectJailorExecutes = 0;
-    let correctMedicShields = 0;
-    let incorrectMedicShields = 0;
+    let correctProtects = 0;
+    let incorrectProtects = 0;
     let correctWardenFortifies = 0;
     let incorrectWardenFortifies = 0;
     let janitorCleans = 0;
@@ -96,7 +87,7 @@ function generateRoleStats(allGames: UIGameData[], targetRole: string): RoleStat
     let correctSwaps = 0;
     let incorrectSwaps = 0;
 
-    const isKiller = isKillerRole(targetRole);
+    const isKiller = isKillerRole(targetRole, seasonId);
 
     const playerStats = new Map<string, {
         games: number;
@@ -166,8 +157,8 @@ function generateRoleStats(allGames: UIGameData[], targetRole: string): RoleStat
                 incorrectDeputyShoots += player.incorrectDeputyShoots || 0;
                 correctJailorExecutes += player.correctJailorExecutes || 0;
                 incorrectJailorExecutes += player.incorrectJailorExecutes || 0;
-                correctMedicShields += player.correctMedicShields || 0;
-                incorrectMedicShields += player.incorrectMedicShields || 0;
+                correctProtects += player.correctProtects || 0;
+                incorrectProtects += player.incorrectProtects || 0;
                 correctWardenFortifies += player.correctWardenFortifies || 0;
                 incorrectWardenFortifies += player.incorrectWardenFortifies || 0;
                 janitorCleans += player.janitorCleans || 0;
@@ -227,8 +218,8 @@ function generateRoleStats(allGames: UIGameData[], targetRole: string): RoleStat
         incorrectDeputyShoots,
         correctJailorExecutes,
         incorrectJailorExecutes,
-        correctMedicShields,
-        incorrectMedicShields,
+        correctProtects,
+        incorrectProtects,
         correctWardenFortifies,
         incorrectWardenFortifies,
         janitorCleans,
@@ -280,35 +271,72 @@ export async function RoleDetailContent({ nazwa, seasonId }: RoleDetailContentPr
     const roleName = convertUrlSlugToRole(nazwa, allRoles);
 
     // Wygeneruj statystyki dla roli
-    const roleStats = generateRoleStats(games, roleName);
+    const roleStats = generateRoleStats(games, roleName, seasonId);
 
+    // A role nobody has played this season is not a missing page — same distinction #310 drew
+    // for user profiles. A role that exists in neither registry for this era still 404s, which
+    // is handled by findFullRole returning undefined below.
     if (roleStats.gamesPlayed === 0) {
-        notFound();
+        const known = findFullRole(roleName, seasonId);
+        if (!known) {
+            notFound();
+        }
+        return (
+            <div className="max-w-2xl mx-auto px-4 py-16 text-center">
+                <h1 className="font-brook text-4xl mb-4">{known.name}</h1>
+                <p className="font-barlow text-gray-400 mb-8">
+                    Nikt nie zagrał tą rolą w sezonie {seasonId}.
+                </p>
+                <Link
+                    href={buildSeasonUrl('/ranking', seasonId)}
+                    className="font-barlow text-cyan-400 hover:text-cyan-300 underline"
+                >
+                    Wróć do rankingu sezonu {seasonId}
+                </Link>
+            </div>
+        );
     }
 
-    const roleColor = getRoleColor(roleName);
+    const roleColor = getRoleColor(roleName, seasonId);
 
-    // Znajdź definicję roli z @/roles
-    let roleDefinition: Role | undefined = Roles.find(r => r.name === roleName);
+    // Era-aware, and the ' / ' bundled-name fallback only applies to legacy seasons — see
+    // findFullRole for why that restriction matters.
+    const roleDefinition: Role | undefined = findFullRole(roleName, seasonId);
 
-    if (!roleDefinition) {
-        roleDefinition = Roles.find(r => {
-            if (r.name.includes(' / ')) {
-                const parts = r.name.split(' / ');
-                return parts.some(part => part === roleName);
-            }
-            return false;
-        });
-    }
-
-    if (!roleDefinition) {
-        const normalizedRoleName = roleName.toLowerCase().replace(/\s+/g, '');
-        roleDefinition = Roles.find(r => r.name.toLowerCase().replace(/\s+/g, '') === normalizedRoleName);
-    }
-
-    // Wczytaj ustawienia z API i zaktualizuj wartości ustawień
+    // Settings come from whichever source matches the era.
+    //
+    // Season >= 4 reads TOU-Mira's own .cfg and the labels generated from the mod source, not
+    // the hand-written `settings` on the role — those had drifted (a typo in four labels, 55
+    // entries for options the mod no longer has, 59% of config keys unmatchable). Season <= 3
+    // keeps the database upload and the legacy parser, unchanged. See #317.
     let roleDefinitionWithSettings = roleDefinition;
-    if (roleDefinition) {
+
+    if (roleDefinition && seasonId >= FIRST_MIRA_SEASON) {
+        try {
+            // The host panel uploads a .cfg to the database, so prefer that. Until the first
+            // upload of a season it still holds the previous era's legacy file, which is not a
+            // config at all — fall back to the snapshot committed at public/settings/mira.cfg.
+            const { current } = await getDramaAferaSettings();
+            let cfg = looksLikeMiraConfig(current) ? current : null;
+
+            if (!cfg) {
+                const { env } = await getCloudflareContext();
+                if (env.ASSETS) {
+                    const response = await env.ASSETS.fetch(new Request('http://localhost/settings/mira.cfg'));
+                    if (response.ok) cfg = await response.text();
+                }
+            }
+
+            if (cfg) {
+                const settings = buildMiraRoleSettings(cfg, roleDefinition.name);
+                if (Object.keys(settings).length > 0) {
+                    roleDefinitionWithSettings = { ...roleDefinition, settings };
+                }
+            }
+        } catch {
+            // Settings are decoration; the rest of the page stands without them.
+        }
+    } else if (roleDefinition) {
         try {
             const { current: fileContent } = await getDramaAferaSettings();
 
@@ -364,6 +392,7 @@ export async function RoleDetailContent({ nazwa, seasonId }: RoleDetailContentPr
                             <div className="relative">
                                 <RoleImage
                                     roleName={roleName}
+                                    seasonId={seasonId}
                                     width={128}
                                     height={128}
                                     className="scale-[1.7]"
@@ -579,24 +608,24 @@ export async function RoleDetailContent({ nazwa, seasonId }: RoleDetailContentPr
                             </div>
                         )}
 
-                        {roleStats.correctMedicShields > 0 && (
+                        {roleStats.correctProtects > 0 && (
                             <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
                                 <div className="text-xl font-bold text-green-400">
-                                    {roleStats.correctMedicShields}
+                                    {roleStats.correctProtects}
                                 </div>
                                 <div className="text-sm text-zinc-400">
-                                    Correct shields
+                                    Correct protects
                                 </div>
                             </div>
                         )}
 
-                        {roleStats.incorrectMedicShields > 0 && (
+                        {roleStats.incorrectProtects > 0 && (
                             <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
                                 <div className="text-xl font-bold text-red-400">
-                                    {roleStats.incorrectMedicShields}
+                                    {roleStats.incorrectProtects}
                                 </div>
                                 <div className="text-sm text-zinc-400">
-                                    Incorrect shields
+                                    Incorrect protects
                                 </div>
                             </div>
                         )}

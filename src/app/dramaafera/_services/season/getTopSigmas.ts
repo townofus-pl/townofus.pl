@@ -42,36 +42,16 @@ export async function getTopSigmas(
 
   if (!firstGameDb || !lastGameDb) return null;
 
-  const { before: rankingBeforeMap, after: rankingAfterMap } =
-    await getRankingSnapshots(firstGameDb.id, lastGameDb.id, seasonId, {
-      onlySeasonActivePlayers: true,
-    });
-
-  const targetSeason = seasonId ?? firstGameDb.season;
-  const [seasonResetRows, priorSeasonGameRankingRows] = await Promise.all([
-    prisma.$queryRaw<Array<{ id: number }>>`
-      SELECT pr.id
-      FROM player_rankings pr
-      WHERE pr.season = ${targetSeason}
-        AND pr.deletedAt IS NULL
-        AND pr.reason = 'season_reset'
-      LIMIT 1
-    `,
-    prisma.$queryRaw<Array<{ id: number }>>`
-      SELECT pr.id
-      FROM player_rankings pr
-      WHERE pr.season = ${targetSeason}
-        AND pr.deletedAt IS NULL
-        AND pr.gameId IS NOT NULL
-        AND pr.gameId < ${firstGameDb.id}
-      LIMIT 1
-    `,
-  ]);
-
   // Jeśli sesja jest pierwszą po season_reset (brak jakichkolwiek wpisów gry wcześniej),
   // pozycja "przed" jest semantycznie bezwartościowa — pokazujemy tylko pozycję po sesji.
-  const isFirstSessionAfterSeasonReset =
-    seasonResetRows.length > 0 && priorSeasonGameRankingRows.length === 0;
+  // Probe przeniesiony do getRankingSnapshots, żeby getHostInfo też go dostał (#315).
+  const {
+    before: rankingBeforeMap,
+    after: rankingAfterMap,
+    isFirstSessionAfterSeasonReset,
+  } = await getRankingSnapshots(firstGameDb.id, lastGameDb.id, seasonId, {
+    onlySeasonActivePlayers: true,
+  });
 
   const rankPositionBefore = buildRankPositionMap(rankingBeforeMap);
   const rankPositionAfter = buildRankPositionMap(rankingAfterMap);

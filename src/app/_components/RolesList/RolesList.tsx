@@ -22,10 +22,9 @@ export const RolesList: FC<{
     modifiers: Modifier[],
     hideSettings?: boolean
     hideTips?: boolean
-    scaleRoleIcons?: boolean
     showModFilter?: boolean
     defaultModSource?: ModSource
-}> = ({roles, modifiers, hideSettings = false, hideTips = false, scaleRoleIcons = true, showModFilter = false, defaultModSource = ModSource.Mira}) => {
+}> = ({roles, modifiers, hideSettings = false, hideTips = false, showModFilter = false, defaultModSource = ModSource.Mira}) => {
     const { searchValue, search } = useSearch();
     const { typeFilterValue, teamFilterValue, modFilterValue, filter } = useFilters({defaultModSource: showModFilter ? defaultModSource : undefined});
 
@@ -81,32 +80,33 @@ export const RolesList: FC<{
 
     return (
         <RolesListContext.Provider value={{searchValue, search, filter, showModFilter}}>
-            <div className="grid grid-cols-1 gap-y-5 md:grid-cols-5 lg:grid-cols-9 gap-x-0 md:gap-x-5">
-                <Search/>
-                <Filters/>
-            </div>
-            <main>
-                <div className="grid grid-cols-1 gap-y-5">
-                    {results
-                        .slice()
-                        .sort(sortRolesAndModifiers)
-                        .map(role => {
-                            const roleIconScale = showModFilter
-                                ? (role.source === ModSource.TownOfUs || role.source === undefined ? 1.5 : 1)
-                                : scaleRoleIcons;
-
-                            return (
+            {/* The gap between the filter row and the cards belongs to this component. It used to
+                be left to whoever rendered it: / and /tajemniczy happened to wrap it in
+                `grid gap-y-5` and looked right, while /dramaafera, /ustawienia and /custom used a
+                plain div and had the two parts touching. Wrapping them also makes this one grid
+                item in those first two, so their outer gap has nothing left to space and the
+                spacing cannot double up. */}
+            <div className="grid grid-cols-1 gap-y-5">
+                <div className="grid grid-cols-1 gap-y-5 md:grid-cols-5 lg:grid-cols-9 gap-x-0 md:gap-x-5">
+                    <Search/>
+                    <Filters/>
+                </div>
+                <main>
+                    <div className="grid grid-cols-1 gap-y-5">
+                        {results
+                            .slice()
+                            .sort(sortRolesAndModifiers)
+                            .map(role => (
                                 <RoleCard
                                     key={`${role.id}-${role.type}-${role.source ?? 'base'}`}
                                     role={role}
                                     hideSettings={hideSettings}
                                     hideTips={hideTips}
-                                    scaleRoleIcon={roleIconScale}
                                 />
-                            );
-                        })}
-                </div>
-            </main>
+                            ))}
+                    </div>
+                </main>
+            </div>
         </RolesListContext.Provider>
     );
 }

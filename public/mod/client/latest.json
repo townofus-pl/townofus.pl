@@ -1,0 +1,20 @@
+{
+  "version": "1.0.0+2e751b7",
+  "files": [
+    {
+      "name": "DramaAferaStats.Client.dll",
+      "url": "https://townofus.pl/mod/client/DramaAferaStats.Client.dll",
+      "sha256": "5112466fb4d1a6a548b8eed426e0465bd864202cd6b1e30dcdc8aef333fc3eac"
+    },
+    {
+      "name": "malkizhats.bundle",
+      "url": "https://townofus.pl/mod/client/malkizhats.bundle",
+      "sha256": "07294a3e479debd2f08d8aaa2a2368d3d8605b536a8f0ecd8754b8f05dae0a42"
+    },
+    {
+      "name": "malkizhats.catalog",
+      "url": "https://townofus.pl/mod/client/malkizhats.catalog",
+      "sha256": "2c1b95ac195fe543124857648b1391dc3e80738f6929c2c7ff5a3fcaf9ed81ea"
+    }
+  ]
+}

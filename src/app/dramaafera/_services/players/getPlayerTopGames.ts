@@ -11,6 +11,7 @@ import {
 
 // Get player's best games
 export async function getPlayerTopGames(playerName: string, limit: number = 3, seasonId?: number): Promise<{ best: PlayerTopGame[] }> {
+    const season = seasonId ?? CURRENT_SEASON;
   const prisma = await getDatabaseClient();
 
   if (!prisma) {
@@ -59,8 +60,8 @@ export async function getPlayerTopGames(playerName: string, limit: number = 3, s
   const mapGame = (stat: typeof playerGames[0]): PlayerTopGame => {
     const roleName = stat.roleHistory[0]?.roleName || 'Unknown';
     const displayRoleName = convertRoleNameForDisplay(roleName);
-    const roleColor = getRoleColor(displayRoleName);
-    const team = determineTeam(roleName);
+    const roleColor = getRoleColor(displayRoleName, season);
+    const team = determineTeam(roleName, season);
 
     return {
       gameIdentifier: stat.game.gameIdentifier,

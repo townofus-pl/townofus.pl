@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import Image from "next/image";
 import { MiraModifiers, MiraRoles, MiraSettings } from "@/mira";
 import { RoleOrModifierTypes } from "@/constants/rolesAndModifiers";
@@ -462,66 +462,45 @@ function inferTypeFromValue(value: string): SettingTypes {
     return SettingTypes.Text;
 }
 
-export default function MiraChangelogPage() {
-    const [changes, setChanges] = useState<Change[]>([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState<string | null>(null);
+/**
+ * The TOU:Mira view of the changelog. Rendered by `/dramaafera/changelog` when the settings pair
+ * is a TOU:Mira config; there is no `/changelog/mira` URL.
+ *
+ * Takes the pair as props rather than fetching it. The page reads the database server-side and
+ * decides which era to render, so this component has no loading or error state of its own — one
+ * source of truth for "which changelog", and no second round trip from the browser.
+ */
+export function MiraChangelog({ current, old }: { current: string; old: string }) {
+    const changes = useMemo<Change[]>(() => {
+        const currentData = parseConfigFile(current);
+        const oldData = parseConfigFile(old);
+        const detected: Change[] = [];
 
-    useEffect(() => {
-        const loadChanges = async () => {
-            try {
-                const [currentResponse, oldResponse] = await Promise.all([
-                    fetch("/settings/mira.cfg"),
-                    fetch("/settings/mira_old.cfg"),
-                ]);
+        for (const [comparisonKey, currentEntry] of currentData.entries()) {
+            const oldEntry = oldData.get(comparisonKey);
 
-                if (!currentResponse.ok || !oldResponse.ok) {
-                    throw new Error("Brak plików cfg Mira");
-                }
-
-                const [currentContent, oldContent] = await Promise.all([
-                    currentResponse.text(),
-                    oldResponse.text(),
-                ]);
-
-                const currentData = parseConfigFile(currentContent);
-                const oldData = parseConfigFile(oldContent);
-                const detectedChanges: Change[] = [];
-
-                for (const [comparisonKey, currentEntry] of currentData.entries()) {
-                    const oldEntry = oldData.get(comparisonKey);
-
-                    if (!oldEntry || oldEntry.value === currentEntry.value) {
-                        continue;
-                    }
-
-                    const processedOldValue = normalizeSettingValue(oldEntry.value, currentEntry.settingType);
-                    const processedNewValue = normalizeSettingValue(currentEntry.value, currentEntry.settingType);
-
-                    detectedChanges.push({
-                        groupName: currentEntry.groupName,
-                        settingName: currentEntry.settingName,
-                        oldValue: formatValue(processedOldValue, currentEntry.settingType, currentEntry.description),
-                        newValue: formatValue(processedNewValue, currentEntry.settingType, currentEntry.description),
-                        groupKind: currentEntry.groupKind,
-                        groupTeam: currentEntry.groupTeam,
-                        groupColor: currentEntry.groupColor,
-                        groupIcon: currentEntry.groupIcon,
-                        groupOrder: currentEntry.groupOrder,
-                    });
-                }
-
-                setChanges(detectedChanges);
-            } catch (loadError) {
-                console.error("Błąd podczas ładowania zmian Mira:", loadError);
-                setError("Nie udało się załadować plików `mira.cfg` i `mira_old.cfg` z `public/settings/`.");
-            } finally {
-                setLoading(false);
+            if (!oldEntry || oldEntry.value === currentEntry.value) {
+                continue;
             }
-        };
 
-        loadChanges();
-    }, []);
+            const processedOldValue = normalizeSettingValue(oldEntry.value, currentEntry.settingType);
+            const processedNewValue = normalizeSettingValue(currentEntry.value, currentEntry.settingType);
+
+            detected.push({
+                groupName: currentEntry.groupName,
+                settingName: currentEntry.settingName,
+                oldValue: formatValue(processedOldValue, currentEntry.settingType, currentEntry.description),
+                newValue: formatValue(processedNewValue, currentEntry.settingType, currentEntry.description),
+                groupKind: currentEntry.groupKind,
+                groupTeam: currentEntry.groupTeam,
+                groupColor: currentEntry.groupColor,
+                groupIcon: currentEntry.groupIcon,
+                groupOrder: currentEntry.groupOrder,
+            });
+        }
+
+        return detected;
+    }, [current, old]);
 
     const groupedChanges = useMemo(() => {
         const grouped = changes.reduce((accumulator, change) => {
@@ -584,23 +563,6 @@ export default function MiraChangelogPage() {
             return left.groupName.localeCompare(right.groupName, "pl");
         });
     }, [changes]);
-
-    if (loading) {
-        return (
-            <div className="container mx-auto px-4 py-8">
-                <h1 className="font-brook text-8xl mb-8 text-center">Ładowanie...</h1>
-            </div>
-        );
-    }
-
-    if (error) {
-        return (
-            <div className="container mx-auto px-4 py-8 text-center">
-                <h1 className="font-brook text-5xl mb-4">Changelog Mira</h1>
-                <p className="text-xl text-gray-300">{error}</p>
-            </div>
-        );
-    }
 
     return (
         <div className="container mx-auto">

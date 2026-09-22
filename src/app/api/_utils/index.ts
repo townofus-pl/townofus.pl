@@ -5,6 +5,7 @@ export { calculateRankingForGame, RANKING_CONSTANTS } from './rankingCalculator'
 
 // Re-export player creation helper
 export { createPlayerWithRanking } from './createPlayerWithRanking';
+export { resolveSeasonParam } from './seasonParam';
 
 /**
  * Standard API response structure

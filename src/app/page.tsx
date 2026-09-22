@@ -33,7 +33,6 @@ export default function Home() {
                 modifiers={[...miraModifiers, ...touModifiers]}
                 showModFilter={true}
                 defaultModSource={ModSource.Mira}
-                scaleRoleIcons={false}
             />
         </div>
     );

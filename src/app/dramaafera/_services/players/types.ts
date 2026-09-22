@@ -40,8 +40,8 @@ export interface UserProfileStats {
   incorrectDeputyShoots: number;
   correctJailorExecutes: number;
   incorrectJailorExecutes: number;
-  correctMedicShields: number;
-  incorrectMedicShields: number;
+  correctProtects: number;
+  incorrectProtects: number;
   correctWardenFortifies: number;
   incorrectWardenFortifies: number;
   janitorCleans: number;

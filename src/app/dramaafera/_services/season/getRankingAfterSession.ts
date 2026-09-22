@@ -26,30 +26,33 @@ async function getRankingTableAtSession(
   // row represents the player's starting rating for the season. SQLite sorts NULLs last
   // in DESC order, so if a player has both game entries and a season_reset entry before
   // firstGameDbId, the most recent game entry wins (higher gameId takes precedence).
+  //
+  // ROW_NUMBER over the same ORDER BY rather than a correlated subquery. The subquery ran once per
+  // row of a full-season scan, each with its own sort — 1.46 s and ~4.2M rows read to return 65.
+  // The window keeps the tie-break identical (gameId DESC puts season_reset's NULL last, so a game
+  // row always beats it), which `MAX(id)` would not: a penalty/reward row carries gameId NULL but
+  // a high id. Measured 1,476 ms -> 2.65 ms. See #299.
   const playersBeforeQuery = await prisma.$queryRaw<
     Array<{ playerId: number; playerName: string; score: number }>
   >`
-    SELECT
-      pr1.playerId,
-      p.name as playerName,
-      pr1.score
-    FROM player_rankings pr1
-    INNER JOIN players p ON pr1.playerId = p.id
-    WHERE (pr1.gameId < ${firstGameDbId} OR pr1.gameId IS NULL)
-      AND pr1.season = ${season}
-      AND pr1.deletedAt IS NULL
-      AND p.deletedAt IS NULL
-      AND pr1.id = (
-        SELECT pr2.id
-        FROM player_rankings pr2
-        WHERE pr2.playerId = pr1.playerId
-          AND (pr2.gameId < ${firstGameDbId} OR pr2.gameId IS NULL)
-          AND pr2.season = ${season}
-          AND pr2.deletedAt IS NULL
-        ORDER BY pr2.gameId DESC, pr2.createdAt DESC
-        LIMIT 1
-      )
-    ORDER BY pr1.score DESC
+    WITH latest AS (
+      SELECT
+        playerId,
+        score,
+        ROW_NUMBER() OVER (
+          PARTITION BY playerId
+          ORDER BY gameId DESC, createdAt DESC
+        ) AS rn
+      FROM player_rankings
+      WHERE (gameId < ${firstGameDbId} OR gameId IS NULL)
+        AND season = ${season}
+        AND deletedAt IS NULL
+    )
+    SELECT l.playerId, p.name as playerName, l.score
+    FROM latest l
+    INNER JOIN players p ON p.id = l.playerId AND p.deletedAt IS NULL
+    WHERE l.rn = 1
+    ORDER BY l.score DESC
   `;
 
   // Pobierz ranking po ostatniej grze dla graczy aktywnych w sezonie.
@@ -58,36 +61,33 @@ async function getRankingTableAtSession(
   const playersAfterQuery = await prisma.$queryRaw<
     Array<{ playerId: number; playerName: string; score: number }>
   >`
-    SELECT
-      pr1.playerId,
-      p.name as playerName,
-      pr1.score
-    FROM player_rankings pr1
-    INNER JOIN players p ON pr1.playerId = p.id
-    WHERE (pr1.gameId <= ${lastGameDbId} OR pr1.gameId IS NULL)
-      AND pr1.season = ${season}
-      AND pr1.deletedAt IS NULL
-      AND p.deletedAt IS NULL
+    WITH latest AS (
+      SELECT
+        playerId,
+        score,
+        ROW_NUMBER() OVER (
+          PARTITION BY playerId
+          ORDER BY gameId DESC, createdAt DESC
+        ) AS rn
+      FROM player_rankings
+      WHERE (gameId <= ${lastGameDbId} OR gameId IS NULL)
+        AND season = ${season}
+        AND deletedAt IS NULL
+    )
+    SELECT l.playerId, p.name as playerName, l.score
+    FROM latest l
+    INNER JOIN players p ON p.id = l.playerId AND p.deletedAt IS NULL
+    WHERE l.rn = 1
       AND EXISTS (
         SELECT 1
         FROM game_player_statistics gps
         INNER JOIN games g ON g.id = gps.gameId
-        WHERE gps.playerId = pr1.playerId
+        WHERE gps.playerId = l.playerId
           AND g.season = ${season}
           AND g.deletedAt IS NULL
           AND g.id <= ${lastGameDbId}
       )
-      AND pr1.id = (
-        SELECT pr2.id
-        FROM player_rankings pr2
-        WHERE pr2.playerId = pr1.playerId
-          AND (pr2.gameId <= ${lastGameDbId} OR pr2.gameId IS NULL)
-          AND pr2.season = ${season}
-          AND pr2.deletedAt IS NULL
-        ORDER BY pr2.gameId DESC, pr2.createdAt DESC
-        LIMIT 1
-      )
-    ORDER BY pr1.score DESC
+    ORDER BY l.score DESC
   `;
 
   const beforeMap = new Map<number, number>();

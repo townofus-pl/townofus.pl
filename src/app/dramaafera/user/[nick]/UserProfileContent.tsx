@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { getUserProfileStats, getPlayersList, getPlayerRankingHistory, getPlayerTopGames, getPlayerVotingStats, getPlayerStars } from "../../_services";
+import { getUserProfileStats, getAllPlayerNames, getPlayerRankingHistory, getPlayerTopGames, getPlayerVotingStats, getPlayerStars } from "../../_services";
 import { convertNickToUrlSlug, getPlayerAvatarPath } from "@/app/dramaafera/_utils/gameUtils";
 import { buildSeasonUrl } from "@/app/dramaafera/_utils/seasonHelpers";
 import { notFound } from "next/navigation";
@@ -29,20 +29,23 @@ interface UserProfileContentProps {
 }
 
 export async function UserProfileContent({ nick, seasonId }: UserProfileContentProps) {
-    // Pobierz listę wszystkich graczy z bazy danych
-    const allPlayerNames = await getPlayersList(seasonId);
-    
-    if (allPlayerNames.length === 0) {
+    // Resolve the slug against *every* known player, not just this season's. Previously this
+    // used the season-filtered list, so a season with no games yet made every profile URL
+    // notFound() — and because that happens inside a Suspense boundary the response is still
+    // HTTP 200 and the page hangs on "Ładowanie..." forever. See #310.
+    const allPlayerNames = await getAllPlayerNames();
+    const playerNick = convertUrlSlugToNick(nick, allPlayerNames);
+
+    // A nick nobody has ever used is a genuine 404. A known player who simply did not play this
+    // season is not.
+    if (!allPlayerNames.includes(playerNick)) {
         notFound();
     }
 
-    const playerNick = convertUrlSlugToNick(nick, allPlayerNames);
-
-    // Pobierz statystyki dla konkretnego gracza z bazy danych
     const playerStats = await getUserProfileStats(playerNick, seasonId);
 
     if (!playerStats) {
-        notFound();
+        return <NoSeasonData playerNick={playerNick} seasonId={seasonId} />;
     }
 
     // Pobierz historię rankingu gracza
@@ -62,13 +65,13 @@ export async function UserProfileContent({ nick, seasonId }: UserProfileContentP
 
     // Oblicz sumę poprawnych i niepoprawnych zagrań
     const totalCorrectPlays = playerStats.correctKills + playerStats.correctGuesses + 
-                             playerStats.correctMedicShields + playerStats.correctJailorExecutes +
+                             playerStats.correctProtects + playerStats.correctJailorExecutes +
                              playerStats.correctDeputyShoots + playerStats.correctProsecutes +
                              playerStats.correctWardenFortifies + playerStats.correctAltruistRevives +
                              playerStats.correctSwaps;
 
     const totalIncorrectPlays = playerStats.incorrectKills + playerStats.incorrectGuesses + 
-                               playerStats.incorrectMedicShields + playerStats.incorrectJailorExecutes +
+                               playerStats.incorrectProtects + playerStats.incorrectJailorExecutes +
                                playerStats.incorrectDeputyShoots + playerStats.incorrectProsecutes +
                                playerStats.incorrectWardenFortifies + playerStats.incorrectAltruistRevives +
                                playerStats.incorrectSwaps;
@@ -271,22 +274,22 @@ export async function UserProfileContent({ nick, seasonId }: UserProfileContentP
                             </div>
                         </div>
 
-                        {/* Statystyki tarcz medyka */}
+                        {/* Statystyki protectów */}
                         <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
                             <div className="text-xl font-bold text-green-400">
-                                {playerStats.correctMedicShields}
+                                {playerStats.correctProtects}
                             </div>
                             <div className="text-sm text-zinc-400">
-                                Correct shields
+                                Correct protects
                             </div>
                         </div>
 
                         <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
                             <div className="text-xl font-bold text-red-400">
-                                {playerStats.incorrectMedicShields}
+                                {playerStats.incorrectProtects}
                             </div>
                             <div className="text-sm text-zinc-400">
-                                Incorrect shields
+                                Incorrect protects
                             </div>
                         </div>
 
@@ -450,6 +453,33 @@ export async function UserProfileContent({ nick, seasonId }: UserProfileContentP
                     </CollapsibleSection>
                 )}
             </div>
+        </div>
+    );
+}
+
+// Shown when the player exists but has no games in the season being viewed — a freshly started
+// season, or someone who sat one out. Deliberately a small standalone panel rather than threading
+// nulls through the 400-line profile below.
+function NoSeasonData({ playerNick, seasonId }: { playerNick: string; seasonId: number }) {
+    return (
+        <div className="max-w-2xl mx-auto px-4 py-16 text-center">
+            <Image
+                src={getPlayerAvatarPath(playerNick)}
+                alt={playerNick}
+                width={96}
+                height={96}
+                className="mx-auto rounded-full mb-6"
+            />
+            <h1 className="font-brook text-4xl mb-4">{playerNick}</h1>
+            <p className="font-barlow text-gray-400 mb-8">
+                Ten gracz nie rozegrał żadnej gry w sezonie {seasonId}.
+            </p>
+            <Link
+                href={buildSeasonUrl('/ranking', seasonId)}
+                className="font-barlow text-cyan-400 hover:text-cyan-300 underline"
+            >
+                Wróć do rankingu sezonu {seasonId}
+            </Link>
         </div>
     );
 }

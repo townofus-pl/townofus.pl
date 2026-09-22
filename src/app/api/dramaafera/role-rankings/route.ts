@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { generateRoleRankingStats } from '@/app/dramaafera/_services';
 import { withCors } from '@/app/api/_middlewares';
+import { resolveSeasonParam } from '@/app/api/_utils';
 
 async function getHandler(request: NextRequest): Promise<Response> {
     try {
@@ -9,7 +10,14 @@ async function getHandler(request: NextRequest): Promise<Response> {
         const sortDirection = searchParams.get('sortDirection') || 'desc';
         const teamFilter = searchParams.get('teamFilter') || 'all';
 
-        const roleStats = await generateRoleRankingStats();
+        const season = resolveSeasonParam(request);
+        if (season === null) {
+            return NextResponse.json(
+                { success: false, error: 'Nieprawidłowy numer sezonu — wymagana liczba całkowita' },
+                { status: 400 }
+            );
+        }
+        const roleStats = await generateRoleRankingStats(season);
 
         // Map service type to response format (name → role for backwards compatibility)
         let data = roleStats.map(r => ({

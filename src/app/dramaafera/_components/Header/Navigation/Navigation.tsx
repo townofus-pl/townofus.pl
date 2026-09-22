@@ -24,6 +24,8 @@ const navigationItemConfigs: NavigationItemConfig[] = [
     },
     {
         subPath: '/changelog',
+        // Jeden adres dla obu er — /changelog sam wybiera widok po formacie wgranego pliku.
+        // W URL-ach nie ma "mira". Zob. #317.
         href: "/dramaafera/changelog",
         label: "Changelog",
         seasonDependent: false,

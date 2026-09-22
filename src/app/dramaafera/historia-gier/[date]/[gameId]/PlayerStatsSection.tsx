@@ -13,7 +13,7 @@ function renderRoleHistory(roleHistory: string[] | undefined, seasonId: number) 
     if (!roleHistory || roleHistory.length <= 1) {
         const role = roleHistory?.[roleHistory.length - 1] || 'Unknown';
         const displayRoleName = convertRoleNameForDisplay(role);
-        const roleColor = getRoleColor(displayRoleName);
+        const roleColor = getRoleColor(displayRoleName, seasonId);
         return (
             <Link href={buildSeasonUrl(`/role/${convertRoleToUrlSlug(displayRoleName)}`, seasonId)}>
                 <span 
@@ -34,7 +34,7 @@ function renderRoleHistory(roleHistory: string[] | undefined, seasonId: number) 
         <div className="flex items-center gap-1">
             {roleHistory.map((role, roleIndex) => {
                 const displayRoleName = convertRoleNameForDisplay(role);
-                const roleColor = getRoleColor(displayRoleName);
+                const roleColor = getRoleColor(displayRoleName, seasonId);
                 return (
                     <span key={roleIndex} className="flex items-center">
                         <Link href={buildSeasonUrl(`/role/${convertRoleToUrlSlug(displayRoleName)}`, seasonId)}>

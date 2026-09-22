@@ -23,8 +23,8 @@ export type StatWithRolesAndModifiers = {
   incorrectDeputyShoots: number;
   correctJailorExecutes: number;
   incorrectJailorExecutes: number;
-  correctMedicShields: number;
-  incorrectMedicShields: number;
+  correctProtects: number;
+  incorrectProtects: number;
   correctWardenFortifies: number;
   incorrectWardenFortifies: number;
   janitorCleans: number;
@@ -39,6 +39,11 @@ export type StatWithRolesAndModifiers = {
 };
 
 export type BuildPlayerStatsOptions = {
+  /**
+   * The season the game belongs to. Required: it selects the role registry, and defaulting it
+   * would silently resolve a season-3 game against TOU-Mira's role set. See #311.
+   */
+  season: number;
   /** Set to true (getGameData) to use disconnected for deaths; false/absent (getAllGamesData) → 0 */
   useDisconnectedForDeaths?: boolean;
   /** Pass the game's maxTasks as-is (undefined keeps undefined; 0 is treated as undefined/no limit due to `|| undefined`) */
@@ -47,7 +52,7 @@ export type BuildPlayerStatsOptions = {
   meetingsUndefined?: boolean;
 };
 
-export function buildPlayerStats(stat: StatWithRolesAndModifiers, opts: BuildPlayerStatsOptions = {}): UIPlayerData {
+export function buildPlayerStats(stat: StatWithRolesAndModifiers, opts: BuildPlayerStatsOptions): UIPlayerData {
   const roleHistorySorted = [...stat.roleHistory].sort((a, b) => a.order - b.order);
   const roleHistoryNames = roleHistorySorted.map(r => r.roleName);
   const primaryRole = roleHistorySorted[0]?.roleName || 'Nieznana rola';
@@ -58,7 +63,7 @@ export function buildPlayerStats(stat: StatWithRolesAndModifiers, opts: BuildPla
     .map(m => m.modifierName)
     .filter(m => m && m.trim() !== '');
 
-  const team = determineTeam(roleHistoryNames);
+  const team = determineTeam(roleHistoryNames, opts.season);
   const teamStr = team === Teams.Impostor ? 'Impostor' : team === Teams.Neutral ? 'Neutral' : 'Crewmate';
 
   const playerName = stat.player?.name || 'Nieznany';
@@ -66,7 +71,7 @@ export function buildPlayerStats(stat: StatWithRolesAndModifiers, opts: BuildPla
   return {
     nickname: playerName,
     role: primaryRole,
-    roleColor: getRoleColor(displayRoleName),
+    roleColor: getRoleColor(displayRoleName, opts.season),
     roleHistory: roleHistoryNames,
     modifiers: modifierNames,
     modifierColors: modifierNames.map(getModifierColor),
@@ -89,8 +94,8 @@ export function buildPlayerStats(stat: StatWithRolesAndModifiers, opts: BuildPla
     incorrectDeputyShoots: stat.incorrectDeputyShoots,
     correctJailorExecutes: stat.correctJailorExecutes,
     incorrectJailorExecutes: stat.incorrectJailorExecutes,
-    correctMedicShields: stat.correctMedicShields,
-    incorrectMedicShields: stat.incorrectMedicShields,
+    correctProtects: stat.correctProtects,
+    incorrectProtects: stat.incorrectProtects,
     correctWardenFortifies: stat.correctWardenFortifies,
     incorrectWardenFortifies: stat.incorrectWardenFortifies,
     janitorCleans: stat.janitorCleans,
@@ -117,8 +122,8 @@ export function buildPlayerStats(stat: StatWithRolesAndModifiers, opts: BuildPla
       incorrectDeputyShoots: stat.incorrectDeputyShoots,
       correctJailorExecutes: stat.correctJailorExecutes,
       incorrectJailorExecutes: stat.incorrectJailorExecutes,
-      correctMedicShields: stat.correctMedicShields,
-      incorrectMedicShields: stat.incorrectMedicShields,
+      correctProtects: stat.correctProtects,
+      incorrectProtects: stat.incorrectProtects,
       correctWardenFortifies: stat.correctWardenFortifies,
       incorrectWardenFortifies: stat.incorrectWardenFortifies,
       janitorCleans: stat.janitorCleans,

@@ -4,6 +4,7 @@ import { videotext, formatDate } from './constants';
 import { getRoleIconPath } from '@/app/dramaafera/_utils/gameUtils';
 
 interface PlayerHistoryProps {
+    seasonId: number;
     nickname: string;
     isFullscreen: boolean;
     topPlayerGames: UIGameData[];
@@ -11,7 +12,7 @@ interface PlayerHistoryProps {
     date: string;
 }
 
-export default function PlayerHistory({ nickname, isFullscreen, topPlayerGames, playerRankingChanges, date }: PlayerHistoryProps) {
+export default function PlayerHistory({ nickname, isFullscreen, topPlayerGames, playerRankingChanges, date, seasonId }: PlayerHistoryProps) {
     if (topPlayerGames.length === 0) return null;
 
     // Filtruj tylko gry tego gracza
@@ -115,7 +116,7 @@ export default function PlayerHistory({ nickname, isFullscreen, topPlayerGames, 
                                 >
                                     {played && playerData && (
                                         <Image
-                                            src={getRoleIconPath(playerData.role)}
+                                            src={getRoleIconPath(playerData.role, seasonId)}
                                             alt={playerData.role}
                                             width={squareSize}
                                             height={squareSize}
@@ -165,12 +166,12 @@ export default function PlayerHistory({ nickname, isFullscreen, topPlayerGames, 
                                             <div className="text-red-500">{playerData.originalStats.incorrectGuesses} INCORRECT GUESS{playerData.originalStats.incorrectGuesses > 1 ? 'ES' : ''}</div>
                                         )}
 
-                                        {/* Medic Shields */}
-                                        {playerData.originalStats.correctMedicShields > 0 && (
-                                            <div className="text-green-500">{playerData.originalStats.correctMedicShields} CORRECT SHIELD{playerData.originalStats.correctMedicShields > 1 ? 'S' : ''}</div>
+                                        {/* Protects */}
+                                        {playerData.originalStats.correctProtects > 0 && (
+                                            <div className="text-green-500">{playerData.originalStats.correctProtects} CORRECT PROTECT{playerData.originalStats.correctProtects > 1 ? 'S' : ''}</div>
                                         )}
-                                        {playerData.originalStats.incorrectMedicShields > 0 && (
-                                            <div className="text-red-500">{playerData.originalStats.incorrectMedicShields} INCORRECT SHIELD{playerData.originalStats.incorrectMedicShields > 1 ? 'S' : ''}</div>
+                                        {playerData.originalStats.incorrectProtects > 0 && (
+                                            <div className="text-red-500">{playerData.originalStats.incorrectProtects} INCORRECT PROTECT{playerData.originalStats.incorrectProtects > 1 ? 'S' : ''}</div>
                                         )}
 
                                         {/* Warden Fortifies */}

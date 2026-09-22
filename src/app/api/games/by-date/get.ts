@@ -2,6 +2,7 @@ import { NextRequest } from 'next/server';
 import { getGamesListByDate, getGameData } from '@/app/dramaafera/_services';
 import { normalizeRoleName, getRoleColor, determineTeam, formatDisplayDate } from '@/app/dramaafera/_utils/gameUtils';
 import { createSuccessResponse, createErrorResponse } from '../../_utils';
+import { CURRENT_SEASON } from '@/app/dramaafera/_constants/seasons';
 
 export async function GET(request: NextRequest) {
   try {
@@ -84,9 +85,12 @@ export async function GET(request: NextRequest) {
           : player.role || 'Unknown';
         
         if (!roleMap.has(roleName)) {
-          const displayName = normalizeRoleName(roleName);
-          const color = getRoleColor(roleName);
-          const team = determineTeam([roleName]);
+          // This endpoint takes no season parameter yet, so role metadata resolves against
+          // the current season's registry. #314 adds `?season=`; until then a caller asking
+          // for an older date gets that date's games with current-era role labels.
+          const displayName = normalizeRoleName(roleName, CURRENT_SEASON);
+          const color = getRoleColor(roleName, CURRENT_SEASON);
+          const team = determineTeam([roleName], CURRENT_SEASON);
           
           roleMap.set(roleName, {
             name: roleName,

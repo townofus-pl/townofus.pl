@@ -57,8 +57,8 @@ export interface UIPlayerData {
   incorrectDeputyShoots: number;
   correctJailorExecutes: number;
   incorrectJailorExecutes: number;
-  correctMedicShields: number;
-  incorrectMedicShields: number;
+  correctProtects: number;
+  incorrectProtects: number;
   correctWardenFortifies: number;
   incorrectWardenFortifies: number;
   janitorCleans: number;
@@ -85,8 +85,8 @@ export interface UIPlayerData {
     incorrectDeputyShoots: number;
     correctJailorExecutes: number;
     incorrectJailorExecutes: number;
-    correctMedicShields: number;
-    incorrectMedicShields: number;
+    correctProtects: number;
+    incorrectProtects: number;
     correctWardenFortifies: number;
     incorrectWardenFortifies: number;
     janitorCleans: number;

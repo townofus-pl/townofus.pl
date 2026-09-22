@@ -1,3 +1,4 @@
+import { cache } from 'react';
 import type { PrismaClient } from '@prisma/client';
 import { getDatabaseClient, buildSeasonGameWhere } from '../db';
 import { chunkedInQuery } from '@/app/api/_database';
@@ -100,6 +101,9 @@ type GameLike = {
   startTime: Date;
   endTime: Date;
   map: string | null;
+  // Selected so role resolution reads the era the game actually belongs to, rather than the
+  // season the page happens to be showing. See #311.
+  season: number;
 };
 
 function buildGameSummary(game: GameLike, stats: SummaryStat[]): GameSummary {
@@ -111,10 +115,10 @@ function buildGameSummary(game: GameLike, stats: SummaryStat[]): GameSummary {
   winners.forEach((winner) => {
     const roleHistory = [...winner.roleHistory].sort((a, b) => a.order - b.order);
     const finalRole = roleHistory[roleHistory.length - 1]?.roleName || '';
-    winnerColors[winner.playerName] = getRoleColor(convertRoleNameForDisplay(finalRole));
+    winnerColors[winner.playerName] = getRoleColor(convertRoleNameForDisplay(finalRole), game.season);
   });
 
-  const winnerInfo = calculateWinnerFromStats(stats);
+  const winnerInfo = calculateWinnerFromStats(stats, game.season);
 
   return {
     id: game.gameIdentifier,
@@ -139,7 +143,7 @@ export async function getGamesList(seasonId?: number): Promise<GameSummary[]> {
 
   const dbGames = await prisma.game.findMany({
     where: buildSeasonGameWhere(seasonId),
-    select: { id: true, gameIdentifier: true, startTime: true, endTime: true, map: true },
+    select: { id: true, gameIdentifier: true, startTime: true, endTime: true, map: true, season: true },
     orderBy: { startTime: 'desc' },
   });
 
@@ -172,7 +176,15 @@ export async function getGamesList(seasonId?: number): Promise<GameSummary[]> {
 }
 
 // Fetch games by specific date — direct DB query to avoid loading all games
-export async function getGamesListByDate(date: string, seasonId?: number): Promise<GameSummary[]> {
+// Wrapped in React `cache()` so it runs once per request, not once per caller. The podsumowanie
+// page calls it three times in one render — from getTopSigmas, getRankingAfterSession and
+// getSessionSummaryByDate — and each call re-reads the day's games and their stats. This is
+// request-scoped memoisation only; it does not survive the response, so it needs no invalidation.
+// See #299.
+export const getGamesListByDate = cache(async function getGamesListByDate(
+  date: string,
+  seasonId?: number,
+): Promise<GameSummary[]> {
   const prisma = await getDatabaseClient();
   if (!prisma) return [];
 
@@ -181,7 +193,7 @@ export async function getGamesListByDate(date: string, seasonId?: number): Promi
       ...buildSeasonGameWhere(seasonId),
       gameIdentifier: { startsWith: date },
     },
-    select: { id: true, gameIdentifier: true, startTime: true, endTime: true, map: true },
+    select: { id: true, gameIdentifier: true, startTime: true, endTime: true, map: true, season: true },
     orderBy: { gameIdentifier: 'desc' },
   });
 
@@ -201,7 +213,7 @@ export async function getGamesListByDate(date: string, seasonId?: number): Promi
   });
 
   return games;
-}
+});
 
 // Fetch list of dates with games
 export async function getGameDatesList(seasonId?: number): Promise<DateWithGames[]> {

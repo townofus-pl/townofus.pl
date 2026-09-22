@@ -6,8 +6,12 @@
 export const MAX_SETTINGS_FILE_SIZE_BYTES = 5 * 1024 * 1024; // 5 MB
 
 export const validateSettingsFile = (file: File): string | null => {
-  if (!file.name.endsWith('.txt')) {
-    return 'Plik musi mieć rozszerzenie .txt';
+  // TOU-Mira exports a BepInEx `.cfg`. The legacy `.txt` is deliberately no longer accepted:
+  // the host panel only ever serves the current season, and letting a legacy file through would
+  // store content that every reader silently fails to parse rather than rejecting it here.
+  // See #317.
+  if (!file.name.endsWith('.cfg')) {
+    return 'Plik musi mieć rozszerzenie .cfg';
   }
 
   if (file.size === 0) {

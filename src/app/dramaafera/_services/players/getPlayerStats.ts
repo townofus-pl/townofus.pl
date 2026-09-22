@@ -88,7 +88,7 @@ export async function getPlayerStats(playerName: string, seasonId?: number): Pro
     });
 
     const primaryRole = statRoles.find((role) => role.order === 0)?.roleName || '';
-    const teamName = determineTeam(primaryRole);
+    const teamName = determineTeam(primaryRole, season);
     const team: 'crewmate' | 'impostor' | 'neutral' =
       teamName === Teams.Impostor ? 'impostor' :
       teamName === Teams.Neutral ? 'neutral' : 'crewmate';

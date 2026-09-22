@@ -74,8 +74,11 @@ export async function getHostInfo(
   const firstGameDb = games[0];
   const lastGameDb = games[games.length - 1];
 
-  const { before: rankingBeforeMap, after: rankingAfterMap } =
-    await getRankingSnapshots(firstGameDb.id, lastGameDb.id, seasonId);
+  const {
+    before: rankingBeforeMap,
+    after: rankingAfterMap,
+    isFirstSessionAfterSeasonReset,
+  } = await getRankingSnapshots(firstGameDb.id, lastGameDb.id, seasonId);
 
   const playerMap = new Map<string, HostPlayerInfo>();
   rawStats.forEach((playerStat) => {
@@ -99,8 +102,13 @@ export async function getHostInfo(
 
   const rankingChanges: HostRankingChange[] = Array.from(playerMap.keys())
     .map((playerName) => {
-      const rankBefore = rankPositionBefore.get(playerName) ?? 0;
       const rankAfter = rankPositionAfter.get(playerName) ?? 0;
+      // On the first session of a reset season every `before` score is 2000, so a rank position
+      // drawn from that map is arbitrary. Report no movement rather than invented movement —
+      // same treatment getTopSigmas already gave it. See #315.
+      const rankBefore = isFirstSessionAfterSeasonReset
+        ? rankAfter
+        : (rankPositionBefore.get(playerName) ?? 0);
       const ratingBefore = rankingBeforeMap.get(playerName) ?? 2000;
       const ratingAfter = rankingAfterMap.get(playerName) ?? 2000;
 

@@ -76,11 +76,11 @@ npm run db:generate                # Generate Prisma client
 npm run db:migrate:create <name>   # Create new migration file
 npm run db:migrate:diff            # Generate SQL from schema changes
 npm run db:migrate:apply:local     # Apply migrations to local D1
-npm run db:migrate:apply:preview   # Apply migrations to preview D1
-npm run db:migrate:apply:remote    # Apply migrations to production D1
+npm run db:migrate:apply:staging   # Apply migrations to staging D1
+npm run db:migrate:apply:production # Apply migrations to production D1
 npm run db:execute:local           # Execute SQL on local D1
-npm run db:execute:preview         # Execute SQL on preview D1
-npm run db:execute:remote          # Execute SQL on production D1
+npm run db:execute:staging         # Execute SQL on staging D1
+npm run db:execute:production      # Execute SQL on production D1
 ```
 
 ### Database Inspection

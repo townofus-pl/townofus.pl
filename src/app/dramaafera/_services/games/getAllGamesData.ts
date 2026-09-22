@@ -10,6 +10,7 @@ import {
 } from '@/app/dramaafera/_utils/gameUtils';
 import { calculateWinnerFromStats } from './winCalculator';
 import { buildPlayerStats, type StatWithRolesAndModifiers } from './_buildPlayerStats';
+import { CURRENT_SEASON } from '@/app/dramaafera/_constants/seasons';
 
 // Get all games data (equivalent to getAllGamesData from converter)
 //
@@ -20,6 +21,7 @@ import { buildPlayerStats, type StatWithRolesAndModifiers } from './_buildPlayer
 // season (~473 games × ~15 stats/game) blows past that limit (P2029).
 // See `chunkedInQuery` and `MAX_BIND_VALUES` comments for context.
 export async function getAllGamesData(seasonId?: number): Promise<UIGameData[]> {
+  const season = seasonId ?? CURRENT_SEASON;
   const prisma = await getDatabaseClient();
 
   if (!prisma) {
@@ -110,11 +112,12 @@ export async function getAllGamesData(seasonId?: number): Promise<UIGameData[]> 
         useDisconnectedForDeaths: false,
         maxTasks: game.maxTasks,
         meetingsUndefined: false,
+        season,
       }),
     );
 
     // Winner info from raw DB stats (same path as getGamesList / getGameData)
-    const winnerInfo = calculateWinnerFromStats(gameStats);
+    const winnerInfo = calculateWinnerFromStats(gameStats, season);
 
     const winners = gameStats.filter((s) => s.win);
     const winnerNames = winners.map((w) => {
@@ -125,7 +128,7 @@ export async function getAllGamesData(seasonId?: number): Promise<UIGameData[]> 
     winners.forEach((w) => {
       const roleHistory = [...w.roleHistory].sort((a, b) => a.order - b.order);
       const finalRole = roleHistory[roleHistory.length - 1]?.roleName || '';
-      winnerColors[w.player?.name || 'Nieznany'] = getRoleColor(convertRoleNameForDisplay(finalRole));
+      winnerColors[w.player?.name || 'Nieznany'] = getRoleColor(convertRoleNameForDisplay(finalRole), season);
     });
 
     const events: UIGameEvent[] = [];

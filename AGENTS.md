@@ -6,7 +6,7 @@ TownOfUs.pl is a Polish Among Us community website: a role search engine for the
 
 ## Stack
 
-- **Next.js 15.3** (App Router) · **React 19** · **TypeScript** (strict)
+- **Next.js 16.2** (App Router) · **React 19** · **TypeScript** (strict)
 - **Cloudflare Workers** via @opennextjs/cloudflare · **Cloudflare D1** (SQLite) · **Cloudflare R2**
 - **Prisma 7** with @prisma/adapter-d1 (migrate config in `prisma.config.ts`; `partialIndexes` preview feature enabled)
 - **Tailwind CSS 3.4** · **Zod 3** · **Jest**
@@ -21,11 +21,38 @@ npm run cf-typegen                   # Regenerate cloudflare-env.d.ts
 npm run db:generate                  # Generate Prisma client + Zod schemas
 npm run db:migrate:create            # Create migration + diff against local D1
 npm run db:migrate:apply:local       # Apply migrations to local D1
-npm run db:migrate:apply:preview     # Apply to preview D1
-npm run db:migrate:apply:remote      # Apply to production D1
+npm run db:migrate:apply:staging     # Apply to staging D1
+npm run db:migrate:apply:production  # Apply to production D1
 npm run preview                      # Build + preview on Cloudflare
+npm run validate                     # 19 integrity checks (--target local|staging|production)
+npm run ranking:oracle               # Replay a season's ELO, diff against stored
+npm run replay -- --file <p.json>    # POST a payload, show the per-table row delta
+npm run mod:publish                  # report: does latest.json match the files beside it
+npm run mod:publish -- --write       # rewrite latest.json from public/mod/client/
+npm run db:seed:staging              # Wipe + reseed staging from the dump
+npm run deploy:staging               # Build + deploy to staging
 npm run deploy                       # Build + deploy to production
 ```
+
+## Environments and deploys
+
+`wrangler.toml`'s top level is a **dev** config that deploys nowhere useful. Every real target is
+a named environment, so nothing deploys by accident:
+
+| | worker | D1 |
+|---|---|---|
+| staging | `townofus-pl-staging` | `townofus_pl_preview` (`44f0d77c-…`) |
+| production | `townofus-pl` | `townofus-pl` (`0edadde7-…`) |
+
+**Named environments do not inherit bindings** — `[[d1_databases]]`, `[assets]` and `[vars]` are
+redeclared in full inside each `[env.*]` block. `[env.*.secrets] required` is **enforced** by
+wrangler: a deploy is refused outright if a listed secret is unset.
+
+**Push to `main` deploys to staging. Production is `workflow_dispatch` only.** Both run
+`check.yml` (typecheck + tests) first, and migrations are applied in the same job as the deploy,
+so a failed migration means no code ships against a half-migrated database.
+
+See `docs/ops/LOCAL_TESTING.md` for the local loop and a symptom → cause → fix table.
 
 ## AI Tools
 
@@ -46,6 +73,7 @@ Project-authored:
 | `create-role-or-modifier`| Add a new role or modifier with icon, types, and registration  |
 | `plan-feature`           | Plan a new feature: design decisions, tasks, and phased impl   |
 | `weekly-content-update`  | Weekly game data and ranking content update workflow           |
+| `publish-client-mod`     | Publish new hats or a client build; rewrite the update manifest|
 
 Use `import-d1-database` when syncing production D1 data into local state and the raw export fails because of foreign keys, dump ordering, or wrangler transaction limits.
 

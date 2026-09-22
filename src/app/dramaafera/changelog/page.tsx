@@ -5,6 +5,9 @@ import { SettingTypes } from "@/constants/settings";
 import { Teams } from "@/constants/teams";
 import { getDramaAferaSettings } from "../_services";
 import { parseSettingsFile, updateSettingValue } from "../_utils/settingsParser";
+import { MiraChangelog } from "./_components/MiraChangelog";
+import { readSnapshotPair } from "./_resolvePair";
+import { looksLikeMiraConfig, pickMiraPair } from "../_utils/miraConfig";
 
 // `force-dynamic` because the project's `open-next.config.ts` uses the default
 // (dummy) incremental cache and tag cache — ISR / `revalidatePath` would be no-ops
@@ -185,7 +188,22 @@ const EMPTY_MESSAGE: Record<Exclude<ChangelogResult['status'], 'ok'>, string> = 
     'no-diff': 'Brak zmian do wyświetlenia.',
 };
 
+/**
+ * One changelog URL for both eras.
+ *
+ * The era comes from the settings pair, not from the season — the same rule the settings page and
+ * the role pages follow. `/changelog/mira` is gone: the database keeps one live `current` and one
+ * live `old`, so there was never a second changelog to address, only a second way to render the
+ * same one. See #317.
+ */
 export default async function ChangelogPage() {
+    const { current, old } = await getDramaAferaSettings();
+
+    const miraPair = pickMiraPair(current, old) ?? (looksLikeMiraConfig(current) ? await readSnapshotPair() : null);
+    if (miraPair) {
+        return <MiraChangelog current={miraPair.current} old={miraPair.old} />;
+    }
+
     const result = await getChanges();
 
     if (result.status !== 'ok') {

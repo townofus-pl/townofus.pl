@@ -12,9 +12,20 @@ export interface Season {
 export const SEASONS: Season[] = [
   { id: 2, startDate: null },
   { id: 3, startDate: '2026-03-23' },
+  { id: 4, startDate: '2026-09-23' },
 ];
 
-export const CURRENT_SEASON = 3;
+export const CURRENT_SEASON = 4;
+
+/**
+ * First season played on TOU:Mira. Below it a game resolves against `src/roles/` (60 legacy
+ * roles), from it upwards against `src/mira/roles/` (77). The era always comes from the data —
+ * `games.season` — never from the request or the page.
+ *
+ * Lives here rather than in `gameUtils` so a client component can branch on the era without
+ * pulling the 24 KB generated role index into its bundle.
+ */
+export const FIRST_MIRA_SEASON = 4;
 
 export function getSeasonById(id: number): Season | undefined {
   return SEASONS.find((s) => s.id === id);

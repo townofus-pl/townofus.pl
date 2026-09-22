@@ -6,6 +6,7 @@ import Link from 'next/link';
 import type { UIGameData, UIPlayerData } from '@/app/dramaafera/_services/games/types';
 import { buildSeasonUrl } from '@/app/dramaafera/_utils/seasonHelpers';
 import { convertRoleToUrlSlug } from '@/app/dramaafera/_utils/gameUtils';
+import { getRoleIconPath } from '@/app/dramaafera/_utils/gameUtils';
 
 interface RoleDayStats {
   name: string;
@@ -31,78 +32,10 @@ interface RoleTableProps {
 export default function RoleTable({ roles, reversedGames, detailedGames, date, hideZeroStats = false, seasonId }: RoleTableProps) {
   const [expandedRoles, setExpandedRoles] = useState<Set<string>>(new Set());
 
-  // Funkcja do pobierania ikony roli - przeniesiona z komponentu serwerowego
-  const getRoleIcon = (roleName: string): string => {
-    const roleIconMappings: Record<string, string> = {
-      'Crewmate': 'placeholder.png',
-      'Impostor': 'placeholder.png',
-      'Sheriff': 'sheriff.png',
-      'Engineer': 'engineer.png',
-      'Medic': 'medic.png',
-      'Investigator': 'investigator.png',
-      'Mystic': 'mystic.png',
-      'Detective': 'detective.png',
-      'Seer': 'seer.png',
-      'Spy': 'spy.png',
-      'Snitch': 'snitch.png',
-      'Altruist': 'altruist.png',
-      'Medium': 'medium.png',
-      'Swapper': 'swapper.png',
-      'Transporter': 'transporter.png',
-      'Tracker': 'tracker.png',
-      'Trapper': 'trapper.png',
-      'Mayor': 'politician.png',
-      'Politician': 'politician.png',
-      'Vigilante': 'vigilante.png',
-      'Veteran': 'veteran.png',
-      'Hunter': 'hunter.png',
-      'Deputy': 'deputy.png',
-      'Undertaker': 'undertaker.png',
-      'Imitator': 'imitator.png',
-      'Prosecutor': 'prosecutor.png',
-      'Oracle': 'oracle.png',
-      'Aurial': 'aurial.png',
-      'Lookout': 'lookout.png',
-      'Jailor': 'jailor.png',
-      'Morphling': 'morphling.png',
-      'Swooper': 'swooper.png',
-      'Miner': 'miner.png',
-      'Escapist': 'escapist.png',
-      'Grenadier': 'grenadier.png',
-      'Traitor': 'traitor.png',
-      'Blackmailer': 'blackmailer.png',
-      'Janitor': 'janitor.png',
-      'Vampire': 'vampire.png',
-      'Hypnotist': 'hypnotist.png',
-      'Bomber': 'bomber.png',
-      'Warlock': 'warlock.png',
-      'Venerer': 'venerer.png',
-      'Jester': 'jester.png',
-      'Executioner': 'executioner.png',
-      'Arsonist': 'arsonist.png',
-      'Plaguebearer': 'plaguebearer.png',
-      'Pestilence': 'plaguebearer.png',
-      'Glitch': 'glitch.png',
-      'Juggernaut': 'juggernaut.png',
-      'Survivor': 'survivor.png',
-      'Guardian Angel': 'guardian_angel.png',
-      'GuardianAngel': 'guardian_angel.png',
-      'Amnesiac': 'amnesiac.png',
-      'Phantom': 'phantom.png',
-      'Doomsayer': 'doomsayer.png',
-      'Scavenger': 'scavenger.png',
-      'Soul Collector': 'soul_collector.png',
-      'Mercenary': 'mercenary.png',
-      'Cleric': 'cleric.png',
-      'Warden': 'warden.png',
-      'Plumber': 'plumber.png',
-      'Eclipsal': 'eclipsal.png',
-      'Haunter': 'haunter.png',
-      'Werewolf': 'werewolf.png'
-    };
-    
-    return roleIconMappings[roleName] || 'placeholder.png';
-  };
+  // Icons come from the season-aware resolver, not a local map. There were four independent
+  // role->icon mechanisms in this repo and they had already drifted: this one hardcoded 63
+  // pairs under /images/roles/ and fell back to placeholder.png, so every TOU-Mira role rendered
+  // blank. See #308.
 
   const toggleRoleExpansion = (roleName: string) => {
     const newExpanded = new Set(expandedRoles);
@@ -127,8 +60,8 @@ export default function RoleTable({ roles, reversedGames, detailedGames, date, h
       incorrectDeputyShoots: 0,
       correctJailorExecutes: 0,
       incorrectJailorExecutes: 0,
-      correctMedicShields: 0,
-      incorrectMedicShields: 0,
+      correctProtects: 0,
+      incorrectProtects: 0,
       correctWardenFortifies: 0,
       incorrectWardenFortifies: 0,
       janitorCleans: 0,
@@ -191,8 +124,8 @@ export default function RoleTable({ roles, reversedGames, detailedGames, date, h
         // Sumuj wszystkie statystyki oprócz tasków i rund
         aggregatedStats.correctKills += stats.correctKills || 0;
         aggregatedStats.incorrectKills += stats.incorrectKills || 0;
-        aggregatedStats.correctMedicShields += stats.correctMedicShields || 0;
-        aggregatedStats.incorrectMedicShields += stats.incorrectMedicShields || 0;
+        aggregatedStats.correctProtects += stats.correctProtects || 0;
+        aggregatedStats.incorrectProtects += stats.incorrectProtects || 0;
         aggregatedStats.correctJailorExecutes += stats.correctJailorExecutes || 0;
         aggregatedStats.incorrectJailorExecutes += stats.incorrectJailorExecutes || 0;
         aggregatedStats.correctDeputyShoots += stats.correctDeputyShoots || 0;
@@ -281,7 +214,7 @@ export default function RoleTable({ roles, reversedGames, detailedGames, date, h
                   </td>
                   <td className="px-2 py-1 flex items-center gap-2">
                     <Image 
-                      src={`/images/roles/${getRoleIcon(role.name)}`} 
+                      src={getRoleIconPath(role.name, seasonId)} 
                       alt={role.displayName} 
                       width={32} 
                       height={32} 
@@ -351,7 +284,7 @@ export default function RoleTable({ roles, reversedGames, detailedGames, date, h
                             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-center">
                               <div>
                                 <div className="text-lg font-bold text-green-400">
-                                  {roleStats.correctKills + roleStats.correctGuesses + roleStats.correctMedicShields + 
+                                  {roleStats.correctKills + roleStats.correctGuesses + roleStats.correctProtects + 
                                    roleStats.correctJailorExecutes + roleStats.correctDeputyShoots + roleStats.correctProsecutes +
                                    roleStats.correctWardenFortifies + roleStats.correctAltruistRevives + roleStats.correctSwaps}
                                 </div>
@@ -359,7 +292,7 @@ export default function RoleTable({ roles, reversedGames, detailedGames, date, h
                               </div>
                               <div>
                                 <div className="text-lg font-bold text-red-400">
-                                  {roleStats.incorrectKills + roleStats.incorrectGuesses + roleStats.incorrectMedicShields + 
+                                  {roleStats.incorrectKills + roleStats.incorrectGuesses + roleStats.incorrectProtects + 
                                    roleStats.incorrectJailorExecutes + roleStats.incorrectDeputyShoots + roleStats.incorrectProsecutes +
                                    roleStats.incorrectWardenFortifies + roleStats.incorrectAltruistRevives + roleStats.incorrectSwaps}
                                 </div>
@@ -367,10 +300,10 @@ export default function RoleTable({ roles, reversedGames, detailedGames, date, h
                               </div>
                               <div>
                                 <div className="text-lg font-bold text-blue-300">
-                                  {(roleStats.correctKills + roleStats.correctGuesses + roleStats.correctMedicShields + 
+                                  {(roleStats.correctKills + roleStats.correctGuesses + roleStats.correctProtects + 
                                     roleStats.correctJailorExecutes + roleStats.correctDeputyShoots + roleStats.correctProsecutes +
                                     roleStats.correctWardenFortifies + roleStats.correctAltruistRevives + roleStats.correctSwaps) +
-                                   (roleStats.incorrectKills + roleStats.incorrectGuesses + roleStats.incorrectMedicShields + 
+                                   (roleStats.incorrectKills + roleStats.incorrectGuesses + roleStats.incorrectProtects + 
                                     roleStats.incorrectJailorExecutes + roleStats.incorrectDeputyShoots + roleStats.incorrectProsecutes +
                                     roleStats.incorrectWardenFortifies + roleStats.incorrectAltruistRevives + roleStats.incorrectSwaps)}
                                 </div>
@@ -379,10 +312,10 @@ export default function RoleTable({ roles, reversedGames, detailedGames, date, h
                               <div>
                                 <div className="text-lg font-bold text-yellow-400">
                                   {(() => {
-                                    const totalCorrect = roleStats.correctKills + roleStats.correctGuesses + roleStats.correctMedicShields + 
+                                    const totalCorrect = roleStats.correctKills + roleStats.correctGuesses + roleStats.correctProtects + 
                                                         roleStats.correctJailorExecutes + roleStats.correctDeputyShoots + roleStats.correctProsecutes +
                                                         roleStats.correctWardenFortifies + roleStats.correctAltruistRevives + roleStats.correctSwaps;
-                                    const totalIncorrect = roleStats.incorrectKills + roleStats.incorrectGuesses + roleStats.incorrectMedicShields + 
+                                    const totalIncorrect = roleStats.incorrectKills + roleStats.incorrectGuesses + roleStats.incorrectProtects + 
                                                            roleStats.incorrectJailorExecutes + roleStats.incorrectDeputyShoots + roleStats.incorrectProsecutes +
                                                            roleStats.incorrectWardenFortifies + roleStats.incorrectAltruistRevives + roleStats.incorrectSwaps;
                                     const total = totalCorrect + totalIncorrect;
@@ -424,15 +357,15 @@ export default function RoleTable({ roles, reversedGames, detailedGames, date, h
                             </div>
                           )}
 
-                          {/* Statystyki tarcz medyka */}
-                          {(!hideZeroStats || (roleStats.correctMedicShields > 0 || roleStats.incorrectMedicShields > 0)) && (
+                          {/* Statystyki protectów */}
+                          {(!hideZeroStats || (roleStats.correctProtects > 0 || roleStats.incorrectProtects > 0)) && (
                             <div className="bg-zinc-700/60 rounded-lg p-3">
-                              <div className="text-sm font-medium text-zinc-300 mb-1">Medic Shields</div>
-                              {(!hideZeroStats || roleStats.correctMedicShields > 0) && (
-                                <div className="text-green-400">Correct: {roleStats.correctMedicShields}</div>
+                              <div className="text-sm font-medium text-zinc-300 mb-1">Protects</div>
+                              {(!hideZeroStats || roleStats.correctProtects > 0) && (
+                                <div className="text-green-400">Correct: {roleStats.correctProtects}</div>
                               )}
-                              {(!hideZeroStats || roleStats.incorrectMedicShields > 0) && (
-                                <div className="text-red-400">Incorrect: {roleStats.incorrectMedicShields}</div>
+                              {(!hideZeroStats || roleStats.incorrectProtects > 0) && (
+                                <div className="text-red-400">Incorrect: {roleStats.incorrectProtects}</div>
                               )}
                             </div>
                           )}

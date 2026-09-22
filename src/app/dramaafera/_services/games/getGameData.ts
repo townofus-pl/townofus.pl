@@ -11,6 +11,10 @@ import { calculateWinnerFromStats } from './winCalculator';
 import { buildPlayerStats } from './_buildPlayerStats';
 
 // Fetch detailed game data
+// Player relations are selected down to `name` on purpose. Identity columns
+// (`friendCode`, `hashedProductUserId`) must never reach a response body — see #287 — and a
+// bare `player: true` would pull them in silently the moment they are added. Only
+// `.player.name` is read anywhere downstream.
 export async function getGameData(gameId: string): Promise<UIGameData | null> {
   const prisma = await getDatabaseClient();
 
@@ -27,7 +31,7 @@ export async function getGameData(gameId: string): Promise<UIGameData | null> {
       gamePlayerStatistics: {
         where: { player: withoutDeleted },
         include: {
-          player: true,
+          player: { select: { name: true } },
           roleHistory: {
             orderBy: { order: 'asc' }
           },
@@ -47,25 +51,25 @@ export async function getGameData(gameId: string): Promise<UIGameData | null> {
           skipVotes: {
             where: { player: withoutDeleted },
             include: {
-              player: true
+              player: { select: { name: true } }
             }
           },
           noVotes: {
             where: { player: withoutDeleted },
             include: {
-              player: true
+              player: { select: { name: true } }
             }
           },
           blackmailedPlayers: {
             where: { player: withoutDeleted },
             include: {
-              player: true
+              player: { select: { name: true } }
             }
           },
           jailedPlayers: {
             where: { player: withoutDeleted },
             include: {
-              player: true
+              player: { select: { name: true } }
             }
           }
         },
@@ -89,7 +93,7 @@ export async function getGameData(gameId: string): Promise<UIGameData | null> {
     const roleHistory = [...winner.roleHistory].sort((a, b) => a.order - b.order);
     const finalRole = roleHistory[roleHistory.length - 1]?.roleName || '';
     const displayRoleName = convertRoleNameForDisplay(finalRole);
-    winnerColors[winner.player.name] = getRoleColor(displayRoleName);
+    winnerColors[winner.player.name] = getRoleColor(displayRoleName, game.season);
   });
 
   const playersData: UIPlayerData[] = game.gamePlayerStatistics.map(stat =>
@@ -97,6 +101,7 @@ export async function getGameData(gameId: string): Promise<UIGameData | null> {
       useDisconnectedForDeaths: true,
       maxTasks: game.maxTasks,
       meetingsUndefined: true,
+      season: game.season,
     })
   );
 
@@ -136,7 +141,7 @@ export async function getGameData(gameId: string): Promise<UIGameData | null> {
     description: event.description
   }));
 
-  const winnerInfo = calculateWinnerFromStats(game.gamePlayerStatistics);
+  const winnerInfo = calculateWinnerFromStats(game.gamePlayerStatistics, game.season);
 
   return {
     id: game.gameIdentifier,
