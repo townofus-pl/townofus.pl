@@ -1,4 +1,21 @@
 import { execFileSync } from 'node:child_process';
+
+/**
+ * A `wrangler` on PATH if there is one, otherwise the local devDependency via npx.
+ *
+ * They do not always carry the same credentials: the global install is usually authenticated
+ * interactively, while npx picks up whatever CLOUDFLARE_API_TOKEN is in the environment. Against
+ * production that difference showed up as `code: 7403, not authorized` from npx while the global
+ * binary answered fine, which reads like a broken database rather than a token scope.
+ */
+function wranglerCommand(): string[] {
+    try {
+        execFileSync('wrangler', ['--version'], { stdio: 'ignore' });
+        return ['wrangler'];
+    } catch {
+        return ['npx', 'wrangler'];
+    }
+}
 import { openLocalD1 } from './localD1';
 
 export type Target = 'local' | 'staging' | 'production';
@@ -37,9 +54,10 @@ export function makeRunner(target: Target): Runner {
         // even via execFile. Args go through argv, so no quoting is needed beyond this.
         const oneLine = sql.replace(/\s+/g, ' ').trim();
 
+        const [command, ...prefix] = wranglerCommand();
         const raw = execFileSync(
-            'npx',
-            ['wrangler', 'd1', 'execute', database, '--remote', '--env', target, '--command', oneLine, '--json'],
+            command,
+            [...prefix, 'd1', 'execute', database, '--remote', '--env', target, '--command', oneLine, '--json'],
             { encoding: 'utf8', maxBuffer: 64 * 1024 * 1024, stdio: ['ignore', 'pipe', 'pipe'] },
         );
 
