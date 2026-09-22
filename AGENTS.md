@@ -27,7 +27,8 @@ npm run preview                      # Build + preview on Cloudflare
 npm run validate                     # 19 integrity checks (--target local|staging|production)
 npm run ranking:oracle               # Replay a season's ELO, diff against stored
 npm run replay -- --file <p.json>    # POST a payload, show the per-table row delta
-npm run mod:publish -- --check       # verify /mod/client/latest.json against the served files
+npm run mod:publish -- --dir <d>     # publish files to /mod/client + rewrite latest.json
+npm run mod:publish -- --check       # verify latest.json against the files served beside it
 npm run db:seed:staging              # Wipe + reseed staging from the dump
 npm run deploy:staging               # Build + deploy to staging
 npm run deploy                       # Build + deploy to production
@@ -72,6 +73,7 @@ Project-authored:
 | `create-role-or-modifier`| Add a new role or modifier with icon, types, and registration  |
 | `plan-feature`           | Plan a new feature: design decisions, tasks, and phased impl   |
 | `weekly-content-update`  | Weekly game data and ranking content update workflow           |
+| `publish-client-mod`     | Publish new hats or a client build; rewrite the update manifest|
 
 Use `import-d1-database` when syncing production D1 data into local state and the raw export fails because of foreign keys, dump ordering, or wrangler transaction limits.
 

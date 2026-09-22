@@ -11,11 +11,17 @@
  * the same route `public/files/TownOfUs.dll` already uses. No R2 binding, no new infrastructure.
  *
  * Usage:
- *   npm run mod:publish -- --version 1.0.0 --file <path>...
- *   npm run mod:publish -- --check          # verify the manifest against the served files
+ *   npm run mod:publish -- --dir ~/Downloads/malkizhats     # publish everything in a folder
+ *   npm run mod:publish -- --file <path>...                 # publish named files
+ *   npm run mod:publish -- --check                          # verify the manifest on disk
+ *
+ * `--version` is optional and defaults to whatever the current manifest says. The updater
+ * decides what to download from the hashes, never from the version — that field only feeds the
+ * log line telling the player what they moved to — so a hat release that forgets to bump it still
+ * reaches every player.
  */
 import { createHash } from 'node:crypto';
-import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, writeFileSync } from 'node:fs';
+import { copyFileSync, existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 
 const PUBLISH_DIR = 'public/mod/client';
@@ -59,27 +65,57 @@ function buildManifest(version: string, names: string[]): Manifest {
     };
 }
 
-function publish(version: string, sources: string[]): void {
+/** Files in a folder, ignoring the dotfiles macOS leaves behind. */
+function filesIn(dir: string): string[] {
+    if (!existsSync(dir)) throw new Error(`No such folder: ${dir}`);
+    return readdirSync(dir)
+        .filter((name) => !name.startsWith('.'))
+        .map((name) => path.join(dir, name))
+        .filter((candidate) => statSync(candidate).isFile());
+}
+
+function publish(version: string | undefined, sources: string[]): void {
     mkdirSync(PUBLISH_DIR, { recursive: true });
+
+    const before = new Map((readManifest()?.files ?? []).map((file) => [file.name, file.sha256]));
 
     for (const source of sources) {
         if (!existsSync(source)) throw new Error(`No such file: ${source}`);
         const name = path.basename(source);
         assertSafeName(name);
         copyFileSync(source, path.join(PUBLISH_DIR, name));
-        console.log(`  copied ${name}`);
     }
 
-    // Everything already published stays in the manifest, so publishing a new plugin build does
-    // not silently drop the hat bundle.
+    // Everything already published stays in the manifest, so a new plugin build does not silently
+    // drop the hat bundle, and a hat release does not drop the plugin.
     const names = readdirSync(PUBLISH_DIR).filter((name) => name !== MANIFEST_NAME);
     if (names.length === 0) throw new Error(`Nothing to publish in ${PUBLISH_DIR}`);
 
-    const manifest = buildManifest(version, names);
+    const previousVersion = readManifest()?.version;
+    const manifest = buildManifest(version ?? previousVersion ?? '1.0.0', names);
     writeFileSync(path.join(PUBLISH_DIR, MANIFEST_NAME), `${JSON.stringify(manifest, null, 2)}\n`);
 
-    console.log(`\n${MANIFEST_NAME} — version ${manifest.version}, ${manifest.files.length} file(s)`);
-    for (const file of manifest.files) console.log(`  ${file.name.padEnd(32)} ${file.sha256}`);
+    // The report is the point of running this by hand: it says what players will actually
+    // download, so a release that copied the wrong file is visible before it ships.
+    console.log(`${MANIFEST_NAME} — version ${manifest.version}, ${manifest.files.length} file(s)\n`);
+    let changed = 0;
+    for (const file of manifest.files) {
+        const previous = before.get(file.name);
+        const state = previous === undefined ? 'NEW    ' : previous === file.sha256 ? 'same   ' : 'CHANGED';
+        if (state !== 'same   ') changed += 1;
+        const size = statSync(path.join(PUBLISH_DIR, file.name)).size.toLocaleString('en-US');
+        console.log(`  ${state}  ${file.name.padEnd(30)} ${size.padStart(11)} B  ${file.sha256}`);
+    }
+
+    if (!version && previousVersion) {
+        console.log(`\n  version left at ${previousVersion} — pass --version to change the line players see in their log.`);
+    }
+    console.log(
+        changed === 0
+            ? '\nNothing changed. Players will download nothing.'
+            : `\n${changed} file(s) changed. Players fetch only those, on their next launch.`,
+    );
+    console.log('Commit public/mod/client/ and deploy for it to reach anyone.');
 }
 
 /** Exits non-zero if the manifest and the served files disagree. Wired into CI. */
@@ -127,13 +163,16 @@ function main(): void {
     }
 
     const version = argv.includes('--version') ? argv[argv.indexOf('--version') + 1] : undefined;
+
     const sources = argv.reduce<string[]>((acc, arg, index) => {
         if (arg === '--file' && argv[index + 1]) acc.push(argv[index + 1]);
+        if (arg === '--dir' && argv[index + 1]) acc.push(...filesIn(argv[index + 1]));
         return acc;
     }, []);
 
-    if (!version) {
-        console.error('Usage: npm run mod:publish -- --version <v> [--file <path>]...');
+    if (sources.length === 0) {
+        console.error('Usage: npm run mod:publish -- --dir <folder>');
+        console.error('       npm run mod:publish -- --file <path>... [--version <v>]');
         console.error('       npm run mod:publish -- --check');
         process.exit(1);
     }
