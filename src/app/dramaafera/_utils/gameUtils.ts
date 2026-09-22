@@ -64,10 +64,18 @@ function findRole(roleName: string, season: number): SlimRole | undefined {
   const aliased =
     season < FIRST_MIRA_SEASON && lowerRole === 'pestilence' ? 'plaguebearer' : lowerRole;
 
+  // The mod sends `ICustomRole.IdPart` since #83 — a stable key rather than a translated display
+  // name. In English the two differ for exactly the roles whose name has a space: `TimeLord`
+  // against `Time Lord`. Comparing with separators stripped covers that without a translation
+  // table, and is safe because neither registry has two roles that collide once normalised.
+  const collapse = (value: string) => value.toLowerCase().replace(/[^a-z0-9]/g, '');
+  const collapsedRole = collapse(roleName);
+
   const match = (r: SlimRole) =>
     r.id.toLowerCase() === aliased ||
     r.name.toLowerCase() === lowerDisplay ||
-    r.name.toLowerCase() === lowerRole;
+    r.name.toLowerCase() === lowerRole ||
+    collapse(r.name) === collapsedRole;
 
   // Era registry first, then the vanilla roles that live in neither.
   return registryForSeason(season).find(match) ?? BASE_ROLES.find(match);

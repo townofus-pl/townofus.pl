@@ -21,6 +21,7 @@ import path from 'node:path';
 
 const PUBLISH_DIR = 'public/mod/client';
 const MANIFEST_NAME = 'latest.json';
+const PRODUCTION_BASE = 'https://townofus.pl/mod/client';
 
 type ManifestFile = { name: string; url: string; sha256: string };
 type Manifest = { version: string; files: ManifestFile[] };
@@ -75,12 +76,21 @@ function reconcile(): Row[] {
         const previous = claimed.get(name);
         claimed.delete(name);
 
-        // An absolute url here would send a client pointed at staging to production bytes, which
-        // is exactly what DRAMAAFERA_BASE_URL exists to avoid. A leading slash is just as wrong:
-        // it resolves to the site root rather than beside the manifest.
+        // Two forms are legitimate and the choice is the mod's, not ours:
+        //
+        //   `name`                         relative, resolved beside the manifest. Lets
+        //                                  DRAMAAFERA_BASE_URL point a client at staging and get
+        //                                  staging's files.
+        //   `https://townofus.pl/mod/…`    absolute. Required while players are still on the
+        //                                  September build, whose updater cannot follow a
+        //                                  relative entry at all.
+        //
+        // Anything else is wrong: a leading slash resolves to the site root rather than beside
+        // the manifest, and a url naming a different file is a copy-paste that would install the
+        // wrong bytes under the right name.
         const urlProblem =
-            previous && previous.url !== name
-                ? `url is "${previous.url}", expected the relative "${name}"`
+            previous && previous.url !== name && previous.url !== `${PRODUCTION_BASE}/${name}`
+                ? `url is "${previous.url}", expected "${name}" or "${PRODUCTION_BASE}/${name}"`
                 : undefined;
 
         return {
@@ -113,24 +123,25 @@ function report(rows: Row[], version: string | null): void {
 }
 
 function buildManifest(version: string, rows: Row[]): Manifest {
+    const existing = new Map((readManifest()?.files ?? []).map((file) => [file.name, file.url]));
+
     return {
         version,
         files: rows
             .filter((row) => row.state !== 'MISSING')
             .map((row) => {
                 assertSafeName(row.name);
+                // Keep whichever form the manifest already uses. Relative is the better default
+                // — it makes DRAMAAFERA_BASE_URL point a client at staging and get staging's
+                // files — but absolute is currently required, because a player still on the
+                // September build has an updater that cannot follow a relative entry. Switching
+                // back to relative is safe only once nobody is on that build.
+                const absolute = `${PRODUCTION_BASE}/${row.name}`;
+                const previous = existing.get(row.name);
+
                 return {
                     name: row.name,
-                    // Relative, resolved by the mod against the manifest's own URL
-                    // (`Uri.TryCreate(new Uri(manifestUrl), file.Url, …)` in AutoUpdater.cs). That
-                    // is what makes DRAMAAFERA_BASE_URL work: pointed at staging, the manifest and
-                    // its files both come from staging. An absolute production URL here would send
-                    // a staging client to production bytes.
-                    //
-                    // Kept as its own field even though it currently equals `name`: `name` is where
-                    // the file is written on the player's disk, `url` is where it is fetched from,
-                    // and a future versioned path would change only the second.
-                    url: row.name,
+                    url: previous === absolute ? absolute : row.name,
                     sha256: row.sha256!,
                 };
             }),

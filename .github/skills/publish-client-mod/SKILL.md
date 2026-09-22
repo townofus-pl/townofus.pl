@@ -66,21 +66,28 @@ git add public/mod/client && git commit -m "feat(mod): new hat bundle"
 
 Deploying is a separate, deliberate step. Nothing reaches players until production is deployed.
 
-## Why the urls are relative
+## The two legitimate url forms
 
-Each entry's `url` is the bare file name, which the mod resolves against the manifest's own URL
-(`Uri.TryCreate(new Uri(manifestUrl), file.Url, …)` in `AutoUpdater.cs`).
+`AutoUpdater.cs` resolves each entry against the manifest's own URL
+(`Uri.TryCreate(new Uri(manifestUrl), file.Url, …)`), so both of these work:
 
-That is what makes `DRAMAAFERA_BASE_URL` work. Point the mod at staging and both the manifest and
-its files come from staging:
+| Form | When |
+|---|---|
+| `malkizhats.bundle` | relative. Resolved beside the manifest, so `DRAMAAFERA_BASE_URL` pointed at staging fetches staging's files. The better default. |
+| `https://townofus.pl/mod/client/malkizhats.bundle` | absolute. **Currently required**: a player still on the September build has an updater that cannot follow a relative entry. |
 
-```
-DRAMAAFERA_BASE_URL=https://townofus-pl-staging.livechat-expert.workers.dev %command%
-```
+Absolute is the live choice until nobody is on that build. Its cost is that a client pointed at
+staging downloads **production** bytes — so staging cannot exercise the real update path while it
+stands. Switch back to relative once the old updaters are gone.
 
-An absolute `https://townofus.pl/...` url would send a staging client to production bytes, which
-is the one thing that override exists to avoid. A leading `/` is just as wrong — it resolves to
-the site root rather than beside the manifest. The report flags both as `+url`.
+Anything else fails the report as `+url`: a leading `/` resolves to the site root rather than
+beside the manifest, and a url naming a different file installs the wrong bytes under the right
+name. `--write` preserves whichever form the manifest already uses.
+
+### The ordering trap
+`public/mod/` is not on `origin/main`. While that is true, **the absolute urls resolve to 404** —
+production serves neither the manifest nor the files. The manifest and the production deploy of
+`public/mod/` have to land together.
 
 `name` and `url` stay separate fields even while they hold the same string: `name` is where the
 file lands on the player's disk, `url` is where it is fetched from, and a future versioned path
