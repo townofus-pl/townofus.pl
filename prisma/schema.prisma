@@ -176,7 +176,8 @@ model PlayerRole {
   @@index([gamePlayerStatisticsId])
   @@index([roleName])
   @@index([roleName, order])
-  @@index([order])
+  // No @@index([order]): SQLite preferred it over gamePlayerStatisticsId for
+  // `gamePlayerStatisticsId IN (…) AND order = 0`, costing 40× the rows read. Dropped in 0010.
   @@map("player_roles")
 }
 

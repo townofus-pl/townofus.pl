@@ -79,22 +79,37 @@ export async function getPlayerVotingStats(
       },
     });
 
-    // Fetch all meetings for this player in the season via relation filters.
-    // Two-step fetch (then `meetingVotes` per meeting id, chunked) to stay under
-    // Cloudflare D1's 98 bound-parameter cap on Prisma 7 — a single
-    // `include: { meetingVotes }` would emit `WHERE meetingId IN (?,…?N)`
-    // for the relation fetch and trip P2029 on heavy players.
-    const allMeetings = await prisma.meeting.findMany({
-      where: {
-        ...withoutDeleted,
-        game: { season: seasonId ?? CURRENT_SEASON, ...withoutDeleted },
-        OR: [
-          { meetingVotes: { some: { voterId: player.id } } },
-          { skipVotes:    { some: { playerId: player.id } } },
-        ]
-      },
-      select: { id: true, wasTie: true },
-    });
+    // Raw SQL, and the `IN (SELECT …)` shape specifically, because the obvious Prisma form is
+    // the single most expensive query this app has ever run.
+    //
+    // `OR: [{ meetingVotes: { some: { voterId } } }, { skipVotes: { some: { playerId } } }]`
+    // compiles to a correlated EXISTS per meeting, and the planner resolves it with
+    // `meeting_votes_voterId_idx` — an index on `voterId` alone. So for each of the ~2,800
+    // meetings it walks every vote that player ever cast. Measured on production for the
+    // heaviest voter: 2,319,983 rows read, 656 ms. 2.3 billion rows over one week, which was
+    // 90% of the whole database's read load.
+    //
+    // Resolving the player's own votes once and looking meetings up by id reads 11,515 rows in
+    // 11 ms — 201× fewer — and returns an identical set. No `deletedAt` filter on the vote
+    // tables: neither is soft-deleted.
+    //
+    // This is the counter-example to the `IN`-clauses-are-expensive rule in AGENTS.md. That rule
+    // is about the 98 bound-parameter cap, which a subquery does not touch, and it says nothing
+    // about a relation filter landing on a low-selectivity index.
+    const season = seasonId ?? CURRENT_SEASON;
+    const allMeetings = await prisma.$queryRaw<{ id: number; wasTie: number | boolean }[]>`
+      SELECT m.id, m.wasTie
+      FROM meetings m
+      JOIN games g ON g.id = m.gameId
+      WHERE m.deletedAt IS NULL
+        AND g.deletedAt IS NULL
+        AND g.season = ${season}
+        AND m.id IN (
+          SELECT meetingId FROM meeting_votes      WHERE voterId  = ${player.id}
+          UNION
+          SELECT meetingId FROM meeting_skip_votes WHERE playerId = ${player.id}
+        )
+    `;
 
     const meetingIds = allMeetings.map((m) => m.id);
     const allMeetingVotes = await chunkedInQuery(meetingIds, (chunk) =>

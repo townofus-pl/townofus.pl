@@ -1,0 +1,15 @@
+-- `player_roles_order_idx` is not merely unused — it makes reads 40× more expensive.
+--
+-- `getUserProfileStats` queries `gamePlayerStatisticsId IN (…) AND "order" = 0`. SQLite prefers
+-- the index on `order` alone, which matches one row per stat row (~11,400 of them), over the one
+-- on `gamePlayerStatisticsId`, which matches a handful. Measured on staging:
+--
+--     with the index      11,450 rows read   14.3 ms
+--     without it             280 rows read    0.9 ms
+--
+-- Nothing needs it. `order` never appears in a WHERE on its own; every `orderBy: { order }` in
+-- the codebase sits beside a `gamePlayerStatisticsId` filter that has already narrowed the set to
+-- a few rows, so the sort happens in memory for free (verified: 374 rows, 0.7 ms after the drop).
+--
+-- `player_roles_roleName_order_idx` stays — it is a composite with a selective leading column.
+DROP INDEX IF EXISTS "player_roles_order_idx";
