@@ -1,0 +1,1184 @@
+{
+  "schemaVersion": "2.0.0",
+  "modVersion": "1.0.0+synthetic",
+  "gameStart": "2026-10-07T19:14:05.1234567Z",
+  "gameEnd": "2026-10-07T19:31:48.0000000Z",
+  "mapName": "Polus",
+  "playerCount": 15,
+  "maxTasks": 9,
+  "abnormalEnd": false,
+  "winningFaction": "Impostor Win",
+  "players": {
+    "TestGracz01": {
+      "name": "TestGracz01",
+      "playerId": 0,
+      "friendCode": "code#1000",
+      "hashedProductUserId": "h00000000",
+      "roleHistory": [
+        "Sheriff"
+      ],
+      "imitatorRoles": [],
+      "modifiersHistory": [
+        "Lover"
+      ],
+      "win": false,
+      "disconnected": false
+    },
+    "TestGracz02": {
+      "name": "TestGracz02",
+      "playerId": 1,
+      "friendCode": "code#1001",
+      "hashedProductUserId": "h00000001",
+      "roleHistory": [
+        "Medic"
+      ],
+      "imitatorRoles": [],
+      "modifiersHistory": [],
+      "win": false,
+      "disconnected": false
+    },
+    "TestGracz03": {
+      "name": "TestGracz03",
+      "playerId": 2,
+      "friendCode": "code#1002",
+      "hashedProductUserId": "h00000002",
+      "roleHistory": [
+        "Warden"
+      ],
+      "imitatorRoles": [],
+      "modifiersHistory": [],
+      "win": false,
+      "disconnected": false
+    },
+    "TestGracz04": {
+      "name": "TestGracz04",
+      "playerId": 3,
+      "friendCode": "code#1003",
+      "hashedProductUserId": "h00000003",
+      "roleHistory": [
+        "Monarch"
+      ],
+      "imitatorRoles": [],
+      "modifiersHistory": [],
+      "win": false,
+      "disconnected": false
+    },
+    "TestGracz05": {
+      "name": "TestGracz05",
+      "playerId": 4,
+      "friendCode": "code#1004",
+      "hashedProductUserId": "h00000004",
+      "roleHistory": [
+        "Deputy"
+      ],
+      "imitatorRoles": [],
+      "modifiersHistory": [
+        "Lover"
+      ],
+      "win": false,
+      "disconnected": false
+    },
+    "TestGracz06": {
+      "name": "TestGracz06",
+      "playerId": 5,
+      "friendCode": "code#1005",
+      "hashedProductUserId": "h00000005",
+      "roleHistory": [
+        "Jailor"
+      ],
+      "imitatorRoles": [],
+      "modifiersHistory": [],
+      "win": false,
+      "disconnected": false
+    },
+    "TestGracz07": {
+      "name": "TestGracz07",
+      "playerId": 6,
+      "friendCode": "code#1006",
+      "hashedProductUserId": "h00000006",
+      "roleHistory": [
+        "Prosecutor"
+      ],
+      "imitatorRoles": [],
+      "modifiersHistory": [],
+      "win": false,
+      "disconnected": false
+    },
+    "TestGracz08": {
+      "name": "TestGracz08",
+      "playerId": 7,
+      "friendCode": "code#1007",
+      "hashedProductUserId": "h00000007",
+      "roleHistory": [
+        "Swapper"
+      ],
+      "imitatorRoles": [],
+      "modifiersHistory": [],
+      "win": false,
+      "disconnected": false
+    },
+    "TestGracz09": {
+      "name": "TestGracz09",
+      "playerId": 8,
+      "friendCode": "code#1008",
+      "hashedProductUserId": "h00000008",
+      "roleHistory": [
+        "Altruist"
+      ],
+      "imitatorRoles": [],
+      "modifiersHistory": [
+        "Lover"
+      ],
+      "win": false,
+      "disconnected": false
+    },
+    "TestGracz10": {
+      "name": "TestGracz10",
+      "playerId": 9,
+      "friendCode": "code#1009",
+      "hashedProductUserId": "h00000009",
+      "roleHistory": [
+        "Lookout"
+      ],
+      "imitatorRoles": [],
+      "modifiersHistory": [],
+      "win": false,
+      "disconnected": false
+    },
+    "TestGracz11": {
+      "name": "TestGracz11",
+      "playerId": 10,
+      "friendCode": "code#1010",
+      "hashedProductUserId": "h00000010",
+      "roleHistory": [
+        "Engineer"
+      ],
+      "imitatorRoles": [],
+      "modifiersHistory": [],
+      "win": false,
+      "disconnected": true
+    },
+    "TestGracz12": {
+      "name": "TestGracz12",
+      "playerId": 11,
+      "friendCode": "code#1011",
+      "hashedProductUserId": "h00000011",
+      "roleHistory": [
+        "Janitor"
+      ],
+      "imitatorRoles": [],
+      "modifiersHistory": [],
+      "win": true,
+      "disconnected": false
+    },
+    "TestGracz13": {
+      "name": "TestGracz13",
+      "playerId": 12,
+      "friendCode": "code#1012",
+      "hashedProductUserId": "h00000012",
+      "roleHistory": [
+        "Bomber"
+      ],
+      "imitatorRoles": [],
+      "modifiersHistory": [
+        "Lover"
+      ],
+      "win": true,
+      "disconnected": false
+    },
+    "TestGracz14": {
+      "name": "TestGracz14",
+      "playerId": 13,
+      "friendCode": "code#1013",
+      "hashedProductUserId": "h00000013",
+      "roleHistory": [
+        "Traitor"
+      ],
+      "imitatorRoles": [],
+      "modifiersHistory": [],
+      "win": true,
+      "disconnected": false
+    },
+    "TestGracz15": {
+      "name": "TestGracz15",
+      "playerId": 14,
+      "friendCode": "code#1014",
+      "hashedProductUserId": "h00000014",
+      "roleHistory": [
+        "Jester"
+      ],
+      "imitatorRoles": [],
+      "modifiersHistory": [],
+      "win": false,
+      "disconnected": false
+    }
+  },
+  "actions": [
+    {
+      "type": "role_assigned",
+      "pointsChange": 0.37,
+      "timestampMs": 137,
+      "performer": {
+        "playerId": 0,
+        "role": "Sheriff"
+      },
+      "target": null
+    },
+    {
+      "type": "role_assigned",
+      "pointsChange": 1.13,
+      "timestampMs": 274,
+      "performer": {
+        "playerId": 1,
+        "role": "Medic"
+      },
+      "target": null
+    },
+    {
+      "type": "role_assigned",
+      "pointsChange": -2.71,
+      "timestampMs": 411,
+      "performer": {
+        "playerId": 2,
+        "role": "Warden"
+      },
+      "target": null
+    },
+    {
+      "type": "role_assigned",
+      "pointsChange": 3.14,
+      "timestampMs": 548,
+      "performer": {
+        "playerId": 3,
+        "role": "Monarch"
+      },
+      "target": null
+    },
+    {
+      "type": "role_assigned",
+      "pointsChange": -0.83,
+      "timestampMs": 685,
+      "performer": {
+        "playerId": 4,
+        "role": "Deputy"
+      },
+      "target": null
+    },
+    {
+      "type": "role_assigned",
+      "pointsChange": 2.29,
+      "timestampMs": 822,
+      "performer": {
+        "playerId": 5,
+        "role": "Jailor"
+      },
+      "target": null
+    },
+    {
+      "type": "role_assigned",
+      "pointsChange": -1.61,
+      "timestampMs": 959,
+      "performer": {
+        "playerId": 6,
+        "role": "Prosecutor"
+      },
+      "target": null
+    },
+    {
+      "type": "role_assigned",
+      "pointsChange": 0.58,
+      "timestampMs": 1096,
+      "performer": {
+        "playerId": 7,
+        "role": "Swapper"
+      },
+      "target": null
+    },
+    {
+      "type": "role_assigned",
+      "pointsChange": 1.97,
+      "timestampMs": 1233,
+      "performer": {
+        "playerId": 8,
+        "role": "Altruist"
+      },
+      "target": null
+    },
+    {
+      "type": "role_assigned",
+      "pointsChange": -3.02,
+      "timestampMs": 1370,
+      "performer": {
+        "playerId": 9,
+        "role": "Lookout"
+      },
+      "target": null
+    },
+    {
+      "type": "role_assigned",
+      "pointsChange": 0.44,
+      "timestampMs": 1507,
+      "performer": {
+        "playerId": 10,
+        "role": "Engineer"
+      },
+      "target": null
+    },
+    {
+      "type": "role_assigned",
+      "pointsChange": 2.66,
+      "timestampMs": 1644,
+      "performer": {
+        "playerId": 11,
+        "role": "Janitor"
+      },
+      "target": null
+    },
+    {
+      "type": "role_assigned",
+      "pointsChange": -1.28,
+      "timestampMs": 1781,
+      "performer": {
+        "playerId": 12,
+        "role": "Bomber"
+      },
+      "target": null
+    },
+    {
+      "type": "role_assigned",
+      "pointsChange": 1.72,
+      "timestampMs": 1918,
+      "performer": {
+        "playerId": 13,
+        "role": "Traitor"
+      },
+      "target": null
+    },
+    {
+      "type": "role_assigned",
+      "pointsChange": -0.19,
+      "timestampMs": 2055,
+      "performer": {
+        "playerId": 14,
+        "role": "Jester"
+      },
+      "target": null
+    },
+    {
+      "type": "round_survived",
+      "pointsChange": 0.37,
+      "timestampMs": 2192,
+      "performer": {
+        "playerId": 0,
+        "role": "Sheriff"
+      },
+      "target": null
+    },
+    {
+      "type": "round_survived",
+      "pointsChange": 1.13,
+      "timestampMs": 2329,
+      "performer": {
+        "playerId": 1,
+        "role": "Medic"
+      },
+      "target": null
+    },
+    {
+      "type": "round_survived",
+      "pointsChange": -2.71,
+      "timestampMs": 2466,
+      "performer": {
+        "playerId": 2,
+        "role": "Warden"
+      },
+      "target": null
+    },
+    {
+      "type": "round_survived",
+      "pointsChange": 3.14,
+      "timestampMs": 2603,
+      "performer": {
+        "playerId": 3,
+        "role": "Monarch"
+      },
+      "target": null
+    },
+    {
+      "type": "round_survived",
+      "pointsChange": -0.83,
+      "timestampMs": 2740,
+      "performer": {
+        "playerId": 4,
+        "role": "Deputy"
+      },
+      "target": null
+    },
+    {
+      "type": "round_survived",
+      "pointsChange": 2.29,
+      "timestampMs": 2877,
+      "performer": {
+        "playerId": 5,
+        "role": "Jailor"
+      },
+      "target": null
+    },
+    {
+      "type": "round_survived",
+      "pointsChange": -1.61,
+      "timestampMs": 3014,
+      "performer": {
+        "playerId": 6,
+        "role": "Prosecutor"
+      },
+      "target": null
+    },
+    {
+      "type": "round_survived",
+      "pointsChange": 0.58,
+      "timestampMs": 3151,
+      "performer": {
+        "playerId": 7,
+        "role": "Swapper"
+      },
+      "target": null
+    },
+    {
+      "type": "round_survived",
+      "pointsChange": 1.97,
+      "timestampMs": 3288,
+      "performer": {
+        "playerId": 8,
+        "role": "Altruist"
+      },
+      "target": null
+    },
+    {
+      "type": "round_survived",
+      "pointsChange": -3.02,
+      "timestampMs": 3425,
+      "performer": {
+        "playerId": 9,
+        "role": "Lookout"
+      },
+      "target": null
+    },
+    {
+      "type": "round_survived",
+      "pointsChange": 0.44,
+      "timestampMs": 3562,
+      "performer": {
+        "playerId": 11,
+        "role": "Janitor"
+      },
+      "target": null
+    },
+    {
+      "type": "round_survived",
+      "pointsChange": 2.66,
+      "timestampMs": 3699,
+      "performer": {
+        "playerId": 12,
+        "role": "Bomber"
+      },
+      "target": null
+    },
+    {
+      "type": "round_survived",
+      "pointsChange": -1.28,
+      "timestampMs": 3836,
+      "performer": {
+        "playerId": 13,
+        "role": "Traitor"
+      },
+      "target": null
+    },
+    {
+      "type": "round_survived",
+      "pointsChange": 1.72,
+      "timestampMs": 3973,
+      "performer": {
+        "playerId": 14,
+        "role": "Jester"
+      },
+      "target": null
+    },
+    {
+      "type": "round_survived",
+      "pointsChange": -0.19,
+      "timestampMs": 4110,
+      "performer": {
+        "playerId": 0,
+        "role": "Sheriff"
+      },
+      "target": null
+    },
+    {
+      "type": "round_survived",
+      "pointsChange": 0.37,
+      "timestampMs": 4247,
+      "performer": {
+        "playerId": 1,
+        "role": "Medic"
+      },
+      "target": null
+    },
+    {
+      "type": "round_survived",
+      "pointsChange": 1.13,
+      "timestampMs": 4384,
+      "performer": {
+        "playerId": 2,
+        "role": "Warden"
+      },
+      "target": null
+    },
+    {
+      "type": "round_survived",
+      "pointsChange": -2.71,
+      "timestampMs": 4521,
+      "performer": {
+        "playerId": 3,
+        "role": "Monarch"
+      },
+      "target": null
+    },
+    {
+      "type": "round_survived",
+      "pointsChange": 3.14,
+      "timestampMs": 4658,
+      "performer": {
+        "playerId": 4,
+        "role": "Deputy"
+      },
+      "target": null
+    },
+    {
+      "type": "round_survived",
+      "pointsChange": -0.83,
+      "timestampMs": 4795,
+      "performer": {
+        "playerId": 5,
+        "role": "Jailor"
+      },
+      "target": null
+    },
+    {
+      "type": "round_survived",
+      "pointsChange": 2.29,
+      "timestampMs": 4932,
+      "performer": {
+        "playerId": 6,
+        "role": "Prosecutor"
+      },
+      "target": null
+    },
+    {
+      "type": "round_survived",
+      "pointsChange": -1.61,
+      "timestampMs": 5069,
+      "performer": {
+        "playerId": 7,
+        "role": "Swapper"
+      },
+      "target": null
+    },
+    {
+      "type": "round_survived",
+      "pointsChange": 0.58,
+      "timestampMs": 5206,
+      "performer": {
+        "playerId": 8,
+        "role": "Altruist"
+      },
+      "target": null
+    },
+    {
+      "type": "round_survived",
+      "pointsChange": 1.97,
+      "timestampMs": 5343,
+      "performer": {
+        "playerId": 9,
+        "role": "Lookout"
+      },
+      "target": null
+    },
+    {
+      "type": "round_survived",
+      "pointsChange": -3.02,
+      "timestampMs": 5480,
+      "performer": {
+        "playerId": 11,
+        "role": "Janitor"
+      },
+      "target": null
+    },
+    {
+      "type": "round_survived",
+      "pointsChange": 0.44,
+      "timestampMs": 5617,
+      "performer": {
+        "playerId": 12,
+        "role": "Bomber"
+      },
+      "target": null
+    },
+    {
+      "type": "round_survived",
+      "pointsChange": 2.66,
+      "timestampMs": 5754,
+      "performer": {
+        "playerId": 13,
+        "role": "Traitor"
+      },
+      "target": null
+    },
+    {
+      "type": "round_survived",
+      "pointsChange": -1.28,
+      "timestampMs": 5891,
+      "performer": {
+        "playerId": 14,
+        "role": "Jester"
+      },
+      "target": null
+    },
+    {
+      "type": "round_survived",
+      "pointsChange": 1.72,
+      "timestampMs": 6028,
+      "performer": {
+        "playerId": 0,
+        "role": "Sheriff"
+      },
+      "target": null
+    },
+    {
+      "type": "round_survived",
+      "pointsChange": -0.19,
+      "timestampMs": 6165,
+      "performer": {
+        "playerId": 1,
+        "role": "Medic"
+      },
+      "target": null
+    },
+    {
+      "type": "round_survived",
+      "pointsChange": 0.37,
+      "timestampMs": 6302,
+      "performer": {
+        "playerId": 2,
+        "role": "Warden"
+      },
+      "target": null
+    },
+    {
+      "type": "round_survived",
+      "pointsChange": 1.13,
+      "timestampMs": 6439,
+      "performer": {
+        "playerId": 3,
+        "role": "Monarch"
+      },
+      "target": null
+    },
+    {
+      "type": "round_survived",
+      "pointsChange": -2.71,
+      "timestampMs": 6576,
+      "performer": {
+        "playerId": 4,
+        "role": "Deputy"
+      },
+      "target": null
+    },
+    {
+      "type": "round_survived",
+      "pointsChange": 3.14,
+      "timestampMs": 6713,
+      "performer": {
+        "playerId": 5,
+        "role": "Jailor"
+      },
+      "target": null
+    },
+    {
+      "type": "round_survived",
+      "pointsChange": -0.83,
+      "timestampMs": 6850,
+      "performer": {
+        "playerId": 6,
+        "role": "Prosecutor"
+      },
+      "target": null
+    },
+    {
+      "type": "round_survived",
+      "pointsChange": 2.29,
+      "timestampMs": 6987,
+      "performer": {
+        "playerId": 7,
+        "role": "Swapper"
+      },
+      "target": null
+    },
+    {
+      "type": "round_survived",
+      "pointsChange": -1.61,
+      "timestampMs": 7124,
+      "performer": {
+        "playerId": 8,
+        "role": "Altruist"
+      },
+      "target": null
+    },
+    {
+      "type": "round_survived",
+      "pointsChange": 0.58,
+      "timestampMs": 7261,
+      "performer": {
+        "playerId": 9,
+        "role": "Lookout"
+      },
+      "target": null
+    },
+    {
+      "type": "round_survived",
+      "pointsChange": 1.97,
+      "timestampMs": 7398,
+      "performer": {
+        "playerId": 11,
+        "role": "Janitor"
+      },
+      "target": null
+    },
+    {
+      "type": "round_survived",
+      "pointsChange": -3.02,
+      "timestampMs": 7535,
+      "performer": {
+        "playerId": 12,
+        "role": "Bomber"
+      },
+      "target": null
+    },
+    {
+      "type": "round_survived",
+      "pointsChange": 0.44,
+      "timestampMs": 7672,
+      "performer": {
+        "playerId": 13,
+        "role": "Traitor"
+      },
+      "target": null
+    },
+    {
+      "type": "round_survived",
+      "pointsChange": 2.66,
+      "timestampMs": 7809,
+      "performer": {
+        "playerId": 14,
+        "role": "Jester"
+      },
+      "target": null
+    },
+    {
+      "type": "kill",
+      "pointsChange": -1.28,
+      "timestampMs": 7946,
+      "isCorrect": true,
+      "causeOfDeath": "Shoot",
+      "performer": {
+        "playerId": 0,
+        "role": "Sheriff"
+      },
+      "target": {
+        "playerId": 13,
+        "role": "Traitor"
+      }
+    },
+    {
+      "type": "kill",
+      "pointsChange": 1.72,
+      "timestampMs": 8083,
+      "isCorrect": false,
+      "isGuess": true,
+      "causeOfDeath": "Misguess",
+      "performer": {
+        "playerId": 4,
+        "role": "Deputy"
+      },
+      "target": {
+        "playerId": 9,
+        "role": "Lookout"
+      }
+    },
+    {
+      "type": "kill",
+      "pointsChange": -0.19,
+      "timestampMs": 8220,
+      "isCorrect": true,
+      "performer": {
+        "playerId": 4,
+        "role": "Deputy"
+      },
+      "target": {
+        "playerId": 12,
+        "role": "Bomber"
+      }
+    },
+    {
+      "type": "kill",
+      "pointsChange": 0.37,
+      "timestampMs": 8357,
+      "isCorrect": null,
+      "performer": {
+        "playerId": 5,
+        "role": "Jailor"
+      },
+      "target": {
+        "playerId": 14,
+        "role": "Jester"
+      }
+    },
+    {
+      "type": "kill",
+      "pointsChange": 1.13,
+      "timestampMs": 8494,
+      "isCorrect": true,
+      "performer": {
+        "playerId": 6,
+        "role": "Prosecutor"
+      },
+      "target": {
+        "playerId": 12,
+        "role": "Bomber"
+      }
+    },
+    {
+      "type": "protect",
+      "pointsChange": -2.71,
+      "timestampMs": 8631,
+      "isCorrect": true,
+      "performer": {
+        "playerId": 1,
+        "role": "Medic"
+      },
+      "target": {
+        "playerId": 0,
+        "role": "Sheriff"
+      }
+    },
+    {
+      "type": "protect",
+      "pointsChange": 3.14,
+      "timestampMs": 8768,
+      "isCorrect": false,
+      "performer": {
+        "playerId": 2,
+        "role": "Warden"
+      },
+      "target": {
+        "playerId": 11,
+        "role": "Janitor"
+      }
+    },
+    {
+      "type": "knight",
+      "pointsChange": -0.83,
+      "timestampMs": 8905,
+      "isCorrect": true,
+      "performer": {
+        "playerId": 3,
+        "role": "Monarch"
+      },
+      "target": {
+        "playerId": 0,
+        "role": "Sheriff"
+      }
+    },
+    {
+      "type": "revive",
+      "pointsChange": 2.29,
+      "timestampMs": 9042,
+      "isCorrect": true,
+      "performer": {
+        "playerId": 8,
+        "role": "Altruist"
+      },
+      "target": {
+        "playerId": 9,
+        "role": "Lookout"
+      }
+    },
+    {
+      "type": "swap",
+      "pointsChange": -1.61,
+      "timestampMs": 9179,
+      "isCorrect": true,
+      "performer": {
+        "playerId": 7,
+        "role": "Swapper"
+      },
+      "target": {
+        "playerId": 11,
+        "role": "Janitor"
+      },
+      "target2": {
+        "playerId": 12,
+        "role": "Bomber"
+      }
+    },
+    {
+      "type": "janitor_clean",
+      "pointsChange": 0.58,
+      "timestampMs": 9316,
+      "performer": {
+        "playerId": 11,
+        "role": "Janitor"
+      },
+      "target": {
+        "playerId": 9,
+        "role": "Lookout"
+      }
+    },
+    {
+      "type": "task_completed",
+      "pointsChange": 1.97,
+      "timestampMs": 9453,
+      "taskType": "FixWiring",
+      "room": "Electrical",
+      "performer": {
+        "playerId": 10,
+        "role": "Engineer"
+      },
+      "target": null
+    },
+    {
+      "type": "task_completed",
+      "pointsChange": -3.02,
+      "timestampMs": 9590,
+      "taskType": "FixWiring",
+      "room": "Electrical",
+      "performer": {
+        "playerId": 9,
+        "role": "Lookout"
+      },
+      "target": null
+    },
+    {
+      "type": "task_completed",
+      "pointsChange": 0.44,
+      "timestampMs": 9727,
+      "taskType": "FixWiring",
+      "room": "Electrical",
+      "performer": {
+        "playerId": 8,
+        "role": "Altruist"
+      },
+      "target": null
+    },
+    {
+      "type": "task_completed",
+      "pointsChange": 2.66,
+      "timestampMs": 9864,
+      "taskType": "FixWiring",
+      "room": "Electrical",
+      "performer": {
+        "playerId": 7,
+        "role": "Swapper"
+      },
+      "target": null
+    },
+    {
+      "type": "task_completed",
+      "pointsChange": -1.28,
+      "timestampMs": 10001,
+      "taskType": "FixWiring",
+      "room": "Electrical",
+      "performer": {
+        "playerId": 6,
+        "role": "Prosecutor"
+      },
+      "target": null
+    },
+    {
+      "type": "vent_use",
+      "pointsChange": 1.72,
+      "timestampMs": 10138,
+      "entryVent": 3,
+      "exitVent": 7,
+      "performer": {
+        "playerId": 11,
+        "role": "Janitor"
+      },
+      "target": null
+    },
+    {
+      "type": "sabotage_started",
+      "pointsChange": -0.19,
+      "timestampMs": 10275,
+      "system": "Reactor",
+      "performer": {
+        "playerId": 12,
+        "role": "Bomber"
+      },
+      "target": null
+    },
+    {
+      "type": "sabotage_fixed",
+      "pointsChange": 0.37,
+      "timestampMs": 10412,
+      "system": "Reactor",
+      "performer": {
+        "playerId": 0,
+        "role": "Sheriff"
+      },
+      "target": null
+    },
+    {
+      "type": "ability_used",
+      "pointsChange": 1.13,
+      "timestampMs": 10549,
+      "ability": "LookoutWatch",
+      "performer": {
+        "playerId": 9,
+        "role": "Lookout"
+      },
+      "target": {
+        "playerId": 11,
+        "role": "Janitor"
+      }
+    },
+    {
+      "type": "death",
+      "pointsChange": -2.71,
+      "timestampMs": 10686,
+      "causeOfDeath": "Heartbreak",
+      "performer": {
+        "playerId": 9,
+        "role": "Lookout"
+      },
+      "target": null
+    },
+    {
+      "type": "disconnect",
+      "pointsChange": 3.14,
+      "timestampMs": 10823,
+      "performer": {
+        "playerId": 10,
+        "role": "Engineer"
+      },
+      "target": null
+    },
+    {
+      "type": "win",
+      "pointsChange": -0.83,
+      "timestampMs": 10960,
+      "performer": {
+        "playerId": 11,
+        "role": "Janitor"
+      },
+      "target": null
+    },
+    {
+      "type": "win",
+      "pointsChange": 2.29,
+      "timestampMs": 11097,
+      "performer": {
+        "playerId": 12,
+        "role": "Bomber"
+      },
+      "target": null
+    },
+    {
+      "type": "win",
+      "pointsChange": -1.61,
+      "timestampMs": 11234,
+      "performer": {
+        "playerId": 13,
+        "role": "Traitor"
+      },
+      "target": null
+    }
+  ],
+  "meetings": [
+    {
+      "meetingNumber": 1,
+      "timestampMs": 5000,
+      "endTimestampMs": 9200,
+      "deathsSinceLastMeeting": [
+        "TestGracz14 died"
+      ],
+      "votes": {
+        "TestGracz01": [
+          "TestGracz12"
+        ],
+        "TestGracz02": [
+          "TestGracz12"
+        ],
+        "TestGracz03": [
+          "TestGracz13"
+        ]
+      },
+      "skipVotes": [
+        "TestGracz04",
+        "TestGracz05"
+      ],
+      "noVotes": [
+        "TestGracz06"
+      ],
+      "blackmailedPlayers": [
+        "TestGracz07"
+      ],
+      "jailedPlayers": [
+        "TestGracz08"
+      ],
+      "swappedPlayers": [
+        "TestGracz12",
+        "TestGracz13"
+      ],
+      "wasTie": false,
+      "wasBlessed": false,
+      "exiledPlayer": "TestGracz12"
+    },
+    {
+      "meetingNumber": 2,
+      "timestampMs": 10000,
+      "endTimestampMs": 14200,
+      "deathsSinceLastMeeting": [
+        "TestGracz14 died"
+      ],
+      "votes": {
+        "TestGracz01": [
+          "TestGracz12"
+        ],
+        "TestGracz02": [
+          "TestGracz12"
+        ],
+        "TestGracz03": [
+          "TestGracz13"
+        ]
+      },
+      "skipVotes": [
+        "TestGracz04",
+        "TestGracz05"
+      ],
+      "noVotes": [
+        "TestGracz06"
+      ],
+      "blackmailedPlayers": [
+        "TestGracz07"
+      ],
+      "jailedPlayers": [
+        "TestGracz08"
+      ],
+      "swappedPlayers": [],
+      "wasTie": true,
+      "wasBlessed": false,
+      "exiledPlayer": null
+    }
+  ]
+}
