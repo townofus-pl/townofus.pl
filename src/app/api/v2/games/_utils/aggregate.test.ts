@@ -115,6 +115,29 @@ describe('counter routing', () => {
         expect(oracle.incorrectProtects).toBe(1);
     });
 
+    it('sends both revivers to the revive counters, whatever the key spelling', () => {
+        // The mod sends IdPart since mod #83: `TimeLord`, which the registry spells `Time Lord`.
+        for (const role of ['Altruist', 'TimeLord', 'Time Lord']) {
+            const row = one(
+                [player({ ...sheriff, roleHistory: [role] }), victim],
+                [act({ type: 'revive', isCorrect: true, performer: { playerId: 1, role } })],
+            );
+            expect(row.correctAltruistRevives).toBe(1);
+        }
+    });
+
+    it('routes kills on the registry name, not the raw key', () => {
+        expect(killBy('deputy').correctDeputyShoots).toBe(1);
+        expect(killBy('JAILOR').correctJailorExecutes).toBe(1);
+    });
+
+    it('keeps the Officer and the Doomsayer in kills — neither produces a guess', () => {
+        expect(killBy('Officer', { isCorrect: false }).incorrectKills).toBe(1);
+        const doomsayer = killBy('Doomsayer', { causeOfDeath: 'Doomsayer' });
+        expect(doomsayer.correctKills).toBe(1);
+        expect(doomsayer.correctGuesses).toBe(0);
+    });
+
     it("shares the protect counters with the Monarch's knight", () => {
         const row = one(
             [player({ ...sheriff, roleHistory: ['Monarch'] }), victim],
@@ -173,6 +196,16 @@ describe('isCorrect is three-valued, and absent is a fourth case', () => {
     });
 });
 
+describe('imitatorRoles', () => {
+    it('drops death markers and keeps the copies', () => {
+        const row = one(
+            [player({ ...sheriff, roleHistory: ['Imitator'], imitatorRoles: ['Sheriff', 'CrewmateGhost', 'Medic'] }), victim],
+            [],
+        );
+        expect(row.imitatorRoles).toEqual(['Sheriff', 'Medic']);
+    });
+});
+
 describe('rejection', () => {
     it('rejects a role in neither registry', () => {
         expect(() =>
@@ -197,6 +230,17 @@ describe('rejection', () => {
                 ),
             ),
         ).toThrow(/cannot perform "swap"/);
+    });
+
+    it('still rejects a non-reviver after normalising', () => {
+        expect(() =>
+            aggregatePayload(
+                payloadOf(
+                    [sheriff, victim],
+                    [act({ type: 'revive', isCorrect: true, performer: { playerId: 1, role: 'Sheriff' } })],
+                ),
+            ),
+        ).toThrow(/cannot perform "revive"/);
     });
 
     it('rejects an action whose performer is not in players[]', () => {
