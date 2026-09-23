@@ -224,9 +224,17 @@ Format each suggestion as:
 
 These constraints MUST be reflected in task specs and Agent Prompts:
 
-### D1 SQL variable limit
-Never use `season: { in: [...] }` or `id: { in: largeArray }`. For all-seasons queries,
-omit the season filter entirely:
+### D1 SQL variable limit — and the cost question hiding behind it
+Never use `season: { in: [...] }` or `id: { in: largeArray }`: D1's bound-parameter cap is far
+below SQLite's, and breaching it returns empty results rather than an error.
+
+Do **not** reach for a relation filter (`some:`) as the automatic answer. It fixes the cap and
+compiles to a correlated EXISTS, whose cost is whatever index the planner finds for the inner
+predicate — one such query read 2.3 million rows per call and 39% of the monthly D1 allowance.
+A subquery (`IN (SELECT …)` through `$queryRaw`) solves both: no bound parameters, and the inner
+query keeps a selective plan. See the D1 section of `AGENTS.md`.
+
+For all-seasons queries, omit the season filter entirely:
 ```typescript
 ...(seasonId !== ALL_SEASONS && { season: seasonId ?? CURRENT_SEASON })
 ```

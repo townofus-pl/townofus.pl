@@ -330,22 +330,62 @@ catch it at build time. To exclude stats for soft-deleted players, use the relat
   gamePlayerStatistics: { where: { player: withoutDeleted } }
 
 **D1 SQL variable limit**: D1 enforces a strict limit on bound parameters per SQL statement
-(much lower than SQLite's default 999). Avoid `where: { id: { in: largeArray } }` — even
-batching at 100 entries can fail once Prisma adds variables for joins/includes. Instead use
-relation filters to let the DB handle the join:
-  // Wrong — hits D1 variable limit when array is large:
+(much lower than SQLite's default 999). `where: { id: { in: largeArray } }` breaks on it — even
+batching at 100 entries can fail once Prisma adds variables for joins/includes. Failures are
+caught by try/catch and **silently return empty results**, so when a query returns unexpectedly
+empty data, check for IN clauses.
+
+  // Breaks the parameter cap once the array is large:
   prisma.meeting.findMany({ where: { id: { in: meetingIds } }, include: { meetingVotes: true } })
 
-  // Correct — no IN clause, no variable limit:
+A relation filter fixes the cap. **It does not follow that it is cheap** — this repo learned that
+the expensive way:
+
+  // Stays under the cap, and cost 39% of the monthly D1 allowance on its own:
   prisma.meeting.findMany({
-    where: {
-      meetingVotes: { some: { voterId: player.id } }
-      // or OR: [{ meetingVotes: ... }, { skipVotes: ... }]
-    },
-    include: { meetingVotes: true }
+    where: { OR: [{ meetingVotes: { some: { voterId: id } } },
+                  { skipVotes:    { some: { playerId: id } } }] },
+    select: { id: true, wasTie: true },
   })
-Failures from this limit are caught by try/catch and silently return empty results — making
-them very hard to debug. When a query returns unexpectedly empty data, check for IN clauses.
+
+`some:` compiles to a **correlated EXISTS**, evaluated once per candidate row, and its cost is
+whatever index the planner finds for the inner predicate. Here that was `meeting_votes(voterId)`
+— an index on `voterId` alone — so for each of ~2,800 meetings it walked every vote that player
+had ever cast: **2,319,983 rows read, 656 ms**.
+
+The shape that solves both problems is a **subquery**: a subquery contributes no bound
+parameters, and the inner query keeps its own selective plan.
+
+  // 11,515 rows, 11 ms — 201× fewer, identical results
+  prisma.$queryRaw`
+    SELECT m.id, m.wasTie FROM meetings m JOIN games g ON g.id = m.gameId
+    WHERE m.deletedAt IS NULL AND g.deletedAt IS NULL AND g.season = ${season}
+      AND m.id IN (SELECT meetingId FROM meeting_votes      WHERE voterId  = ${playerId}
+                   UNION
+                   SELECT meetingId FROM meeting_skip_votes WHERE playerId = ${playerId})
+  `
+
+So: **the cap is about parameter count, cost is about index selectivity, and they are separate
+questions.** `chunkedInQuery` remains right when you genuinely hold a list of ids in JS.
+
+### Measure before believing any of this
+
+D1 bills **rows read**, and the only reliable source is production itself:
+
+```
+wrangler d1 insights townofus-pl --env production --time-period 7d --sort-by reads
+wrangler d1 execute townofus-pl --remote --env production --json --command "EXPLAIN QUERY PLAN <sql>"
+```
+
+`--json` on `d1 execute` returns `meta.rows_read` per statement, which is the number being
+billed. Two traps this found that reading the code would not have:
+
+- **An index can make reads worse.** `player_roles(order)` matched ~11,400 rows and the planner
+  preferred it over the selective `gamePlayerStatisticsId` index, costing 40× — see migration
+  `0010`.
+- **Moving aggregation into SQL does not reduce rows read.** The rows must be read wherever the
+  sum happens; a window-function rewrite measured *worse* than aggregating in JS. Optimise by
+  reading fewer rows, not by moving the arithmetic.
 
 ## Proposing New Rules
 

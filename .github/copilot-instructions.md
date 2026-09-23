@@ -9,7 +9,11 @@ Full instructions: `AGENTS.md` + `.github/instructions/*.instructions.md` (appli
 - **The mod's scoring weights in any file, comment, commit message or issue.** The site names
   which actions score, never what each is worth. The values live in a private repo.
 - Missing `{ ...withoutDeleted }` in any Prisma query on a model with `deletedAt` — except `GamePlayerStatistics` (no soft-delete column; filter via relation: `{ player: withoutDeleted }`)
-- `where: { id: { in: largeArray } }` — hits D1 variable limit; use relation filters instead
+- `where: { id: { in: largeArray } }` — hits D1's bound-parameter cap. A relation filter
+  (`some:`) fixes the cap but compiles to a correlated EXISTS whose cost is whatever index the
+  planner finds — one such query cost 39% of the monthly D1 allowance. Prefer a subquery
+  (`IN (SELECT …)` via `$queryRaw`): no bound parameters, and the inner query keeps its plan.
+  The cap and the cost are separate questions; check `EXPLAIN QUERY PLAN` before assuming
 - `_services/` functions called from a client component (RSC-only — Server Components and API routes only)
 - API handler exported from `route.ts` without `withCors(withAuth(...))` wrapper, unless under `/api/dramaafera/` (public **GET only** — `withCors`; POST/PUT/DELETE still need `withAuth`)
 - New API endpoint missing any of: handler file, `route.ts`, Zod schemas, `openApiRegistry.registerPath()`
