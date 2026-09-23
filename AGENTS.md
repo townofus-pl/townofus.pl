@@ -9,7 +9,7 @@ TownOfUs.pl is a Polish Among Us community website: a role search engine for the
 - **Next.js 16.2** (App Router) · **React 19** · **TypeScript** (strict)
 - **Cloudflare Workers** via @opennextjs/cloudflare · **Cloudflare D1** (SQLite) · **Cloudflare R2**
 - **Prisma 7** with @prisma/adapter-d1 (migrate config in `prisma.config.ts`; `partialIndexes` preview feature enabled)
-- **Tailwind CSS 3.4** · **Zod 3** · **Jest**
+- **Tailwind CSS 3.4** · **Zod 4** · **Jest 30**
 
 ## Commands
 
@@ -24,7 +24,7 @@ npm run db:migrate:apply:local       # Apply migrations to local D1
 npm run db:migrate:apply:staging     # Apply to staging D1
 npm run db:migrate:apply:production  # Apply to production D1
 npm run preview                      # Build + preview on Cloudflare
-npm run validate                     # 19 integrity checks (--target local|staging|production)
+npm run validate                     # integrity checks (--target local|staging|production)
 npm run ranking:oracle               # Replay a season's ELO, diff against stored
 npm run replay -- --file <p.json>    # POST a payload, show the per-table row delta
 npm run mod:publish                  # report: does latest.json match the files beside it
@@ -49,18 +49,62 @@ redeclared in full inside each `[env.*]` block. `[env.*.secrets] required` is **
 wrangler: a deploy is refused outright if a listed secret is unset.
 
 **Push to `main` deploys to staging. Production is `workflow_dispatch` only.** Both run
-`check.yml` (typecheck + tests) first, and migrations are applied in the same job as the deploy,
+`check.yml` (typecheck, tests, and the mod manifest check) first, and migrations are applied in the same job as the deploy,
 so a failed migration means no code ships against a half-migrated database.
 
 See `docs/ops/LOCAL_TESTING.md` for the local loop and a symptom → cause → fix table.
+
+## Ingest: v1 and v2
+
+The league's games arrive from the companion mod, not from a human. Two endpoints are live:
+
+| | endpoint | payload | who writes it |
+|---|---|---|---|
+| v1 | `POST /api/games` | aggregated — 24 counters already computed per player | the 735 pre-cutover games; never rewritten |
+| v2 | `POST /api/v2/games` | event-based — a flat `actions[]` the server aggregates | what the mod sends today |
+
+Three rules. Breaking any of them corrupts data quietly rather than loudly:
+
+1. **The mod scores, the server sums.** `totalPoints` = Σ every action's `pointsChange`, full
+   stop. Never add a bonus server-side; never re-apply the disconnect clamp, which arrives
+   already applied. Counters are for display — the ranking reads `totalPoints` alone.
+2. **The era comes from the data.** A game's season is derived from its own timestamp
+   (`getSeasonForDate`), and the role registry follows from the season — never from the request
+   and never from "what season is it now". `FIRST_MIRA_SEASON` in `_constants/seasons.ts` is the
+   boundary between `src/roles/` (60 legacy) and `src/mira/roles/` (77 Mira).
+3. **Ingest is chronological.** `rankingCalculator` refuses a game older than one already scored:
+   `previousRating` only means anything in order.
+
+### v2 shapes worth knowing before touching the ingest
+
+- **Times are real UTC.** The 735 v1 games store Polish wall-clock labelled `+00:00`; v2 converts
+  incoming UTC to that same Warsaw wall-clock so both eras sort together. See the comment on
+  `toWarsawWallClock` in `createGameV2.ts`.
+- **One atomic `batch()`.** Auto-increment ids cannot be threaded between statements, so child
+  rows resolve their parent through a subquery on a unique key. That is why the duplicate check
+  is load-bearing — the subqueries assume exactly one match.
+- **`isCorrect` is three-valued, and absent ≠ null.** `true`/`false` pick the `correct*` /
+  `incorrect*` counter; `null` means the mod could not classify and counts as neither; **absent**
+  on a `swap` means the rule declined to score. Different facts, both scoring zero.
+- **Actions land in `game_actions`, not `game_events`.** v1's `game_events` table is still read by
+  the timeline UI.
+- **Identity ladder.** `players` carries `hashedProductUserId` and `friendCode`; a payload
+  resolves against those before falling back to the display name. A name collision against a
+  different hash is a 422, not a silent merge.
+
+`POST /api/v2/games` is idempotent on `gameIdentifier` — a re-submit is a 409 with zero writes.
+
+**Never publish the mod's scoring weights.** The site names which actions score, not what each is
+worth; the values live in the private mod repo and must not be restated here, in docs, in issues
+or in commit messages.
 
 ## AI Tools
 
 ### Skills
 
-Reusable workflows for complex tasks. Primary location: `.github/skills/<name>/SKILL.md`
-Claude Code CLI accesses the same skills via `.claude/skills/` (symlinks to `.github/skills/`).
-Every directory in `.github/skills/` needs a matching symlink in `.claude/skills/` — without
+Reusable workflows for complex tasks. Primary location: `.agents/skills/<name>/SKILL.md`
+Claude Code CLI accesses the same skills via `.claude/skills/` (symlinks to `.agents/skills/`).
+Every directory in `.agents/skills/` needs a matching symlink in `.claude/skills/` — without
 one the skill is invisible to Claude Code.
 
 Project-authored:
@@ -88,7 +132,7 @@ Available in OpenCode (`.opencode/commands/`) and Claude Code CLI (`.claude/comm
 ### Vendored skills
 
 Copied from [mattpocock/skills](https://github.com/mattpocock/skills) (MIT) — not authored
-here, so edit upstream rather than in place. See `.github/skills/VENDORED.md` for the sync
+here, so edit upstream rather than in place. See `.agents/skills/VENDORED.md` for the sync
 commit and re-sync procedure.
 
 | Skill             | Description                                                          |
@@ -131,6 +175,9 @@ src/
 │   │   ├── _middlewares/         # withAuth, withCors (barrel: @/app/api/_middlewares)
 │   │   ├── _utils/               # createSuccessResponse, createErrorResponse, rankingCalculator
 │   │   ├── schema/               # Zod schemas, OpenAPI registry (openApiRegistry)
+│   │   │                         # gamesV2.ts — mirrors the mod's game_data.schema.json, all .strict()
+│   │   ├── v2/games/             # POST /api/v2/games — event-based ingest
+│   │   │   └── _utils/           # aggregate.ts (action → counter, pure), createGameV2.ts (one atomic batch)
 │   │   └── season/reset/         # POST /api/season/reset — explicit season reset (protected)
 │   ├── dramaafera/               # Dramaafera section
 │   │   ├── _components/          # Dramaafera shared components
@@ -306,7 +353,7 @@ When you notice a pattern used 2+ times, a decision made in this session, or a c
 not documented here, output a suggestion block:
 
 ---RULE SUGGESTION---
-File: [AGENTS.md | .github/instructions/api.instructions.md | .github/skills/X/SKILL.md | etc.]
+File: [AGENTS.md | .github/instructions/api.instructions.md | .agents/skills/X/SKILL.md | etc.]
 Section: [section name]
 Content: [proposed rule text]
 Reason: [why this should be captured]
@@ -315,4 +362,4 @@ Reason: [why this should be captured]
 Routing guide:
 - Universal/architectural → AGENTS.md
 - File-type-specific → .github/instructions/<relevant>.instructions.md
-- Complex active feature → .github/skills/<feature>/SKILL.md
+- Complex active feature → .agents/skills/<feature>/SKILL.md

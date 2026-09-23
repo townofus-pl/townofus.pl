@@ -3,6 +3,10 @@ applyTo: "src/app/api/schema/**"
 ---
 # Zod Schemas & OpenAPI Patterns
 
+`gamesV2.ts` is not ours to design — it mirrors the mod's `game_data.schema.json` and every object
+is `.strict()`, so a field the mod adds fails loudly instead of being dropped. `isCorrect` needs a
+`superRefine` rather than `.optional().nullable()`: absent and `null` are different facts.
+
 ## Architecture (layered)
 
   common.ts   → Atomic validators, soft-delete helpers, formatting utilities

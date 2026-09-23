@@ -3,6 +3,13 @@ applyTo: "**/api/**"
 ---
 # API Route Patterns
 
+Two ingest endpoints exist and both are live: `POST /api/games` (v1, aggregated, serves the
+pre-cutover games) and `POST /api/v2/games` (v2, event-based, what the mod sends today). v2 splits
+into `_utils/aggregate.ts` — pure, payload → counters — and `_utils/createGameV2.ts`, one atomic
+D1 `batch()`. Keep that split: the pure half is the only testable one.
+
+v2 is idempotent on `gameIdentifier`; a re-submit must stay a 409 with zero writes.
+
 ## File structure
 
 Each API resource has separate files per HTTP method plus a route.ts:

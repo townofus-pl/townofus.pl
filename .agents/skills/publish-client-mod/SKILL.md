@@ -85,9 +85,13 @@ beside the manifest, and a url naming a different file installs the wrong bytes 
 name. `--write` preserves whichever form the manifest already uses.
 
 ### The ordering trap
-`public/mod/` is not on `origin/main`. While that is true, **the absolute urls resolve to 404** —
-production serves neither the manifest nor the files. The manifest and the production deploy of
-`public/mod/` have to land together.
+`public/mod/` shipped to production in the v2 release, so the urls resolve today. The trap is the
+ordering, not the directory: a manifest that names a file production has not deployed yet resolves
+to 404, and every player's auto-update fails silently — visible only in their own log. **The
+manifest and the deploy of the files it names have to land together.**
+
+`npm run mod:publish` in CI is what holds this: it re-hashes whatever sits in `public/mod/client/`
+and fails the build if `latest.json` disagrees.
 
 `name` and `url` stay separate fields even while they hold the same string: `name` is where the
 file lands on the player's disk, `url` is where it is fetched from, and a future versioned path

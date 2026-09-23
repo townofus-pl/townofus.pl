@@ -40,6 +40,24 @@ operations, use D1's native `batch()` API with raw prepared statements:
 Note: batch() requires raw SQL, not Prisma ORM calls. For most writes (single-model creates/updates),
 auto-commit is fine and Prisma ORM can be used normally.
 
+### Writing a whole aggregate in one batch
+
+`createGameV2.ts` persists an entire match this way. Three constraints it had to work around, all
+of which bite silently:
+
+- **~98 bound parameters per statement.** Multi-row inserts must be chunked by
+  `floor(98 / columns)` — 9 rows for a 10-column `game_actions` insert, 20 for `player_roles`,
+  30 for a 3-column modifier row.
+- **Auto-increment ids cannot be threaded between statements.** A child row resolves its parent
+  with a subquery on a unique key, e.g.
+  `(SELECT "id" FROM "games" WHERE "gameIdentifier" = ?)`. This makes the duplicate check
+  load-bearing: the subquery assumes exactly one match.
+- **Later statements do see earlier writes** within the same batch, which is what makes those
+  subqueries work at all.
+
+Resolve every lookup into a plan *before* the batch, then write. A collision discovered halfway
+through must not leave half the rows created.
+
 If you need atomic operations involving complex Prisma-generated queries (e.g. with computed where
 clauses), you must extract the SQL manually via $queryRaw/$executeRaw, or accept that multi-step
 Prisma writes are not atomic on D1. This is a D1 adapter constraint with no ORM-level workaround.

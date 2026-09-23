@@ -3,7 +3,9 @@
 Resolution artifact for [#295](https://github.com/townofus-pl/townofus.pl/issues/295). This is the
 spec `api/v2/games/_utils/aggregate.ts` implements.
 
-Verified against `dramaafera-stats-mod` at `TOU-Mira` submodule `b09079db` (2026-09-06).
+Verified against `dramaafera-stats-mod` at `2e751b7`, the build serving production since
+2026-09-23. Re-verify when the mod's `game_data.schema.json` or its correctness rules move; a
+new (type, role) pair rejects the upload, which is the signal this table is behind.
 
 ## Ground rules
 
@@ -77,38 +79,35 @@ registries stay separate; there is no union.
 `src/mira/roles/` was diffed against the submodule and is **an exact 1:1 match — 77 roles, none
 missing, none extra**. As a custom-role allow-list it is already complete and current.
 
-### Three gaps that must be closed before ingest
+### How a role name resolves
 
-1. **`normalizeRoleName` never searches `MiraRoles`.** `src/app/dramaafera/_utils/gameUtils.ts`
-   resolves against the `Roles` array only, so every one of the 77 is unresolvable today. It needs
-   to be era-aware: legacy registry for v1 games, Mira registry for v2.
-2. **Vanilla roles are not in either registry.** `CorrectnessChecker.GetRoleName` falls back to
-   `role.Role.ToString()` for anything that is not an `ICustomRole`, which emits the Among Us
-   `RoleTypes` enum name. Observed in real captures: **`Crewmate`, `Impostor`, `CrewmateGhost`,
-   `ImpostorGhost`**. `NeutralGhostRole` additionally emits the literal **`Neutral Ghost`** (with a
-   space) when it has no underlying player. All five must be in the allow-list or v2 rejects every
-   real game.
-3. **The silent Crewmate default must go.** `determineTeam` returns `Teams.Crewmate` for anything
-   unrecognised, which corrupts `winnerTeam`. Under v2 the winner comes from `players[*].win`
-   anyway, so `determineTeam` should raise rather than guess.
+All three gaps this section used to list are closed (`a6218d1`).
 
-Also noted: the DB stores the modifier as **`Lover`** while `src/modifiers/lovers.ts` is named
-**`Lovers`**, so `getModifierColor` misses and returns white.
+- **The registry is era-aware.** `getRoleIndex(season)` picks `src/roles/` (60 legacy) below
+  `FIRST_MIRA_SEASON` and `src/mira/roles/` (77 Mira) at or above it. The era comes from the
+  game's own season, never from the request.
+- **Vanilla and ghost roles are in the index.** `CorrectnessChecker.GetRoleName` falls back to the
+  Among Us `RoleTypes` enum for anything that is not an `ICustomRole`, so `Crewmate`, `Impostor`,
+  `CrewmateGhost`, `ImpostorGhost` and the space-separated `Neutral Ghost` all resolve. Without
+  them v2 would reject every real game.
+- **Nothing is silently defaulted.** `isKnownRole` gates the ingest in `aggregate.ts`; an
+  unrecognised role rejects the upload rather than being guessed into Crewmate.
+- **Separators are collapsed.** The mod sends `ICustomRole.IdPart`, so `findRole` compares on a
+  lowercased, non-alphanumeric-stripped form — `Soul Collector`, `SoulCollector` and
+  `soul_collector` are the same role.
+- The DB stores the modifier as `Lover` while both registries call it `Lovers`; `getModifierColor`
+  maps the singular explicitly.
 
-## ⚠️ Open cross-repo issue: the role name is localised
+Six of TOU-Mira's IdParts resolve to nothing on purpose — they belong to game modes the mod
+physically cannot record, because it gates recording at match-state creation on
+`CustomGameModeManager.IsClassic()`.
 
-`performer.role` carries a **translated display string**, not a stable key:
+## The role name is a stable key, not a display string
 
-```csharp
-// MiraAPI/Roles/ICustomRole.cs
-string RoleName       => MiraLocaleManager.Get(RoleNameLocale);
-string RoleNameLocale => MiraLocaleManager.BuildTranslationId(IdPrefix, IdPart);
-```
+Historically `performer.role` carried a **translated** name, so a host running the game in another
+language emitted names the server could not match — the league's hosts running English was an
+undocumented dependency.
 
-Every role also exposes a locale-independent `IdPart` (`public string IdPart => "Sheriff";`), and
-that is what the payload should carry. As written, **a host running the game in another language
-emits role names the server cannot match**, and the allow-list rejects the whole game.
-
-It works today only because the league's hosts run English. Raised mod-side; until it is fixed,
-the allow-list is keyed on the English `RoleName` values and the hosts' language is an undocumented
-dependency.
+Resolved mod-side: the payload now carries the locale-independent `ICustomRole.IdPart`
+(`public string IdPart => "Sheriff";`) rather than `MiraLocaleManager.Get(RoleNameLocale)`. The
+allow-list is keyed on that, and the host's language no longer matters.

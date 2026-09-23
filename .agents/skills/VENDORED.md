@@ -40,9 +40,9 @@ verified with a transitive scan of skill cross-references.
 SRC=~/Projects/skills/skills
 cd <repo>
 for s in wayfinder triage research prototype domain-modeling; do
-  rm -rf ".github/skills/$s" && cp -R "$SRC/engineering/$s" .github/skills/
+  rm -rf ".agents/skills/$s" && cp -R "$SRC/engineering/$s" .agents/skills/
 done
-rm -rf .github/skills/grilling && cp -R "$SRC/productivity/grilling" .github/skills/
+rm -rf .agents/skills/grilling && cp -R "$SRC/productivity/grilling" .agents/skills/
 ```
 
 Then update the commit SHA above. Symlinks in `.claude/skills/` point at directory names,
@@ -50,9 +50,9 @@ so they survive a re-sync untouched.
 
 ## Adding a skill to this repo
 
-Every directory in `.github/skills/` needs a matching symlink in `.claude/skills/`, or the
+Every directory in `.agents/skills/` needs a matching symlink in `.claude/skills/`, or the
 skill is invisible to Claude Code:
 
 ```sh
-ln -sfn ../../.github/skills/<name> .claude/skills/<name>
+ln -sfn ../../.agents/skills/<name> .claude/skills/<name>
 ```

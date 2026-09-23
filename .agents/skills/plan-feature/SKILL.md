@@ -203,7 +203,7 @@ additions or edits to:
 
 - `AGENTS.md` — new patterns, constants, or architectural decisions
 - `.github/instructions/*.instructions.md` — file-type-specific conventions
-- `.github/skills/` — if a new reusable pattern emerged
+- `.agents/skills/` — if a new reusable pattern emerged
 
 Format each suggestion as:
 
@@ -262,6 +262,6 @@ if (!prisma) return <empty default>;
 | `.ai-plans/<slug>/PLAN.md` | No | Human-reviewed plan |
 | `.ai-plans/<slug>/tasks/*.md` | No | AI-executable task files |
 | `.ai-plans/<slug>/DOCS.md` | No | Doc update suggestions |
-| `.github/skills/plan-feature/SKILL.md` | Yes | This skill definition |
+| `.agents/skills/plan-feature/SKILL.md` | Yes | This skill definition |
 
 `.ai-plans/` is in `.gitignore`. Plans are local-only, not committed.
