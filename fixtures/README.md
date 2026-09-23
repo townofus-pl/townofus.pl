@@ -10,6 +10,11 @@ npm run replay -- --file fixtures/v2-synthetic.json --twice
 npm run db:import:local -- --no-export   # it writes to local D1, so reseed afterwards
 ```
 
+Every `pointsChange` in it is **deliberately fake** — arbitrary values, varied within each action
+type. Do not "correct" them to the rates the mod actually awards: those belong to the mod's own
+(private) repo and must not be restated here. The fixture exercises plumbing, so the numbers only
+need to be numbers.
+
 It is **not** a golden payload. Nothing here came out of a real match, so it proves the server's
 plumbing and nothing about the mod's. [#293](https://github.com/townofus-pl/townofus.pl/issues/293)
 replaces it with a capture from a real game on a HEAD build.
