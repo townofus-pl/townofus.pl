@@ -3,9 +3,11 @@
 Resolution artifact for [#295](https://github.com/townofus-pl/townofus.pl/issues/295). This is the
 spec `api/v2/games/_utils/aggregate.ts` implements.
 
-Verified against `dramaafera-stats-mod` at `2e751b7`, the build serving production since
-2026-09-23. Re-verify when the mod's `game_data.schema.json` or its correctness rules move; a
-new (type, role) pair rejects the upload, which is the signal this table is behind.
+Verified against `dramaafera-stats-mod` at `669d635` (TOU-Mira `b09079db`) on 2026-09-23 by
+walking `CorrectnessChecker` and every site that emits a counted action type (#325). `669d635`
+differs from `2e751b7`, the build serving production, only in the mod's docs. Re-verify when the
+mod's `game_data.schema.json` or its correctness rules move; a new (type, role) pair rejects the
+upload, which is the signal this table is behind.
 
 ## Ground rules
 
@@ -16,9 +18,14 @@ new (type, role) pair rejects the upload, which is the signal this table is behi
    as columns. Empirically justified: of the 24, five carry almost all signal and everything below
    `correctGuesses` fires in under 6 % of 11,374 real rows; `incorrectDeputyShoots` has fired once.
 3. **`correctMedicShields`/`incorrectMedicShields` are renamed to `correctProtects`/`incorrectProtects`.**
-   They already collect Mercenary (Neutral) and Monarch (Crewmate), so the Medic-specific name was
-   wrong.
-4. **An unexpected (type, role) pair rejects the upload**, same as an unknown role. TOU-Mira is
+   They collect the Mirrorcaster, the Oracle and the Monarch's knight as well as the Medic, so the
+   Medic-specific name was wrong. `protect` is emitted only by the Medic, the Warden, the
+   Mirrorcaster and the Oracle's save from ejection; the Mercenary's guard, like the Cleric's and
+   the Fairy's, is logged by the mod and never emitted.
+4. **An unexpected (type, role) pair rejects the upload**, same as an unknown role. Roles are
+   compared by their registry name, never by the raw payload string: the mod sends
+   `ICustomRole.IdPart` (`TimeLord`), the registry says `Time Lord`, and a literal comparison
+   rejected every Time Lord revive (#325). TOU-Mira is
    never auto-updated, so a new ability can only appear through a deliberate version bump — a
    rejection is the signal that this table needs updating, not a random failure.
 
@@ -30,11 +37,11 @@ On `swap` the field may be **absent**, which means the rule declined to score �
 
 | Action type | Counter | Performer roles that may produce it |
 |---|---|---|
-| `kill` where `isGuess = true` | `correctGuesses` / `incorrectGuesses` | Vigilante, Doomsayer, any role carrying the Double Shot modifier |
+| `kill` where `isGuess = true` | `correctGuesses` / `incorrectGuesses` | Vigilante, any role carrying the Assassin modifier (Double Shot is an add-on to it) |
 | `kill` by Deputy | `correctDeputyShoots` / `incorrectDeputyShoots` | Deputy |
 | `kill` by Jailor | `correctJailorExecutes` / `incorrectJailorExecutes` | Jailor |
 | `kill` by Prosecutor | `correctProsecutes` / `incorrectProsecutes` | Prosecutor |
-| `kill` (all other) | `correctKills` / `incorrectKills` | every Impostor role, Sheriff, Officer, Hunter, Veteran, Inquisitor, every Neutral Killing role, any role carrying Crewpostor |
+| `kill` (all other) | `correctKills` / `incorrectKills` | every Impostor role, Sheriff, Officer, Hunter, Veteran, Inquisitor, Doomsayer, every Neutral Killing role, any role carrying Crewpostor |
 | `protect` by Warden | `correctWardenFortifies` / `incorrectWardenFortifies` | Warden |
 | `protect` (all other) | `correctProtects` / `incorrectProtects` | Medic, Mirrorcaster, Oracle |
 | `knight` | `correctProtects` / `incorrectProtects` | Monarch |
@@ -62,6 +69,12 @@ epsilon, so absence does not mean the player stayed.
 - **`kill` vs `death`.** `kill` is a kill the player chose to make, **including a Sheriff misfire
   or a Vigilante misguess that kills the guesser themselves** (self-target, scored as incorrect). `death` is
   an unscored mechanical death. Bucketing `death` into a kill counter inflates it.
+- **The Doomsayer does not guess, as far as the counters go.** `isGuess` is set only for TOU-Mira's
+  `Guess`/`Misguess` cause keys, which only the Vigilante and the Assassin modifier pass. The
+  Doomsayer kills with the cause `Doomsayer`, is judged on factions, and a Doomsayer misguess
+  kills nobody and is never recorded — a guess counter fed by it could never miss.
+- **An Officer can go negative.** A misfire still kills the victim; the mod records it as an
+  ordinary `kill` with `isCorrect: false`, taking TOU-Mira's own ruling over the faction table.
 - **`round_survived` is not emitted for disconnected players**, so round counts do not sum evenly
   across a roster.
 - **`sabotage_started`/`sabotage_fixed` include doors** — closing doors is a sabotage in the game's

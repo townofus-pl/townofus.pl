@@ -9,7 +9,7 @@
  * the disconnect clamp arrives already applied. The counters are for display only — the ranking
  * reads `totalPoints` alone.
  */
-import { isKnownRole, FIRST_MIRA_SEASON } from '@/app/dramaafera/_utils/gameUtils';
+import { isKnownRole, normalizeRoleName, FIRST_MIRA_SEASON } from '@/app/dramaafera/_utils/gameUtils';
 import type { V2Action, V2GamePayload } from '@/app/api/schema/gamesV2';
 
 /** The 22 numeric counters on `game_player_statistics`, frozen at this set (#295). */
@@ -86,6 +86,9 @@ type Flat = keyof CounterSet;
  * grants a guess to any role at all, so any role-set for `kill` would reject legitimate games.
  * The unknown-role check below still covers the case this table exists for — a role TOU-Mira
  * added that we have not seen.
+ *
+ * Entries are registry names, and the performer is resolved to one before it is looked up: the
+ * mod sends `ICustomRole.IdPart` since mod #83, which is `TimeLord`, not `Time Lord`.
  */
 const CLOSED_ROLE_SETS: Record<string, readonly string[]> = {
     protect: ['Medic', 'Mirrorcaster', 'Oracle', 'Warden'],
@@ -96,14 +99,24 @@ const CLOSED_ROLE_SETS: Record<string, readonly string[]> = {
 };
 
 /**
+ * A death marker rather than a role someone played — the same test as the mod's
+ * `RoleHistoryView.IsDeathMarker`. Earlier builds appended one to `imitatorRoles` when the
+ * Imitator died, so `["Sheriff","CrewmateGhost"]` reached the database for a single copy.
+ */
+export function isDeathMarker(role: string): boolean {
+    return role.endsWith('Ghost') || role.endsWith('Afterlife');
+}
+
+/**
  * Which counter an action feeds, from `type` + the performer's role at the time.
+ *
+ * `role` is the registry name, never the raw payload string: comparing the raw string is how
+ * `TimeLord` came to be rejected against a literal `Time Lord`.
  *
  * Returns `null` for the types stored in `game_actions` for the timeline and deliberately not
  * aggregated (`death`, `vote`, `vent_use`, `ability_used`, `win`, `disconnect`, …).
  */
-function bucketFor(action: V2Action): Pair | { flat: Flat } | null {
-    const role = action.performer.role;
-
+function bucketFor(action: V2Action, role: string): Pair | { flat: Flat } | null {
     switch (action.type) {
         case 'kill':
             // A guess first: Double Shot can put a guess in any role's hands, so the flag beats
@@ -165,8 +178,11 @@ export function aggregatePayload(
     };
 
     for (const player of Object.values(payload.players)) {
+        // Copies only: a death marker here is the Imitator dying, which roleHistory already says.
+        const imitatorRoles = player.imitatorRoles.filter((r) => !isDeathMarker(r));
+
         player.roleHistory.forEach((r) => requireKnownRole(r, `${player.name} roleHistory`));
-        player.imitatorRoles.forEach((r) => requireKnownRole(r, `${player.name} imitatorRoles`));
+        imitatorRoles.forEach((r) => requireKnownRole(r, `${player.name} imitatorRoles`));
 
         byPlayerId.set(player.playerId, {
             ...emptyCounters(),
@@ -175,7 +191,7 @@ export function aggregatePayload(
             friendCode: player.friendCode ?? null,
             hashedProductUserId: player.hashedProductUserId ?? null,
             roleHistory: player.roleHistory,
-            imitatorRoles: player.imitatorRoles,
+            imitatorRoles,
             modifiers: player.modifiersHistory,
             win: player.win,
             disconnected: player.disconnected,
@@ -198,8 +214,11 @@ export function aggregatePayload(
             requireKnownRole(action.performer.imitatedRole, `${action.type} imitatedRole`);
         }
 
+        // Known by now, so this is the registry's spelling — every role comparison below uses it.
+        const role = normalizeRoleName(action.performer.role, season);
+
         const allowed = CLOSED_ROLE_SETS[action.type];
-        if (allowed && !allowed.includes(action.performer.role)) {
+        if (allowed && !allowed.includes(role)) {
             throw new PayloadRejected(
                 `"${action.performer.role}" cannot perform "${action.type}" ` +
                     `(expected one of ${allowed.join(', ')}). If TOU-Mira granted it, update ` +
@@ -217,7 +236,7 @@ export function aggregatePayload(
             continue;
         }
 
-        const bucket = bucketFor(action);
+        const bucket = bucketFor(action, role);
         if (!bucket) continue;
 
         if ('flat' in bucket) {
