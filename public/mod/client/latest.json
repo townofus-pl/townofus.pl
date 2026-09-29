@@ -9,12 +9,12 @@
     {
       "name": "malkizhats.bundle",
       "url": "malkizhats.bundle",
-      "sha256": "3206deb40512c95a951ae0a1834997ac48407b0b7a7bad48f13fec5e6f9331b5"
+      "sha256": "d0ccb2ee70ac4a20f009a4d826e0a4c46f3dbb2ae25e9d80fd3f4b427c11deab"
     },
     { 
       "name": "malkizhats.catalog",
       "url": "malkizhats.catalog",
-      "sha256": "e7f49176cdfa79c418bce8a528acc649627811165b76e03dfb96d4bbc89c5515"
+      "sha256": "c6dd5435fa3eb1e664324b45a656630bbe2a3faac16c018f190b8385bd401ef1"
     }
   ]
 }
