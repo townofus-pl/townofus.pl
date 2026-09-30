@@ -1,46 +1,46 @@
 {
 	"date": "20260923",
 	"question": "KTO ZOSTANIE EMPEROREM PO DZISIEJSZEJ SESJI?",
-	"totalVotes": 14,
+	"totalVotes": 12,
 	"votes": [
-		{
-			"nickname": "Bartek",
-			"votes": 2
-		},
-		{
-			"nickname": "Cleopatrie",
-			"votes": 0
-		},
-		{
-			"nickname": "Marzena",
-			"votes": 7
-		},
-		{
-			"nickname": "ziomson",
-			"votes": 0
-		},
-		{
-			"nickname": "Malkiz",
-			"votes": 0
-		},
-		{
-			"nickname": "Subek",
-			"votes": 5
-		},
 		{
 			"nickname": "Utlamo",
 			"votes": 0
+		},
+		{
+			"nickname": "GibkiBonzo",
+			"votes": 3
+		},
+		{
+			"nickname": "Cleopatrie",
+			"votes": 1
+		},
+		{
+			"nickname": "Subek",
+			"votes": 0
+		},
+		{
+			"nickname": "svzki",
+			"votes": 2
+		},
+		{
+			"nickname": "Olivka",
+			"votes": 1
+		},
+		{
+			"nickname": "Milutrink",
+			"votes": 4
+		},
+		{
+			"nickname": "ziomson",
+			"votes": 1
 		},
 		{
 			"nickname": "Quarties",
 			"votes": 0
 		},
 		{
-			"nickname": "Ph4",
-			"votes": 0
-		},
-		{
-			"nickname": "svzki31",
+			"nickname": "Malkiz",
 			"votes": 0
 		}
 	]

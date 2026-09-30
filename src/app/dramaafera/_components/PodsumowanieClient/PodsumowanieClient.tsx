@@ -12,6 +12,7 @@ import SigmasSlide from './SigmasSlide';
 import CweleSlide from './CweleSlide';
 import EmperorHistorySlide from './EmperorHistorySlide';
 import FinalRankingSlide from './FinalRankingSlide';
+import { getRoleIconPath } from '@/app/dramaafera/_utils/gameUtils';
 
 export default function PodsumowanieClient({
     date,
@@ -149,6 +150,47 @@ export default function PodsumowanieClient({
 
     // Oblicz całkowitą liczbę slajdów
     const totalSlides = slides.length;
+
+    // Wczytaj z góry wszystkie grafiki prezentacji, żeby nic nie doładowywało się w trakcie.
+    // Obiekty Image trzymamy w refie, żeby zostały w pamięci przeglądarki do końca prezentacji.
+    const preloadedRef = useRef<HTMLImageElement[]>([]);
+    const [loadedCount, setLoadedCount] = useState(0);
+
+    const preloadUrls = useMemo(() => {
+        const nicknames = new Set([
+            ...weeklyStats.map(p => p.nickname),
+            ...(emperorPoll?.votes.map(v => v.nickname) ?? []),
+            ...topSigmas.map(p => p.nickname),
+            ...topCwele.map(p => p.nickname),
+            ...emperorHistory.map(e => e.nickname),
+            ...rankingAfterSession.map(p => p.nickname),
+        ]);
+        return [...new Set([
+            '/images/DAXD.png',
+            '/images/podium.png',
+            '/images/star.svg',
+            '/images/avatars/placeholder.png',
+            ...[...nicknames].map(n => `/images/avatars/${n}.png`),
+            ...topPlayerGames.flatMap(g => g.detailedStats.playersData.map(p => getRoleIconPath(p.role, seasonId))),
+        ])];
+    }, [weeklyStats, emperorPoll, topSigmas, topCwele, emperorHistory, rankingAfterSession, topPlayerGames, seasonId]);
+
+    useEffect(() => {
+        let cancelled = false;
+        preloadedRef.current = preloadUrls.map(url => {
+            const img = new window.Image();
+            img.src = url;
+            // Błąd też liczy się jako "gotowe" — slajd i tak pokaże placeholder
+            img.decode().catch(() => {}).finally(() => {
+                if (!cancelled) setLoadedCount(c => c + 1);
+            });
+            return img;
+        });
+        return () => { cancelled = true; };
+    }, [preloadUrls]);
+
+    const preload = { loaded: Math.min(loadedCount, preloadUrls.length), total: preloadUrls.length };
+    const imagesReady = loadedCount >= preloadUrls.length;
 
     // Każdy gracz z sesji dokładnie raz, w losowej kolejności. Przy małej sesji lista jest
     // powtarzana, żeby jeden set był szerszy niż ekran (IntroSlide renderuje go 2× dla pętli).
@@ -515,9 +557,12 @@ export default function PodsumowanieClient({
                         {/* Przycisk uruchomienia prezentacji */}
                         <button
                             onClick={togglePresentationFullscreen}
-                            className="inline-flex items-center gap-3 bg-amber-600 hover:bg-amber-700 text-white px-8 py-4 rounded-xl font-bold transition-colors shadow-2xl text-2xl mb-6 hover:scale-105 transform"
+                            disabled={!imagesReady}
+                            className="inline-flex items-center gap-3 bg-amber-600 hover:bg-amber-700 text-white px-8 py-4 rounded-xl font-bold transition-colors shadow-2xl text-2xl mb-6 hover:scale-105 transform disabled:opacity-50 disabled:cursor-wait disabled:hover:scale-100 disabled:hover:bg-amber-600"
                         >
-                            🎬 Rozpocznij Prezentację
+                            {imagesReady
+                                ? '🎬 Rozpocznij Prezentację'
+                                : `⏳ Ładowanie grafik ${preload.loaded}/${preload.total}`}
                         </button>
                         
                         <div className="max-w-md mx-auto">
