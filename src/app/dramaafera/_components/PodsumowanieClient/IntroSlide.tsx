@@ -10,7 +10,8 @@ interface IntroSlideProps {
 }
 
 // Funkcja renderująca finalne intro z logo
-function renderFinalIntro(isFullscreen: boolean, randomAvatars: string[]) {
+// `animate` = false pauzuje taśmę, gdy intro jest zasłonięte (kroki 0-6) — obrazki i tak się doładowują
+function renderFinalIntro(isFullscreen: boolean, randomAvatars: string[], animate: boolean) {
     // Jeśli nie ma jeszcze wygenerowanych avatarów, nie renderuj tła
     if (randomAvatars.length === 0) {
         return (
@@ -39,11 +40,20 @@ function renderFinalIntro(isFullscreen: boolean, randomAvatars: string[]) {
         <div className="relative flex flex-col items-center justify-center h-full overflow-hidden">
             {/* Animowane tło z avatarami - tylko graczy z tego tygodnia */}
             <div className="absolute inset-0 overflow-hidden">
-                <div className="flex h-full animate-scroll-left filter sepia hue-rotate-[315deg] saturate-[2] brightness-75">
-                    {/* Powtarzane sekcje avatarów dla płynnego zapętlenia */}
-                    {[...Array(6)].map((_, setIndex) => (
+                {/* Filtr kolorów siedzi na kafelkach, nie na przesuwanej taśmie: filtr na animowanej
+                    warstwie szerokiej na dziesiątki tysięcy px był przeliczany w każdej klatce */}
+                <div
+                    className="flex w-max h-full animate-scroll-left will-change-transform"
+                    style={{
+                        // ~4 s na kafelek, żeby tempo nie zależało od liczby graczy
+                        animationDuration: `${randomAvatars.length * 4}s`,
+                        animationPlayState: animate ? 'running' : 'paused',
+                    }}
+                >
+                    {/* Dwa identyczne sety — keyframes przesuwają o -50%, czyli dokładnie o jeden */}
+                    {[0, 1].map((setIndex) => (
                         <div key={`set-${setIndex}`} className="flex h-full">
-                            {randomAvatars.slice(setIndex * 16, (setIndex + 1) * 16).map((player, index) => (
+                            {randomAvatars.map((player, index) => (
                                 <div 
                                     key={`${player}-${index}-${setIndex}`} 
                                     className="relative h-full"
@@ -53,7 +63,7 @@ function renderFinalIntro(isFullscreen: boolean, randomAvatars: string[]) {
                                     }}
                                 >
                                     {/* Avatar na całą wysokość ekranu */}
-                                    <div className="relative w-[48rem] h-full overflow-hidden shadow-2xl" style={{ clipPath: 'polygon(25% 0%, 100% 0%, 75% 100%, 0% 100%)' }}>
+                                    <div className="relative w-[48rem] h-full overflow-hidden filter sepia hue-rotate-[315deg] saturate-[2] brightness-75" style={{ clipPath: 'polygon(25% 0%, 100% 0%, 75% 100%, 0% 100%)' }}>
                                         {/* Szare tło pod avatarem (wypełnia przezroczystość) */}
                                         <div className="absolute inset-0" style={{ backgroundColor: '#303030' }}></div>
                                      <AvatarImageFill nickname={player} className="object-cover" style={{ objectPosition: 'center' }} />
@@ -63,8 +73,6 @@ function renderFinalIntro(isFullscreen: boolean, randomAvatars: string[]) {
                         </div>
                     ))}
                 </div>
-                {/* Warstwa rozmycia */}
-                <div className="absolute inset-0 backdrop-blur"></div>
                 {/* Czerwony overlay na całe tło */}
                 <div 
                     className="absolute inset-0 mix-blend-multiply" 
@@ -100,7 +108,7 @@ export default function IntroSlide({ isFullscreen, currentStep, introInitialDela
     const introTexts = ['A', 'AMONG', 'US', 'DRA', 'DRAMA', 'A', 'AFE'];
     
     // ZAWSZE renderuj finalne intro (z logo) na dole jako bazę
-    const finalIntroContent = renderFinalIntro(isFullscreen, randomAvatars);
+    const finalIntroContent = renderFinalIntro(isFullscreen, randomAvatars, currentStep >= 7);
     
     // Kroki 0-6: OGROMNE teksty (placeholdery) - wyświetlane NA WIERZCHU finalnego intro
     if (currentStep >= 0 && currentStep < 7) {

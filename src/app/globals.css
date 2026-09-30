@@ -34,10 +34,11 @@ body {
 /* Animacje dla tła intro */
 @keyframes scroll-left {
     0% {
-        transform: translateX(-25%);
+        transform: translateX(0);
     }
     100% {
-        transform: translateX(-500%);
+        /* Treść to dwa identyczne sety — po przesunięciu o jeden wracamy do punktu wyjścia bez skoku */
+        transform: translateX(-50%);
     }
 }
 
