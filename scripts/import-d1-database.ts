@@ -39,6 +39,7 @@ const TABLE_ORDER = [
     'player_roles',
     'player_modifiers',
     'game_events',
+    'game_actions',
     'meeting_votes',
     'meeting_skip_votes',
     'meeting_jailed_players',
