@@ -1,7 +1,7 @@
 import Image from 'next/image';
 import { UIGameData } from '@/app/dramaafera/_services/games/types';
 import { videotext, formatDate } from './constants';
-import { getRoleIconPath, FIRST_MIRA_SEASON } from '@/app/dramaafera/_utils/gameUtils';
+import { getRoleIconPath } from '@/app/dramaafera/_utils/gameUtils';
 
 interface PlayerHistoryProps {
     seasonId: number;
@@ -120,7 +120,7 @@ export default function PlayerHistory({ nickname, isFullscreen, topPlayerGames, 
                                             alt={playerData.role}
                                             width={squareSize}
                                             height={squareSize}
-                                            className={`object-contain ${seasonId < FIRST_MIRA_SEASON ? 'scale-[1.3]' : ''} ${disconnected ? 'pixelated' : ''}`}
+                                            className={`object-contain scale-[1.3] ${disconnected ? 'pixelated' : ''}`}
                                             style={{
                                                 position: 'relative',
                                                 zIndex: 10,
@@ -168,10 +168,10 @@ export default function PlayerHistory({ nickname, isFullscreen, topPlayerGames, 
 
                                         {/* Protects */}
                                         {playerData.originalStats.correctProtects > 0 && (
-                                            <div className="text-green-500">{playerData.originalStats.correctProtects} CORRECT {seasonId < FIRST_MIRA_SEASON ? 'SHIELD' : 'PROTECT'}{playerData.originalStats.correctProtects > 1 ? 'S' : ''}</div>
+                                            <div className="text-green-500">{playerData.originalStats.correctProtects} CORRECT PROTECT{playerData.originalStats.correctProtects > 1 ? 'S' : ''}</div>
                                         )}
                                         {playerData.originalStats.incorrectProtects > 0 && (
-                                            <div className="text-red-500">{playerData.originalStats.incorrectProtects} INCORRECT {seasonId < FIRST_MIRA_SEASON ? 'SHIELD' : 'PROTECT'}{playerData.originalStats.incorrectProtects > 1 ? 'S' : ''}</div>
+                                            <div className="text-red-500">{playerData.originalStats.incorrectProtects} INCORRECT PROTECT{playerData.originalStats.incorrectProtects > 1 ? 'S' : ''}</div>
                                         )}
 
                                         {/* Warden Fortifies */}

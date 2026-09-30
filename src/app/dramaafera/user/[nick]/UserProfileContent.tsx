@@ -1,7 +1,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { getUserProfileStats, getAllPlayerNames, getPlayerRankingHistory, getPlayerTopGames, getPlayerVotingStats, getPlayerStars } from "../../_services";
-import { convertNickToUrlSlug, getPlayerAvatarPath, FIRST_MIRA_SEASON } from "@/app/dramaafera/_utils/gameUtils";
+import { convertNickToUrlSlug, getPlayerAvatarPath } from "@/app/dramaafera/_utils/gameUtils";
 import { buildSeasonUrl } from "@/app/dramaafera/_utils/seasonHelpers";
 import { notFound } from "next/navigation";
 import CollapsibleSection from "./CollapsibleSection";
@@ -280,7 +280,7 @@ export async function UserProfileContent({ nick, seasonId }: UserProfileContentP
                                 {playerStats.correctProtects}
                             </div>
                             <div className="text-sm text-zinc-400">
-                                {seasonId < FIRST_MIRA_SEASON ? 'Correct shields' : 'Correct protects'}
+                                Correct protects
                             </div>
                         </div>
 
@@ -289,7 +289,7 @@ export async function UserProfileContent({ nick, seasonId }: UserProfileContentP
                                 {playerStats.incorrectProtects}
                             </div>
                             <div className="text-sm text-zinc-400">
-                                {seasonId < FIRST_MIRA_SEASON ? 'Incorrect shields' : 'Incorrect protects'}
+                                Incorrect protects
                             </div>
                         </div>
 

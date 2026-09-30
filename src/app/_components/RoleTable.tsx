@@ -5,7 +5,7 @@ import Image from 'next/image';
 import Link from 'next/link';
 import type { UIGameData, UIPlayerData } from '@/app/dramaafera/_services/games/types';
 import { buildSeasonUrl } from '@/app/dramaafera/_utils/seasonHelpers';
-import { convertRoleToUrlSlug, FIRST_MIRA_SEASON } from '@/app/dramaafera/_utils/gameUtils';
+import { convertRoleToUrlSlug } from '@/app/dramaafera/_utils/gameUtils';
 import { getRoleIconPath } from '@/app/dramaafera/_utils/gameUtils';
 
 interface RoleDayStats {
@@ -360,7 +360,7 @@ export default function RoleTable({ roles, reversedGames, detailedGames, date, h
                           {/* Statystyki protectów */}
                           {(!hideZeroStats || (roleStats.correctProtects > 0 || roleStats.incorrectProtects > 0)) && (
                             <div className="bg-zinc-700/60 rounded-lg p-3">
-                              <div className="text-sm font-medium text-zinc-300 mb-1">{seasonId < FIRST_MIRA_SEASON ? 'Medic Shields' : 'Protects'}</div>
+                              <div className="text-sm font-medium text-zinc-300 mb-1">Protects</div>
                               {(!hideZeroStats || roleStats.correctProtects > 0) && (
                                 <div className="text-green-400">Correct: {roleStats.correctProtects}</div>
                               )}

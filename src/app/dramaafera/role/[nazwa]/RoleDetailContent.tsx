@@ -614,7 +614,7 @@ export async function RoleDetailContent({ nazwa, seasonId }: RoleDetailContentPr
                                     {roleStats.correctProtects}
                                 </div>
                                 <div className="text-sm text-zinc-400">
-                                    {seasonId < FIRST_MIRA_SEASON ? 'Correct shields' : 'Correct protects'}
+                                    Correct protects
                                 </div>
                             </div>
                         )}
@@ -625,7 +625,7 @@ export async function RoleDetailContent({ nazwa, seasonId }: RoleDetailContentPr
                                     {roleStats.incorrectProtects}
                                 </div>
                                 <div className="text-sm text-zinc-400">
-                                    {seasonId < FIRST_MIRA_SEASON ? 'Incorrect shields' : 'Incorrect protects'}
+                                    Incorrect protects
                                 </div>
                             </div>
                         )}
