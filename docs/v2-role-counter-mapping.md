@@ -37,11 +37,11 @@ On `swap` the field may be **absent**, which means the rule declined to score �
 
 | Action type | Counter | Performer roles that may produce it |
 |---|---|---|
-| `kill` where `isGuess = true` | `correctGuesses` / `incorrectGuesses` | Vigilante, any role carrying the Assassin modifier (Double Shot is an add-on to it) |
+| `kill` where `isGuess = true` | `correctGuesses` / `incorrectGuesses` | Vigilante, Doomsayer, any role carrying the Assassin modifier (Double Shot is an add-on to it) |
 | `kill` by Deputy | `correctDeputyShoots` / `incorrectDeputyShoots` | Deputy |
 | `kill` by Jailor | `correctJailorExecutes` / `incorrectJailorExecutes` | Jailor |
 | `kill` by Prosecutor | `correctProsecutes` / `incorrectProsecutes` | Prosecutor |
-| `kill` (all other) | `correctKills` / `incorrectKills` | every Impostor role, Sheriff, Officer, Hunter, Veteran, Inquisitor, Doomsayer, every Neutral Killing role, any role carrying Crewpostor |
+| `kill` (all other) | `correctKills` / `incorrectKills` | every Impostor role, Sheriff, Officer, Hunter, Veteran, Inquisitor, every Neutral Killing role, any role carrying Crewpostor |
 | `protect` by Warden | `correctWardenFortifies` / `incorrectWardenFortifies` | Warden |
 | `protect` (all other) | `correctProtects` / `incorrectProtects` | Medic, Mirrorcaster, Oracle |
 | `knight` | `correctProtects` / `incorrectProtects` | Monarch |
@@ -69,10 +69,13 @@ epsilon, so absence does not mean the player stayed.
 - **`kill` vs `death`.** `kill` is a kill the player chose to make, **including a Sheriff misfire
   or a Vigilante misguess that kills the guesser themselves** (self-target, scored as incorrect). `death` is
   an unscored mechanical death. Bucketing `death` into a kill counter inflates it.
-- **The Doomsayer does not guess, as far as the counters go.** `isGuess` is set only for TOU-Mira's
-  `Guess`/`Misguess` cause keys, which only the Vigilante and the Assassin modifier pass. The
-  Doomsayer kills with the cause `Doomsayer`, is judged on factions, and a Doomsayer misguess
-  kills nobody and is never recorded — a guess counter fed by it could never miss.
+- **A Doomsayer miss is the one `kill` in which nobody dies.** Since mod `2ec7364` the Doomsayer's
+  guesses carry `isGuess`, so both hits and misses land in the guess counters. A miss arrives as
+  `kill` with `isGuess: true`, `isCorrect: false`, no `causeOfDeath`, and a `target` who is the
+  guessed player — alive. A Vigilante or Assassin miss differs: its `target` is the guesser, who
+  dies. Anything reading a `kill` as "the target died" must exclude this case. The miss is
+  reported by the Doomsayer's own client, so a player on an older client build reports none, and
+  games captured before that mod build contain no misses at all.
 - **An Officer can go negative.** A misfire still kills the victim; the mod records it as an
   ordinary `kill` with `isCorrect: false`, taking TOU-Mira's own ruling over the faction table.
 - **`round_survived` is not emitted for disconnected players**, so round counts do not sum evenly

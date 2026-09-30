@@ -2,11 +2,15 @@
 // Safe to import from client components — no server-only dependencies.
 
 import type { UIPlayerData } from '../_services/games/types';
+import { FIRST_MIRA_SEASON } from '../_constants/seasons';
 
-export function formatPlayerStatsWithColors(player: UIPlayerData, maxTasks?: number): Array<{ text: string; color?: string }> {
+export function formatPlayerStatsWithColors(player: UIPlayerData, seasonId: number, maxTasks?: number): Array<{ text: string; color?: string }> {
   const statParts: Array<{ text: string; color?: string }> = [];
 
   // "label" jest po angielsku umyślnie!
+  // Same counters, but before Mira they were Medic-only and the league still calls them shields.
+  const protect = seasonId < FIRST_MIRA_SEASON ? 'Medic Shields' : 'Protects';
+
   const statLabels: Record<string, { label: string; color?: string }> = {
     'correctKills': { label: 'Correct Kills', color: '#22C55E' }, // zielony
     'incorrectKills': { label: 'Incorrect Kills', color: '#EF4444' }, // czerwony
@@ -18,8 +22,8 @@ export function formatPlayerStatsWithColors(player: UIPlayerData, maxTasks?: num
     'incorrectDeputyShoots': { label: 'Incorrect Deputy Shoots', color: '#EF4444' },
     'correctJailorExecutes': { label: 'Correct Jailor Executes', color: '#22C55E' },
     'incorrectJailorExecutes': { label: 'Incorrect Jailor Executes', color: '#EF4444' },
-    'correctProtects': { label: 'Correct Protects', color: '#22C55E' },
-    'incorrectProtects': { label: 'Incorrect Protects', color: '#EF4444' },
+    'correctProtects': { label: `Correct ${protect}`, color: '#22C55E' },
+    'incorrectProtects': { label: `Incorrect ${protect}`, color: '#EF4444' },
     'correctWardenFortifies': { label: 'Correct Warden Fortifies', color: '#22C55E' },
     'incorrectWardenFortifies': { label: 'Incorrect Warden Fortifies', color: '#EF4444' },
     'janitorCleans': { label: 'Janitor Cleans' },

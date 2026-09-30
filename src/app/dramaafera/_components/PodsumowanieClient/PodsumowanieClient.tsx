@@ -150,43 +150,20 @@ export default function PodsumowanieClient({
     // Oblicz całkowitą liczbę slajdów
     const totalSlides = slides.length;
 
-    // Funkcja do generowania losowej sekwencji avatarów z warunkiem odległości
-    const generateRandomAvatars = (playerList: string[], count: number) => {
-        const result: string[] = [];
-        const recentPlayers: string[] = [];
-        const minDistance = Math.min(5, Math.floor(playerList.length / 2)); // Dostosuj minDistance do liczby graczy
-
-        for (let i = 0; i < count; i++) {
-            // Dostępni gracze to wszyscy minus ostatnich X
-            const availablePlayers = playerList.filter(player => !recentPlayers.includes(player));
-            
-            // Jeśli nie ma dostępnych graczy, resetuj listę ostatnich
-            const playersToChooseFrom = availablePlayers.length > 0 ? availablePlayers : playerList;
-            
-            // Losuj gracza
-            const randomPlayer = playersToChooseFrom[Math.floor(Math.random() * playersToChooseFrom.length)];
-            result.push(randomPlayer);
-            
-            // Dodaj do listy ostatnich
-            recentPlayers.push(randomPlayer);
-            
-            // Zachowaj tylko ostatnich X
-            if (recentPlayers.length > minDistance) {
-                recentPlayers.shift();
-            }
-        }
-
-        return result;
-    };
-
-    // Generuj losową sekwencję avatarów - aktualizowana gdy zmienią się weeklyStats
+    // Każdy gracz z sesji dokładnie raz, w losowej kolejności. Przy małej sesji lista jest
+    // powtarzana, żeby jeden set był szerszy niż ekran (IntroSlide renderuje go 2× dla pętli).
     const [randomAvatars, setRandomAvatars] = useState<string[]>([]);
-    
+
     useEffect(() => {
-        if (weeklyStats.length > 0) {
-            const playerNicknames = weeklyStats.map(p => p.nickname);
-            setRandomAvatars(generateRandomAvatars(playerNicknames, 96)); // 6 setów po 16 avatarów
+        if (weeklyStats.length === 0) return;
+        const shuffled = weeklyStats.map(p => p.nickname);
+        for (let i = shuffled.length - 1; i > 0; i--) {
+            const j = Math.floor(Math.random() * (i + 1));
+            [shuffled[i], shuffled[j]] = [shuffled[j], shuffled[i]];
         }
+        const avatars = [...shuffled];
+        while (avatars.length < 8) avatars.push(...shuffled);
+        setRandomAvatars(avatars);
     }, [weeklyStats]);
 
     // Automatyczne przełączanie kroków w slajdzie intro (kroki 0-6 to teksty A-G, krok 7 to finalne intro)

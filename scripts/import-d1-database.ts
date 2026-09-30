@@ -39,6 +39,7 @@ const TABLE_ORDER = [
     'player_roles',
     'player_modifiers',
     'game_events',
+    'game_actions',
     'meeting_votes',
     'meeting_skip_votes',
     'meeting_jailed_players',
@@ -203,11 +204,15 @@ function extractTableName(statement: string): string | null {
  * added `friendCode` and `hashedProductUserId`: the very next export refused to parse, with an
  * error that pointed at the row rather than at the schema change.
  */
-/** Splits a VALUES tuple on top-level commas, leaving quoted strings (which may contain them). */
+/**
+ * Splits a VALUES tuple on top-level commas, leaving quoted strings and function calls (which may
+ * contain them) whole — the export wraps multi-line text in `replace(replace('…','\r',char(13)),…)`.
+ */
 function splitSqlValues(tuple: string): string[] {
     const values: string[] = [];
     let current = '';
     let inString = false;
+    let depth = 0;
 
     for (let i = 0; i < tuple.length; i += 1) {
         const char = tuple[i];
@@ -229,7 +234,9 @@ function splitSqlValues(tuple: string): string[] {
             current += char;
             continue;
         }
-        if (char === ',') {
+        if (char === '(') depth += 1;
+        if (char === ')') depth -= 1;
+        if (char === ',' && depth === 0) {
             values.push(current.trim());
             current = '';
             continue;
@@ -311,6 +318,50 @@ function applyColumnRenames(statement: string): string {
     return COLUMN_RENAMES.reduce((sql, [from, to]) => sql.replace(from, to), statement);
 }
 
+/**
+ * D1 refuses any statement over 100 KB (`SQLITE_TOOBIG`). Production wrote the full `.cfg` into
+ * `drama_afera_settings.content` through a bound parameter, so the export can hold a literal the
+ * import cannot replay. Such a row is inserted with that column empty, then appended in chunks.
+ */
+const MAX_STATEMENT_BYTES = 90_000;
+const CHUNK_CHARS = 20_000;
+
+function splitOversizedInsert(statement: string): string[] {
+    if (Buffer.byteLength(statement, 'utf8') <= MAX_STATEMENT_BYTES) return [statement];
+
+    const match = statement.match(/^INSERT INTO "([^"]+)" \(([^)]*)\) VALUES\(([\s\S]*)\);$/);
+    if (!match) throw new Error(`Nie udało się sparsować za długiego INSERT-a: ${statement.slice(0, 200)}...`);
+    const [, table, columnList, tuple] = match;
+
+    const columns = columnList.split(',').map((column) => column.trim().replace(/^"|"$/g, ''));
+    const values = splitSqlValues(tuple);
+    const idIndex = columns.indexOf('id');
+    if (columns.length !== values.length || idIndex === -1) {
+        throw new Error(`Za długi INSERT ${table} bez rozpoznawalnych kolumn/id: ${statement.slice(0, 200)}...`);
+    }
+
+    const longest = values.reduce((best, value, index) => (value.length > values[best].length ? index : best), 0);
+    const value = values[longest];
+    // The export wraps a literal in one `replace(…,'\\n',char(10))` per escaped control character.
+    const literal = /^((?:replace\()*)'([\s\S]*)'((?:,'\\[a-z]',char\(\d+\)\))*)$/.exec(value);
+    if (!literal) throw new Error(`Kolumna "${columns[longest]}" w ${table} nie jest literałem tekstowym.`);
+    const [, prefix, body, suffix] = literal;
+    const asSql = (text: string) => `${prefix}'${text}'${suffix}`;
+
+    const column = columns[longest];
+    const statements = [`INSERT INTO "${table}" (${columnList}) VALUES(${values.map((v, i) => (i === longest ? "''" : v)).join(',')});`];
+    for (let start = 0; start < body.length; ) {
+        let end = Math.min(start + CHUNK_CHARS, body.length);
+        // Never cut inside an escaped '' or between the backslash and letter of an escaped \r / \n.
+        while (end < body.length && (body[end - 1] === "'" || body[end - 1] === '\\')) end -= 1;
+        statements.push(
+            `UPDATE "${table}" SET "${column}" = "${column}" || ${asSql(body.slice(start, end))} WHERE "id" = ${values[idIndex]};`,
+        );
+        start = end;
+    }
+    return statements;
+}
+
 function buildPreparedData(insertStatements: string[]): { importStatements: string[]; restoreStatements: string[] } {
     const groupedStatements = new Map<string, string[]>();
     const restoreStatements: string[] = [];
@@ -339,7 +390,7 @@ function buildPreparedData(insertStatements: string[]): { importStatements: stri
         );
 
         const currentGroup = groupedStatements.get(tableName) ?? [];
-        currentGroup.push(normalizedStatement);
+        currentGroup.push(...splitOversizedInsert(normalizedStatement));
         groupedStatements.set(tableName, currentGroup);
     }
 

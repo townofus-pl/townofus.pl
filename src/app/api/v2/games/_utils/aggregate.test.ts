@@ -131,11 +131,21 @@ describe('counter routing', () => {
         expect(killBy('JAILOR').correctJailorExecutes).toBe(1);
     });
 
-    it('keeps the Officer and the Doomsayer in kills — neither produces a guess', () => {
+    it('keeps an Officer misfire in kills', () => {
         expect(killBy('Officer', { isCorrect: false }).incorrectKills).toBe(1);
-        const doomsayer = killBy('Doomsayer', { causeOfDeath: 'Doomsayer' });
-        expect(doomsayer.correctKills).toBe(1);
-        expect(doomsayer.correctGuesses).toBe(0);
+    });
+
+    it('counts a Doomsayer hit as a guess, not a kill', () => {
+        const doomsayer = killBy('Doomsayer', { isGuess: true, causeOfDeath: 'Doomsayer' });
+        expect(doomsayer.correctGuesses).toBe(1);
+        expect(doomsayer.correctKills).toBe(0);
+    });
+
+    it('counts a Doomsayer miss as an incorrect guess — the target lives', () => {
+        const doomsayer = killBy('Doomsayer', { isGuess: true, isCorrect: false });
+        expect(doomsayer.incorrectGuesses).toBe(1);
+        expect(doomsayer.incorrectKills).toBe(0);
+        expect(doomsayer.totalPoints).toBe(0);
     });
 
     it("shares the protect counters with the Monarch's knight", () => {

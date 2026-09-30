@@ -170,7 +170,7 @@ export function PlayerStatsSection({ playersData, maxTasks, seasonId }: PlayerSt
                             {/* Statystyki jako tekst */}
                             <div className="text-base leading-relaxed flex flex-wrap items-center gap-1">
                                 {(() => {
-                                    const stats = formatPlayerStatsWithColors(player, maxTasks);
+                                    const stats = formatPlayerStatsWithColors(player, seasonId, maxTasks);
                                     return stats.length > 0 ? (
                                         stats.map((stat, statIndex) => (
                                             <span key={statIndex}>
