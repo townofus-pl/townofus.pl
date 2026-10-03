@@ -66,6 +66,8 @@ export default function PlayerTable({ players, reversedGames, detailedGames, dat
       incorrectAltruistRevives: 0,
       correctSwaps: 0,
       incorrectSwaps: 0,
+      correctVotes: 0,
+      incorrectVotes: 0,
       timesRevived: 0,
       timesKilled: 0,
       bodiesReported: 0,
@@ -111,6 +113,9 @@ export default function PlayerTable({ players, reversedGames, detailedGames, dat
       aggregatedStats.correctGuesses += stats.correctGuesses || 0;
       aggregatedStats.incorrectGuesses += stats.incorrectGuesses || 0;
       aggregatedStats.janitorCleans += stats.janitorCleans || 0;
+      // v2 only: votes counted with their weight (a Knight's decision is several votes).
+      aggregatedStats.correctVotes += stats.correctVotes || 0;
+      aggregatedStats.incorrectVotes += stats.incorrectVotes || 0;
       
       // Dodaj przeżyte rundy dla tego gracza
       aggregatedStats.survivedRounds += stats.survivedRounds || 0;
@@ -387,6 +392,19 @@ export default function PlayerTable({ players, reversedGames, detailedGames, dat
                               )}
                               {(!hideZeroStats || playerStats.incorrectAltruistRevives > 0) && (
                                 <div className="text-red-400">Incorrect: {playerStats.incorrectAltruistRevives}</div>
+                              )}
+                            </div>
+                          )}
+
+                          {/* Statystyki głosów (v2) */}
+                          {(!hideZeroStats || (playerStats.correctVotes > 0 || playerStats.incorrectVotes > 0)) && (
+                            <div className="bg-zinc-700/60 rounded-lg p-3">
+                              <div className="text-sm font-medium text-zinc-300 mb-1">Votes</div>
+                              {(!hideZeroStats || playerStats.correctVotes > 0) && (
+                                <div className="text-green-400">Correct: {playerStats.correctVotes}</div>
+                              )}
+                              {(!hideZeroStats || playerStats.incorrectVotes > 0) && (
+                                <div className="text-red-400">Incorrect: {playerStats.incorrectVotes}</div>
                               )}
                             </div>
                           )}
