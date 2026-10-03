@@ -10,6 +10,8 @@ export function formatPlayerStatsWithColors(player: UIPlayerData, seasonId: numb
   // "label" jest po angielsku umyślnie!
   // Same counters, but before Mira they were Medic-only and the league still calls them shields.
   const protect = seasonId < FIRST_MIRA_SEASON ? 'Medic Shields' : 'Protects';
+  // From Mira on, the Time Lord also revives. The counter is not for the Altruist alone.
+  const revive = seasonId < FIRST_MIRA_SEASON ? 'Altruist Revives' : 'Revives';
 
   const statLabels: Record<string, { label: string; color?: string }> = {
     'correctKills': { label: 'Correct Kills', color: '#22C55E' }, // zielony
@@ -27,8 +29,8 @@ export function formatPlayerStatsWithColors(player: UIPlayerData, seasonId: numb
     'correctWardenFortifies': { label: 'Correct Warden Fortifies', color: '#22C55E' },
     'incorrectWardenFortifies': { label: 'Incorrect Warden Fortifies', color: '#EF4444' },
     'janitorCleans': { label: 'Janitor Cleans' },
-    'correctAltruistRevives': { label: 'Correct Altruist Revives', color: '#22C55E' },
-    'incorrectAltruistRevives': { label: 'Incorrect Altruist Revives', color: '#EF4444' },
+    'correctAltruistRevives': { label: `Correct ${revive}`, color: '#22C55E' },
+    'incorrectAltruistRevives': { label: `Incorrect ${revive}`, color: '#EF4444' },
     'correctSwaps': { label: 'Correct Swaps', color: '#22C55E' },
     'incorrectSwaps': { label: 'Incorrect Swaps', color: '#EF4444' },
     'correctVotes': { label: 'Correct Votes', color: '#22C55E' },
