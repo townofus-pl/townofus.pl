@@ -100,13 +100,13 @@ describe('counter routing', () => {
         expect(row.correctDeputyShoots).toBe(0);
     });
 
-    it('sends Warden to fortifies and every other protector to protects', () => {
+    it('sends every protector to protects, the Warden included', () => {
         const warden = one(
             [player({ ...sheriff, roleHistory: ['Warden'] }), victim],
             [act({ type: 'protect', isCorrect: true, performer: { playerId: 1, role: 'Warden' } })],
         );
-        expect(warden.correctWardenFortifies).toBe(1);
-        expect(warden.correctProtects).toBe(0);
+        expect(warden.correctProtects).toBe(1);
+        expect(warden.correctWardenFortifies).toBe(0);
 
         const oracle = one(
             [player({ ...sheriff, roleHistory: ['Oracle'] }), victim],

@@ -350,7 +350,9 @@ export async function UserProfileContent({ nick, seasonId }: UserProfileContentP
                             </div>
                         </div>
 
-                        {/* Statystyki Warden Fortifies */}
+                        {/* Statystyki Warden Fortifies — od Miry fortify Wardena liczy się jako protect */}
+                        {seasonId < FIRST_MIRA_SEASON && (
+                        <>
                         <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
                             <div className="text-xl font-bold text-green-400">
                                 {playerStats.correctWardenFortifies}
@@ -368,6 +370,8 @@ export async function UserProfileContent({ nick, seasonId }: UserProfileContentP
                                 Incorrect Warden fortifies
                             </div>
                         </div>
+                        </>
+                        )}
 
                         {/* Statystyki Altruist Revives */}
                         <div className="text-center p-4 bg-zinc-800/30 rounded-lg">

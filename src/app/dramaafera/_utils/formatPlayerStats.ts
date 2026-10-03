@@ -30,7 +30,9 @@ export function formatPlayerStatsWithColors(player: UIPlayerData, seasonId: numb
     'correctAltruistRevives': { label: 'Correct Altruist Revives', color: '#22C55E' },
     'incorrectAltruistRevives': { label: 'Incorrect Altruist Revives', color: '#EF4444' },
     'correctSwaps': { label: 'Correct Swaps', color: '#22C55E' },
-    'incorrectSwaps': { label: 'Incorrect Swaps', color: '#EF4444' }
+    'incorrectSwaps': { label: 'Incorrect Swaps', color: '#EF4444' },
+    'correctVotes': { label: 'Correct Votes', color: '#22C55E' },
+    'incorrectVotes': { label: 'Incorrect Votes', color: '#EF4444' }
   };
 
   const stats = player.originalStats;

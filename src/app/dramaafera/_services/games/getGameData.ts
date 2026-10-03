@@ -9,6 +9,7 @@ import {
 } from '@/app/dramaafera/_utils/gameUtils';
 import { calculateWinnerFromStats } from './winCalculator';
 import { buildPlayerStats } from './_buildPlayerStats';
+import { countVotes } from './_countVotes';
 
 // Fetch detailed game data
 // Player relations are selected down to `name` on purpose. Identity columns
@@ -78,6 +79,11 @@ export async function getGameData(gameId: string): Promise<UIGameData | null> {
       gameEvents: {
         where: { ...withoutDeleted },
         orderBy: { timestamp: 'asc' }
+      },
+      // v2 only. The mod scores crew votes as `vote` actions; v1 games have none.
+      gameActions: {
+        where: { type: 'vote', ...withoutDeleted },
+        select: { isCorrect: true, detail: true, performer: { select: { name: true } } }
       }
     }
   });
@@ -96,14 +102,21 @@ export async function getGameData(gameId: string): Promise<UIGameData | null> {
     winnerColors[winner.player.name] = getRoleColor(displayRoleName, game.season);
   });
 
-  const playersData: UIPlayerData[] = game.gamePlayerStatistics.map(stat =>
-    buildPlayerStats(stat, {
+  const votes = countVotes(game.gameActions);
+  const playersData: UIPlayerData[] = game.gamePlayerStatistics.map(stat => {
+    const player = buildPlayerStats(stat, {
       useDisconnectedForDeaths: true,
       maxTasks: game.maxTasks,
       meetingsUndefined: true,
       season: game.season,
-    })
-  );
+    });
+    const own = votes.get(player.nickname);
+    if (own) {
+      player.originalStats.correctVotes = own.correct;
+      player.originalStats.incorrectVotes = own.incorrect;
+    }
+    return player;
+  });
 
   // Build meetings data
   const meetings: UIMeetingData[] = game.meetings.map(meeting => {
@@ -166,3 +179,4 @@ export async function getGameData(gameId: string): Promise<UIGameData | null> {
     }
   };
 }
+
