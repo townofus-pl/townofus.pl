@@ -135,7 +135,7 @@ function generateRoleStats(allGames: UIGameData[], targetRole: string, seasonId:
                     incorrectKills: 0
                 };
                 current.games++;
-                if (player.originalStats) addGame(byPlayer, player.nickname, player.originalStats, seasonId, false);
+                if (player.originalStats) addGame(byPlayer, player.nickname, player.originalStats, seasonId, false, targetRole);
 
                 if (player.win) {
                     totalWins++;
@@ -495,7 +495,7 @@ export async function RoleDetailContent({ nazwa, seasonId }: RoleDetailContentPr
 
                     {seasonId >= FIRST_MIRA_SEASON && (
                         <div className="mb-4">
-                            <PlayerStatsBreakdown breakdown={roleStats.byPlayer} janitorCleans={roleStats.janitorCleans} seasonId={seasonId} hideZeroStats={true} rows="player" variant="wide" />
+                            <PlayerStatsBreakdown breakdown={roleStats.byPlayer} seasonId={seasonId} hideZeroStats={true} rows="player" variant="wide" />
                         </div>
                     )}
 

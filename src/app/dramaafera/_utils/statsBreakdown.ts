@@ -23,27 +23,37 @@ export type CategoryKey = 'kills' | 'guesses' | 'protects' | 'other' | 'votes';
 export type Pair = { correct: number; incorrect: number };
 
 /**
- * The league's grouping (Malkiz, 2026-10): every kill in one row whatever the role (a Jailor's
+ * The league's grouping (Malkiz, 2026-10): every kill in one group whatever the role (a Jailor's
  * execute and a Deputy's shot are kills), guesses, protects, votes, and everything else under
- * "Other". From season 4 a Warden's fortify is a protect. Before Mira it was its own Warden
- * statistic, and it goes under Other rather than into the Medic's shields.
+ * "Other": prosecutes, revives, swaps, Janitor cleans and the Monarch's knighting.
+ *
+ * `role` is the role the player had in that game. The database files a Monarch's knighting in
+ * the protect columns (there is no knight column), and a Monarch protects in no other way, so a
+ * Monarch's protects are moved to Other here. From season 4 a Warden's fortify is a protect.
+ * Before Mira it was its own Warden statistic, and it goes under Other.
  */
-export function categorize(s: GameCounters, seasonId: number): Record<CategoryKey, Pair> {
+export function categorize(s: GameCounters, seasonId: number, role?: string): Record<CategoryKey, Pair> {
   const n = (v?: number) => v || 0;
   const mira = seasonId >= FIRST_MIRA_SEASON;
+  const monarch = !!role && normalizeRoleName(role, seasonId) === 'Monarch';
+  const protects = {
+    correct: n(s.correctProtects) + (mira ? n(s.correctWardenFortifies) : 0),
+    incorrect: n(s.incorrectProtects) + (mira ? n(s.incorrectWardenFortifies) : 0),
+  };
+  const knights = monarch ? protects : { correct: 0, incorrect: 0 };
   return {
     kills: {
       correct: n(s.correctKills) + n(s.correctJailorExecutes) + n(s.correctDeputyShoots),
       incorrect: n(s.incorrectKills) + n(s.incorrectJailorExecutes) + n(s.incorrectDeputyShoots),
     },
     guesses: { correct: n(s.correctGuesses), incorrect: n(s.incorrectGuesses) },
-    protects: {
-      correct: n(s.correctProtects) + (mira ? n(s.correctWardenFortifies) : 0),
-      incorrect: n(s.incorrectProtects) + (mira ? n(s.incorrectWardenFortifies) : 0),
-    },
+    protects: monarch ? { correct: 0, incorrect: 0 } : protects,
     other: {
-      correct: n(s.correctProsecutes) + n(s.correctAltruistRevives) + n(s.correctSwaps) + (mira ? 0 : n(s.correctWardenFortifies)),
-      incorrect: n(s.incorrectProsecutes) + n(s.incorrectAltruistRevives) + n(s.incorrectSwaps) + (mira ? 0 : n(s.incorrectWardenFortifies)),
+      // A Janitor's clean has no verdict, and the league counts it as done: correct.
+      correct: n(s.correctProsecutes) + n(s.correctAltruistRevives) + n(s.correctSwaps) + n(s.janitorCleans)
+        + knights.correct + (mira ? 0 : n(s.correctWardenFortifies)),
+      incorrect: n(s.incorrectProsecutes) + n(s.incorrectAltruistRevives) + n(s.incorrectSwaps)
+        + knights.incorrect + (mira ? 0 : n(s.incorrectWardenFortifies)),
     },
     votes: { correct: n(s.correctVotes), incorrect: n(s.incorrectVotes) },
   };
@@ -66,8 +76,12 @@ export function roleLabel(role: string, seasonId: number): string {
  * false: the roles table breaks a role down by the players who played it, and a player's name
  * must stay as it is.
  */
-export function addGame(breakdown: RoleBreakdown, key: string, counters: GameCounters, seasonId: number, keyIsRole = true): void {
-  const add = categorize(counters, seasonId);
+/**
+ * `role` is the player's role in that game. It defaults to the key, which is right whenever the
+ * rows are roles. When the rows are players, pass the role explicitly.
+ */
+export function addGame(breakdown: RoleBreakdown, key: string, counters: GameCounters, seasonId: number, keyIsRole = true, role?: string): void {
+  const add = categorize(counters, seasonId, role ?? (keyIsRole ? key : undefined));
   const row = breakdown[keyIsRole ? roleLabel(key, seasonId) : key] ??= {
     games: 0,
     categories: { kills: { correct: 0, incorrect: 0 }, guesses: { correct: 0, incorrect: 0 },

@@ -445,9 +445,8 @@ export async function UserProfileContent({ nick, seasonId }: UserProfileContentP
                     {playerStats.roleBreakdown && (
                         <PlayerStatsBreakdown
                             breakdown={playerStats.roleBreakdown}
-                            janitorCleans={playerStats.janitorCleans}
                             seasonId={seasonId}
-                            hideZeroStats={true}
+                            hideZeroStats={false}
                             variant="wide"
                         />
                     )}

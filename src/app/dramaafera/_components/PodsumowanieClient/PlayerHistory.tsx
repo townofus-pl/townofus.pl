@@ -153,7 +153,7 @@ export default function PlayerHistory({ nickname, isFullscreen, topPlayerGames, 
                                     <div className={`text-center mt-2 ${isFullscreen ? 'text-sm' : 'text-xs'} leading-tight`}>
                                         {/* Od sezonu 4 te same grupy co w Wynikach dnia (Malkiz, 2026-10). */}
                                         {seasonId >= FIRST_MIRA_SEASON && (() => {
-                                            const g = categorize(playerData.originalStats, seasonId);
+                                            const g = categorize(playerData.originalStats, seasonId, playerData.roleHistory?.[playerData.roleHistory.length - 1] ?? playerData.role);
                                             const rows: Array<[number, number, string, string]> = [
                                                 [g.kills.correct, g.kills.incorrect, 'KILL', 'S'],
                                                 [g.guesses.correct, g.guesses.incorrect, 'GUESS', 'ES'],
@@ -169,9 +169,6 @@ export default function PlayerHistory({ nickname, isFullscreen, topPlayerGames, 
                                                             {bad > 0 && <div className="text-red-500">{bad} INCORRECT {word}{bad > 1 ? plural : ''}</div>}
                                                         </div>
                                                     ))}
-                                                    {playerData.originalStats.janitorCleans > 0 && (
-                                                        <div className="text-gray-400">{playerData.originalStats.janitorCleans} CLEAN{playerData.originalStats.janitorCleans > 1 ? 'S' : ''}</div>
-                                                    )}
                                                 </>
                                             );
                                         })()}

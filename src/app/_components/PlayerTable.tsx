@@ -314,7 +314,6 @@ export default function PlayerTable({ players, reversedGames, detailedGames, dat
 
                         <PlayerStatsBreakdown
                           breakdown={playerStats.byRole}
-                          janitorCleans={playerStats.janitorCleans}
                           seasonId={seasonId}
                           hideZeroStats={hideZeroStats}
                         />

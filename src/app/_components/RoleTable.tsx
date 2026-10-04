@@ -123,7 +123,7 @@ export default function RoleTable({ roles, reversedGames, detailedGames, date, h
         if (!playerData.originalStats) return;
         
         const stats = playerData.originalStats;
-        addGame(aggregatedStats.byPlayer, playerData.nickname, stats, seasonId, false);
+        addGame(aggregatedStats.byPlayer, playerData.nickname, stats, seasonId, false, roleName);
 
         // Sumuj wszystkie statystyki oprócz tasków i rund
         aggregatedStats.correctKills += stats.correctKills || 0;
@@ -335,7 +335,6 @@ export default function RoleTable({ roles, reversedGames, detailedGames, date, h
                         {seasonId >= FIRST_MIRA_SEASON && (
                           <PlayerStatsBreakdown
                             breakdown={roleStats.byPlayer}
-                            janitorCleans={roleStats.janitorCleans}
                             seasonId={seasonId}
                             hideZeroStats={hideZeroStats}
                             rows="player"

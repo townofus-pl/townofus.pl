@@ -41,3 +41,25 @@ describe('addGame role keys', () => {
         expect(b[rows[0]].games).toBe(2);
     });
 });
+
+describe('Other', () => {
+    it('counts Janitor cleans as correct Other', () => {
+        expect(categorize({ janitorCleans: 2, correctSwaps: 1 }, 4).other).toEqual({ correct: 3, incorrect: 0 });
+    });
+
+    it("moves a Monarch's knighting from Protects to Other", () => {
+        const c = categorize({ correctProtects: 1, incorrectProtects: 1 }, 4, 'Monarch');
+        expect(c.protects).toEqual({ correct: 0, incorrect: 0 });
+        expect(c.other).toEqual({ correct: 1, incorrect: 1 });
+        expect(categorize({ correctProtects: 1 }, 4, 'Medic').protects.correct).toBe(1);
+    });
+
+    it('takes the Monarch role from the key when the rows are roles', () => {
+        const b: RoleBreakdown = {};
+        addGame(b, 'Monarch', { correctProtects: 1 }, 4);
+        expect(b.Monarch.categories.other.correct).toBe(1);
+        const byPlayer: RoleBreakdown = {};
+        addGame(byPlayer, 'ziomson', { correctProtects: 1 }, 4, false, 'Monarch');
+        expect(byPlayer.ziomson.categories.other.correct).toBe(1);
+    });
+});

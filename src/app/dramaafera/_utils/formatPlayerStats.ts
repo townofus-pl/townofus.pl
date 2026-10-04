@@ -43,7 +43,7 @@ export function formatPlayerStatsWithColors(player: UIPlayerData, seasonId: numb
   // Season 4+: the same groups as the day results (Malkiz, 2026-10). A Jailor's execute and a
   // Deputy's shot are kills, and prosecutes, revives and swaps are "Other".
   if (seasonId >= FIRST_MIRA_SEASON) {
-    const groups = categorize(stats, seasonId);
+    const groups = categorize(stats, seasonId, player.roleHistory?.[player.roleHistory.length - 1] ?? player.role);
     const names: Array<[keyof typeof groups, string]> = [
       ['kills', 'Kills'], ['guesses', 'Guesses'], ['protects', 'Protects'], ['other', 'Other'], ['votes', 'Votes'],
     ];
@@ -51,7 +51,6 @@ export function formatPlayerStatsWithColors(player: UIPlayerData, seasonId: numb
       if (groups[key].correct > 0) statParts.push({ text: `Correct ${name}: ${groups[key].correct}`, color: '#22C55E' });
       if (groups[key].incorrect > 0) statParts.push({ text: `Incorrect ${name}: ${groups[key].incorrect}`, color: '#EF4444' });
     }
-    if (stats.janitorCleans > 0) statParts.push({ text: `Janitor Cleans: ${stats.janitorCleans}` });
   }
 
   if (seasonId < FIRST_MIRA_SEASON) Object.entries(stats).forEach(([key, value]) => {

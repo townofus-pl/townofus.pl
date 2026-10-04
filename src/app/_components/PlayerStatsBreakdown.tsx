@@ -14,23 +14,24 @@ const LABELS: Record<CategoryKey, (seasonId: number) => string> = {
 
 interface Props {
   breakdown: RoleBreakdown;
-  janitorCleans: number;
   seasonId: number;
+  /** Hide a box whose correct and incorrect are both 0. */
   hideZeroStats: boolean;
-  /** 'role' (default): rows are roles, in role colours. 'player': rows are player names. */
+  /** 'role' (default): the rows in a box are roles, in role colours. 'player': player names. */
   rows?: 'role' | 'player';
   /**
-   * 'compact' (default) fits inside a table row, as in the day results. 'wide' fills its column
-   * and matches the profile's and role page's stat cards: same background, larger numbers.
+   * 'compact' (default) sits in the day results' expanded row, on the old cards' background.
+   * 'wide' matches the profile's and role page's stat cards.
    */
   variant?: 'compact' | 'wide';
 }
 
 /**
- * The day's actions of one player as a compact table: one row per category, and the roles behind
- * it only after the row is opened.
+ * One box per action type (Malkiz, 2026-10): Kills, Guesses, Protects, Other, Votes, each with
+ * its correct and incorrect count. ▼ opens the roles (or players) behind the box, in tight columns
+ * inside the box, so a name sits right next to its numbers.
  */
-export default function PlayerStatsBreakdown({ breakdown, janitorCleans, seasonId, hideZeroStats, rows = 'role', variant = 'compact' }: Props) {
+export default function PlayerStatsBreakdown({ breakdown, seasonId, hideZeroStats, rows = 'role', variant = 'compact' }: Props) {
   const wide = variant === 'wide';
   const [open, setOpen] = useState<Set<CategoryKey>>(new Set());
   const toggle = (key: CategoryKey) =>
@@ -41,9 +42,9 @@ export default function PlayerStatsBreakdown({ breakdown, janitorCleans, seasonI
       return next;
     });
 
-  const roles = Object.entries(breakdown);
+  const entries = Object.entries(breakdown);
   const totals = (key: CategoryKey): Pair =>
-    roles.reduce((sum, [, r]) => ({
+    entries.reduce((sum, [, r]) => ({
       correct: sum.correct + r.categories[key].correct,
       incorrect: sum.incorrect + r.categories[key].incorrect,
     }), { correct: 0, incorrect: 0 });
@@ -52,68 +53,60 @@ export default function PlayerStatsBreakdown({ breakdown, janitorCleans, seasonI
     const t = totals(key);
     return !hideZeroStats || t.correct > 0 || t.incorrect > 0;
   });
+  if (keys.length === 0) return null;
 
-  if (keys.length === 0 && janitorCleans === 0) return null;
+  const box = wide ? 'bg-zinc-800/30 rounded-lg p-4' : 'bg-zinc-700/60 rounded-lg p-3';
 
   return (
-    <div className={wide ? 'bg-zinc-800/30 rounded-lg p-4 md:p-5 w-full mt-4' : 'bg-zinc-700/60 rounded-lg p-3 mb-4 max-w-md'}>
-      <div className={wide
-        ? 'grid grid-cols-[1fr_4rem_4rem_4rem] md:grid-cols-[1fr_6rem_6rem_6rem] gap-x-3 gap-y-2 items-center text-base'
-        : 'grid grid-cols-[1fr_3rem_3rem_3rem] gap-x-2 gap-y-1 items-center text-sm'}>
-        <div className={wide ? 'text-sm text-zinc-400 uppercase tracking-wide' : 'text-xs text-zinc-400'}>Akcje</div>
-        <div className={`${wide ? 'text-sm' : 'text-xs'} text-zinc-400 text-center`}>✓</div>
-        <div className={`${wide ? 'text-sm' : 'text-xs'} text-zinc-400 text-center`}>✗</div>
-        <div className={`${wide ? 'text-sm' : 'text-xs'} text-zinc-400 text-center`} title={rows === 'role' ? 'Liczba gier tą rolą' : 'Liczba gier tego gracza'}>gry</div>
+    <div className={`grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 ${wide ? 'mt-4' : 'mb-4'} items-start`}>
+      {keys.map((key) => {
+        const t = totals(key);
+        const isOpen = open.has(key);
+        const rowsInBox = entries
+          .filter(([, r]) => r.categories[key].correct > 0 || r.categories[key].incorrect > 0)
+          .sort((a, b) => b[1].categories[key].correct - a[1].categories[key].correct);
+        return (
+          // In the wide variant five boxes share a row, too narrow for role names: an open box takes
+          // two columns.
+          <div key={key} className={`${box} ${wide && isOpen ? 'col-span-2' : ''}`}>
+            <div className="flex items-center justify-between mb-1">
+              <div className={wide ? 'text-base font-semibold text-zinc-200' : 'text-sm font-medium text-zinc-300'}>{LABELS[key](seasonId)}</div>
+              {rowsInBox.length > 0 && (
+                <button
+                  type="button"
+                  onClick={() => toggle(key)}
+                  className="text-yellow-400 hover:text-yellow-300 text-sm leading-none transition-transform"
+                  style={{ transform: isOpen ? 'rotate(180deg)' : undefined }}
+                  title={isOpen ? 'Ukryj szczegóły' : rows === 'role' ? 'Pokaż role' : 'Pokaż graczy'}
+                  aria-expanded={isOpen}
+                >
+                  ▼
+                </button>
+              )}
+            </div>
+            <div className={`text-green-400 ${wide ? 'text-lg font-bold' : ''}`}>Correct: {t.correct}</div>
+            <div className={`text-red-400 ${wide ? 'text-lg font-bold' : ''}`}>Incorrect: {t.incorrect}</div>
 
-        {keys.map((key) => {
-          const t = totals(key);
-          const isOpen = open.has(key);
-          const roleRows = roles
-            .filter(([, r]) => r.categories[key].correct > 0 || r.categories[key].incorrect > 0)
-            .sort((a, b) => b[1].categories[key].correct - a[1].categories[key].correct);
-          return (
-            <div key={key} className="contents">
-              <div className={wide ? 'font-semibold text-zinc-100 text-lg' : 'font-medium text-zinc-200'}>{LABELS[key](seasonId)}</div>
-              <div className={`text-center font-bold text-green-400 ${wide ? 'text-xl' : ''}`}>{t.correct}</div>
-              <div className={`text-center font-bold text-red-400 ${wide ? 'text-xl' : ''}`}>{t.incorrect}</div>
-              <div className="text-center">
-                {roleRows.length > 0 && (
-                  <button
-                    type="button"
-                    onClick={() => toggle(key)}
-                    className={`text-yellow-400 hover:text-yellow-300 transition-transform ${wide ? 'text-lg' : ''}`}
-                    style={{ transform: isOpen ? 'rotate(180deg)' : undefined }}
-                    title={isOpen ? 'Ukryj role' : 'Pokaż role'}
-                    aria-expanded={isOpen}
-                  >
-                    ▼
-                  </button>
-                )}
-              </div>
-              {isOpen && roleRows.map(([role, r]) => {
-                const display = role;   // already a display name (addGame)
-                return (
-                  <div key={`${key}-${role}`} className="contents">
-                    <div className="pl-3 font-semibold" style={{ color: rows === 'role' ? getRoleColor(display, seasonId) : '#E4E4E7' }}>{display}</div>
+            {isOpen && (
+              <div className="mt-2 pt-2 border-t border-zinc-600/60 grid grid-cols-[minmax(0,max-content)_1.75rem_1.75rem_1.75rem] w-fit max-w-full gap-x-2 gap-y-0.5 text-xs items-center">
+                <div className="text-zinc-500">{rows === 'role' ? 'rola' : 'gracz'}</div>
+                <div className="text-zinc-500 text-center">✓</div>
+                <div className="text-zinc-500 text-center">✗</div>
+                <div className="text-zinc-500 text-center" title={rows === 'role' ? 'Liczba gier tą rolą' : 'Liczba gier tego gracza'}>gry</div>
+                {rowsInBox.map(([name, r]) => (
+                  <div key={name} className="contents">
+                    <div className="truncate font-semibold" title={name}
+                      style={{ color: rows === 'role' ? getRoleColor(name, seasonId) : '#E4E4E7' }}>{name}</div>
                     <div className="text-center text-green-400">{r.categories[key].correct}</div>
                     <div className="text-center text-red-400">{r.categories[key].incorrect}</div>
                     <div className="text-center text-sky-300">{r.games}</div>
                   </div>
-                );
-              })}
-            </div>
-          );
-        })}
-
-        {janitorCleans > 0 && (
-          <>
-            <div className="font-medium text-zinc-200">Janitor Cleans</div>
-            <div className="text-center font-bold text-purple-400">{janitorCleans}</div>
-            <div />
-            <div />
-          </>
-        )}
-      </div>
+                ))}
+              </div>
+            )}
+          </div>
+        );
+      })}
     </div>
   );
 }
