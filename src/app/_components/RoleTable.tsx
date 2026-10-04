@@ -7,6 +7,8 @@ import type { UIGameData, UIPlayerData } from '@/app/dramaafera/_services/games/
 import { buildSeasonUrl } from '@/app/dramaafera/_utils/seasonHelpers';
 import { convertRoleToUrlSlug, FIRST_MIRA_SEASON } from '@/app/dramaafera/_utils/gameUtils';
 import { getRoleIconPath } from '@/app/dramaafera/_utils/gameUtils';
+import PlayerStatsBreakdown from './PlayerStatsBreakdown';
+import { addGame, type RoleBreakdown } from '@/app/dramaafera/_utils/statsBreakdown';
 
 interface RoleDayStats {
   name: string;
@@ -87,6 +89,7 @@ export default function RoleTable({ roles, reversedGames, detailedGames, date, h
       neutralsKilled: 0,
       totalPoints: 0,
       gamesPlayed: 0,
+      byPlayer: {} as RoleBreakdown,
       playersWithRole: [] as string[]
     };
 
@@ -120,6 +123,7 @@ export default function RoleTable({ roles, reversedGames, detailedGames, date, h
         if (!playerData.originalStats) return;
         
         const stats = playerData.originalStats;
+        addGame(aggregatedStats.byPlayer, playerData.nickname, stats, seasonId, false);
 
         // Sumuj wszystkie statystyki oprócz tasków i rund
         aggregatedStats.correctKills += stats.correctKills || 0;
@@ -328,6 +332,16 @@ export default function RoleTable({ roles, reversedGames, detailedGames, date, h
                           </div>
                         )}
                         
+                        {seasonId >= FIRST_MIRA_SEASON && (
+                          <PlayerStatsBreakdown
+                            breakdown={roleStats.byPlayer}
+                            janitorCleans={roleStats.janitorCleans}
+                            seasonId={seasonId}
+                            hideZeroStats={hideZeroStats}
+                            rows="player"
+                          />
+                        )}
+
                         {/* Lista graczy którzy grali tą rolą */}
                         <div className="mb-4">
                           <div className="text-sm font-medium text-zinc-300 mb-2">
@@ -344,6 +358,8 @@ export default function RoleTable({ roles, reversedGames, detailedGames, date, h
 
                         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                           
+                          {seasonId < FIRST_MIRA_SEASON && (
+                          <>
                           {/* Statystyki zabójstw */}
                           {(!hideZeroStats || (roleStats.correctKills > 0 || roleStats.incorrectKills > 0)) && (
                             <div className="bg-zinc-700/60 rounded-lg p-3">
@@ -447,6 +463,8 @@ export default function RoleTable({ roles, reversedGames, detailedGames, date, h
                               )}
                             </div>
                           )}
+                          </>
+                          )}
 
                           {/* Statystyki zadań */}
                           {(!hideZeroStats || (roleStats.completedTasks > 0 || roleStats.totalTasks > 0)) && (
@@ -478,6 +496,8 @@ export default function RoleTable({ roles, reversedGames, detailedGames, date, h
                             </div>
                           )}
 
+                          {seasonId < FIRST_MIRA_SEASON && (
+                          <>
                           {/* Statystyki zgadywań */}
                           {(!hideZeroStats || (roleStats.correctGuesses > 0 || roleStats.incorrectGuesses > 0)) && (
                             <div className="bg-zinc-700/60 rounded-lg p-3">
@@ -497,6 +517,8 @@ export default function RoleTable({ roles, reversedGames, detailedGames, date, h
                               <div className="text-sm font-medium text-zinc-300 mb-1">Janitor Cleans</div>
                               <div className="text-purple-400">{roleStats.janitorCleans}</div>
                             </div>
+                          )}
+                          </>
                           )}
                         </div>
                       </div>

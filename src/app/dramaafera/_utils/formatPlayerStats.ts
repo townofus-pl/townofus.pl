@@ -3,6 +3,7 @@
 
 import type { UIPlayerData } from '../_services/games/types';
 import { FIRST_MIRA_SEASON } from '../_constants/seasons';
+import { categorize } from './statsBreakdown';
 
 export function formatPlayerStatsWithColors(player: UIPlayerData, seasonId: number, maxTasks?: number): Array<{ text: string; color?: string }> {
   const statParts: Array<{ text: string; color?: string }> = [];
@@ -38,7 +39,22 @@ export function formatPlayerStatsWithColors(player: UIPlayerData, seasonId: numb
   };
 
   const stats = player.originalStats;
-  Object.entries(stats).forEach(([key, value]) => {
+
+  // Season 4+: the same groups as the day results (Malkiz, 2026-10). A Jailor's execute and a
+  // Deputy's shot are kills, and prosecutes, revives and swaps are "Other".
+  if (seasonId >= FIRST_MIRA_SEASON) {
+    const groups = categorize(stats, seasonId);
+    const names: Array<[keyof typeof groups, string]> = [
+      ['kills', 'Kills'], ['guesses', 'Guesses'], ['protects', 'Protects'], ['other', 'Other'], ['votes', 'Votes'],
+    ];
+    for (const [key, name] of names) {
+      if (groups[key].correct > 0) statParts.push({ text: `Correct ${name}: ${groups[key].correct}`, color: '#22C55E' });
+      if (groups[key].incorrect > 0) statParts.push({ text: `Incorrect ${name}: ${groups[key].incorrect}`, color: '#EF4444' });
+    }
+    if (stats.janitorCleans > 0) statParts.push({ text: `Janitor Cleans: ${stats.janitorCleans}` });
+  }
+
+  if (seasonId < FIRST_MIRA_SEASON) Object.entries(stats).forEach(([key, value]) => {
     if (typeof value === 'number' && value > 0 && statLabels[key]) {
       const config = statLabels[key];
       statParts.push({ text: `${config.label}: ${value}`, color: config.color });

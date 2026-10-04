@@ -2,6 +2,7 @@ import Image from 'next/image';
 import { UIGameData } from '@/app/dramaafera/_services/games/types';
 import { videotext, formatDate } from './constants';
 import { getRoleIconPath, FIRST_MIRA_SEASON } from '@/app/dramaafera/_utils/gameUtils';
+import { categorize } from '@/app/dramaafera/_utils/statsBreakdown';
 
 interface PlayerHistoryProps {
     seasonId: number;
@@ -150,6 +151,33 @@ export default function PlayerHistory({ nickname, isFullscreen, topPlayerGames, 
                                 {/* Statystyki pod kwadratem */}
                                 {played && playerData && (
                                     <div className={`text-center mt-2 ${isFullscreen ? 'text-sm' : 'text-xs'} leading-tight`}>
+                                        {/* Od sezonu 4 te same grupy co w Wynikach dnia (Malkiz, 2026-10). */}
+                                        {seasonId >= FIRST_MIRA_SEASON && (() => {
+                                            const g = categorize(playerData.originalStats, seasonId);
+                                            const rows: Array<[number, number, string, string]> = [
+                                                [g.kills.correct, g.kills.incorrect, 'KILL', 'S'],
+                                                [g.guesses.correct, g.guesses.incorrect, 'GUESS', 'ES'],
+                                                [g.protects.correct, g.protects.incorrect, 'PROTECT', 'S'],
+                                                [g.other.correct, g.other.incorrect, 'OTHER', ''],
+                                                [g.votes.correct, g.votes.incorrect, 'VOTE', 'S'],
+                                            ];
+                                            return (
+                                                <>
+                                                    {rows.map(([ok, bad, word, plural]) => (
+                                                        <div key={word}>
+                                                            {ok > 0 && <div className="text-green-500">{ok} CORRECT {word}{ok > 1 ? plural : ''}</div>}
+                                                            {bad > 0 && <div className="text-red-500">{bad} INCORRECT {word}{bad > 1 ? plural : ''}</div>}
+                                                        </div>
+                                                    ))}
+                                                    {playerData.originalStats.janitorCleans > 0 && (
+                                                        <div className="text-gray-400">{playerData.originalStats.janitorCleans} CLEAN{playerData.originalStats.janitorCleans > 1 ? 'S' : ''}</div>
+                                                    )}
+                                                </>
+                                            );
+                                        })()}
+
+                                        {seasonId < FIRST_MIRA_SEASON && (
+                                        <>
                                         {/* Kills */}
                                         {playerData.originalStats.correctKills > 0 && (
                                             <div className="text-green-500">{playerData.originalStats.correctKills} CORRECT KILL{playerData.originalStats.correctKills > 1 ? 'S' : ''}</div>
@@ -225,6 +253,8 @@ export default function PlayerHistory({ nickname, isFullscreen, topPlayerGames, 
                                         {/* Janitor Cleans */}
                                         {playerData.originalStats.janitorCleans > 0 && (
                                             <div className="text-gray-400">{playerData.originalStats.janitorCleans} CLEAN{playerData.originalStats.janitorCleans > 1 ? 'S' : ''}</div>
+                                        )}
+                                        </>
                                         )}
                                     </div>
                                 )}

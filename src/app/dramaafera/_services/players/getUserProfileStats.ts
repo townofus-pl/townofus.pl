@@ -1,10 +1,12 @@
 import { getDatabaseClient } from '../db';
 import { chunkedInQuery } from '@/app/api/_database';
 import { withoutDeleted } from '@/app/api/schema/common';
-import { CURRENT_SEASON } from '@/app/dramaafera/_constants/seasons';
+import { CURRENT_SEASON, FIRST_MIRA_SEASON } from '@/app/dramaafera/_constants/seasons';
 import { Teams } from '@/constants/teams';
 import type { UserProfileStats } from './types';
 import { determineTeam } from '@/app/dramaafera/_utils/gameUtils';
+import { addGame, type RoleBreakdown } from '@/app/dramaafera/_utils/statsBreakdown';
+import { countVotes } from '../games/_countVotes';
 
 // Get user profile statistics from database.
 // Implementation note: heavy players accumulate hundreds of stat rows over a
@@ -62,16 +64,40 @@ export async function getUserProfileStats(playerName: string, seasonId?: number)
   const statIds = stats.map((s) => s.id);
   const uniqueGameIds = Array.from(new Set(stats.map((s) => s.gameId)));
 
-  // Primary role per stat (order === 0)
-  const primaryRoles = await chunkedInQuery(statIds, (chunk) =>
+  // Every role per stat, in order: the first decides the team, the last is the role the season-4
+  // breakdown files the game under (as the day results do).
+  const roles = await chunkedInQuery(statIds, (chunk) =>
     prisma.playerRole.findMany({
-      where: { gamePlayerStatisticsId: { in: chunk }, order: 0 },
-      select: { gamePlayerStatisticsId: true, roleName: true },
+      where: { gamePlayerStatisticsId: { in: chunk } },
+      select: { gamePlayerStatisticsId: true, roleName: true, order: true },
     }),
   );
-  const primaryRoleByStatId = new Map(
-    primaryRoles.map((r) => [r.gamePlayerStatisticsId, r.roleName]),
-  );
+  const primaryRoleByStatId = new Map<number, string>();
+  const finalRoleByStatId = new Map<number, { order: number; roleName: string }>();
+  for (const r of roles) {
+    if (r.order === 0) primaryRoleByStatId.set(r.gamePlayerStatisticsId, r.roleName);
+    const last = finalRoleByStatId.get(r.gamePlayerStatisticsId);
+    if (!last || r.order > last.order) finalRoleByStatId.set(r.gamePlayerStatisticsId, r);
+  }
+
+  // Season 4+: the player's own vote actions, per game. Filtered on gameId + type, which the
+  // (gameId, type) index serves, so only this player's games are read.
+  const votesByGameId = new Map<number, { correct: number; incorrect: number }>();
+  if (season >= FIRST_MIRA_SEASON) {
+    const voteRows = await chunkedInQuery(uniqueGameIds, (chunk) =>
+      prisma.gameAction.findMany({
+        where: { gameId: { in: chunk }, type: 'vote', performerId: player.id, ...withoutDeleted },
+        select: { gameId: true, isCorrect: true, detail: true },
+      }),
+    );
+    const byGame = new Map<number, typeof voteRows>();
+    for (const v of voteRows) byGame.set(v.gameId, [...(byGame.get(v.gameId) ?? []), v]);
+    for (const [gameId, rows] of byGame) {
+      const counted = countVotes(rows.map((r) => ({ ...r, performer: { name: playerName } }))).get(playerName);
+      if (counted) votesByGameId.set(gameId, counted);
+    }
+  }
+  const roleBreakdown: RoleBreakdown = {};
 
   // game.maxTasks per gameId
   const games = await chunkedInQuery(uniqueGameIds, (chunk) =>
@@ -148,6 +174,15 @@ export async function getUserProfileStats(playerName: string, seasonId?: number)
     incorrectSwaps += stat.incorrectSwaps || 0;
 
     totalRounds += (stat.survivedRounds || 0) + (stat.win ? 0 : 1);
+
+    if (season >= FIRST_MIRA_SEASON) {
+      const votes = votesByGameId.get(stat.gameId);
+      addGame(roleBreakdown, finalRoleByStatId.get(stat.id)?.roleName ?? (primaryRole || 'Unknown'), {
+        ...stat,
+        correctVotes: votes?.correct ?? 0,
+        incorrectVotes: votes?.incorrect ?? 0,
+      }, season);
+    }
   });
 
   const winRate = gamesPlayed > 0 ? Math.round((wins / gamesPlayed) * 100) : 0;
@@ -183,5 +218,6 @@ export async function getUserProfileStats(playerName: string, seasonId?: number)
     incorrectAltruistRevives,
     correctSwaps,
     incorrectSwaps,
+    roleBreakdown: season >= FIRST_MIRA_SEASON ? roleBreakdown : undefined,
   };
 }

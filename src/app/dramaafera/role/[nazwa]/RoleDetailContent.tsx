@@ -12,6 +12,8 @@ import { SettingsList } from "@/app/_components/RolesList/RoleCard/SettingsList"
 import { parseSettingsFile, getMatchingFileName, updateSettingValue } from '../../_utils/settingsParser';
 import { buildMiraRoleSettings, looksLikeMiraConfig } from "@/app/dramaafera/_utils/miraConfig";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
+import PlayerStatsBreakdown from "@/app/_components/PlayerStatsBreakdown";
+import { addGame, type RoleBreakdown } from "@/app/dramaafera/_utils/statsBreakdown";
 
 // Interface dla statystyk roli
 interface RoleStats {
@@ -21,6 +23,8 @@ interface RoleStats {
     wins: number;
     winRate: number;
     players: PlayerRoleStats[];
+    /** Season 4+: the day-results groups for this role, broken down by player. */
+    byPlayer: RoleBreakdown;
     totalCorrectKills?: number;
     totalIncorrectKills?: number;
     isKillerRole: boolean;
@@ -88,6 +92,7 @@ function generateRoleStats(allGames: UIGameData[], targetRole: string, seasonId:
     let incorrectSwaps = 0;
 
     const isKiller = isKillerRole(targetRole, seasonId);
+    const byPlayer: RoleBreakdown = {};
 
     const playerStats = new Map<string, {
         games: number;
@@ -130,6 +135,7 @@ function generateRoleStats(allGames: UIGameData[], targetRole: string, seasonId:
                     incorrectKills: 0
                 };
                 current.games++;
+                if (player.originalStats) addGame(byPlayer, player.nickname, player.originalStats, seasonId, false);
 
                 if (player.win) {
                     totalWins++;
@@ -202,6 +208,7 @@ function generateRoleStats(allGames: UIGameData[], targetRole: string, seasonId:
 
     const baseStats = {
         roleName: targetRole,
+        byPlayer,
         gamesPlayed: totalGamesPlayed,
         totalAppearances: totalAppearances,
         wins: totalWins,
@@ -486,7 +493,15 @@ export async function RoleDetailContent({ nazwa, seasonId }: RoleDetailContentPr
                     <h3 className="text-2xl font-bold mb-3 text-center">Szczegółowe statystyki</h3>
                     <div className="text-xs text-zinc-400 tracking-wide mb-4 text-center"> Widzisz statystykę niepasującą do roli? To kwestia zmiany roli w trakcie gry.</div>
 
+                    {seasonId >= FIRST_MIRA_SEASON && (
+                        <div className="mb-4">
+                            <PlayerStatsBreakdown breakdown={roleStats.byPlayer} janitorCleans={roleStats.janitorCleans} seasonId={seasonId} hideZeroStats={true} rows="player" variant="wide" />
+                        </div>
+                    )}
+
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                        {seasonId < FIRST_MIRA_SEASON && (
+                        <>
                         {roleStats.isKillerRole && (roleStats.totalCorrectKills! > 0 || roleStats.totalIncorrectKills! > 0) && (
                             <>
                                 <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
@@ -508,6 +523,8 @@ export async function RoleDetailContent({ nazwa, seasonId }: RoleDetailContentPr
                                 </div>
                             </>
                         )}
+                        </>
+                        )}
 
                         {roleStats.totalTasks > 0 && (
                             <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
@@ -520,6 +537,8 @@ export async function RoleDetailContent({ nazwa, seasonId }: RoleDetailContentPr
                             </div>
                         )}
 
+                        {seasonId < FIRST_MIRA_SEASON && (
+                        <>
                         {roleStats.correctGuesses > 0 && (
                             <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
                                 <div className="text-xl font-bold text-green-400">
@@ -705,6 +724,8 @@ export async function RoleDetailContent({ nazwa, seasonId }: RoleDetailContentPr
                                     Janitor cleans
                                 </div>
                             </div>
+                        )}
+                        </>
                         )}
 
                         {roleStats.survivedRounds > 0 && (

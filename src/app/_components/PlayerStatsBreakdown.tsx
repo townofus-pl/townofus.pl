@@ -1,70 +1,8 @@
 'use client';
 
 import { useState } from 'react';
-import { convertRoleNameForDisplay, getRoleColor, normalizeRoleName, FIRST_MIRA_SEASON } from '@/app/dramaafera/_utils/gameUtils';
-
-/** One player's counters from one game, as `UIPlayerData.originalStats` carries them. */
-export interface GameCounters {
-  correctKills?: number; incorrectKills?: number;
-  correctJailorExecutes?: number; incorrectJailorExecutes?: number;
-  correctDeputyShoots?: number; incorrectDeputyShoots?: number;
-  correctGuesses?: number; incorrectGuesses?: number;
-  correctProtects?: number; incorrectProtects?: number;
-  correctWardenFortifies?: number; incorrectWardenFortifies?: number;
-  correctProsecutes?: number; incorrectProsecutes?: number;
-  correctAltruistRevives?: number; incorrectAltruistRevives?: number;
-  correctSwaps?: number; incorrectSwaps?: number;
-  correctVotes?: number; incorrectVotes?: number;
-  janitorCleans?: number;
-}
-
-export type CategoryKey = 'kills' | 'guesses' | 'protects' | 'other' | 'votes';
-
-type Pair = { correct: number; incorrect: number };
-
-/**
- * The league's grouping (Malkiz, 2026-10): every kill in one row whatever the role (a Jailor's
- * execute and a Deputy's shot are kills), guesses, protects, votes, and everything else under
- * "Other". From season 4 a Warden's fortify is a protect. Before Mira it was its own Warden
- * statistic, and it goes under Other rather than into the Medic's shields.
- */
-export function categorize(s: GameCounters, seasonId: number): Record<CategoryKey, Pair> {
-  const n = (v?: number) => v || 0;
-  const mira = seasonId >= FIRST_MIRA_SEASON;
-  return {
-    kills: {
-      correct: n(s.correctKills) + n(s.correctJailorExecutes) + n(s.correctDeputyShoots),
-      incorrect: n(s.incorrectKills) + n(s.incorrectJailorExecutes) + n(s.incorrectDeputyShoots),
-    },
-    guesses: { correct: n(s.correctGuesses), incorrect: n(s.incorrectGuesses) },
-    protects: {
-      correct: n(s.correctProtects) + (mira ? n(s.correctWardenFortifies) : 0),
-      incorrect: n(s.incorrectProtects) + (mira ? n(s.incorrectWardenFortifies) : 0),
-    },
-    other: {
-      correct: n(s.correctProsecutes) + n(s.correctAltruistRevives) + n(s.correctSwaps) + (mira ? 0 : n(s.correctWardenFortifies)),
-      incorrect: n(s.incorrectProsecutes) + n(s.incorrectAltruistRevives) + n(s.incorrectSwaps) + (mira ? 0 : n(s.incorrectWardenFortifies)),
-    },
-    votes: { correct: n(s.correctVotes), incorrect: n(s.incorrectVotes) },
-  };
-}
-
-/** Per role: how many games the player had it, and its counters summed over those games. */
-export type RoleBreakdown = Record<string, { games: number; categories: Record<CategoryKey, Pair> }>;
-
-export function addGame(breakdown: RoleBreakdown, role: string, counters: GameCounters, seasonId: number): void {
-  const add = categorize(counters, seasonId);
-  const row = breakdown[role] ??= {
-    games: 0,
-    categories: { kills: { correct: 0, incorrect: 0 }, guesses: { correct: 0, incorrect: 0 },
-      protects: { correct: 0, incorrect: 0 }, other: { correct: 0, incorrect: 0 }, votes: { correct: 0, incorrect: 0 } },
-  };
-  row.games += 1;
-  for (const key of Object.keys(add) as CategoryKey[]) {
-    row.categories[key].correct += add[key].correct;
-    row.categories[key].incorrect += add[key].incorrect;
-  }
-}
+import { getRoleColor, FIRST_MIRA_SEASON } from '@/app/dramaafera/_utils/gameUtils';
+import type { CategoryKey, Pair, RoleBreakdown } from '@/app/dramaafera/_utils/statsBreakdown';
 
 const LABELS: Record<CategoryKey, (seasonId: number) => string> = {
   kills: () => 'Kills',
@@ -79,13 +17,21 @@ interface Props {
   janitorCleans: number;
   seasonId: number;
   hideZeroStats: boolean;
+  /** 'role' (default): rows are roles, in role colours. 'player': rows are player names. */
+  rows?: 'role' | 'player';
+  /**
+   * 'compact' (default) fits inside a table row, as in the day results. 'wide' fills its column
+   * and matches the profile's and role page's stat cards: same background, larger numbers.
+   */
+  variant?: 'compact' | 'wide';
 }
 
 /**
  * The day's actions of one player as a compact table: one row per category, and the roles behind
  * it only after the row is opened.
  */
-export default function PlayerStatsBreakdown({ breakdown, janitorCleans, seasonId, hideZeroStats }: Props) {
+export default function PlayerStatsBreakdown({ breakdown, janitorCleans, seasonId, hideZeroStats, rows = 'role', variant = 'compact' }: Props) {
+  const wide = variant === 'wide';
   const [open, setOpen] = useState<Set<CategoryKey>>(new Set());
   const toggle = (key: CategoryKey) =>
     setOpen((prev) => {
@@ -110,12 +56,14 @@ export default function PlayerStatsBreakdown({ breakdown, janitorCleans, seasonI
   if (keys.length === 0 && janitorCleans === 0) return null;
 
   return (
-    <div className="bg-zinc-700/60 rounded-lg p-3 mb-4 max-w-md">
-      <div className="grid grid-cols-[1fr_3rem_3rem_3rem] gap-x-2 gap-y-1 items-center text-sm">
-        <div className="text-xs text-zinc-400">Akcje</div>
-        <div className="text-xs text-zinc-400 text-center">✓</div>
-        <div className="text-xs text-zinc-400 text-center">✗</div>
-        <div className="text-xs text-zinc-400 text-center" title="Liczba gier tą rolą">gry</div>
+    <div className={wide ? 'bg-zinc-800/30 rounded-lg p-4 md:p-5 w-full mt-4' : 'bg-zinc-700/60 rounded-lg p-3 mb-4 max-w-md'}>
+      <div className={wide
+        ? 'grid grid-cols-[1fr_4rem_4rem_4rem] md:grid-cols-[1fr_6rem_6rem_6rem] gap-x-3 gap-y-2 items-center text-base'
+        : 'grid grid-cols-[1fr_3rem_3rem_3rem] gap-x-2 gap-y-1 items-center text-sm'}>
+        <div className={wide ? 'text-sm text-zinc-400 uppercase tracking-wide' : 'text-xs text-zinc-400'}>Akcje</div>
+        <div className={`${wide ? 'text-sm' : 'text-xs'} text-zinc-400 text-center`}>✓</div>
+        <div className={`${wide ? 'text-sm' : 'text-xs'} text-zinc-400 text-center`}>✗</div>
+        <div className={`${wide ? 'text-sm' : 'text-xs'} text-zinc-400 text-center`} title={rows === 'role' ? 'Liczba gier tą rolą' : 'Liczba gier tego gracza'}>gry</div>
 
         {keys.map((key) => {
           const t = totals(key);
@@ -125,15 +73,15 @@ export default function PlayerStatsBreakdown({ breakdown, janitorCleans, seasonI
             .sort((a, b) => b[1].categories[key].correct - a[1].categories[key].correct);
           return (
             <div key={key} className="contents">
-              <div className="font-medium text-zinc-200">{LABELS[key](seasonId)}</div>
-              <div className="text-center font-bold text-green-400">{t.correct}</div>
-              <div className="text-center font-bold text-red-400">{t.incorrect}</div>
+              <div className={wide ? 'font-semibold text-zinc-100 text-lg' : 'font-medium text-zinc-200'}>{LABELS[key](seasonId)}</div>
+              <div className={`text-center font-bold text-green-400 ${wide ? 'text-xl' : ''}`}>{t.correct}</div>
+              <div className={`text-center font-bold text-red-400 ${wide ? 'text-xl' : ''}`}>{t.incorrect}</div>
               <div className="text-center">
                 {roleRows.length > 0 && (
                   <button
                     type="button"
                     onClick={() => toggle(key)}
-                    className="text-yellow-400 hover:text-yellow-300 transition-transform"
+                    className={`text-yellow-400 hover:text-yellow-300 transition-transform ${wide ? 'text-lg' : ''}`}
                     style={{ transform: isOpen ? 'rotate(180deg)' : undefined }}
                     title={isOpen ? 'Ukryj role' : 'Pokaż role'}
                     aria-expanded={isOpen}
@@ -143,11 +91,10 @@ export default function PlayerStatsBreakdown({ breakdown, janitorCleans, seasonI
                 )}
               </div>
               {isOpen && roleRows.map(([role, r]) => {
-                // The mod's key (TimeLord) becomes the registry name (Time Lord) first.
-                const display = convertRoleNameForDisplay(normalizeRoleName(role, seasonId));
+                const display = role;   // already a display name (addGame)
                 return (
                   <div key={`${key}-${role}`} className="contents">
-                    <div className="pl-3 font-semibold" style={{ color: getRoleColor(display, seasonId) }}>{display}</div>
+                    <div className="pl-3 font-semibold" style={{ color: rows === 'role' ? getRoleColor(display, seasonId) : '#E4E4E7' }}>{display}</div>
                     <div className="text-center text-green-400">{r.categories[key].correct}</div>
                     <div className="text-center text-red-400">{r.categories[key].incorrect}</div>
                     <div className="text-center text-sky-300">{r.games}</div>

@@ -1,4 +1,4 @@
-import { addGame, categorize, type RoleBreakdown } from './PlayerStatsBreakdown';
+import { addGame, categorize, type RoleBreakdown } from './statsBreakdown';
 
 describe('categorize', () => {
     it('counts a Jailor execute and a Deputy shot as kills', () => {
@@ -28,5 +28,16 @@ describe('addGame', () => {
         expect(b.Juggernaut.games).toBe(2);
         expect(b.Juggernaut.categories.kills.correct).toBe(5);
         expect(b.Juggernaut.categories.votes.correct).toBe(2);
+    });
+});
+
+describe('addGame role keys', () => {
+    it('merges keys that show as the same role', () => {
+        const b: RoleBreakdown = {};
+        addGame(b, 'Plaguebearer', { correctGuesses: 1 }, 3);
+        addGame(b, 'Pestilence', { incorrectGuesses: 1 }, 3);
+        const rows = Object.keys(b);
+        expect(rows).toHaveLength(1);
+        expect(b[rows[0]].games).toBe(2);
     });
 });

@@ -7,7 +7,8 @@ import type { UIGameData, UIPlayerData } from '@/app/dramaafera/_services/games/
 import { buildSeasonUrl } from '@/app/dramaafera/_utils/seasonHelpers';
 import { convertNickToUrlSlug, determineTeam } from '@/app/dramaafera/_utils/gameUtils';
 import { Teams } from '@/constants/teams';
-import PlayerStatsBreakdown, { addGame, type RoleBreakdown } from './PlayerStatsBreakdown';
+import PlayerStatsBreakdown from './PlayerStatsBreakdown';
+import { addGame, type RoleBreakdown } from '@/app/dramaafera/_utils/statsBreakdown';
 
 interface PlayerDayStats {
   name: string;
