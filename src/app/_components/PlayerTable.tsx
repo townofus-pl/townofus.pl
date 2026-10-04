@@ -5,8 +5,9 @@ import Image from 'next/image';
 import Link from 'next/link';
 import type { UIGameData, UIPlayerData } from '@/app/dramaafera/_services/games/types';
 import { buildSeasonUrl } from '@/app/dramaafera/_utils/seasonHelpers';
-import { convertNickToUrlSlug, determineTeam, FIRST_MIRA_SEASON } from '@/app/dramaafera/_utils/gameUtils';
+import { convertNickToUrlSlug, determineTeam } from '@/app/dramaafera/_utils/gameUtils';
 import { Teams } from '@/constants/teams';
+import PlayerStatsBreakdown, { addGame, type RoleBreakdown } from './PlayerStatsBreakdown';
 
 interface PlayerDayStats {
   name: string;
@@ -81,7 +82,9 @@ export default function PlayerTable({ players, reversedGames, detailedGames, dat
       impostorsKilled: 0,
       neutralsKilled: 0,
       totalPoints: 0,
-      gamesPlayed: 0
+      gamesPlayed: 0,
+      // Per role, for the Kills / Guesses / Protects / Other / Votes rows (PlayerStatsBreakdown).
+      byRole: {} as RoleBreakdown,
     };
 
     detailedGames.forEach((game) => {
@@ -92,6 +95,11 @@ export default function PlayerTable({ players, reversedGames, detailedGames, dat
 
       aggregatedStats.gamesPlayed++;
       const stats = playerData.originalStats;
+      const roleInGame =
+        playerData.roleHistory && playerData.roleHistory.length > 0
+          ? playerData.roleHistory[playerData.roleHistory.length - 1]
+          : playerData.role;
+      addGame(aggregatedStats.byRole, roleInGame || 'Unknown', stats, seasonId);
 
       // Sumuj wszystkie statystyki oprócz tasków i rund
       aggregatedStats.correctKills += stats.correctKills || 0;
@@ -303,125 +311,15 @@ export default function PlayerTable({ players, reversedGames, detailedGames, dat
                           </div>
                         )}
 
+                        <PlayerStatsBreakdown
+                          breakdown={playerStats.byRole}
+                          janitorCleans={playerStats.janitorCleans}
+                          seasonId={seasonId}
+                          hideZeroStats={hideZeroStats}
+                        />
+
                         <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                           
-                          {/* Statystyki zabójstw */}
-                          {(!hideZeroStats || (playerStats.correctKills > 0 || playerStats.incorrectKills > 0)) && (
-                            <div className="bg-zinc-700/60 rounded-lg p-3">
-                              <div className="text-sm font-medium text-zinc-300 mb-1">Kills</div>
-                              {(!hideZeroStats || playerStats.correctKills > 0) && (
-                                <div className="text-green-400">Correct: {playerStats.correctKills}</div>
-                              )}
-                              {(!hideZeroStats || playerStats.incorrectKills > 0) && (
-                                <div className="text-red-400">Incorrect: {playerStats.incorrectKills}</div>
-                              )}
-                            </div>
-                          )}
-
-                          {/* Statystyki protectów */}
-                          {(!hideZeroStats || (playerStats.correctProtects > 0 || playerStats.incorrectProtects > 0)) && (
-                            <div className="bg-zinc-700/60 rounded-lg p-3">
-                              <div className="text-sm font-medium text-zinc-300 mb-1">{seasonId < FIRST_MIRA_SEASON ? 'Medic Shields' : 'Protects'}</div>
-                              {(!hideZeroStats || playerStats.correctProtects > 0) && (
-                                <div className="text-green-400">Correct: {playerStats.correctProtects}</div>
-                              )}
-                              {(!hideZeroStats || playerStats.incorrectProtects > 0) && (
-                                <div className="text-red-400">Incorrect: {playerStats.incorrectProtects}</div>
-                              )}
-                            </div>
-                          )}
-
-                          {/* Statystyki Jailor Executes */}
-                          {(!hideZeroStats || (playerStats.correctJailorExecutes > 0 || playerStats.incorrectJailorExecutes > 0)) && (
-                            <div className="bg-zinc-700/60 rounded-lg p-3">
-                              <div className="text-sm font-medium text-zinc-300 mb-1">Jailor Executes</div>
-                              {(!hideZeroStats || playerStats.correctJailorExecutes > 0) && (
-                                <div className="text-green-400">Correct: {playerStats.correctJailorExecutes}</div>
-                              )}
-                              {(!hideZeroStats || playerStats.incorrectJailorExecutes > 0) && (
-                                <div className="text-red-400">Incorrect: {playerStats.incorrectJailorExecutes}</div>
-                              )}
-                            </div>
-                          )}
-
-                          {/* Statystyki Deputy Shoots */}
-                          {(!hideZeroStats || (playerStats.correctDeputyShoots > 0 || playerStats.incorrectDeputyShoots > 0)) && (
-                            <div className="bg-zinc-700/60 rounded-lg p-3">
-                              <div className="text-sm font-medium text-zinc-300 mb-1">Deputy Shoots</div>
-                              {(!hideZeroStats || playerStats.correctDeputyShoots > 0) && (
-                                <div className="text-green-400">Correct: {playerStats.correctDeputyShoots}</div>
-                              )}
-                              {(!hideZeroStats || playerStats.incorrectDeputyShoots > 0) && (
-                                <div className="text-red-400">Incorrect: {playerStats.incorrectDeputyShoots}</div>
-                              )}
-                            </div>
-                          )}
-
-                          {/* Statystyki Prosecutes */}
-                          {(!hideZeroStats || (playerStats.correctProsecutes > 0 || playerStats.incorrectProsecutes > 0)) && (
-                            <div className="bg-zinc-700/60 rounded-lg p-3">
-                              <div className="text-sm font-medium text-zinc-300 mb-1">Prosecutes</div>
-                              {(!hideZeroStats || playerStats.correctProsecutes > 0) && (
-                                <div className="text-green-400">Correct: {playerStats.correctProsecutes}</div>
-                              )}
-                              {(!hideZeroStats || playerStats.incorrectProsecutes > 0) && (
-                                <div className="text-red-400">Incorrect: {playerStats.incorrectProsecutes}</div>
-                              )}
-                            </div>
-                          )}
-
-                          {/* Statystyki Warden Fortifies */}
-                          {(!hideZeroStats || (playerStats.correctWardenFortifies > 0 || playerStats.incorrectWardenFortifies > 0)) && (
-                            <div className="bg-zinc-700/60 rounded-lg p-3">
-                              <div className="text-sm font-medium text-zinc-300 mb-1">Warden Fortifies</div>
-                              {(!hideZeroStats || playerStats.correctWardenFortifies > 0) && (
-                                <div className="text-green-400">Correct: {playerStats.correctWardenFortifies}</div>
-                              )}
-                              {(!hideZeroStats || playerStats.incorrectWardenFortifies > 0) && (
-                                <div className="text-red-400">Incorrect: {playerStats.incorrectWardenFortifies}</div>
-                              )}
-                            </div>
-                          )}
-
-                          {/* Statystyki Altruist Revives */}
-                          {(!hideZeroStats || (playerStats.correctAltruistRevives > 0 || playerStats.incorrectAltruistRevives > 0)) && (
-                            <div className="bg-zinc-700/60 rounded-lg p-3">
-                              <div className="text-sm font-medium text-zinc-300 mb-1">Altruist Revives</div>
-                              {(!hideZeroStats || playerStats.correctAltruistRevives > 0) && (
-                                <div className="text-green-400">Correct: {playerStats.correctAltruistRevives}</div>
-                              )}
-                              {(!hideZeroStats || playerStats.incorrectAltruistRevives > 0) && (
-                                <div className="text-red-400">Incorrect: {playerStats.incorrectAltruistRevives}</div>
-                              )}
-                            </div>
-                          )}
-
-                          {/* Statystyki głosów (v2) */}
-                          {(!hideZeroStats || (playerStats.correctVotes > 0 || playerStats.incorrectVotes > 0)) && (
-                            <div className="bg-zinc-700/60 rounded-lg p-3">
-                              <div className="text-sm font-medium text-zinc-300 mb-1">Votes</div>
-                              {(!hideZeroStats || playerStats.correctVotes > 0) && (
-                                <div className="text-green-400">Correct: {playerStats.correctVotes}</div>
-                              )}
-                              {(!hideZeroStats || playerStats.incorrectVotes > 0) && (
-                                <div className="text-red-400">Incorrect: {playerStats.incorrectVotes}</div>
-                              )}
-                            </div>
-                          )}
-
-                          {/* Statystyki Swaps */}
-                          {(!hideZeroStats || (playerStats.correctSwaps > 0 || playerStats.incorrectSwaps > 0)) && (
-                            <div className="bg-zinc-700/60 rounded-lg p-3">
-                              <div className="text-sm font-medium text-zinc-300 mb-1">Swaps</div>
-                              {(!hideZeroStats || playerStats.correctSwaps > 0) && (
-                                <div className="text-green-400">Correct: {playerStats.correctSwaps}</div>
-                              )}
-                              {(!hideZeroStats || playerStats.incorrectSwaps > 0) && (
-                                <div className="text-red-400">Incorrect: {playerStats.incorrectSwaps}</div>
-                              )}
-                            </div>
-                          )}
-
                           {/* Statystyki zadań */}
                           {(!hideZeroStats || (playerStats.completedTasks > 0 || playerStats.totalTasks > 0)) && (
                             <div className="bg-zinc-700/60 rounded-lg p-3">
@@ -452,26 +350,6 @@ export default function PlayerTable({ players, reversedGames, detailedGames, dat
                             </div>
                           )}
 
-                          {/* Statystyki zgadywań */}
-                          {(!hideZeroStats || (playerStats.correctGuesses > 0 || playerStats.incorrectGuesses > 0)) && (
-                            <div className="bg-zinc-700/60 rounded-lg p-3">
-                              <div className="text-sm font-medium text-zinc-300 mb-1">Guesses</div>
-                              {(!hideZeroStats || playerStats.correctGuesses > 0) && (
-                                <div className="text-green-400">Correct: {playerStats.correctGuesses}</div>
-                              )}
-                              {(!hideZeroStats || playerStats.incorrectGuesses > 0) && (
-                                <div className="text-red-400">Incorrect: {playerStats.incorrectGuesses}</div>
-                              )}
-                            </div>
-                          )}
-
-                          {/* Janitor Cleans */}
-                          {(!hideZeroStats || playerStats.janitorCleans > 0) && (
-                            <div className="bg-zinc-700/60 rounded-lg p-3">
-                              <div className="text-sm font-medium text-zinc-300 mb-1">Janitor Cleans</div>
-                              <div className="text-purple-400">{playerStats.janitorCleans}</div>
-                            </div>
-                          )}
                         </div>
                       </div>
                     </td>
