@@ -1,4 +1,4 @@
-import { addGame, categorize, type RoleBreakdown } from './statsBreakdown';
+import { addGame, categorize, otherParts, type RoleBreakdown } from './statsBreakdown';
 
 describe('categorize', () => {
     it('counts a Jailor execute and a Deputy shot as kills', () => {
@@ -61,5 +61,15 @@ describe('Other', () => {
         const byPlayer: RoleBreakdown = {};
         addGame(byPlayer, 'ziomson', { correctProtects: 1 }, 4, false, 'Monarch');
         expect(byPlayer.ziomson.categories.other.correct).toBe(1);
+    });
+});
+
+describe('otherParts', () => {
+    it('names a Monarch knighting and a Janitor clean on their own', () => {
+        expect(otherParts({ correctProtects: 1 }, 4, 'Monarch')).toEqual([
+            { word: 'Knight', plural: 's', correct: 1, incorrect: 0, verdict: true },
+        ]);
+        expect(otherParts({ janitorCleans: 2 }, 4, 'Janitor')[0]).toMatchObject({ word: 'Clean', correct: 2, verdict: false });
+        expect(otherParts({ correctProtects: 1 }, 4, 'Medic')).toEqual([]);
     });
 });

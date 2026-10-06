@@ -3,7 +3,7 @@
 
 import type { UIPlayerData } from '../_services/games/types';
 import { FIRST_MIRA_SEASON } from '../_constants/seasons';
-import { categorize } from './statsBreakdown';
+import { categorize, otherParts } from './statsBreakdown';
 
 export function formatPlayerStatsWithColors(player: UIPlayerData, seasonId: number, maxTasks?: number): Array<{ text: string; color?: string }> {
   const statParts: Array<{ text: string; color?: string }> = [];
@@ -43,13 +43,21 @@ export function formatPlayerStatsWithColors(player: UIPlayerData, seasonId: numb
   // Season 4+: the same groups as the day results (Malkiz, 2026-10). A Jailor's execute and a
   // Deputy's shot are kills, and prosecutes, revives and swaps are "Other".
   if (seasonId >= FIRST_MIRA_SEASON) {
-    const groups = categorize(stats, seasonId, player.roleHistory?.[player.roleHistory.length - 1] ?? player.role);
-    const names: Array<[keyof typeof groups, string]> = [
-      ['kills', 'Kills'], ['guesses', 'Guesses'], ['protects', 'Protects'], ['other', 'Other'], ['votes', 'Votes'],
+    const role = player.roleHistory?.[player.roleHistory.length - 1] ?? player.role;
+    const groups = categorize(stats, seasonId, role);
+    // One game: the actions behind "Other" keep their own names (Correct Knights: 1).
+    const rows: Array<{ name: string; correct: number; incorrect: number; verdict: boolean }> = [
+      { name: 'Kills', ...groups.kills, verdict: true },
+      { name: 'Guesses', ...groups.guesses, verdict: true },
+      { name: 'Protects', ...groups.protects, verdict: true },
+      ...otherParts(stats, seasonId, role).map((p) => ({ name: p.word + p.plural, correct: p.correct, incorrect: p.incorrect, verdict: p.verdict })),
+      { name: 'Votes', ...groups.votes, verdict: true },
     ];
-    for (const [key, name] of names) {
-      if (groups[key].correct > 0) statParts.push({ text: `Correct ${name}: ${groups[key].correct}`, color: '#22C55E' });
-      if (groups[key].incorrect > 0) statParts.push({ text: `Incorrect ${name}: ${groups[key].incorrect}`, color: '#EF4444' });
+    for (const r of rows) {
+      if (r.correct > 0) statParts.push(r.verdict
+        ? { text: `Correct ${r.name}: ${r.correct}`, color: '#22C55E' }
+        : { text: `${r.name}: ${r.correct}` });
+      if (r.incorrect > 0) statParts.push({ text: `Incorrect ${r.name}: ${r.incorrect}`, color: '#EF4444' });
     }
   }
 

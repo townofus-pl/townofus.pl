@@ -93,3 +93,31 @@ export function addGame(breakdown: RoleBreakdown, key: string, counters: GameCou
     row.categories[key].incorrect += add[key].incorrect;
   }
 }
+
+/** One action type inside "Other", for views of a single game. */
+/** `verdict` is false for an action that is never right or wrong (a Janitor's clean): show the count only. */
+export interface OtherPart { word: string; plural: string; correct: number; incorrect: number; verdict: boolean }
+
+/**
+ * The actions behind "Other" for one game, each under its own name. In a single game the reader
+ * knows the role, so "1 correct knight" says more than "1 correct other" (2026-10). The groups
+ * stay for views that sum many games, where ▼ shows the roles instead.
+ */
+export function otherParts(s: GameCounters, seasonId: number, role?: string): OtherPart[] {
+  const n = (v?: number) => v || 0;
+  const mira = seasonId >= FIRST_MIRA_SEASON;
+  const monarch = !!role && normalizeRoleName(role, seasonId) === 'Monarch';
+  const parts: OtherPart[] = [
+    { word: 'Prosecute', plural: 's', correct: n(s.correctProsecutes), incorrect: n(s.incorrectProsecutes), verdict: true },
+    { word: 'Revive', plural: 's', correct: n(s.correctAltruistRevives), incorrect: n(s.incorrectAltruistRevives), verdict: true },
+    { word: 'Swap', plural: 's', correct: n(s.correctSwaps), incorrect: n(s.incorrectSwaps), verdict: true },
+    {
+      word: 'Knight', plural: 's', verdict: true,
+      correct: monarch ? n(s.correctProtects) + (mira ? n(s.correctWardenFortifies) : 0) : 0,
+      incorrect: monarch ? n(s.incorrectProtects) + (mira ? n(s.incorrectWardenFortifies) : 0) : 0,
+    },
+    { word: 'Fortify', plural: '', correct: mira ? 0 : n(s.correctWardenFortifies), incorrect: mira ? 0 : n(s.incorrectWardenFortifies), verdict: true },
+    { word: 'Clean', plural: 's', correct: n(s.janitorCleans), incorrect: 0, verdict: false },
+  ];
+  return parts.filter((p) => p.correct > 0 || p.incorrect > 0);
+}
