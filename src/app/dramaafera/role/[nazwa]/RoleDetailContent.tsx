@@ -135,7 +135,10 @@ function generateRoleStats(allGames: UIGameData[], targetRole: string, seasonId:
                     incorrectKills: 0
                 };
                 current.games++;
-                if (player.originalStats) addGame(byPlayer, player.nickname, player.originalStats, seasonId, false, targetRole);
+                // The role at the end of the game, as the day results and the profile use: it decides
+                // whether the protect counters hold a Monarch's knighting.
+                const finalRole = player.roleHistory?.[player.roleHistory.length - 1] ?? player.role;
+                if (player.originalStats) addGame(byPlayer, player.nickname, player.originalStats, seasonId, false, finalRole);
 
                 if (player.win) {
                     totalWins++;

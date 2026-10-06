@@ -75,10 +75,9 @@ export function roleLabel(role: string, seasonId: number): string {
  * Adds one game to a breakdown. The key is a role (made a display name) unless `keyIsRole` is
  * false: the roles table breaks a role down by the players who played it, and a player's name
  * must stay as it is.
- */
-/**
- * `role` is the player's role in that game. It defaults to the key, which is right whenever the
- * rows are roles. When the rows are players, pass the role explicitly.
+ *
+ * `role` is the player's role at the end of that game. It defaults to the key, which is right
+ * whenever the rows are roles. When the rows are players, pass the role explicitly.
  */
 export function addGame(breakdown: RoleBreakdown, key: string, counters: GameCounters, seasonId: number, keyIsRole = true, role?: string): void {
   const add = categorize(counters, seasonId, role ?? (keyIsRole ? key : undefined));
@@ -94,8 +93,10 @@ export function addGame(breakdown: RoleBreakdown, key: string, counters: GameCou
   }
 }
 
-/** One action type inside "Other", for views of a single game. */
-/** `verdict` is false for an action that is never right or wrong (a Janitor's clean): show the count only. */
+/**
+ * One action type inside "Other", for views of a single game. `verdict` is false for an action
+ * that is never right or wrong (a Janitor's clean): show the count only.
+ */
 export interface OtherPart { word: string; plural: string; correct: number; incorrect: number; verdict: boolean }
 
 /**

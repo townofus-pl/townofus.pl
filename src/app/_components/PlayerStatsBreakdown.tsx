@@ -50,6 +50,8 @@ export default function PlayerStatsBreakdown({ breakdown, seasonId, hideZeroStat
     }), { correct: 0, incorrect: 0 });
 
   const keys = (Object.keys(LABELS) as CategoryKey[]).filter((key) => {
+    // The v1 games before Mira carry no vote verdicts: a Votes box there would read 0 / 0 as fact.
+    if (key === 'votes' && seasonId < FIRST_MIRA_SEASON) return false;
     const t = totals(key);
     return !hideZeroStats || t.correct > 0 || t.incorrect > 0;
   });
