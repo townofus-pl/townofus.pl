@@ -76,6 +76,11 @@ export const V2ActionSchema = z
 
         isGuess: z.boolean().optional(), // kill only
         causeOfDeath: z.string().optional(), // kill/death only; raw TOU-Mira key, locale-independent
+        // kill with isGuess only: what the guesser named. On a Vigilante/Assassin misguess with either
+        // set, `target` is the guessed player (alive), not the guesser who died (mod 1.1.0).
+        guessedRole: z.string().optional(),
+        guessedModifier: z.string().optional(),
+        weight: z.number().int().min(1).optional(), // vote only: Mayor/Knight weight, already in pointsChange
         modifier: z.string().optional(), // modifier_gained / modifier_lost
         system: z.string().optional(), // sabotage_started / sabotage_fixed; SystemTypes enum name
         entryVent: z.number().int().optional(), // vent_use; ids are per-map, resolve against mapName

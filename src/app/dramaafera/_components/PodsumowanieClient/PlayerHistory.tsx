@@ -2,6 +2,7 @@ import Image from 'next/image';
 import { UIGameData } from '@/app/dramaafera/_services/games/types';
 import { videotext, formatDate } from './constants';
 import { getRoleIconPath, FIRST_MIRA_SEASON } from '@/app/dramaafera/_utils/gameUtils';
+import { categorize, otherParts } from '@/app/dramaafera/_utils/statsBreakdown';
 
 interface PlayerHistoryProps {
     seasonId: number;
@@ -150,6 +151,35 @@ export default function PlayerHistory({ nickname, isFullscreen, topPlayerGames, 
                                 {/* Statystyki pod kwadratem */}
                                 {played && playerData && (
                                     <div className={`text-center mt-2 ${isFullscreen ? 'text-sm' : 'text-xs'} leading-tight`}>
+                                        {/* Od sezonu 4 te same grupy co w Wynikach dnia (Malkiz, 2026-10). */}
+                                        {seasonId >= FIRST_MIRA_SEASON && (() => {
+                                            const role = playerData.roleHistory?.[playerData.roleHistory.length - 1] ?? playerData.role;
+                                            const g = categorize(playerData.originalStats, seasonId, role);
+                                            // One game: the actions behind "Other" under their own names (CORRECT KNIGHT).
+                                            const rows: Array<[number, number, string, string, boolean]> = [
+                                                [g.kills.correct, g.kills.incorrect, 'KILL', 'S', true],
+                                                [g.guesses.correct, g.guesses.incorrect, 'GUESS', 'ES', true],
+                                                [g.protects.correct, g.protects.incorrect, 'PROTECT', 'S', true],
+                                                ...otherParts(playerData.originalStats, seasonId, role)
+                                                    .map((p): [number, number, string, string, boolean] => [p.correct, p.incorrect, p.word.toUpperCase(), p.plural.toUpperCase(), p.verdict]),
+                                                [g.votes.correct, g.votes.incorrect, 'VOTE', 'S', true],
+                                            ];
+                                            return (
+                                                <>
+                                                    {rows.map(([ok, bad, word, plural, verdict]) => (
+                                                        <div key={word}>
+                                                            {ok > 0 && (verdict
+                                                                ? <div className="text-green-500">{ok} CORRECT {word}{ok > 1 ? plural : ''}</div>
+                                                                : <div className="text-gray-400">{ok} {word}{ok > 1 ? plural : ''}</div>)}
+                                                            {bad > 0 && <div className="text-red-500">{bad} INCORRECT {word}{bad > 1 ? plural : ''}</div>}
+                                                        </div>
+                                                    ))}
+                                                </>
+                                            );
+                                        })()}
+
+                                        {seasonId < FIRST_MIRA_SEASON && (
+                                        <>
                                         {/* Kills */}
                                         {playerData.originalStats.correctKills > 0 && (
                                             <div className="text-green-500">{playerData.originalStats.correctKills} CORRECT KILL{playerData.originalStats.correctKills > 1 ? 'S' : ''}</div>
@@ -225,6 +255,8 @@ export default function PlayerHistory({ nickname, isFullscreen, topPlayerGames, 
                                         {/* Janitor Cleans */}
                                         {playerData.originalStats.janitorCleans > 0 && (
                                             <div className="text-gray-400">{playerData.originalStats.janitorCleans} CLEAN{playerData.originalStats.janitorCleans > 1 ? 'S' : ''}</div>
+                                        )}
+                                        </>
                                         )}
                                     </div>
                                 )}

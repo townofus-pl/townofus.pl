@@ -85,6 +85,9 @@ function detailFor(action: V2Action): string | null {
     const detail: Record<string, unknown> = {};
     if (action.isGuess !== undefined) detail.isGuess = action.isGuess;
     if (action.causeOfDeath !== undefined) detail.causeOfDeath = action.causeOfDeath;
+    if (action.guessedRole !== undefined) detail.guessedRole = action.guessedRole;
+    if (action.guessedModifier !== undefined) detail.guessedModifier = action.guessedModifier;
+    if (action.weight !== undefined) detail.weight = action.weight;
     if (action.modifier !== undefined) detail.modifier = action.modifier;
     if (action.system !== undefined) detail.system = action.system;
     if (action.entryVent !== undefined) detail.entryVent = action.entryVent;

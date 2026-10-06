@@ -43,6 +43,24 @@ describe('V2ActionSchema — the isCorrect rule', () => {
     });
 });
 
+describe('V2ActionSchema — fields added by mod 1.1.0', () => {
+    it('accepts a misguess that names the guessed player and role', () => {
+        const miss = action({ isGuess: true, causeOfDeath: 'Misguess', isCorrect: false, pointsChange: -2, guessedRole: 'Seer' });
+        expect(V2ActionSchema.safeParse(miss).success).toBe(true);
+        expect(V2ActionSchema.safeParse(action({ isGuess: true, guessedModifier: 'Double Shot' })).success).toBe(true);
+    });
+
+    it('accepts a vote weight of 1 or more, and nothing below', () => {
+        expect(V2ActionSchema.safeParse(action({ type: 'vote', weight: 3 })).success).toBe(true);
+        expect(V2ActionSchema.safeParse(action({ type: 'vote', weight: 0 })).success).toBe(false);
+        expect(V2ActionSchema.safeParse(action({ type: 'vote', weight: 1.5 })).success).toBe(false);
+    });
+
+    it('still accepts an action from an older mod build, with none of them', () => {
+        expect(V2ActionSchema.safeParse(action({ type: 'vote' })).success).toBe(true);
+    });
+});
+
 describe('V2GamePayloadSchema', () => {
     const payload = {
         schemaVersion: '2.0.0',

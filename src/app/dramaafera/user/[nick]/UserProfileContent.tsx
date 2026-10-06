@@ -2,6 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { getUserProfileStats, getAllPlayerNames, getPlayerRankingHistory, getPlayerTopGames, getPlayerVotingStats, getPlayerStars } from "../../_services";
 import { convertNickToUrlSlug, getPlayerAvatarPath, FIRST_MIRA_SEASON } from "@/app/dramaafera/_utils/gameUtils";
+import PlayerStatsBreakdown from "@/app/_components/PlayerStatsBreakdown";
 import { buildSeasonUrl } from "@/app/dramaafera/_utils/seasonHelpers";
 import { notFound } from "next/navigation";
 import CollapsibleSection from "./CollapsibleSection";
@@ -199,7 +200,7 @@ export async function UserProfileContent({ nick, seasonId }: UserProfileContentP
                 {/* Dodatkowe statystyki */}
                 <CollapsibleSection title="Szczegółowe statystyki" defaultOpen={false} icon="📊">
                     
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+                    <div className={`grid grid-cols-2 gap-4 ${seasonId >= FIRST_MIRA_SEASON ? 'md:grid-cols-5' : 'md:grid-cols-4'}`}>
                         <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
                             <div className="text-xl font-bold text-red-400">
                                 {playerStats.impostorGames}
@@ -236,6 +237,9 @@ export async function UserProfileContent({ nick, seasonId }: UserProfileContentP
                             </div>
                         </div>
 
+                        {/* Do sezonu 3 osobne karty. Od sezonu 4 te same grupy co w Wynikach dnia (tabela nad kartami). */}
+                        {seasonId < FIRST_MIRA_SEASON && (
+                        <>
                         {/* Statystyki zabójstw */}
                         <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
                             <div className="text-xl font-bold text-green-400">
@@ -350,7 +354,9 @@ export async function UserProfileContent({ nick, seasonId }: UserProfileContentP
                             </div>
                         </div>
 
-                        {/* Statystyki Warden Fortifies */}
+                        {/* Statystyki Warden Fortifies — od Miry fortify Wardena liczy się jako protect */}
+                        {seasonId < FIRST_MIRA_SEASON && (
+                        <>
                         <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
                             <div className="text-xl font-bold text-green-400">
                                 {playerStats.correctWardenFortifies}
@@ -368,6 +374,8 @@ export async function UserProfileContent({ nick, seasonId }: UserProfileContentP
                                 Incorrect Warden fortifies
                             </div>
                         </div>
+                        </>
+                        )}
 
                         {/* Statystyki Altruist Revives */}
                         <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
@@ -416,6 +424,8 @@ export async function UserProfileContent({ nick, seasonId }: UserProfileContentP
                                 Janitor cleans
                             </div>
                         </div>
+                        </>
+                        )}
 
                         {/* Statystyki przetrwanych rund */}
                         <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
@@ -432,6 +442,14 @@ export async function UserProfileContent({ nick, seasonId }: UserProfileContentP
                             )}
                         </div>
                     </div>
+                    {playerStats.roleBreakdown && (
+                        <PlayerStatsBreakdown
+                            breakdown={playerStats.roleBreakdown}
+                            seasonId={seasonId}
+                            hideZeroStats={false}
+                            variant="wide"
+                        />
+                    )}
                 </CollapsibleSection>
 
                 {/* Historia rankingu */}

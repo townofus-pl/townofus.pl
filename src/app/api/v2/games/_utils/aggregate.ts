@@ -127,10 +127,10 @@ function bucketFor(action: V2Action, role: string): Pair | { flat: Flat } | null
             if (role === 'Prosecutor') return { correct: 'correctProsecutes', incorrect: 'incorrectProsecutes' };
             return { correct: 'correctKills', incorrect: 'incorrectKills' };
 
+        // Every protector shares one counter, the Warden's fortify included: the league counts them
+        // all as protects (Malkiz, 2026-10). The Warden columns stay for the pre-Mira seasons only.
         case 'protect':
-            return role === 'Warden'
-                ? { correct: 'correctWardenFortifies', incorrect: 'incorrectWardenFortifies' }
-                : { correct: 'correctProtects', incorrect: 'incorrectProtects' };
+            return { correct: 'correctProtects', incorrect: 'incorrectProtects' };
 
         // The Monarch's knighting shares the protect counters — same shape of act, same column.
         case 'knight':

@@ -42,8 +42,7 @@ On `swap` the field may be **absent**, which means the rule declined to score â€
 | `kill` by Jailor | `correctJailorExecutes` / `incorrectJailorExecutes` | Jailor |
 | `kill` by Prosecutor | `correctProsecutes` / `incorrectProsecutes` | Prosecutor |
 | `kill` (all other) | `correctKills` / `incorrectKills` | every Impostor role, Sheriff, Officer, Hunter, Veteran, Inquisitor, every Neutral Killing role, any role carrying Crewpostor |
-| `protect` by Warden | `correctWardenFortifies` / `incorrectWardenFortifies` | Warden |
-| `protect` (all other) | `correctProtects` / `incorrectProtects` | Medic, Mirrorcaster, Oracle |
+| `protect` | `correctProtects` / `incorrectProtects` | Medic, Warden, Mirrorcaster, Oracle. The Warden's fortify counts as a protect since 2026-10 (Malkiz). The Warden columns stay for pre-Mira seasons, and season-4 rows were folded into the protect columns |
 | `knight` | `correctProtects` / `incorrectProtects` | Monarch |
 | `revive` | `correctAltruistRevives` / `incorrectAltruistRevives` | Altruist, Time Lord |
 | `swap` | `correctSwaps` / `incorrectSwaps` | Swapper |
@@ -76,6 +75,13 @@ epsilon, so absence does not mean the player stayed.
   dies. Anything reading a `kill` as "the target died" must exclude this case. The miss is
   reported by the Doomsayer's own client, so a player on an older client build reports none, and
   games captured before that mod build contain no misses at all.
+- **A reported Vigilante or Assassin misguess moves its target to the guessed player.** Since mod 1.1.0 the mod reads TOU's own misguess RPC (and, for a hit, the guesser's client report). A misguess with
+  `guessedRole` or `guessedModifier` has `target` = the guessed player, who is **alive**, and the
+  guesser is the one who died. Without either field it has the old shape, `target` = the guesser.
+  Both are stored in `detail`. So a `kill` with `isGuess && isCorrect === false` never means "the
+  target died": read the guesser's death from `deathsSinceLastMeeting`, not from the target.
+- **Votes are not a counter.** `vote` actions stay in `game_actions`. The game page sums them per
+  voter (`_countVotes.ts`), each decision counted with `detail.weight` (Mayor, Knight; absent = 1).
 - **An Officer can go negative.** A misfire still kills the victim; the mod records it as an
   ordinary `kill` with `isCorrect: false`, taking TOU-Mira's own ruling over the faction table.
 - **`round_survived` is not emitted for disconnected players**, so round counts do not sum evenly
