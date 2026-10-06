@@ -75,7 +75,7 @@ epsilon, so absence does not mean the player stayed.
   dies. Anything reading a `kill` as "the target died" must exclude this case. The miss is
   reported by the Doomsayer's own client, so a player on an older client build reports none, and
   games captured before that mod build contain no misses at all.
-- **A reported Vigilante or Assassin misguess moves its target to the guessed player.** Since mod `12f6eea` the guesser's client reports each guess. A misguess with
+- **A reported Vigilante or Assassin misguess moves its target to the guessed player.** Since mod 1.1.0 the mod reads TOU's own misguess RPC (and, for a hit, the guesser's client report). A misguess with
   `guessedRole` or `guessedModifier` has `target` = the guessed player, who is **alive**, and the
   guesser is the one who died. Without either field it has the old shape, `target` = the guesser.
   Both are stored in `detail`. So a `kill` with `isGuess && isCorrect === false` never means "the

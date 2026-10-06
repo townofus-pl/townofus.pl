@@ -43,7 +43,7 @@ describe('V2ActionSchema — the isCorrect rule', () => {
     });
 });
 
-describe('V2ActionSchema — fields added by mod 12f6eea', () => {
+describe('V2ActionSchema — fields added by mod 1.1.0', () => {
     it('accepts a misguess that names the guessed player and role', () => {
         const miss = action({ isGuess: true, causeOfDeath: 'Misguess', isCorrect: false, pointsChange: -2, guessedRole: 'Seer' });
         expect(V2ActionSchema.safeParse(miss).success).toBe(true);

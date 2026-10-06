@@ -1,7 +1,7 @@
 /**
  * Correct and incorrect votes per voter name, each decision counted with its weight. A revealed
  * Mayor's one decision is three votes, and the league wants all three shown. `weight` is in
- * `detail` since mod 12f6eea; an older action has none, which means 1.
+ * `detail` since mod 1.1.0; an older action has none, which means 1.
  */
 export function countVotes(
   actions: ReadonlyArray<{ isCorrect: boolean | null; detail: string | null; performer: { name: string } }>,
