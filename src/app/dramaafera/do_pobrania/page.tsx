@@ -1,6 +1,10 @@
 import React from 'react';
 import { MIRA_VERSION, MIRA_RELEASE_URL, miraDownloadUrl } from '@/roles/_generated/miraVersion';
 import clientManifest from '../../../../public/mod/client/latest.json';
+import { getAUnlockerDownloadUrl, AUNLOCKER_RELEASES_PAGE } from './_utils/aunlocker';
+
+// Rendered per request, so the AUnlocker link follows its newest release (see getAUnlockerDownloadUrl).
+export const dynamic = 'force-dynamic';
 
 /**
  * What a player installs to play the league's season.
@@ -28,26 +32,30 @@ const PLUGIN_NAME = 'DramaAferaStats.Client.dll';
 /**
  * Other plugins the league plays with, always their newest release. AleLuduMod keeps one file
  * name across releases, so GitHub's `latest/download` link works directly. AUnlocker puts the
- * version in the file name, so it goes through our redirect, which reads the newest release.
+ * version in the file name, so its link is read from the newest release on each render.
  */
-const EXTRA_PLUGINS = [
-    {
-        name: 'AleLuduMod',
-        href: 'https://github.com/townofus-pl/AleLuduMod/releases/latest/download/AleLuduMod.dll',
-        source: 'https://github.com/townofus-pl/AleLuduMod/releases/latest',
-        note: 'AleLuduMod.dll',
-    },
-    {
-        name: 'AUnlocker',
-        href: '/api/dramaafera/downloads/aunlocker',
-        source: 'https://github.com/astra1dev/AUnlocker/releases/latest',
-        note: 'AUnlocker_v….dll — przed wgraniem nowej wersji usuń starą z BepInEx/plugins',
-    },
-];
+function extraPlugins(aunlockerUrl: string) {
+    const aunlockerFile = aunlockerUrl.endsWith('.dll') ? aunlockerUrl.split('/').pop() : 'AUnlocker_v….dll';
+    return [
+        {
+            name: 'AleLuduMod',
+            href: 'https://github.com/townofus-pl/AleLuduMod/releases/latest/download/AleLuduMod.dll',
+            source: 'https://github.com/townofus-pl/AleLuduMod/releases/latest',
+            note: 'AleLuduMod.dll',
+        },
+        {
+            name: 'AUnlocker',
+            href: aunlockerUrl,
+            source: AUNLOCKER_RELEASES_PAGE,
+            note: `${aunlockerFile} — przed wgraniem nowej wersji usuń starą z BepInEx/plugins`,
+        },
+    ];
+}
 
 const plugin = clientManifest.files.find((file) => file.name === PLUGIN_NAME);
 
-export default function DoPobraniaPage() {
+export default async function DoPobraniaPage() {
+    const extras = extraPlugins(await getAUnlockerDownloadUrl());
     return (
         <main className="min-h-screen rounded-xl bg-zinc-900/50 text-white px-4 py-8 flex flex-col items-center">
             <div className="max-w-2xl w-full">
@@ -131,7 +139,7 @@ export default function DoPobraniaPage() {
                 </p>
 
                 <div className="space-y-2 mb-6">
-                    {EXTRA_PLUGINS.map((extra) => (
+                    {extras.map((extra) => (
                         <div key={extra.name} className="bg-[#23202a] rounded-lg px-4 py-3 border border-[#23202a]">
                             <a href={extra.href} className="flex items-center justify-between gap-4 hover:text-white">
                                 <span className="font-medium">{extra.name}</span>
