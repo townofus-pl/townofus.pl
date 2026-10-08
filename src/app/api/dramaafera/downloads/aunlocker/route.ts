@@ -1,33 +1,65 @@
 import { NextResponse } from 'next/server';
 import { withCors } from '@/app/api/_middlewares';
-import { pickAUnlockerDll } from './_pickDll';
+import { RELEASES_LATEST, dllUrl, tagFromLatestRedirect } from './_latest';
 
-const LATEST_RELEASE_API = 'https://api.github.com/repos/astra1dev/AUnlocker/releases/latest';
-const RELEASES_PAGE = 'https://github.com/astra1dev/AUnlocker/releases/latest';
+/** Where the found link is kept. Any URL works as a Cache API key. It never leaves the cache. */
+const CACHE_KEY = 'https://townofus.pl/__cache/aunlocker-latest-dll';
 const CACHE_SECONDS = 3600;
+
+/** `caches.default` on Workers. Undefined in `next dev` and in tests, which then skip the cache. */
+function edgeCache(): Cache | null {
+    const storage = (globalThis as { caches?: CacheStorage & { default?: Cache } }).caches;
+    return storage?.default ?? null;
+}
+
+/** Finds the newest DLL link, or null when GitHub does not give a release whose DLL exists. */
+async function findLatestDll(): Promise<string | null> {
+    const latest = await fetch(RELEASES_LATEST, { redirect: 'manual', headers: { 'User-Agent': 'townofus.pl' } });
+    const tag = tagFromLatestRedirect(latest.headers.get('location'));
+    if (!tag) return null;
+
+    // GitHub answers an existing asset with a redirect to its storage, a missing one with 404.
+    const url = dllUrl(tag);
+    const asset = await fetch(url, { method: 'HEAD', redirect: 'manual', headers: { 'User-Agent': 'townofus.pl' } });
+    return asset.status >= 200 && asset.status < 400 ? url : null;
+}
 
 /**
  * GET /api/dramaafera/downloads/aunlocker — redirects to the newest AUnlocker DLL.
  *
- * The download page links here, so it never needs a release to be copied in by hand. The GitHub
- * answer is cached at the edge for an hour: unauthenticated GitHub API calls are limited per IP,
- * and a Worker shares its IPs. If GitHub does not answer, the player lands on the releases page.
+ * The found link is kept in the Cache API for an hour, so GitHub sees at most two requests an
+ * hour per data center. The Cache API works on a custom domain (production). On workers.dev
+ * (staging) it stores nothing, and each click asks GitHub. Without a release whose DLL exists,
+ * the player lands on the releases page, and nothing is cached.
  */
 async function getHandler(): Promise<Response> {
-    let target = RELEASES_PAGE;
+    const cache = edgeCache();
+    let target: string | null = null;
+
     try {
-        const response = await fetch(LATEST_RELEASE_API, {
-            headers: { 'User-Agent': 'townofus.pl', Accept: 'application/vnd.github+json' },
-            cf: { cacheTtl: CACHE_SECONDS, cacheEverything: true },
-        } as RequestInit);
-        if (response.ok) target = pickAUnlockerDll(await response.json()) ?? RELEASES_PAGE;
+        const hit = await cache?.match(CACHE_KEY);
+        if (hit) target = await hit.text();
     } catch (error) {
-        console.error('AUnlocker release lookup failed:', error);
+        console.error('AUnlocker cache read failed:', error);
     }
 
-    return NextResponse.redirect(target, {
+    if (!target) {
+        try {
+            target = await findLatestDll();
+            if (target && cache) {
+                await cache.put(CACHE_KEY, new Response(target, {
+                    headers: { 'Cache-Control': `public, max-age=${CACHE_SECONDS}` },
+                }));
+            }
+        } catch (error) {
+            console.error('AUnlocker release lookup failed:', error);
+        }
+    }
+
+    return NextResponse.redirect(target ?? RELEASES_LATEST, {
         status: 302,
-        headers: { 'Cache-Control': `public, max-age=${CACHE_SECONDS}` },
+        // Short: the browser should come back here after a new release, not keep an old link.
+        headers: { 'Cache-Control': 'public, max-age=300' },
     });
 }
 
