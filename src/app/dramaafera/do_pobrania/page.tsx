@@ -25,6 +25,26 @@ const MIRA_BUILDS = [
 
 const PLUGIN_NAME = 'DramaAferaStats.Client.dll';
 
+/**
+ * Other plugins the league plays with, always their newest release. AleLuduMod keeps one file
+ * name across releases, so GitHub's `latest/download` link works directly. AUnlocker puts the
+ * version in the file name, so it goes through our redirect, which reads the newest release.
+ */
+const EXTRA_PLUGINS = [
+    {
+        name: 'AleLuduMod',
+        href: 'https://github.com/townofus-pl/AleLuduMod/releases/latest/download/AleLuduMod.dll',
+        source: 'https://github.com/townofus-pl/AleLuduMod/releases/latest',
+        note: 'AleLuduMod.dll',
+    },
+    {
+        name: 'AUnlocker',
+        href: '/api/dramaafera/downloads/aunlocker',
+        source: 'https://github.com/astra1dev/AUnlocker/releases/latest',
+        note: 'AUnlocker_v….dll — przed wgraniem nowej wersji usuń starą z BepInEx/plugins',
+    },
+];
+
 const plugin = clientManifest.files.find((file) => file.name === PLUGIN_NAME);
 
 export default function DoPobraniaPage() {
@@ -102,6 +122,27 @@ export default function DoPobraniaPage() {
                         </div>
                     </a>
                 )}
+
+                <h2 className="text-xl font-semibold mb-3">3. Pozostałe wtyczki</h2>
+                <p className="text-[#b0aeb8] mb-4">
+                    Wrzuć je do tego samego folderu{' '}
+                    <code className="bg-[#23202a] px-1 rounded">BepInEx/plugins</code>. Linki zawsze
+                    prowadzą do najnowszej wersji.
+                </p>
+
+                <div className="space-y-2 mb-6">
+                    {EXTRA_PLUGINS.map((extra) => (
+                        <div key={extra.name} className="bg-[#23202a] rounded-lg px-4 py-3 border border-[#23202a]">
+                            <a href={extra.href} className="flex items-center justify-between gap-4 hover:text-white">
+                                <span className="font-medium">{extra.name}</span>
+                                <span className="text-xs text-[#6b6874] font-mono truncate">{extra.note}</span>
+                            </a>
+                            <a href={extra.source} className="text-xs text-[#b0aeb8] underline hover:text-white">
+                                Źródło na GitHubie
+                            </a>
+                        </div>
+                    ))}
+                </div>
             </div>
         </main>
     );
