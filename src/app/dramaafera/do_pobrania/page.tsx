@@ -85,11 +85,11 @@ export default function DoPobraniaPage() {
                     </a>
                 </p>
 
-                <h2 className="text-xl font-semibold mb-3">2. Wtyczka ligowa</h2>
+                <h2 className="text-xl font-semibold mb-3">2. Mod ligowy</h2>
                 <p className="text-[#b0aeb8] mb-4">
                     Wrzuć poniższy plik do{' '}
                     <code className="bg-[#23202a] px-1 rounded">BepInEx/plugins</code> w tej kopii.
-                    Bez niego zostaniesz automatycznie wyrzucony z lobby. Plugin ma funkcję auto-update,{' '}
+                    Bez niego zostaniesz automatycznie wyrzucony z lobby. Mod ma funkcję auto-update,{' '}
                     więc przyszłe wersje i pliki czapek/skinów pobiera samodzielnie.
                 </p>
 
@@ -125,7 +125,7 @@ export default function DoPobraniaPage() {
                     </a>
                 )}
 
-                <h2 className="text-xl font-semibold mb-3">3. Pozostałe wtyczki</h2>
+                <h2 className="text-xl font-semibold mb-3">3. Pozostałe mody</h2>
                 <p className="text-[#b0aeb8] mb-4">
                     Wrzuć je do tego samego folderu{' '}
                     <code className="bg-[#23202a] px-1 rounded">BepInEx/plugins</code>. Linki zawsze
@@ -135,13 +135,23 @@ export default function DoPobraniaPage() {
                 <div className="space-y-2 mb-6">
                     {EXTRA_PLUGINS.map((extra) => (
                         <div key={extra.name} className="bg-[#23202a] rounded-lg px-4 py-3 border border-[#23202a]">
-                            <a href={extra.href} className="flex items-center justify-between gap-4 hover:text-white">
-                                <span className="font-medium">{extra.name}</span>
-                                <span className="text-xs text-[#6b6874] font-mono truncate">{extra.note}</span>
-                            </a>
-                            {'warning' in extra && (
-                                <p className="text-xs text-[#b0aeb8] mt-1">{extra.warning}</p>
-                            )}
+                            <div className="flex items-center justify-between gap-4">
+                                <div className="flex items-center gap-2">
+                                    <a href={extra.href} className="font-medium hover:text-white">{extra.name}</a>
+                                    {'warning' in extra && (
+                                        // Same hover tooltip as the game history. Focusable, so it also opens on tap and by keyboard.
+                                        <span tabIndex={0} aria-label={extra.warning}
+                                            className="relative group cursor-help text-sm text-[#b0aeb8] outline-none">
+                                            ⓘ
+                                            <span role="tooltip"
+                                                className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 group-focus:opacity-100 transition-opacity pointer-events-none z-10">
+                                                {extra.warning}
+                                            </span>
+                                        </span>
+                                    )}
+                                </div>
+                                <a href={extra.href} className="text-xs text-[#6b6874] font-mono truncate hover:text-white">{extra.note}</a>
+                            </div>
                             <a href={extra.source} className="text-xs text-[#b0aeb8] underline hover:text-white">
                                 Źródło na GitHubie
                             </a>
