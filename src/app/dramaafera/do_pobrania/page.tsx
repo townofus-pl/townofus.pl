@@ -28,7 +28,8 @@ const PLUGIN_NAME = 'DramaAferaStats.Client.dll';
 /**
  * Other plugins the league plays with, always their newest release. AleLuduMod keeps one file
  * name across releases, so GitHub's `latest/download` link works directly. AUnlocker puts the
- * version in the file name, so it goes through our redirect, which reads the newest release.
+ * version in the file name, so it goes through our route, which serves the newest release as
+ * `AUnlocker.dll`.
  */
 const EXTRA_PLUGINS = [
     {
@@ -41,8 +42,8 @@ const EXTRA_PLUGINS = [
         name: 'AUnlocker',
         href: '/api/dramaafera/downloads/aunlocker',
         source: 'https://github.com/astra1dev/AUnlocker/releases/latest',
-        note: 'AUnlocker_v….dll',
-        warning: 'Nazwa pliku zawiera wersję. Przed wgraniem nowej wersji usuń starą z BepInEx/plugins.',
+        note: 'AUnlocker.dll',
+        warning: 'Masz starszy plik AUnlocker_v….dll? Usuń go z BepInEx/plugins, bo inaczej gra wczyta oba.',
     },
 ];
 
