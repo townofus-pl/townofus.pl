@@ -35,10 +35,14 @@ async function findLatestDll(): Promise<string | null> {
 async function getHandler(): Promise<Response> {
     const cache = edgeCache();
     let target: string | null = null;
+    let cacheStatus = cache ? 'MISS' : 'NONE';
 
     try {
         const hit = await cache?.match(CACHE_KEY);
-        if (hit) target = await hit.text();
+        if (hit) {
+            target = await hit.text();
+            cacheStatus = 'HIT';
+        }
     } catch (error) {
         console.error('AUnlocker cache read failed:', error);
     }
@@ -59,7 +63,9 @@ async function getHandler(): Promise<Response> {
     return NextResponse.redirect(target ?? RELEASES_LATEST, {
         status: 302,
         // Short: the browser should come back here after a new release, not keep an old link.
-        headers: { 'Cache-Control': 'public, max-age=300' },
+        // X-AUnlocker-Cache tells whether the link came from the Cache API: HIT, MISS, or NONE where
+        // there is no Cache API (next dev, tests).
+        headers: { 'Cache-Control': 'public, max-age=300', 'X-AUnlocker-Cache': cacheStatus },
     });
 }
 
