@@ -140,11 +140,12 @@ export default function DoPobraniaPage() {
                                     <a href={extra.href} className="font-medium hover:text-white">{extra.name}</a>
                                     {'warning' in extra && (
                                         // Same hover tooltip as the game history. Focusable, so it also opens on tap and by keyboard.
+                                        // It opens to the right: the icon sits near the left edge, so a centred tooltip leaves a phone screen.
                                         <span tabIndex={0} aria-label={extra.warning}
                                             className="relative group cursor-help text-sm text-[#b0aeb8] outline-none">
                                             ⓘ
                                             <span role="tooltip"
-                                                className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-64 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 group-focus:opacity-100 transition-opacity pointer-events-none z-10">
+                                                className="absolute bottom-full left-0 mb-2 w-60 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 group-focus:opacity-100 transition-opacity pointer-events-none z-10">
                                                 {extra.warning}
                                             </span>
                                         </span>
