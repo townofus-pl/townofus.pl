@@ -41,7 +41,8 @@ const EXTRA_PLUGINS = [
         name: 'AUnlocker',
         href: '/api/dramaafera/downloads/aunlocker',
         source: 'https://github.com/astra1dev/AUnlocker/releases/latest',
-        note: 'AUnlocker_v….dll — przed wgraniem nowej wersji usuń starą z BepInEx/plugins',
+        note: 'AUnlocker_v….dll',
+        warning: 'Nazwa pliku zawiera wersję. Przed wgraniem nowej wersji usuń starą z BepInEx/plugins.',
     },
 ];
 
@@ -137,6 +138,9 @@ export default function DoPobraniaPage() {
                                 <span className="font-medium">{extra.name}</span>
                                 <span className="text-xs text-[#6b6874] font-mono truncate">{extra.note}</span>
                             </a>
+                            {'warning' in extra && (
+                                <p className="text-xs text-[#b0aeb8] mt-1">{extra.warning}</p>
+                            )}
                             <a href={extra.source} className="text-xs text-[#b0aeb8] underline hover:text-white">
                                 Źródło na GitHubie
                             </a>
