@@ -1,4 +1,4 @@
-import { pickAUnlockerDll } from './aunlocker';
+import { pickAUnlockerDll } from './_pickDll';
 
 const asset = (name: string) => ({ name, browser_download_url: `https://github.com/astra1dev/AUnlocker/releases/download/v1.3.1/${name}` });
 
