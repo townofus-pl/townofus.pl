@@ -1,5 +1,7 @@
 export type { RankingPlayer, RankingResult } from './getRanking';
 export { getRanking } from './getRanking';
+export type { SeasonRankingHistory } from './getSeasonRankingHistories';
+export { getSeasonRankingHistories } from './getSeasonRankingHistories';
 
 export type { GameDateGameEntry, GameDateEntry, GameDatesResult } from './getGameDatesLightweight';
 export { getGameDatesLightweight } from './getGameDatesLightweight';

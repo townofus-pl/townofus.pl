@@ -3,12 +3,13 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import type { RankingPlayer } from "@/app/dramaafera/_services";
+import type { RankingHistoryPoint, RankingPlayer, SeasonRankingHistory } from "@/app/dramaafera/_services";
 import { CURRENT_SEASON } from "@/app/dramaafera/_constants/seasons";
-import { getRankingAction } from "@/app/dramaafera/_actions/seasonActions";
+import { getRankingAction, getSeasonRankingHistoriesAction } from "@/app/dramaafera/_actions/seasonActions";
 import { getRankName } from "@/app/dramaafera/_constants/rankTiers";
 import { buildSeasonUrl } from "@/app/dramaafera/_utils/seasonHelpers";
 import { convertNickToUrlSlug } from "@/app/dramaafera/_utils/gameUtils";
+import { RankingChart } from "./RankingChart";
 
 type NumericRankingKey = {
     [K in keyof RankingPlayer]: RankingPlayer[K] extends number ? K : never;
@@ -17,6 +18,44 @@ type NumericRankingKey = {
 // Funkcja pomocnicza do generowania ścieżki avatara
 function getPlayerAvatarPath(playerName: string): string {
     return `/images/avatars/${playerName}.png`;
+}
+
+function getRecentGameHistories(histories: SeasonRankingHistory[], limit = 10): SeasonRankingHistory[] {
+    const gamesByKey = new Map<string, { gameId?: number; gameIdentifier?: string; date: Date }>();
+    histories.forEach(({ data }) => data.forEach(point => {
+        if (point.gameId == null && !point.gameIdentifier) return;
+        const key = point.gameIdentifier ?? `game-id:${point.gameId}`;
+        if (!gamesByKey.has(key)) {
+            gamesByKey.set(key, { gameId: point.gameId, gameIdentifier: point.gameIdentifier, date: point.date });
+        }
+    }));
+    const recentGames = [...gamesByKey.values()]
+        .sort((a, b) => a.date.getTime() - b.date.getTime() || (a.gameId ?? 0) - (b.gameId ?? 0))
+        .slice(-limit);
+    if (recentGames.length === 0) return [];
+
+    return histories.map(({ playerName, data }) => {
+        const points = [...data].sort((a, b) => a.date.getTime() - b.date.getTime() || (a.gameId ?? 0) - (b.gameId ?? 0));
+        let cursor = 0;
+        let currentScore: number | undefined;
+        const recentPoints: RankingHistoryPoint[] = [];
+
+        recentGames.forEach(game => {
+            while (cursor < points.length) {
+                const point = points[cursor];
+                const belongsToGame = point.gameIdentifier === game.gameIdentifier || point.gameId === game.gameId;
+                const isBeforeGame = point.date.getTime() < game.date.getTime()
+                    || (point.date.getTime() === game.date.getTime() && (point.gameId ?? 0) <= (game.gameId ?? Number.MAX_SAFE_INTEGER));
+                if (!belongsToGame && !isBeforeGame) break;
+                currentScore = point.score;
+                cursor++;
+            }
+            if (currentScore !== undefined) {
+                recentPoints.push({ ...game, score: currentScore });
+            }
+        });
+        return { playerName, data: recentPoints };
+    }).filter(line => line.data.length > 0);
 }
 
 function sortPlayers(players: RankingPlayer[], sortBy: NumericRankingKey, sortOrder: "asc" | "desc") {
@@ -52,10 +91,34 @@ export default function RankingClient({ initialData, seasonId }: RankingClientPr
             id: p.playerId,
             rating: p.currentRating,
             games: p.totalGames,
+            dap: p.dap,
         })))
     );
     const [lastUpdateTime, setLastUpdateTime] = useState<Date | null>(null);
     const [isRefreshing, setIsRefreshing] = useState(false);
+    const [showChart, setShowChart] = useState(false);
+    const [rankingHistories, setRankingHistories] = useState<SeasonRankingHistory[] | null>(null);
+    const [isLoadingChart, setIsLoadingChart] = useState(false);
+    const [chartError, setChartError] = useState<string | null>(null);
+    const chartHistories = rankingHistories ? getRecentGameHistories(rankingHistories) : null;
+
+    const handleChartToggle = async () => {
+        if (showChart) {
+            setShowChart(false);
+            return;
+        }
+        setShowChart(true);
+        if (rankingHistories) return;
+        setIsLoadingChart(true);
+        setChartError(null);
+        try {
+            setRankingHistories(await getSeasonRankingHistoriesAction(seasonId));
+        } catch {
+            setChartError("Nie udało się wczytać wykresu. Spróbuj ponownie.");
+        } finally {
+            setIsLoadingChart(false);
+        }
+    };
 
     // Ref to access lastUpdateHash inside useCallback without making it a dependency
     const lastUpdateHashRef = useRef(lastUpdateHash);
@@ -72,7 +135,8 @@ export default function RankingClient({ initialData, seasonId }: RankingClientPr
             const dataHash = JSON.stringify(result.ranking.map(p => ({
                 id: p.playerId,
                 rating: p.currentRating,
-                games: p.totalGames
+                games: p.totalGames,
+                dap: p.dap
             })));
 
             // Aktualizuj tylko jeśli dane się zmieniły
@@ -104,7 +168,6 @@ export default function RankingClient({ initialData, seasonId }: RankingClientPr
 
     // Sortowanie z obsługą currentRating
     const sortedStats = sortPlayers(playerStats, sortBy, sortOrder);
-
     function handleSort(column: NumericRankingKey) {
         if (sortBy === column) {
             setSortOrder(sortOrder === "asc" ? "desc" : "asc");
@@ -144,6 +207,28 @@ export default function RankingClient({ initialData, seasonId }: RankingClientPr
                 </div>
 
                 <div className="bg-gray-800/50 rounded-lg p-6 backdrop-blur-sm">
+                    <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
+                        <p className="text-sm text-gray-400">DAP — suma punktów w sezonie, aktualizuje się na początku każdej sesji.</p>
+                        <button type="button" onClick={handleChartToggle} disabled={isLoadingChart}
+                            className="rounded-lg border border-zinc-600 bg-zinc-800 px-4 py-2 text-sm text-white transition-colors hover:bg-zinc-700 disabled:cursor-wait disabled:opacity-60">
+                            {isLoadingChart ? "Wczytywanie wykresu…" : showChart ? "Pokaż ranking w tabeli" : "Pokaż ranking w formie wykresu"}
+                        </button>
+                    </div>
+                    {showChart ? (
+                        <div className="min-h-80">
+                            {chartError && <p role="alert" className="py-8 text-center text-red-400">{chartError}</p>}
+                            {isLoadingChart && <p role="status" className="py-8 text-center text-gray-400">Wczytywanie historii rankingu…</p>}
+                            {rankingHistories && rankingHistories.length === 0 && <p className="py-8 text-center text-gray-400">Brak historii rankingu w tym sezonie.</p>}
+                            {rankingHistories && rankingHistories.length > 0 && <>
+                                <p className="mb-6 text-center text-sm text-gray-400">Ostatnie {chartHistories?.[0]?.data.length ?? 0} gier sezonu</p>
+                                <div className="w-full overflow-x-auto overflow-y-hidden">
+                                    <div className="h-[72rem] min-w-[1200px]">
+                                        <RankingChart data={[]} seasonId={seasonId} includeStartingPoint={false} comparison={chartHistories ?? []} expanded />
+                                    </div>
+                                </div>
+                            </>}
+                        </div>
+                    ) : (
                     <div className="overflow-x-auto">
                         <table className="w-full table-auto">
                             <thead>
@@ -151,6 +236,7 @@ export default function RankingClient({ initialData, seasonId }: RankingClientPr
                                     <th className="text-left py-2 px-2 text-yellow-400 font-semibold">Pozycja</th>
                                     <th className="text-left py-2 px-2 text-yellow-400 font-semibold">Gracz</th>
                                     <th className="text-left py-2 px-2 text-yellow-400 font-semibold cursor-pointer select-none" onClick={() => handleSort("currentRating")}>Ranking {sortBy === "currentRating" && (sortOrder === "asc" ? "▲" : "▼")}</th>
+                                    <th className="text-left py-2 px-2 text-yellow-400 font-semibold cursor-pointer select-none" onClick={() => handleSort("dap")} title="Suma punktów w sezonie, bez najnowszego dnia z grami">DAP {sortBy === "dap" && (sortOrder === "asc" ? "▲" : "▼")}</th>
                                     <th className="text-left py-2 px-2 text-yellow-400 font-semibold cursor-pointer select-none" onClick={() => handleSort("totalGames")}>Gry {sortBy === "totalGames" && (sortOrder === "asc" ? "▲" : "▼")}</th>
                                     <th className="text-left py-2 px-2 text-yellow-400 font-semibold cursor-pointer select-none" onClick={() => handleSort("wins")}>Wygrane {sortBy === "wins" && (sortOrder === "asc" ? "▲" : "▼")}</th>
                                     <th className="text-left py-2 px-2 text-yellow-400 font-semibold cursor-pointer select-none" onClick={() => handleSort("winRate")}>Procent wygranych {sortBy === "winRate" && (sortOrder === "asc" ? "▲" : "▼")}</th>
@@ -193,6 +279,7 @@ export default function RankingClient({ initialData, seasonId }: RankingClientPr
                                                 </Link>
                                             </td>
                                             <td className="py-2 px-2 text-yellow-300 font-bold">{hasRanking ? Math.round(player.currentRating) : '-'}</td>
+                                            <td className="py-2 px-2 text-gray-300">{player.dap.toFixed(1)}</td>
                                             <td className="py-2 px-2 text-gray-300">{player.totalGames}</td>
                                             <td className="py-2 px-2 text-green-400 font-semibold">{player.wins}</td>
                                             <td className="py-2 px-2">
@@ -212,6 +299,7 @@ export default function RankingClient({ initialData, seasonId }: RankingClientPr
                             </tbody>
                         </table>
                     </div>
+                    )}
                 </div>
 
                 {sortedStats.length === 0 && (
