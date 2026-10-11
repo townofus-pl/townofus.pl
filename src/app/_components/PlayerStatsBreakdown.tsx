@@ -24,6 +24,8 @@ interface Props {
    * 'wide' matches the profile's and role page's stat cards.
    */
   variant?: 'compact' | 'wide';
+  /** Stack action boxes at full width instead of placing them in columns. */
+  layout?: 'grid' | 'stacked';
 }
 
 /**
@@ -31,7 +33,7 @@ interface Props {
  * its correct and incorrect count. ▼ opens the roles (or players) behind the box, in tight columns
  * inside the box, so a name sits right next to its numbers.
  */
-export default function PlayerStatsBreakdown({ breakdown, seasonId, hideZeroStats, rows = 'role', variant = 'compact' }: Props) {
+export default function PlayerStatsBreakdown({ breakdown, seasonId, hideZeroStats, rows = 'role', variant = 'compact', layout = 'grid' }: Props) {
   const wide = variant === 'wide';
   const [open, setOpen] = useState<Set<CategoryKey>>(new Set());
   const toggle = (key: CategoryKey) =>
@@ -60,7 +62,7 @@ export default function PlayerStatsBreakdown({ breakdown, seasonId, hideZeroStat
   const box = wide ? 'bg-zinc-800/30 rounded-lg p-4' : 'bg-zinc-700/60 rounded-lg p-3';
 
   return (
-    <div className={`grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-3 ${wide ? 'mt-4' : 'mb-4'} items-start`}>
+    <div className={`grid ${layout === 'stacked' ? 'grid-cols-1' : 'grid-cols-2 md:grid-cols-3 lg:grid-cols-5'} gap-3 ${wide ? 'mt-4' : 'mb-4'} items-start`}>
       {keys.map((key) => {
         const t = totals(key);
         const isOpen = open.has(key);
@@ -70,15 +72,17 @@ export default function PlayerStatsBreakdown({ breakdown, seasonId, hideZeroStat
         return (
           // In the wide variant five boxes share a row, too narrow for role names: an open box takes
           // two columns.
-          <div key={key} className={`${box} ${wide && isOpen ? 'col-span-2' : ''}`}>
-            <div className="flex items-center justify-between mb-1">
-              <div className={wide ? 'text-base font-semibold text-zinc-200' : 'text-sm font-medium text-zinc-300'}>{LABELS[key](seasonId)}</div>
+          <div key={key} className={`relative ${box} ${layout === 'grid' && wide && isOpen ? 'col-span-2' : ''}`}>
+            <div className={layout === 'stacked' ? 'relative' : ''}>
+            <div className={layout === 'stacked' ? 'grid grid-cols-[10rem_10rem_10rem] items-center gap-4 overflow-x-auto mr-6' : ''}>
+            <div className={`flex items-center justify-between ${layout === 'stacked' ? 'gap-3 shrink-0' : 'mb-1'}`}>
+              <div className={layout === 'stacked' ? 'text-lg font-bold text-zinc-200 whitespace-nowrap text-left' : wide ? 'text-base font-semibold text-zinc-200' : 'text-sm font-medium text-zinc-300'}>{LABELS[key](seasonId)}</div>
               {rowsInBox.length > 0 && (
                 <button
                   type="button"
                   onClick={() => toggle(key)}
-                  className="text-yellow-400 hover:text-yellow-300 text-sm leading-none transition-transform"
-                  style={{ transform: isOpen ? 'rotate(180deg)' : undefined }}
+                  className={`text-yellow-400 hover:text-yellow-300 text-sm leading-none transition-transform ${layout === 'stacked' ? 'absolute top-1/2 right-0' : ''}`}
+                  style={{ transform: `${layout === 'stacked' ? 'translateY(-50%) ' : ''}${isOpen ? 'rotate(180deg)' : ''}`.trim() || undefined }}
                   title={isOpen ? 'Ukryj szczegóły' : rows === 'role' ? 'Pokaż role' : 'Pokaż graczy'}
                   aria-expanded={isOpen}
                 >
@@ -86,11 +90,13 @@ export default function PlayerStatsBreakdown({ breakdown, seasonId, hideZeroStat
                 </button>
               )}
             </div>
-            <div className={`text-green-400 ${wide ? 'text-lg font-bold' : ''}`}>Correct: {t.correct}</div>
-            <div className={`text-red-400 ${wide ? 'text-lg font-bold' : ''}`}>Incorrect: {t.incorrect}</div>
+            <div className={`text-green-400 ${wide || layout === 'stacked' ? 'text-lg font-bold' : ''} ${layout === 'stacked' ? 'shrink-0 whitespace-nowrap' : ''}`}>Correct: {t.correct}</div>
+            <div className={`text-red-400 ${wide || layout === 'stacked' ? 'text-lg font-bold' : ''} ${layout === 'stacked' ? 'shrink-0 whitespace-nowrap' : ''}`}>Incorrect: {t.incorrect}</div>
+            </div>
+            </div>
 
             {isOpen && (
-              <div className="mt-2 pt-2 border-t border-zinc-600/60 grid grid-cols-[minmax(0,max-content)_1.75rem_1.75rem_1.75rem] w-fit max-w-full gap-x-2 gap-y-0.5 text-xs items-center">
+              <div className={`mt-2 pt-2 border-t border-zinc-600/60 grid w-fit max-w-full items-center ${layout === 'stacked' ? 'grid-cols-[minmax(0,max-content)_2.5rem_2.5rem_2.5rem] gap-x-3 gap-y-1.5 text-base' : 'grid-cols-[minmax(0,max-content)_1.75rem_1.75rem_1.75rem] gap-x-2 gap-y-0.5 text-xs'}`}>
                 <div className="text-zinc-500">{rows === 'role' ? 'rola' : 'gracz'}</div>
                 <div className="text-zinc-500 text-center">✓</div>
                 <div className="text-zinc-500 text-center">✗</div>

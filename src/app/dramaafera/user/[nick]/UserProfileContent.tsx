@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { getUserProfileStats, getAllPlayerNames, getPlayerRankingHistory, getPlayerTopGames, getPlayerVotingStats, getPlayerStars } from "../../_services";
+import { getUserProfileStats, getAllPlayerNames, getPlayersList, getRanking, getPlayerRankingHistory, getPlayerTopGames, getPlayerVotingStats, getPlayerStars } from "../../_services";
 import { convertNickToUrlSlug, getPlayerAvatarPath, FIRST_MIRA_SEASON } from "@/app/dramaafera/_utils/gameUtils";
 import PlayerStatsBreakdown from "@/app/_components/PlayerStatsBreakdown";
 import { buildSeasonUrl } from "@/app/dramaafera/_utils/seasonHelpers";
@@ -51,9 +51,16 @@ export async function UserProfileContent({ nick, seasonId }: UserProfileContentP
 
     // Pobierz historię rankingu gracza
     const rankingHistory = await getPlayerRankingHistory(playerNick, seasonId);
+    const seasonPlayers = await getPlayersList(seasonId);
+    const { ranking: seasonRanking } = await getRanking(seasonId, seasonPlayers.length);
+    const rankedNames = new Set(seasonRanking.map(player => player.playerName));
+    const seasonPlayerNames = [
+        ...seasonRanking.map(player => player.playerName),
+        ...seasonPlayers.filter(name => !rankedNames.has(name)),
+    ];
     
     // Pobierz najlepsze gry gracza
-    const { best: bestGames } = await getPlayerTopGames(playerNick, 3, seasonId);
+    const { best: bestGames, hasMore: hasMoreBestGames } = await getPlayerTopGames(playerNick, 3, seasonId);
     
     // Pobierz statystyki głosowań gracza
     const votingStats = await getPlayerVotingStats(playerNick, seasonId);
@@ -448,6 +455,7 @@ export async function UserProfileContent({ nick, seasonId }: UserProfileContentP
                             seasonId={seasonId}
                             hideZeroStats={false}
                             variant="wide"
+                            layout="stacked"
                         />
                     )}
                 </CollapsibleSection>
@@ -455,7 +463,7 @@ export async function UserProfileContent({ nick, seasonId }: UserProfileContentP
                 {/* Historia rankingu */}
                 {rankingHistory.length > 0 && (
                     <CollapsibleSection title="Historia rankingu" defaultOpen={false} icon="📈">
-                        <RankingHistorySection rankingHistory={rankingHistory} playerName={playerNick} seasonId={seasonId} />
+                        <RankingHistorySection key={`${playerNick}-${seasonId}`} rankingHistory={rankingHistory} playerName={playerNick} seasonId={seasonId} playerNames={seasonPlayerNames} />
                     </CollapsibleSection>
                 )}
                 
@@ -467,7 +475,7 @@ export async function UserProfileContent({ nick, seasonId }: UserProfileContentP
                 {/* Najlepsze występy */}
                 {bestGames.length > 0 && (
                     <CollapsibleSection title="Najlepsze występy" defaultOpen={false} icon="🏆">
-                        <TopGamesDisplay bestGames={bestGames} seasonId={seasonId} />
+                        <TopGamesDisplay key={`${playerNick}-${seasonId}`} bestGames={bestGames} seasonId={seasonId} playerName={playerNick} hasMore={hasMoreBestGames} />
                     </CollapsibleSection>
                 )}
             </div>

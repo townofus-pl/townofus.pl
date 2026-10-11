@@ -1,8 +1,10 @@
 "use client";
 
-import { useState } from "react";
+import { useId, useState } from "react";
 import type { RankingHistoryPoint } from "../_services";
 import { buildSeasonUrl } from "../_utils/seasonHelpers";
+import { getPlayerAvatarPath } from '../_utils/gameUtils';
+import { getRankingComparisonColor } from '../_utils/rankingComparisonColors';
 
 // Typy krzywych dostępne w wykresie
 type CurveType = 'linear' | 'smooth' | 'step' | 'cardinal' | 'monotone';
@@ -10,11 +12,12 @@ type CurveType = 'linear' | 'smooth' | 'step' | 'cardinal' | 'monotone';
 // Komponent wykresu rankingu
 export function RankingChart({ 
     data, 
-    playerName: _playerName, 
+    playerName,
     curveType = 'cardinal',
     smoothness = 1,
     includeStartingPoint = true,
-    seasonId
+    seasonId,
+    comparison
 }: { 
     data: RankingHistoryPoint[]; 
     playerName?: string; 
@@ -22,33 +25,53 @@ export function RankingChart({
     smoothness?: number; // parametr gładkości (tylko dla 'smooth' i 'cardinal')
     includeStartingPoint?: boolean; // czy dodawać punkt startowy 2000
     seasonId: number;
+    comparison?: { playerName: string; data: RankingHistoryPoint[] } | { playerName: string; data: RankingHistoryPoint[] }[];
 }) {
     const [hoveredPoint, setHoveredPoint] = useState<{ index: number; point: RankingHistoryPoint; mouseX: number; mouseY: number } | null>(null);
+    const avatarClipId = useId().replace(/:/g, '');
 
-    if (data.length === 0) return null;
+    const comparisons = (Array.isArray(comparison) ? comparison : comparison ? [comparison] : []).filter(line => line.data.length > 0);
+    const comparing = comparisons.length > 0;
+    if (data.length === 0 && !comparing) return null;
 
     const margin = { top: 10, right: 10, bottom: 10, left: 10 };
-    const width = 300; // Będziemy używać viewBox dla responsywności
-    const height = 150;  // Relatywne proporcje
+    const width = 300;
+    const height = 150;
     const chartWidth = width - margin.left - margin.right;
     const chartHeight = height - margin.top - margin.bottom;
 
     // Przygotowanie danych - opcjonalnie dodajemy punkt startowy 2000
-    const allData = includeStartingPoint ? (() => {
+    const prepareData = (history: RankingHistoryPoint[]) => includeStartingPoint && history.length > 0 ? (() => {
         const startingPoint: RankingHistoryPoint = {
             score: 2000,
-            date: new Date(Math.min(...data.map(d => d.date.getTime())) - 24 * 60 * 60 * 1000), // dzień przed pierwszym punktem
+            date: new Date(Math.min(...history.map(d => d.date.getTime())) - 24 * 60 * 60 * 1000), // dzień przed pierwszym punktem
             reason: "Punkt startowy"
         };
-        return [startingPoint, ...data];
-    })() : data;
+        return [startingPoint, ...history];
+    })() : history;
+    const series = [
+        { name: playerName, color: 'rgb(255, 255, 0)', data: prepareData(data) },
+        ...comparisons.map((line, index) => ({ name: line.playerName, color: getRankingComparisonColor(index), data: prepareData(line.data) })),
+    ];
+    const allData = series.flatMap(line => line.data.map(point => ({ ...point, playerName: line.name, color: line.color })));
+    const labelWidth = Math.max(0, ...series.map(line => line.name ? line.name.length * 5 + 20 : 0));
     
-    const minScore = Math.min(includeStartingPoint ? 2000 : Infinity, Math.min(...data.map(d => d.score)));
-    const maxScore = Math.max(includeStartingPoint ? 2000 : -Infinity, Math.max(...data.map(d => d.score)));
+    const minScore = Math.min(...allData.map(d => d.score));
+    const maxScore = Math.max(...allData.map(d => d.score));
     const scoreRange = maxScore - minScore || 1;
 
     // Funkcje skalowania - X bazuje na równomiernym rozmieszczeniu punktów
-    const scaleX = (index: number) => (index / (allData.length - 1)) * chartWidth;
+    // Both players share one slot per game. Real-time spacing squeezes an entire
+    // evening into a vertical line when sessions are a week apart.
+    const pointKey = (point: RankingHistoryPoint) => point.gameIdentifier
+        ? `game:${point.gameIdentifier}`
+        : point.gameId != null ? `game-id:${point.gameId}` : `date:${point.date.getTime()}:${point.reason ?? ''}`;
+    const timeline = [...new Map(allData.map(point => [pointKey(point), point])).values()]
+        .sort((a, b) => a.date.getTime() - b.date.getTime() || (a.gameId ?? 0) - (b.gameId ?? 0));
+    const slotByKey = new Map(timeline.map((point, index) => [pointKey(point), index]));
+    const scalePoint = (point: RankingHistoryPoint) =>
+        ((slotByKey.get(pointKey(point)) ?? 0) / Math.max(1, timeline.length - 1)) * chartWidth;
+    const scaleX = (index: number) => comparing ? scalePoint(allData[index]) : (index / Math.max(1, allData.length - 1)) * chartWidth;
     const scaleY = (score: number) => chartHeight - ((score - minScore) / scoreRange) * chartHeight;
 
     // Generowanie różnych typów krzywych wykresu
@@ -163,12 +186,13 @@ export function RankingChart({
         }
     };
 
-    const chartPoints = allData.map((point, index) => ({
-        x: scaleX(index),
-        y: scaleY(point.score)
+    const paths = series.map(line => ({
+        ...line,
+        path: generatePath(line.data.map((point, index) => ({
+            x: comparing ? scalePoint(point) : scaleX(index),
+            y: scaleY(point.score),
+        })), comparing ? 'linear' : curveType, smoothness),
     }));
-    
-    const pathData = generatePath(chartPoints, curveType, smoothness);
 
     // Formatowanie dat dla osi X
     const formatDate = (date: Date) => {
@@ -179,16 +203,24 @@ export function RankingChart({
     };
 
     // Punkty na osi X (co kilka punktów dla czytelności)
-    const xAxisPoints = allData.filter((_, index) => 
+    const axisData = comparing ? timeline : allData;
+    const sampledAxisPoints = axisData.filter((_, index) =>
         index === 0 || 
-        index === allData.length - 1 || 
-        index % Math.ceil(allData.length / 5) === 0
+        index === axisData.length - 1 ||
+        index % Math.ceil(axisData.length / 5) === 0
     );
+    const labelledDates = new Set<string>();
+    const xAxisPoints = sampledAxisPoints.filter(point => {
+        const label = formatDate(point.date);
+        if (labelledDates.has(label)) return false;
+        labelledDates.add(label);
+        return true;
+    });
 
     return (
         <div className="w-full h-full flex items-center justify-center relative">
             <svg 
-                viewBox={`0 0 ${width} ${height}`}
+                viewBox={`${-labelWidth} 0 ${width + 2 * labelWidth} ${height}`}
                 className="text-white w-full h-full max-w-4xl"
                 preserveAspectRatio="xMidYMid meet"
             >
@@ -209,13 +241,14 @@ export function RankingChart({
                                 x={-7}
                                 y={chartHeight * ratio + 4}
                                 fill="rgb(161, 161, 170)"
-                                fontSize="9"
+                                fontSize={9}
                                 textAnchor="end"
                             >
                                 {Math.round(maxScore - (ratio * scoreRange))}
                             </text>
                         </g>
                     ))}
+
 
                     {/* Oś X */}
                     <line
@@ -239,10 +272,10 @@ export function RankingChart({
 
                     {/* Pionowe linie siatki */}
                     {xAxisPoints.map((point, _pointIndex) => {
-                        const originalIndex = allData.findIndex(d => d.date.getTime() === point.date.getTime());
+                        const originalIndex = allData.findIndex(d => pointKey(d) === pointKey(point));
                         return (
                             <line
-                                key={`grid-${point.date.getTime()}`}
+                                key={`grid-${pointKey(point)}`}
                                 x1={scaleX(originalIndex)}
                                 y1={0}
                                 x2={scaleX(originalIndex)}
@@ -255,14 +288,14 @@ export function RankingChart({
 
                     {/* Etykiety osi X */}
                     {xAxisPoints.map((point) => {
-                        const originalIndex = allData.findIndex(d => d.date.getTime() === point.date.getTime());
+                        const originalIndex = allData.findIndex(d => pointKey(d) === pointKey(point));
                         return (
                             <text
-                                key={point.date.getTime()}
+                                key={pointKey(point)}
                                 x={scaleX(originalIndex)}
                                 y={chartHeight+10}
                                 fill="rgb(161, 161, 170)"
-                                fontSize="6"
+                                fontSize={6}
                                 textAnchor="middle"
                             >
                                 {formatDate(point.date)}
@@ -271,30 +304,50 @@ export function RankingChart({
                     })}
 
                     {/* Linia wykresu */}
-                    <path
-                        d={pathData}
+                    {paths.map(line => <path
+                        key={line.color}
+                        d={line.path}
                         fill="none"
-                        stroke="rgb(255, 255, 0)"
+                        stroke={line.color}
                         strokeWidth={2}
-                    />
+                    />)}
 
                     {/* Punkty na wykresie */}
                     {allData.map((point, index) => {
                         const x = scaleX(index);
                         const y = scaleY(point.score);
                         const isHovered = hoveredPoint?.index === index;
+                        const isLastPoint = Boolean(point.playerName) && allData[index + 1]?.color !== point.color;
                         
                         return (
                             <g key={index}>
-                                <circle
+                                {isLastPoint && point.playerName ? (
+                                    <>
+                                        <defs>
+                                            <clipPath id={`${avatarClipId}-${index}`}>
+                                                <circle cx={x} cy={y} r={6} />
+                                            </clipPath>
+                                        </defs>
+                                        <circle cx={x} cy={y} r={6.5} fill="rgb(24, 24, 27)" stroke={point.color} strokeWidth={0.8} />
+                                        <image
+                                            href={getPlayerAvatarPath(point.playerName)}
+                                            x={x - 6} y={y - 6} width={12} height={12}
+                                            clipPath={`url(#${avatarClipId}-${index})`}
+                                            preserveAspectRatio="xMidYMid slice"
+                                        />
+                                        <text x={x + 10} y={y} dominantBaseline="middle" fill={point.color} fontSize={8} fontWeight="600">
+                                            {point.playerName}
+                                        </text>
+                                    </>
+                                ) : <circle
                                     cx={x}
                                     cy={y}
                                     r={isHovered ? 2.5 : 1.5}
                                     fill="white"
-                                    stroke="rgb(255, 255, 0)"
+                                    stroke={point.color}
                                     strokeWidth={isHovered ? 1 : 0.3}
                                     className="transition-all duration-200"
-                                />
+                                />}
                                 
                                 {/* Niewidoczny większy obszar do hover i kliknięć */}
                                 <circle
@@ -338,6 +391,7 @@ export function RankingChart({
                 >
                     <div className="bg-black text-white text-xs rounded px-2 py-1 whitespace-nowrap border border-gray-600 shadow-lg">
                         <div className="font-medium">
+                            {comparing && <div style={{ color: allData[hoveredPoint.index]?.color }}>{allData[hoveredPoint.index]?.playerName}</div>}
                             {formatDate(hoveredPoint.point.date)}: {Math.round(hoveredPoint.point.score)} punktów
                         </div>
                         {hoveredPoint.point.reason && (
