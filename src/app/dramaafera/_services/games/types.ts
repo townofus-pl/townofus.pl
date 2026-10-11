@@ -104,7 +104,18 @@ export interface UIPlayerData {
 }
 
 export interface UIGameEvent {
+  isCorrect?: boolean | null;
+  survivors?: { name: string; role?: string; color?: string }[];
+  killAbility?: { name: string; icon: string };
+  actionType?: string;
+  ability?: { name: string; icon: string };
+  playerRole?: string;
+  playerRoleColor?: string;
+  targetRole?: string;
+  targetRoleColor?: string;
+  actionLabel?: string;
   timestamp: string;
+  hideTimestamp?: boolean;
   type: 'kill' | 'meeting' | 'vote' | 'task' | 'sabotage' | 'fix' | 'vent' | 'other';
   player: string;
   target?: string;
@@ -142,6 +153,7 @@ export interface UIGameData {
   detailedStats: {
     playersData: UIPlayerData[];
     events: UIGameEvent[];
+    endTimestamp?: string;
     meetings: UIMeetingData[];
     gameSettings?: Record<string, unknown> | null;
   };
