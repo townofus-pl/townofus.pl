@@ -86,8 +86,9 @@ Three rules. Breaking any of them corrupts data quietly rather than loudly:
 - **`isCorrect` is three-valued, and absent ≠ null.** `true`/`false` pick the `correct*` /
   `incorrect*` counter; `null` means the mod could not classify and counts as neither; **absent**
   on a `swap` means the rule declined to score. Different facts, both scoring zero.
-- **Actions land in `game_actions`, not `game_events`.** v1's `game_events` table is still read by
-  the timeline UI.
+- **Actions land in `game_actions`, not `game_events`.** UI built on `game_actions` renders for
+  v2 games only and hides itself when a game has no actions, as the game timeline does with
+  `hasTimeline`. v1's `game_events` table has no reader on the game page.
 - **Identity ladder.** `players` carries `hashedProductUserId` and `friendCode`; a payload
   resolves against those before falling back to the display name. A name collision against a
   different hash is a 422, not a silent merge.
@@ -378,7 +379,7 @@ wrangler d1 execute townofus-pl --remote --env production --json --command "EXPL
 ```
 
 `--json` on `d1 execute` returns `meta.rows_read` per statement, which is the number being
-billed. Two traps this found that reading the code would not have:
+billed. Traps that reading the code would not show:
 
 - **An index can make reads worse.** `player_roles(order)` matched ~11,400 rows and the planner
   preferred it over the selective `gamePlayerStatisticsId` index, costing 40× — see migration
@@ -386,6 +387,22 @@ billed. Two traps this found that reading the code would not have:
 - **Moving aggregation into SQL does not reduce rows read.** The rows must be read wherever the
   sum happens; a window-function rewrite measured *worse* than aggregating in JS. Optimise by
   reading fewer rows, not by moving the arithmetic.
+- **The local planner has no statistics.** A local D1 copy has no `sqlite_stat1`, so SQLite can
+  pick a low-selectivity index (`deletedAt`, `season`) over the selective one. On #344 that read
+  22,000-36,000 rows instead of ~1,800. Check the plan, and pin the index with
+  `INDEXED BY <index>` when the planner picks wrong. Confirm the plan on production before
+  shipping the hint.
+
+To measure before a PR without touching production, query a copy of the local D1 (imported with
+the `import-d1-database` skill). Copy the file first. Opening the live file directly fails with
+`unable to open database file`:
+
+```
+cp .wrangler/state/v3/d1/miniflare-D1DatabaseObject/<hash>.sqlite /tmp/d1.sqlite
+printf '.scanstats on\n<sql>;\n' | sqlite3 /tmp/d1.sqlite
+```
+
+`.scanstats` prints `rows=` for each step of the plan. Their sum approximates rows read.
 
 ## Proposing New Rules
 
