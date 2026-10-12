@@ -12,10 +12,9 @@ interface RankingHistorySectionProps {
   rankingHistory: RankingHistoryPoint[];
   playerName: string;
   seasonId: number;
-  playerNames: string[];
 }
 
-export function RankingHistorySection({ rankingHistory, playerName, seasonId, playerNames }: RankingHistorySectionProps) {
+export function RankingHistorySection({ rankingHistory, playerName, seasonId }: RankingHistorySectionProps) {
   const [dateFrom, setDateFrom] = useState<string>('');
   const [dateTo, setDateTo] = useState<string>('');
   const [comparisonNames, setComparisonNames] = useState<string[]>([]);
@@ -70,7 +69,7 @@ export function RankingHistorySection({ rankingHistory, playerName, seasonId, pl
         </button>
         {comparisonLoading && <span role="status" className="text-sm text-gray-400">Wczytywanie…</span>}
       </div>
-      {dialogOpen && <RankingComparisonDialog playerNames={playerNames.filter(name => name !== playerName)} selected={comparisonNames}
+      {dialogOpen && <RankingComparisonDialog seasonId={seasonId} playerName={playerName} selected={comparisonNames}
         onClose={() => setDialogOpen(false)} onApply={names => { setComparisonNames(names); setDialogOpen(false); }} />}
       {comparisonError && <p role="alert" className="mb-4 text-center text-sm text-red-400">{comparisonError}</p>}
       {comparisonHistories.filter(line => line.data.length === 0).map(line => (
