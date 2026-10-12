@@ -1,6 +1,6 @@
 import { getDatabaseClient } from '../db';
 import { withoutDeleted } from '@/app/api/schema/common';
-import type { UIPlayerData, UIGameData, UIGameEvent, UIMeetingData } from './types';
+import type { UIPlayerData, UIGameData, UIMeetingData } from './types';
 import {
   formatDuration,
   extractDateFromGameId,
@@ -10,6 +10,7 @@ import {
 import { calculateWinnerFromStats } from './winCalculator';
 import { buildPlayerStats } from './_buildPlayerStats';
 import { countVotes } from './_countVotes';
+import { buildGameTimeline } from './_buildGameTimeline';
 
 // Fetch detailed game data
 // Player relations are selected down to `name` on purpose. Identity columns
@@ -76,14 +77,20 @@ export async function getGameData(gameId: string): Promise<UIGameData | null> {
         },
         orderBy: { meetingNumber: 'asc' }
       },
-      gameEvents: {
-        where: { ...withoutDeleted },
-        orderBy: { timestamp: 'asc' }
-      },
-      // v2 only. The mod scores crew votes as `vote` actions; v1 games have none.
+      // v2 timeline and vote counters; v1 games have no actions.
       gameActions: {
-        where: { type: 'vote', ...withoutDeleted },
-        select: { isCorrect: true, detail: true, performer: { select: { name: true } } }
+        where: { ...withoutDeleted },
+        orderBy: [{ timestampMs: 'asc' }, { id: 'asc' }],
+        select: {
+          type: true,
+          timestampMs: true,
+          performerRole: true,
+          targetRole: true,
+          isCorrect: true,
+          detail: true,
+          performer: { select: { name: true } },
+          target: { select: { name: true } },
+        },
       }
     }
   });
@@ -102,7 +109,7 @@ export async function getGameData(gameId: string): Promise<UIGameData | null> {
     winnerColors[winner.player.name] = getRoleColor(displayRoleName, game.season);
   });
 
-  const votes = countVotes(game.gameActions);
+  const votes = countVotes(game.gameActions.filter(action => action.type === 'vote'));
   const playersData: UIPlayerData[] = game.gamePlayerStatistics.map(stat => {
     const player = buildPlayerStats(stat, {
       useDisconnectedForDeaths: true,
@@ -145,14 +152,7 @@ export async function getGameData(gameId: string): Promise<UIGameData | null> {
     };
   });
 
-  // Build events data
-  const events: UIGameEvent[] = game.gameEvents.map(event => ({
-    timestamp: event.timestamp.toString(),
-    type: (event.eventType || 'other') as UIGameEvent['type'],
-    player: 'Nieznany',
-    target: undefined,
-    description: event.description
-  }));
+  const timeline = buildGameTimeline(game.gameActions, game.season);
 
   const winnerInfo = calculateWinnerFromStats(game.gamePlayerStatistics, game.season);
 
@@ -175,8 +175,7 @@ export async function getGameData(gameId: string): Promise<UIGameData | null> {
     detailedStats: {
       playersData,
       meetings,
-      events
+      ...timeline,
     }
   };
 }
-

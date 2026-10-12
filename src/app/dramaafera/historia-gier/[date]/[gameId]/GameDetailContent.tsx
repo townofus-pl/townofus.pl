@@ -6,6 +6,7 @@ import { buildSeasonUrl } from "@/app/dramaafera/_utils/seasonHelpers";
 import { TeamColors } from "@/constants/teams";
 import { notFound } from "next/navigation";
 import { PlayerStatsSection } from "./PlayerStatsSection";
+import { GameTimeline } from "./GameTimeline";
 
 interface GameDetailContentProps {
     date: string;
@@ -128,32 +129,7 @@ export async function GameDetailContent({ date, gameId, seasonId }: GameDetailCo
                     seasonId={seasonId}
                 />
 
-                {/* Timeline wydarzeń */}
-                <div className="mb-8">
-                    <h2 className="text-3xl font-bold mb-4">⏰ Przebieg Gry</h2>
-                    <div className="space-y-3">
-                        {gameData.detailedStats.events.map((event, index) => {
-                            const eventIcon =
-                                event.type === 'kill' ? '🗡️' :
-                                event.type === 'meeting' ? '🔔' :
-                                event.type === 'vote' ? '🗳️' :
-                                event.type === 'task' ? '✅' :
-                                event.type === 'sabotage' ? '💥' :
-                                '🔧';
-                            return (
-                            <div key={index} className="bg-gray-800/50 rounded-lg p-4 border border-gray-700/50 flex items-center space-x-4">
-                                <span className="bg-blue-600/30 text-blue-300 px-3 py-1 rounded font-mono text-sm min-w-16 text-center">
-                                    {event.timestamp}
-                                </span>
-                                <span className="text-lg">
-                                    {eventIcon}
-                                </span>
-                                <span className="text-gray-300 flex-1">{event.description}</span>
-                            </div>
-                            );
-                        })}
-                    </div>
-                </div>
+                {gameData.detailedStats.hasTimeline && <GameTimeline events={gameData.detailedStats.events} endTimestamp={gameData.detailedStats.endTimestamp} />}
 
                 {/* Dane spotkań */}
                 <div className="mb-8">
