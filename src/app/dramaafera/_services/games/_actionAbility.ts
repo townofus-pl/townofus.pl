@@ -54,17 +54,21 @@ export function getActionAbility(detail: string | null, season: number): Ability
     if (!parsed || typeof parsed !== 'object' || !('ability' in parsed) || typeof parsed.ability !== 'string') {
       return undefined;
     }
-    const key = normalize(aliases[parsed.ability] ?? parsed.ability);
+    return findAbilityByKey(parsed.ability, season);
+  } catch {
+    return undefined;
+  }
+}
+
+export function findAbilityByKey(abilityKey: string, season: number): Ability | undefined {
+    const key = normalize(aliases[abilityKey] ?? abilityKey);
     const roles = season >= FIRST_MIRA_SEASON ? MiraRoles : Roles;
     for (const role of roles) {
       for (const ability of role.abilities) {
         const name = ability.name.split('(')[0].trim();
-        if (normalize(role.name + name) === key) return { ...ability, name };
+        if (normalize(role.name + name) === key) return { ...ability, name: abilityKey === 'MorphlingUnmorph' ? 'Unmorph' : abilityKey === 'GlitchUnmimic' ? 'Unmimic' : name };
       }
     }
     // Unknown keys still remain visible as text in the timeline.
     return undefined;
-  } catch {
-    return undefined;
-  }
 }
