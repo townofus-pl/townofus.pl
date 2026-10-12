@@ -23,16 +23,23 @@ export async function getSeasonRankingHistories(seasonId?: number): Promise<Seas
   const rows = await prisma.$queryRaw<RankingHistoryRow[]>`
     SELECT
       p.name AS playerName,
-      COALESCE(g.startTime, pr.createdAt) AS date,
+      g.startTime AS date,
       pr.score,
       pr.reason,
       pr.gameId,
       g.gameIdentifier
-    FROM player_rankings pr
+    FROM player_rankings pr INDEXED BY player_rankings_gameId_idx
+    JOIN games g ON g.id = pr.gameId
     JOIN players p ON p.id = pr.playerId AND p.deletedAt IS NULL
-    LEFT JOIN games g ON g.id = pr.gameId
-    WHERE pr.season = ${seasonId ?? CURRENT_SEASON} AND pr.deletedAt IS NULL
-    ORDER BY date ASC, pr.id ASC
+    WHERE pr.gameId IN (
+      SELECT id
+      FROM games
+      WHERE season = ${seasonId ?? CURRENT_SEASON} AND deletedAt IS NULL
+      ORDER BY startTime DESC, id DESC
+      LIMIT 10
+    )
+      AND pr.deletedAt IS NULL
+    ORDER BY g.startTime ASC, g.id ASC, pr.id ASC
   `;
 
   const byPlayer = new Map<string, RankingHistoryPoint[]>();

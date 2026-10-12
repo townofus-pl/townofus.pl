@@ -71,7 +71,10 @@ export function RankingChart({
         ? sortedRankThresholds.find(threshold => threshold >= maxScore) ?? maxScore
         : maxScore;
     const rankPadding = expanded ? Math.max((rankDomainMax - rankDomainMin) * 0.05, 20) : 0;
-    const scoreRange = (expanded ? rankDomainMax - rankDomainMin + rankPadding * 2 : maxScore - minScore) || 1;
+    const flatScore = minScore === maxScore;
+    const domainMin = expanded ? rankDomainMin - rankPadding : flatScore ? minScore - 50 : minScore;
+    const domainMax = expanded ? rankDomainMax + rankPadding : flatScore ? maxScore + 50 : maxScore;
+    const scoreRange = domainMax - domainMin || 1;
     const rankTicks = expanded
         ? RANK_TIERS.filter(tier => tier.minRating >= rankDomainMin && tier.minRating <= rankDomainMax)
             .sort((a, b) => a.minRating - b.minRating)
@@ -93,7 +96,7 @@ export function RankingChart({
     const scalePoint = (point: RankingHistoryPoint) =>
         ((slotByKey.get(pointKey(point)) ?? 0) / Math.max(1, timeline.length - 1)) * chartWidth;
     const scaleX = (index: number) => comparing ? scalePoint(allData[index]) : (index / Math.max(1, allData.length - 1)) * chartWidth;
-    const scaleY = (score: number) => chartHeight - ((score - (expanded ? rankDomainMin - rankPadding : minScore)) / scoreRange) * chartHeight;
+    const scaleY = (score: number) => chartHeight - ((score - domainMin) / scoreRange) * chartHeight;
 
     // Generowanie różnych typów krzywych wykresu
     const generatePath = (points: { x: number; y: number }[], type: CurveType, curvature: number) => {
@@ -247,7 +250,10 @@ export function RankingChart({
             >
                 <g transform={`translate(${margin.left}, ${margin.top})`}>
                     {/* Linie siatki */}
-                    {(expanded ? rankTicks.map(tier => ({ score: tier.minRating, label: String(tier.minRating) })) : [0, 0.25, 0.5, 0.75, 1].map(ratio => ({ score: maxScore - ratio * scoreRange, label: String(Math.round(maxScore - ratio * scoreRange)) }))).map(tick => (
+                    {(expanded ? rankTicks.map(tier => ({ score: tier.minRating, label: String(tier.minRating) })) : [0, 0.25, 0.5, 0.75, 1].map(ratio => {
+                        const score = domainMax - ratio * scoreRange;
+                        return { score, label: String(Math.round(score)) };
+                    })).map(tick => (
                         <g key={tick.score}>
                             <line
                                 x1={0}

@@ -3,7 +3,7 @@
 import { useEffect, useState, useCallback, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
-import type { RankingHistoryPoint, RankingPlayer, SeasonRankingHistory } from "@/app/dramaafera/_services";
+import type { RankingPlayer, SeasonRankingHistory } from "@/app/dramaafera/_services";
 import { CURRENT_SEASON } from "@/app/dramaafera/_constants/seasons";
 import { getRankingAction, getSeasonRankingHistoriesAction } from "@/app/dramaafera/_actions/seasonActions";
 import { getRankName } from "@/app/dramaafera/_constants/rankTiers";
@@ -18,44 +18,6 @@ type NumericRankingKey = {
 // Funkcja pomocnicza do generowania ścieżki avatara
 function getPlayerAvatarPath(playerName: string): string {
     return `/images/avatars/${playerName}.png`;
-}
-
-function getRecentGameHistories(histories: SeasonRankingHistory[], limit = 10): SeasonRankingHistory[] {
-    const gamesByKey = new Map<string, { gameId?: number; gameIdentifier?: string; date: Date }>();
-    histories.forEach(({ data }) => data.forEach(point => {
-        if (point.gameId == null && !point.gameIdentifier) return;
-        const key = point.gameIdentifier ?? `game-id:${point.gameId}`;
-        if (!gamesByKey.has(key)) {
-            gamesByKey.set(key, { gameId: point.gameId, gameIdentifier: point.gameIdentifier, date: point.date });
-        }
-    }));
-    const recentGames = [...gamesByKey.values()]
-        .sort((a, b) => a.date.getTime() - b.date.getTime() || (a.gameId ?? 0) - (b.gameId ?? 0))
-        .slice(-limit);
-    if (recentGames.length === 0) return [];
-
-    return histories.map(({ playerName, data }) => {
-        const points = [...data].sort((a, b) => a.date.getTime() - b.date.getTime() || (a.gameId ?? 0) - (b.gameId ?? 0));
-        let cursor = 0;
-        let currentScore: number | undefined;
-        const recentPoints: RankingHistoryPoint[] = [];
-
-        recentGames.forEach(game => {
-            while (cursor < points.length) {
-                const point = points[cursor];
-                const belongsToGame = point.gameIdentifier === game.gameIdentifier || point.gameId === game.gameId;
-                const isBeforeGame = point.date.getTime() < game.date.getTime()
-                    || (point.date.getTime() === game.date.getTime() && (point.gameId ?? 0) <= (game.gameId ?? Number.MAX_SAFE_INTEGER));
-                if (!belongsToGame && !isBeforeGame) break;
-                currentScore = point.score;
-                cursor++;
-            }
-            if (currentScore !== undefined) {
-                recentPoints.push({ ...game, score: currentScore });
-            }
-        });
-        return { playerName, data: recentPoints };
-    }).filter(line => line.data.length > 0);
 }
 
 function sortPlayers(players: RankingPlayer[], sortBy: NumericRankingKey, sortOrder: "asc" | "desc") {
@@ -97,16 +59,19 @@ export default function RankingClient({ initialData, seasonId }: RankingClientPr
     const [lastUpdateTime, setLastUpdateTime] = useState<Date | null>(null);
     const [isRefreshing, setIsRefreshing] = useState(false);
     const [showChart, setShowChart] = useState(false);
+    const showChartRef = useRef(false);
     const [rankingHistories, setRankingHistories] = useState<SeasonRankingHistory[] | null>(null);
     const [isLoadingChart, setIsLoadingChart] = useState(false);
     const [chartError, setChartError] = useState<string | null>(null);
-    const chartHistories = rankingHistories ? getRecentGameHistories(rankingHistories) : null;
+    const chartHistories = rankingHistories;
 
     const handleChartToggle = async () => {
         if (showChart) {
+            showChartRef.current = false;
             setShowChart(false);
             return;
         }
+        showChartRef.current = true;
         setShowChart(true);
         if (rankingHistories) return;
         setIsLoadingChart(true);
@@ -144,6 +109,14 @@ export default function RankingClient({ initialData, seasonId }: RankingClientPr
                 setPlayerStats(result.ranking);
                 setLastUpdateHash(dataHash);
                 setLastUpdateTime(new Date());
+                if (showChartRef.current) {
+                    try {
+                        setRankingHistories(await getSeasonRankingHistoriesAction(seasonId));
+                        setChartError(null);
+                    } catch {
+                        setChartError("Nie udało się odświeżyć wykresu. Spróbuj ponownie.");
+                    }
+                }
             }
         } catch (error) {
             console.error('Błąd ładowania danych rankingu:', error);
