@@ -56,3 +56,14 @@ test('keeps reverse abilities distinct while retaining the original icon', () =>
   expect(getActionAbility('{invalid', 4)).toBeUndefined();
   expect(findAbilityByKey('UnknownAbility', 4)).toBeUndefined();
 });
+
+test('shows only the reveal phase of the Miner ability', () => {
+  const actions = ['MinerPlaceVent', 'MinerRevealVent'].map((ability, index) => ({
+    ...action('ability_used', index * 1000),
+    performerRole: 'Miner', detail: JSON.stringify({ ability }),
+  }));
+  const result = buildGameTimeline(actions, 4);
+  expect(result.events).toHaveLength(1);
+  expect(result.events[0].timestamp).toBe('00:01');
+  expect(result.events[0].ability?.name).toBe('Mine');
+});

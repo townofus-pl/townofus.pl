@@ -19,6 +19,15 @@ export function buildGameTimeline(actions: TimelineAction[], season: number) {
       })
       .filter(action => action.type !== 'modifier_gained' && action.type !== 'modifier_lost')
       .filter(action => action.type !== 'win')
+      .filter(action => {
+        if (action.type !== 'ability_used' || !action.detail) return true;
+        try {
+          const detail: unknown = JSON.parse(action.detail);
+          return !(detail && typeof detail === 'object' && 'ability' in detail && detail.ability === 'MinerPlaceVent');
+        } catch {
+          return true;
+        }
+      })
       .map(action => ({
       timestamp: formatActionTimestamp(action.timestampMs),
       type: actionTypeToEventType(action.type),
