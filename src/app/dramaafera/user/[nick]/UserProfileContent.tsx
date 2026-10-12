@@ -9,6 +9,7 @@ import CollapsibleSection from "./CollapsibleSection";
 import TopGamesDisplay from "./TopGamesDisplay";
 import VotingStatsDisplay from "./VotingStatsDisplay";
 import RankingHistorySection from "./RankingHistorySection";
+import { TOP_GAMES_INITIAL } from './topGamesConfig';
 
 // Funkcja pomocnicza do konwersji URL slug z powrotem na nick
 function convertUrlSlugToNick(slug: string, allPlayerNames: string[]): string {
@@ -53,7 +54,7 @@ export async function UserProfileContent({ nick, seasonId }: UserProfileContentP
     const rankingHistory = await getPlayerRankingHistory(playerNick, seasonId);
     
     // Pobierz najlepsze gry gracza
-    const { best: bestGames } = await getPlayerTopGames(playerNick, 3, seasonId);
+    const { best: bestGames, hasMore: hasMoreBestGames } = await getPlayerTopGames(playerNick, TOP_GAMES_INITIAL, seasonId);
     
     // Pobierz statystyki głosowań gracza
     const votingStats = await getPlayerVotingStats(playerNick, seasonId);
@@ -448,6 +449,7 @@ export async function UserProfileContent({ nick, seasonId }: UserProfileContentP
                             seasonId={seasonId}
                             hideZeroStats={false}
                             variant="wide"
+                            layout="stacked"
                         />
                     )}
                 </CollapsibleSection>
@@ -455,7 +457,7 @@ export async function UserProfileContent({ nick, seasonId }: UserProfileContentP
                 {/* Historia rankingu */}
                 {rankingHistory.length > 0 && (
                     <CollapsibleSection title="Historia rankingu" defaultOpen={false} icon="📈">
-                        <RankingHistorySection rankingHistory={rankingHistory} playerName={playerNick} seasonId={seasonId} />
+                        <RankingHistorySection key={`${playerNick}-${seasonId}`} rankingHistory={rankingHistory} playerName={playerNick} seasonId={seasonId} />
                     </CollapsibleSection>
                 )}
                 
@@ -467,7 +469,7 @@ export async function UserProfileContent({ nick, seasonId }: UserProfileContentP
                 {/* Najlepsze występy */}
                 {bestGames.length > 0 && (
                     <CollapsibleSection title="Najlepsze występy" defaultOpen={false} icon="🏆">
-                        <TopGamesDisplay bestGames={bestGames} seasonId={seasonId} />
+                        <TopGamesDisplay key={`${playerNick}-${seasonId}`} bestGames={bestGames} seasonId={seasonId} playerName={playerNick} hasMore={hasMoreBestGames} />
                     </CollapsibleSection>
                 )}
             </div>

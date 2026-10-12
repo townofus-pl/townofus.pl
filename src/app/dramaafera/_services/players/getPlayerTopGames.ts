@@ -10,12 +10,12 @@ import {
 } from '@/app/dramaafera/_utils/gameUtils';
 
 // Get player's best games
-export async function getPlayerTopGames(playerName: string, limit: number = 3, seasonId?: number): Promise<{ best: PlayerTopGame[] }> {
+export async function getPlayerTopGames(playerName: string, limit: number = 3, seasonId?: number, offset: number = 0): Promise<{ best: PlayerTopGame[]; hasMore: boolean }> {
     const season = seasonId ?? CURRENT_SEASON;
   const prisma = await getDatabaseClient();
 
   if (!prisma) {
-    return { best: [] };
+    return { best: [], hasMore: false };
   }
 
   const player = await prisma.player.findFirst({
@@ -26,7 +26,7 @@ export async function getPlayerTopGames(playerName: string, limit: number = 3, s
   });
 
   if (!player) {
-    return { best: [] };
+    return { best: [], hasMore: false };
   }
 
   const playerGames = await prisma.gamePlayerStatistics.findMany({
@@ -51,10 +51,9 @@ export async function getPlayerTopGames(playerName: string, limit: number = 3, s
         take: 1
       }
     },
-    orderBy: {
-      totalPoints: 'desc'
-    },
-    take: limit
+    orderBy: [{ totalPoints: 'desc' }, { id: 'asc' }],
+    skip: offset,
+    take: limit + 1
   });
 
   const mapGame = (stat: typeof playerGames[0]): PlayerTopGame => {
@@ -76,5 +75,5 @@ export async function getPlayerTopGames(playerName: string, limit: number = 3, s
     };
   };
 
-  return { best: playerGames.map(mapGame) };
+  return { best: playerGames.slice(0, limit).map(mapGame), hasMore: playerGames.length > limit };
 }

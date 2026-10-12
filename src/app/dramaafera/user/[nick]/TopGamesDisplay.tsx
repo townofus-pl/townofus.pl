@@ -2,15 +2,37 @@
 
 import type { PlayerTopGame } from '../../_services';
 import Link from 'next/link';
+import { useState } from 'react';
+import { loadMoreTopGames } from './topGamesActions';
 import { buildSeasonUrl } from '../../_utils/seasonHelpers';
 
 interface TopGamesDisplayProps {
   bestGames: PlayerTopGame[];
   seasonId: number;
+  playerName: string;
+  hasMore: boolean;
 }
 
-export function TopGamesDisplay({ bestGames, seasonId }: TopGamesDisplayProps) {
-  const games = bestGames;
+export function TopGamesDisplay({ bestGames, seasonId, playerName, hasMore: initialHasMore }: TopGamesDisplayProps) {
+  const [games, setGames] = useState(bestGames);
+  const [hasMore, setHasMore] = useState(initialHasMore);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  const loadMore = async () => {
+    if (loading) return;
+    setLoading(true);
+    setError(null);
+    try {
+      const result = await loadMoreTopGames(playerName, seasonId, games.length);
+      setGames(previous => [...previous, ...result.best]);
+      setHasMore(result.hasMore);
+    } catch {
+      setError('Nie udało się wczytać gier. Spróbuj ponownie.');
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const formatDate = (date: Date) => {
     return new Intl.DateTimeFormat('pl-PL', {
@@ -37,15 +59,6 @@ export function TopGamesDisplay({ bestGames, seasonId }: TopGamesDisplayProps) {
     }
   };
 
-  const getMedalIcon = (index: number) => {
-    switch (index) {
-      case 0: return '🥇';
-      case 1: return '🥈';
-      case 2: return '🥉';
-      default: return '🏅';
-    }
-  };
-
   if (games.length === 0) return null;
 
   return (
@@ -58,9 +71,9 @@ export function TopGamesDisplay({ bestGames, seasonId }: TopGamesDisplayProps) {
           >
             <div className={`bg-gradient-to-r ${getMedalColor(index)} rounded-xl border p-4 hover:scale-[1.02] transition-all duration-200 cursor-pointer`}>
               <div className="flex items-center gap-4">
-                {/* Medal/Position */}
-                <div className="text-4xl flex-shrink-0">
-                  {getMedalIcon(index)}
+                {/* Position */}
+                <div className="w-14 text-center text-4xl font-bold tabular-nums flex-shrink-0 mx-0.5">
+                  {index + 1}
                 </div>
 
                 {/* Game Info */}
@@ -105,6 +118,17 @@ export function TopGamesDisplay({ bestGames, seasonId }: TopGamesDisplayProps) {
       <div className="mt-4 text-center text-sm text-gray-400">
         Kliknij aby zobaczyć szczegóły gry
       </div>
+      {error && <p role="alert" className="text-center text-sm text-red-400">{error}</p>}
+      {hasMore && (
+        <button
+          type="button"
+          onClick={loadMore}
+          disabled={loading}
+          className="w-full rounded-lg bg-zinc-800 px-4 py-3 font-semibold text-zinc-200 hover:bg-zinc-700 disabled:opacity-50 disabled:cursor-wait transition-colors"
+        >
+          {loading ? 'Wczytywanie…' : 'Wczytaj więcej'}
+        </button>
+      )}
     </div>
   );
 }

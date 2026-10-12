@@ -1,8 +1,12 @@
 "use client";
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import type { RankingHistoryPoint } from '../../_services';
 import { RankingChart } from '../../_components/RankingChart';
+import { loadComparisonRanking } from './rankingHistoryActions';
+import { filterRankingHistory } from './filterRankingHistory';
+import { RankingComparisonDialog } from './RankingComparisonDialog';
+import { getRankingComparisonColor } from '../../_utils/rankingComparisonColors';
 
 interface RankingHistorySectionProps {
   rankingHistory: RankingHistoryPoint[];
@@ -13,44 +17,38 @@ interface RankingHistorySectionProps {
 export function RankingHistorySection({ rankingHistory, playerName, seasonId }: RankingHistorySectionProps) {
   const [dateFrom, setDateFrom] = useState<string>('');
   const [dateTo, setDateTo] = useState<string>('');
+  const [comparisonNames, setComparisonNames] = useState<string[]>([]);
+  const [dialogOpen, setDialogOpen] = useState(false);
+  const [comparisonHistories, setComparisonHistories] = useState<{ playerName: string; data: RankingHistoryPoint[] }[]>([]);
+  const [comparisonLoading, setComparisonLoading] = useState(false);
+  const [comparisonError, setComparisonError] = useState<string | null>(null);
+
+  useEffect(() => {
+    let active = true;
+    setComparisonHistories([]);
+    setComparisonError(null);
+    setComparisonLoading(comparisonNames.length > 0);
+    if (comparisonNames.length > 0) {
+      Promise.all(comparisonNames.map(async name => ({ playerName: name, data: await loadComparisonRanking(name, seasonId) })))
+        .then(histories => { if (active) setComparisonHistories(histories); })
+        .catch(() => { if (active) setComparisonError('Nie udało się wczytać historii graczy. Spróbuj ponownie.'); })
+        .finally(() => { if (active) setComparisonLoading(false); });
+    }
+    return () => { active = false; };
+  }, [comparisonNames, seasonId]);
+
+  const filteredComparisons = useMemo(() => comparisonHistories.map(line => ({ ...line, data: filterRankingHistory(line.data, dateFrom, dateTo) })), [comparisonHistories, dateFrom, dateTo]);
 
   // Filtruj dane na podstawie wybranych dat
-  const filteredData = useMemo(() => {
-    if (!dateFrom && !dateTo) return rankingHistory;
-
-    const filtered = rankingHistory.filter(point => {
-      const pointDate = new Date(point.date);
-      const from = dateFrom ? new Date(dateFrom) : null;
-      const to = dateTo ? new Date(dateTo) : null;
-
-      if (from && pointDate < from) return false;
-      if (to && pointDate > to) return false;
-      return true;
-    });
-
-    // Jeśli filtrujemy i mamy punkty, dodaj ostatni punkt sprzed zakresu jako kontekst
-    if (filtered.length > 0 && (dateFrom || dateTo)) {
-      const firstFilteredDate = filtered[0].date.getTime();
-      
-      // Znajdź ostatni punkt przed zakresem
-      const pointBefore = rankingHistory
-        .filter(p => p.date.getTime() < firstFilteredDate)
-        .sort((a, b) => b.date.getTime() - a.date.getTime())[0];
-      
-      if (pointBefore) {
-        return [pointBefore, ...filtered];
-      }
-    }
-
-    return filtered;
-  }, [rankingHistory, dateFrom, dateTo]);
+  const filteredData = useMemo(() => filterRankingHistory(rankingHistory, dateFrom, dateTo), [rankingHistory, dateFrom, dateTo]);
 
   // Oblicz zakresy dat dla placeholderów
-  const minDate = rankingHistory.length > 0 
-    ? new Date(Math.min(...rankingHistory.map(r => r.date.getTime())))
+  const combinedHistory = [...rankingHistory, ...comparisonHistories.flatMap(line => line.data)];
+  const minDate = combinedHistory.length > 0
+    ? new Date(Math.min(...combinedHistory.map(r => r.date.getTime())))
     : new Date();
-  const maxDate = rankingHistory.length > 0 
-    ? new Date(Math.max(...rankingHistory.map(r => r.date.getTime())))
+  const maxDate = combinedHistory.length > 0
+    ? new Date(Math.max(...combinedHistory.map(r => r.date.getTime())))
     : new Date();
 
   const formatDateInput = (date: Date) => {
@@ -64,6 +62,27 @@ export function RankingHistorySection({ rankingHistory, playerName, seasonId }: 
 
   return (
     <>
+      <div className="mb-4 flex flex-wrap items-center justify-center gap-3">
+        <button type="button" onClick={() => setDialogOpen(true)} aria-haspopup="dialog"
+          className="bg-zinc-800 hover:bg-zinc-700 text-white border border-zinc-700 rounded-lg px-4 py-2 text-sm transition-colors">
+          Porównaj z graczem{comparisonNames.length > 0 ? ` (${comparisonNames.length})` : ''}
+        </button>
+        {comparisonLoading && <span role="status" className="text-sm text-gray-400">Wczytywanie…</span>}
+      </div>
+      {dialogOpen && <RankingComparisonDialog seasonId={seasonId} playerName={playerName} selected={comparisonNames}
+        onClose={() => setDialogOpen(false)} onApply={names => { setComparisonNames(names); setDialogOpen(false); }} />}
+      {comparisonError && <p role="alert" className="mb-4 text-center text-sm text-red-400">{comparisonError}</p>}
+      {comparisonHistories.filter(line => line.data.length === 0).map(line => (
+        <p key={line.playerName} className="mb-4 text-center text-sm text-gray-400">{line.playerName}: brak historii rankingu w tym sezonie.</p>
+      ))}
+      {filteredComparisons.some(line => line.data.length > 0) && (
+        <div className="mb-4 flex flex-wrap justify-center gap-6 text-sm">
+          <span className="text-yellow-400">● {playerName}</span>
+          {filteredComparisons.filter(line => line.data.length > 0).map((line, index) => (
+            <span key={line.playerName} style={{ color: getRankingComparisonColor(index) }}>● {line.playerName}</span>
+          ))}
+        </div>
+      )}
       {/* Kontrolki filtrowania dat */}
       <div className="mb-6 flex flex-col sm:flex-row gap-4 items-center justify-center">
         <div className="flex items-center gap-2">
@@ -116,6 +135,7 @@ export function RankingHistorySection({ rankingHistory, playerName, seasonId }: 
           playerName={playerName} 
           includeStartingPoint={!dateFrom && !dateTo}
           seasonId={seasonId}
+          comparison={filteredComparisons}
         />
       </div>
       
