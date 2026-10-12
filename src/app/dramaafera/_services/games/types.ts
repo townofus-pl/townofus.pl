@@ -115,7 +115,6 @@ export interface UIGameEvent {
   targetRoleColor?: string;
   actionLabel?: string;
   timestamp: string;
-  hideTimestamp?: boolean;
   type: 'kill' | 'meeting' | 'vote' | 'task' | 'sabotage' | 'fix' | 'vent' | 'other';
   player: string;
   target?: string;
@@ -153,6 +152,7 @@ export interface UIGameData {
   detailedStats: {
     playersData: UIPlayerData[];
     events: UIGameEvent[];
+    hasTimeline?: boolean;
     endTimestamp?: string;
     meetings: UIMeetingData[];
     gameSettings?: Record<string, unknown> | null;

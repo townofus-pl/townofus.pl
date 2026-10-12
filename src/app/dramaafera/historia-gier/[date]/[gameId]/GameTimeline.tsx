@@ -43,9 +43,9 @@ export function GameTimeline({ events, endTimestamp }: { events: UIGameEvent[]; 
                                 ?? (event.ability && ['Hex', 'Confess', 'Camp', 'Stalk', 'Jail'].includes(event.ability.name) ? event.ability : undefined);
                             return (
                             <div key={index} className={`bg-gray-800/50 rounded-lg p-4 border flex items-center gap-3 font-barlow ${event.isCorrect === true ? 'bg-[linear-gradient(rgba(34,197,94,0.04),rgba(34,197,94,0.04))] border-[#3b4842]/50' : event.isCorrect === false ? 'bg-[linear-gradient(rgba(239,68,68,0.04),rgba(239,68,68,0.04))] border-[#483b3e]/50' : 'border-gray-700/50'}`}>
-                                {!event.hideTimestamp && <span className="bg-blue-600/30 text-blue-300 px-3 py-1 rounded font-mono text-sm shrink-0 text-center">
+                                <span className="bg-blue-600/30 text-blue-300 px-3 py-1 rounded font-mono text-sm shrink-0 text-center">
                                     {event.timestamp}
-                                </span>}
+                                </span>
                                 <div className="text-gray-300 min-w-0 flex-1 flex flex-wrap items-center gap-x-[0.25em] gap-y-2 break-words">
                                     {event.survivors ? (
                                         <>
