@@ -44,6 +44,35 @@ Exported season functions (via `_services/season/index.ts` → `_services/index.
 All files handle build-time gracefully (no Cloudflare context at build time) via
 `if (!prisma) return <empty>` guards.
 
+### Writing new data code
+
+D1 bills rows read on every page view, bots included. Size each query to what the screen shows:
+
+- **Load on open.** Data behind a collapsed section or a dialog loads through a server action
+  when the user opens it, never in the page's server render. A profile page that pre-loaded a
+  comparison list read ~15,600 rows per view for a dialog few people open (#343).
+- **Filter in SQL.** A view that shows N records queries N records. Sending a season's 22,803
+  ranking points to the browser to draw the last 10 games cost ~68,000 rows per click; the
+  same chart from `pr.gameId IN (<last 10 games>)` reads ~1,800 (#344).
+- **Pure logic in its own module.** `_services/` files import `@opennextjs/cloudflare` through
+  `db.ts`, which Jest cannot load. Put derived logic in `_name.ts` beside the service, with a
+  `_name.test.ts`. Worked examples: `games/_countVotes.ts`, `games/_buildGameTimeline.ts`.
+- **Measure before review.** Give the PR the rows-read number. See "Measure before believing
+  any of this" in `AGENTS.md`.
+
+### Dates in the UI
+
+The database stores Warsaw wall-clock labelled UTC (see "Times are real UTC" in `AGENTS.md`).
+Compare in UTC on both sides:
+
+  new Date(`${dateFrom}T00:00:00Z`)        // a date-input value, start of day
+  new Date(`${dateTo}T23:59:59.999Z`)      // end of day
+  date.toISOString().split('T')[0]          // a stored date back to a date-input value
+
+A string without `Z` parses as the browser's local time and shifts Polish users by 1-2 hours,
+which drops evening games from a range (#343). Run date tests with `TZ=Europe/Warsaw npx jest`
+so a missing `Z` fails locally, since CI runs in UTC.
+
 ## Public API routes (/api/dramaafera/*)
 
 These are intentionally public — withCors only, no withAuth:
