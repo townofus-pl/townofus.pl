@@ -13,12 +13,12 @@ import { CURRENT_SEASON } from '@/app/dramaafera/_constants/seasons';
  * bound-parameter cap (P2029). We fetch games and stats in chunks separately
  * and stitch in JS.
  */
-export async function getPlayerStars(nick: string, seasonId?: number): Promise<number> {
+export async function getPlayerStars(nick: string | number, seasonId?: number): Promise<number> {
   const prisma = await getDatabaseClient();
   if (!prisma) return 0;
 
   const player = await prisma.player.findFirst({
-    where: { name: nick, ...withoutDeleted },
+    where: { ...(typeof nick === 'number' ? { id: nick } : { name: nick }), ...withoutDeleted },
     select: { id: true },
   });
   if (!player) return 0;

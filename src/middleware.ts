@@ -1,14 +1,21 @@
 import { NextRequest, NextResponse } from 'next/server';
-import { authenticateApiRequest } from '@/app/api/_middlewares/auth';
+import { authenticateHostHeaders } from '@/app/api/_middlewares/hostAuth';
 
 export async function middleware(request: NextRequest): Promise<NextResponse> {
-  const authResult = await authenticateApiRequest(request);
+  if(request.nextUrl.pathname==='/dramaafera/host/access')return NextResponse.next();
+  const authResult = await authenticateHostHeaders(request.headers);
 
   if (!authResult.success) {
+    if (request.nextUrl.pathname === '/dramaafera/host/konta') {
+      return NextResponse.json({ success: false, error: 'Wymagane uprawnienia hosta.' },
+        { status: 403, headers: { 'Cache-Control': 'no-store' } });
+    }
     return authResult.response ?? new NextResponse('Unauthorized', { status: 401 });
   }
 
-  return NextResponse.next();
+  const response=NextResponse.next();
+  response.headers.set('Cache-Control','no-store');
+  return response;
 }
 
 export const config = {

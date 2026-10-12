@@ -47,6 +47,10 @@ function main(): void {
     });
 
     const checks: Check[] = [
+        empty('account link references a live player', `SELECT a.id FROM discord_accounts a LEFT JOIN players p ON p.id=a.playerId WHERE a.playerId IS NOT NULL AND (p.id IS NULL OR p.deletedAt IS NOT NULL)`),
+        empty('no unconsumed Discord command', 'SELECT id FROM discord_commands'),
+        empty('no orphan account session', 'SELECT s.id FROM discord_sessions s LEFT JOIN discord_accounts a ON a.id=s.accountId WHERE a.id IS NULL'),
+        empty('one pending request per account', "SELECT accountId FROM discord_link_requests WHERE status='pending' GROUP BY accountId HAVING count(*)>1"),
         floor('games seeded', 'select count(*) c from games where deletedAt is null', 500),
         floor('players seeded', 'select count(*) c from players where deletedAt is null', 40),
         floor('player stats seeded', 'select count(*) c from game_player_statistics', 5000),

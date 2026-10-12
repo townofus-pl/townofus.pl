@@ -45,6 +45,12 @@ const TABLE_ORDER = [
     'meeting_jailed_players',
     'meeting_blackmailed_players',
     'meeting_no_votes',
+    'discord_accounts',
+    'discord_sessions',
+    'discord_oauth_states',
+    'discord_link_requests',
+    'discord_link_audits',
+    'discord_commands',
     'sqlite_sequence',
 ];
 
@@ -373,7 +379,7 @@ function buildPreparedData(insertStatements: string[]): { importStatements: stri
             continue;
         }
 
-        if (tableName === 'd1_migrations') {
+        if (tableName.startsWith('discord_') || tableName === 'd1_migrations') {
             continue;
         }
 

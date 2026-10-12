@@ -9,7 +9,7 @@ import { buildSeasonUrl } from '../../_utils/seasonHelpers';
 interface TopGamesDisplayProps {
   bestGames: PlayerTopGame[];
   seasonId: number;
-  playerName: string;
+  playerName: string | number;
   hasMore: boolean;
 }
 

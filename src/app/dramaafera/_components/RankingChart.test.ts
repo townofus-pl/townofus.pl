@@ -22,8 +22,8 @@ test('aligns comparison on the shared timeline when players have different numbe
   expect(markup).toContain('d="M 140 65 L 280 0"');
   expect(markup).toContain('stroke="rgb(34, 211, 238)"');
   expect(markup.match(/<image /g)).toHaveLength(2);
-  expect(markup).toContain('>Malkiz</text>');
-  expect(markup).toContain('>Drugi gracz</text>');
+  expect(markup).toContain('>Malkiz (2200)</text>');
+  expect(markup).toContain('>Drugi gracz (2200)</text>');
 });
 
 test('spaces games evenly across weekly sessions and aligns both players on the same game', () => {
@@ -63,8 +63,8 @@ test('supports several selected players with separate lines, avatars and colours
     ],
   }));
   expect(markup.match(/<image /g)).toHaveLength(3);
-  expect(markup).toContain('>Gracz A</text>');
-  expect(markup).toContain('>Gracz B</text>');
+  expect(markup).toContain('>Gracz A (2000)</text>');
+  expect(markup).toContain('>Gracz B (2000)</text>');
   expect(markup).toContain('stroke="rgb(34, 211, 238)"');
   expect(markup).toContain('stroke="#F472B6"');
 });

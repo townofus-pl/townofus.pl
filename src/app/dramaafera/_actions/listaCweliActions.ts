@@ -1,4 +1,5 @@
 'use server';
+import { requireHost, requireHostMutation } from '@/app/dramaafera/_accounts/requireHost';
 
 import { getDatabaseClient } from '@/app/dramaafera/_services/db';
 import { withoutDeleted } from '@/app/api/schema/common';
@@ -16,6 +17,7 @@ import type {
  * Data for the Lista Cweli player picker (main list + Add-player dialog).
  */
 export async function getPlayerPickerData(seasonId: number): Promise<PlayerPickerData> {
+  await requireHost();
   return getListaCweliPlayerPickerData(seasonId);
 }
 
@@ -26,6 +28,7 @@ export async function getPlayerPickerData(seasonId: number): Promise<PlayerPicke
 export async function checkNewPlayerNames(
   candidateNames: string[]
 ): Promise<Array<{ candidate: string; similarTo: string | null }>> {
+  await requireHost();
   const prisma = await getDatabaseClient();
   if (!prisma) return candidateNames.map((candidate) => ({ candidate, similarTo: null }));
 
@@ -88,6 +91,7 @@ export async function getGameSessionLists(seasonId?: number): Promise<GameSessio
  * Get a specific game session list by ID
  */
 export async function getGameSessionListById(listId: number): Promise<GameSessionListEntry | null> {
+  await requireHost();
   const prisma = await getDatabaseClient();
   if (!prisma) return null;
 
@@ -128,6 +132,7 @@ export async function saveGameSessionList(
   listIdToUpdate?: number,
   newPlayerNames: string[] = []
 ): Promise<GameSessionListEntry | null> {
+  await requireHostMutation();
   const prisma = await getDatabaseClient();
   if (!prisma) return null;
 
@@ -205,6 +210,7 @@ export async function saveGameSessionList(
  * Delete a game session list
  */
 export async function deleteGameSessionList(listId: number): Promise<boolean> {
+  await requireHostMutation();
   const prisma = await getDatabaseClient();
   if (!prisma) return false;
 
@@ -227,6 +233,7 @@ export async function deleteGameSessionList(listId: number): Promise<boolean> {
  * Called from game creation logic
  */
 export async function deleteGameSessionListByDate(seasonId: number, date: Date): Promise<boolean> {
+  await requireHostMutation();
   const prisma = await getDatabaseClient();
   if (!prisma) return false;
 

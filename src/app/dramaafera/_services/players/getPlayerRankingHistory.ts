@@ -8,12 +8,12 @@ import type { RankingHistoryPoint } from './types';
 // Implementation note: heavy players accumulate hundreds of ranking rows; a
 // nested `include: { game }` would emit `WHERE id IN (…N gameIds)` for the
 // relation fetch and trip D1's 98-param cap. Fetch separately and stitch.
-export async function getPlayerRankingHistory(playerName: string, seasonId?: number): Promise<RankingHistoryPoint[]> {
+export async function getPlayerRankingHistory(playerName: string | number, seasonId?: number): Promise<RankingHistoryPoint[]> {
   const prisma = await getDatabaseClient();
   if (!prisma) return [];
 
   const player = await prisma.player.findFirst({
-    where: { name: playerName, ...withoutDeleted },
+    where: { ...(typeof playerName === 'number' ? { id: playerName } : { name: playerName }), ...withoutDeleted },
     select: { id: true },
   });
   if (!player) return [];

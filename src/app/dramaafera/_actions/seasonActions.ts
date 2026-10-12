@@ -1,4 +1,5 @@
 'use server';
+import {requireHost} from '@/app/dramaafera/_accounts/requireHost';
 
 import { getSessionSummaryByDate, getHostInfo, getRanking, getGameDatesLightweight, getSeasonRankingHistories } from '@/app/dramaafera/_services';
 
@@ -9,6 +10,7 @@ export async function getSessionResults(date: string, seasonId: number) {
 
 // Akcja serwera do pobierania informacji hosta dla danej daty i sezonu
 export async function getHostInfoAction(date: string, seasonId: number) {
+  await requireHost();
   return getHostInfo(date, seasonId);
 }
 

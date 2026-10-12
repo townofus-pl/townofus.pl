@@ -35,6 +35,8 @@ describe('the switcher round trip', () => {
 
     it('carries a season-scoped page across', () => {
         expect(switchTo('/dramaafera/ranking', 3)).toBe('/dramaafera/sezon/3/ranking');
+        expect(switchTo('/dramaafera/gracz/72', 3)).toBe('/dramaafera/sezon/3/gracz/72');
+        expect(switchTo('/dramaafera/sezon/3/gracz/72', CURRENT_SEASON)).toBe('/dramaafera/gracz/72');
         expect(switchTo('/dramaafera/sezon/3/historia-gier/20260916', 2)).toBe(
             '/dramaafera/sezon/2/historia-gier/20260916',
         );

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import {Navigation} from "./Navigation/Navigation";
 import SeasonSwitcher from "./SeasonSwitcher";
+import AccountLink from "./AccountLink";
 
 export const Header = () => (
     <header className="grid grid-cols-1 lg:grid-cols-[1fr_auto] lg:grid-rows-[auto_auto_auto] gap-x-6 gap-y-6 bg-zinc-900/50 px-5 py-5 rounded-xl mb-5">
@@ -14,8 +15,9 @@ export const Header = () => (
             <Navigation/>
         </div>
         <SeasonSwitcher className="lg:col-start-2 lg:row-start-3 lg:self-end lg:justify-self-end"/>
-        <p className="font-barlow text-base text-gray-500 lg:col-start-2 lg:row-start-1 lg:justify-self-end lg:self-start">
-            Created by Malkiz, Quarties &amp; OrzechMC
-        </p>
+        <div className="font-barlow flex flex-col items-end gap-2 lg:col-start-2 lg:row-start-1 lg:justify-self-end lg:self-start">
+            <p className="text-base text-gray-500">Created by Malkiz, Quarties &amp; OrzechMC</p>
+            <AccountLink />
+        </div>
     </header>
 );

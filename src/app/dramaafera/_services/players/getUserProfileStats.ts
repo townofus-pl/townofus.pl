@@ -13,15 +13,16 @@ import { countVotes } from '../games/_countVotes';
 // season; a nested `include: { roleHistory }` on the stats fetch emits
 // `WHERE gamePlayerStatisticsId IN (?,…,?N)` which trips D1's 98-param cap on
 // Prisma 7 (P2029). We fetch stats and their relations separately in chunks.
-export async function getUserProfileStats(playerName: string, seasonId?: number): Promise<UserProfileStats | null> {
+export async function getUserProfileStats(playerName: string | number, seasonId?: number): Promise<UserProfileStats | null> {
   const prisma = await getDatabaseClient();
   if (!prisma) return null;
 
   const player = await prisma.player.findFirst({
-    where: { name: playerName, ...withoutDeleted },
-    select: { id: true },
+    where: { ...(typeof playerName === 'number' ? { id: playerName } : { name: playerName }), ...withoutDeleted },
+    select: { id: true, name: true },
   });
   if (!player) return null;
+  const displayName = player.name;
 
   const season = seasonId ?? CURRENT_SEASON;
 
@@ -93,7 +94,7 @@ export async function getUserProfileStats(playerName: string, seasonId?: number)
     const byGame = new Map<number, typeof voteRows>();
     for (const v of voteRows) byGame.set(v.gameId, [...(byGame.get(v.gameId) ?? []), v]);
     for (const [gameId, rows] of byGame) {
-      const counted = countVotes(rows.map((r) => ({ ...r, performer: { name: playerName } }))).get(playerName);
+      const counted = countVotes(rows.map((r) => ({ ...r, performer: { name: displayName } }))).get(displayName);
       if (counted) votesByGameId.set(gameId, counted);
     }
   }
@@ -188,7 +189,7 @@ export async function getUserProfileStats(playerName: string, seasonId?: number)
   const winRate = gamesPlayed > 0 ? Math.round((wins / gamesPlayed) * 100) : 0;
 
   return {
-    name: playerName,
+    name: displayName,
     gamesPlayed,
     wins,
     winRate,

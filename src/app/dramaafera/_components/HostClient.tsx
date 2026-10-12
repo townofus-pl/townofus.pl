@@ -43,7 +43,9 @@ function describeUploadFailure(status: number, error: string | undefined): strin
         case 400:
             return `Plik nie pasuje do schematu v2 — prawdopodobnie pochodzi ze starej wersji moda.${detail}`;
         case 401:
-            return 'Błędny login lub hasło.';
+            return 'Sesja hosta wygasła. Zaloguj się ponownie.';
+        case 403:
+            return 'Brak uprawnień hosta. Odśwież stronę lub skontaktuj się z hostem.';
         case 409:
             return `Ta gra jest już w bazie i nic nie zostało nadpisane.${detail}`;
         case 422:
@@ -65,7 +67,6 @@ export default function HostClient({ initialDates, seasonId }: HostClientProps) 
     const [dataLoading, setDataLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [uploadStatus, setUploadStatus] = useState<UploadStatus>({ status: 'idle' });
-    const [credentials, setCredentials] = useState({ username: '', password: '' });
     const [selectedFile, setSelectedFile] = useState<File | null>(null);
 
     // Admin: resetuj ranking sezonu
@@ -125,17 +126,14 @@ export default function HostClient({ initialDates, seasonId }: HostClientProps) 
         try {
             // The manual re-submit path. The mod writes game_data.json to disk on every match and
             // has no retry queue, so this page is how a failed submission gets in — which means it
-            // has to speak exactly the same protocol the mod does. Sending the file's text at
-            // /api/v2/games rather than multipart at /api/games/upload keeps one ingest path
-            // instead of two that can drift.
+            // has to speak exactly the same protocol the mod does. The scoped host endpoint calls the same
+            // v2 handler,
+            // with session authorization instead of separate credentials.
             const payload = await selectedFile.text();
 
-            const auth = btoa(`${credentials.username}:${credentials.password}`);
-
-            const response = await fetch('/api/v2/games', {
+            const response = await fetch('/dramaafera/host/games', {
                 method: 'POST',
                 headers: {
-                    'Authorization': `Basic ${auth}`,
                     'Content-Type': 'application/json',
                 },
                 body: payload,
@@ -158,7 +156,6 @@ export default function HostClient({ initialDates, seasonId }: HostClientProps) 
                         (players !== undefined ? ` — ${players} graczy, ${actions ?? 0} akcji.` : '.') +
                         rankingNote,
                 });
-                setCredentials({ username: '', password: '' });
                 setSelectedFile(null);
                 // Odśwież listę dat przez server action, żeby zachować filtr sezonu
                 const updatedDates = await getGameDatesAction(seasonId);
@@ -186,10 +183,9 @@ export default function HostClient({ initialDates, seasonId }: HostClientProps) 
     const handleResetRanking = async () => {
         setResetStatus({ status: 'loading' });
         try {
-            const auth = btoa(`${credentials.username}:${credentials.password}`);
-            const response = await fetch('/api/season/reset', {
+            const response = await fetch('/dramaafera/host/season-reset', {
                 method: 'POST',
-                headers: { 'Authorization': `Basic ${auth}`, 'Content-Type': 'application/json' },
+                headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ seasonId }),
             });
             const data = await response.json() as { success: boolean; data?: { message?: string; resetCount?: number }; error?: string };
@@ -203,7 +199,7 @@ export default function HostClient({ initialDates, seasonId }: HostClientProps) 
                 setResetStatus({
                     status: 'error',
                     message: response.status === 401
-                        ? 'Błędne dane logowania. Sprawdź użytkownika i hasło.'
+                        ? 'Sesja hosta wygasła. Zaloguj się ponownie.'
                         : `Błąd: ${data.error ?? 'Nie udało się zresetować rankingu'}`,
                 });
             }
@@ -231,36 +227,6 @@ export default function HostClient({ initialDates, seasonId }: HostClientProps) 
                             <h2 className="text-2xl font-brook font-bold text-center mb-4">
                                 Wgraj nową grę
                             </h2>
-
-                            {/* Pola autoryzacji */}
-                            <div className="grid grid-cols-2 gap-4 mb-4">
-                                <div>
-                                    <label htmlFor="username" className="block text-sm font-semibold text-gray-300 mb-2">
-                                        Użytkownik:
-                                    </label>
-                                    <input
-                                        type="text"
-                                        id="username"
-                                        value={credentials.username}
-                                        onChange={(e) => setCredentials({ ...credentials, username: e.target.value })}
-                                        className="w-full bg-zinc-800 border border-gray-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                        placeholder="Nazwa użytkownika"
-                                    />
-                                </div>
-                                <div>
-                                    <label htmlFor="password" className="block text-sm font-semibold text-gray-300 mb-2">
-                                        Hasło:
-                                    </label>
-                                    <input
-                                        type="password"
-                                        id="password"
-                                        value={credentials.password}
-                                        onChange={(e) => setCredentials({ ...credentials, password: e.target.value })}
-                                        className="w-full bg-zinc-800 border border-gray-600 rounded-lg px-4 py-2 text-white focus:outline-none focus:ring-2 focus:ring-blue-500"
-                                        placeholder="Hasło"
-                                    />
-                                </div>
-                            </div>
 
                             {/* Przycisk i input */}
                             <div className="flex flex-col items-center justify-center gap-4">
