@@ -6,6 +6,7 @@ export interface RankingPlayer {
   playerId: number;
   playerName: string;
   currentRating: number;
+  dap: number;
   totalGames: number;
   wins: number;
   losses: number;
@@ -22,6 +23,7 @@ interface RankingRow {
   playerName: string;
   score: number;
   createdAt: string;
+  dap: number;
   totalGames: number;
   wins: number;
 }
@@ -55,18 +57,26 @@ export async function getRanking(
   const rows =
     targetSeason === CURRENT_SEASON
       ? await prisma.$queryRaw<RankingRow[]>`
+          WITH latest_date AS (
+            SELECT MAX(SUBSTR(startTime, 1, 10)) AS date
+            FROM games
+            WHERE season = ${targetSeason} AND deletedAt IS NULL
+          )
           SELECT
             t.playerId,
             p.name      AS playerName,
             pr.score,
             pr.createdAt,
             t.totalGames,
-            t.wins
+            t.wins,
+            t.dap
           FROM (
             SELECT
               gps.playerId,
               COUNT(*) AS totalGames,
-              SUM(CASE WHEN gps.win = 1 THEN 1 ELSE 0 END) AS wins
+              SUM(CASE WHEN gps.win = 1 THEN 1 ELSE 0 END) AS wins,
+              SUM(CASE WHEN SUBSTR(g.startTime, 1, 10) < (SELECT date FROM latest_date)
+                       THEN gps.totalPoints ELSE 0 END) AS dap
             FROM games g
             JOIN game_player_statistics gps ON gps.gameId = g.id
             WHERE g.season = ${targetSeason} AND g.deletedAt IS NULL
@@ -78,18 +88,26 @@ export async function getRanking(
           LIMIT ${limit} OFFSET ${offset}
         `
       : await prisma.$queryRaw<RankingRow[]>`
+          WITH latest_date AS (
+            SELECT MAX(SUBSTR(startTime, 1, 10)) AS date
+            FROM games
+            WHERE season = ${targetSeason} AND deletedAt IS NULL
+          )
           SELECT
             t.playerId,
             p.name      AS playerName,
             pr.score,
             pr.createdAt,
             t.totalGames,
-            t.wins
+            t.wins,
+            t.dap
           FROM (
             SELECT
               gps.playerId,
               COUNT(*) AS totalGames,
-              SUM(CASE WHEN gps.win = 1 THEN 1 ELSE 0 END) AS wins
+              SUM(CASE WHEN gps.win = 1 THEN 1 ELSE 0 END) AS wins,
+              SUM(CASE WHEN SUBSTR(g.startTime, 1, 10) < (SELECT date FROM latest_date)
+                       THEN gps.totalPoints ELSE 0 END) AS dap
             FROM games g
             JOIN game_player_statistics gps ON gps.gameId = g.id
             WHERE g.season = ${targetSeason} AND g.deletedAt IS NULL
@@ -114,6 +132,7 @@ export async function getRanking(
       playerId: row.playerId,
       playerName: row.playerName,
       currentRating: row.score,
+      dap: Number(row.dap),
       totalGames,
       wins,
       losses: totalGames - wins,

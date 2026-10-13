@@ -5,6 +5,7 @@ import type { RankingHistoryPoint } from "../_services";
 import { buildSeasonUrl } from "../_utils/seasonHelpers";
 import { getPlayerAvatarPath } from '../_utils/gameUtils';
 import { getRankingComparisonColor } from '../_utils/rankingComparisonColors';
+import { RANK_TIERS } from '../_constants/rankTiers';
 
 // Typy krzywych dostępne w wykresie
 type CurveType = 'linear' | 'smooth' | 'step' | 'cardinal' | 'monotone';
@@ -17,7 +18,8 @@ export function RankingChart({
     smoothness = 1,
     includeStartingPoint = true,
     seasonId,
-    comparison
+    comparison,
+    expanded = false
 }: { 
     data: RankingHistoryPoint[]; 
     playerName?: string; 
@@ -26,6 +28,7 @@ export function RankingChart({
     includeStartingPoint?: boolean; // czy dodawać punkt startowy 2000
     seasonId: number;
     comparison?: { playerName: string; data: RankingHistoryPoint[] } | { playerName: string; data: RankingHistoryPoint[] }[];
+    expanded?: boolean;
 }) {
     const [hoveredPoint, setHoveredPoint] = useState<{ index: number; point: RankingHistoryPoint; mouseX: number; mouseY: number } | null>(null);
     const avatarClipId = useId().replace(/:/g, '');
@@ -34,9 +37,10 @@ export function RankingChart({
     const comparing = comparisons.length > 0;
     if (data.length === 0 && !comparing) return null;
 
-    const margin = { top: 10, right: 10, bottom: 10, left: 10 };
-    const width = 300;
-    const height = 150;
+    const sizeScale = expanded ? 2 : 1;
+    const margin = { top: expanded ? 0 : 10, right: expanded ? 0 : 10, bottom: expanded ? 0 : 10, left: expanded ? 0 : 10 };
+    const width = expanded ? 1200 : 300;
+    const height = expanded ? 1680 : 150;
     const chartWidth = width - margin.left - margin.right;
     const chartHeight = height - margin.top - margin.bottom;
 
@@ -54,11 +58,31 @@ export function RankingChart({
         ...comparisons.map((line, index) => ({ name: line.playerName, color: getRankingComparisonColor(index), data: prepareData(line.data) })),
     ];
     const allData = series.flatMap(line => line.data.map(point => ({ ...point, playerName: line.name, color: line.color })));
-    const labelWidth = Math.max(0, ...series.map(line => line.name ? line.name.length * 5 + 20 : 0));
+    const rankLabelWidth = expanded ? Math.max(...RANK_TIERS.map(tier => `${tier.name} ${tier.minRating}`.length * 5 * sizeScale + 20 * sizeScale)) : 0;
+    const labelWidth = Math.max(rankLabelWidth, ...series.map(line => line.name ? line.name.length * 5 * sizeScale + 20 * sizeScale : 0));
     
     const minScore = Math.min(...allData.map(d => d.score));
     const maxScore = Math.max(...allData.map(d => d.score));
-    const scoreRange = maxScore - minScore || 1;
+    const sortedRankThresholds = RANK_TIERS.map(tier => tier.minRating).sort((a, b) => a - b);
+    const rankDomainMin = expanded
+        ? [...sortedRankThresholds].reverse().find(threshold => threshold <= minScore) ?? minScore
+        : minScore;
+    const rankDomainMax = expanded
+        ? sortedRankThresholds.find(threshold => threshold >= maxScore) ?? maxScore
+        : maxScore;
+    const rankPadding = expanded ? Math.max((rankDomainMax - rankDomainMin) * 0.05, 20) : 0;
+    const flatScore = minScore === maxScore;
+    const domainMin = expanded ? rankDomainMin - rankPadding : flatScore ? minScore - 50 : minScore;
+    const domainMax = expanded ? rankDomainMax + rankPadding : flatScore ? maxScore + 50 : maxScore;
+    const scoreRange = domainMax - domainMin || 1;
+    const rankTicks = expanded
+        ? RANK_TIERS.filter(tier => tier.minRating >= rankDomainMin && tier.minRating <= rankDomainMax)
+            .sort((a, b) => a.minRating - b.minRating)
+        : [];
+    const rankBands = rankTicks.slice(0, -1).map((lower, index) => ({
+        name: lower.name,
+        midpoint: (lower.minRating + rankTicks[index + 1].minRating) / 2,
+    }));
 
     // Funkcje skalowania - X bazuje na równomiernym rozmieszczeniu punktów
     // Both players share one slot per game. Real-time spacing squeezes an entire
@@ -72,7 +96,7 @@ export function RankingChart({
     const scalePoint = (point: RankingHistoryPoint) =>
         ((slotByKey.get(pointKey(point)) ?? 0) / Math.max(1, timeline.length - 1)) * chartWidth;
     const scaleX = (index: number) => comparing ? scalePoint(allData[index]) : (index / Math.max(1, allData.length - 1)) * chartWidth;
-    const scaleY = (score: number) => chartHeight - ((score - minScore) / scoreRange) * chartHeight;
+    const scaleY = (score: number) => chartHeight - ((score - domainMin) / scoreRange) * chartHeight;
 
     // Generowanie różnych typów krzywych wykresu
     const generatePath = (points: { x: number; y: number }[], type: CurveType, curvature: number) => {
@@ -218,37 +242,52 @@ export function RankingChart({
     });
 
     return (
-        <div className="w-full h-full flex items-center justify-center relative">
+        <div className={`w-full h-full flex ${expanded ? 'items-start' : 'items-center'} justify-center relative`}>
             <svg 
                 viewBox={`${-labelWidth} 0 ${width + 2 * labelWidth} ${height}`}
-                className="text-white w-full h-full max-w-4xl"
-                preserveAspectRatio="xMidYMid meet"
+                className={`text-white w-full h-full ${expanded ? 'max-w-none' : 'max-w-4xl'}`}
+                preserveAspectRatio={expanded ? "xMidYMin meet" : "xMidYMid meet"}
             >
                 <g transform={`translate(${margin.left}, ${margin.top})`}>
                     {/* Linie siatki */}
-                    {[0, 0.25, 0.5, 0.75, 1].map(ratio => (
-                        <g key={ratio}>
+                    {(expanded ? rankTicks.map(tier => ({ score: tier.minRating, label: String(tier.minRating) })) : [0, 0.25, 0.5, 0.75, 1].map(ratio => {
+                        const score = domainMax - ratio * scoreRange;
+                        return { score, label: String(Math.round(score)) };
+                    })).map(tick => (
+                        <g key={tick.score}>
                             <line
                                 x1={0}
-                                y1={chartHeight * ratio}
+                                y1={scaleY(tick.score)}
                                 x2={chartWidth}
-                                y2={chartHeight * ratio}
-                                stroke="rgb(80, 80, 80)"
-                                strokeWidth={0.2}
+                                y2={scaleY(tick.score)}
+                                stroke={expanded ? "rgb(156, 163, 175)" : "rgb(80, 80, 80)"}
+                                strokeWidth={expanded ? 1.2 * sizeScale : 0.2 * sizeScale}
                                 strokeDasharray="none"
                             />
                             <text
                                 x={-7}
-                                y={chartHeight * ratio + 4}
+                                y={scaleY(tick.score) + 4 * sizeScale}
                                 fill="rgb(161, 161, 170)"
-                                fontSize={9}
+                                fontSize={9 * sizeScale}
                                 textAnchor="end"
                             >
-                                {Math.round(maxScore - (ratio * scoreRange))}
+                                {tick.label}
                             </text>
                         </g>
                     ))}
 
+                    {rankBands.map(band => (
+                        <text
+                            key={band.name}
+                            x={-7}
+                            y={scaleY(band.midpoint) + 4 * sizeScale}
+                            fill="rgb(161, 161, 170)"
+                            fontSize={9 * sizeScale}
+                            textAnchor="end"
+                        >
+                            {band.name}
+                        </text>
+                    ))}
 
                     {/* Oś X */}
                     <line
@@ -257,7 +296,7 @@ export function RankingChart({
                         x2={chartWidth}
                         y2={chartHeight}
                         stroke="rgb(156, 163, 175)"
-                        strokeWidth={0.8}
+                        strokeWidth={0.8 * sizeScale}
                     />
 
                     {/* Oś Y */}
@@ -267,7 +306,7 @@ export function RankingChart({
                         x2={0}
                         y2={chartHeight}
                         stroke="rgb(156, 163, 175)"
-                        strokeWidth={0.8}
+                        strokeWidth={0.8 * sizeScale}
                     />
 
                     {/* Pionowe linie siatki */}
@@ -281,7 +320,7 @@ export function RankingChart({
                                 x2={scaleX(originalIndex)}
                                 y2={chartHeight}
                                 stroke="rgb(80, 80, 80)"
-                                strokeWidth={0.2}
+                                strokeWidth={0.2 * sizeScale}
                             />
                         );
                     })}
@@ -293,9 +332,9 @@ export function RankingChart({
                             <text
                                 key={pointKey(point)}
                                 x={scaleX(originalIndex)}
-                                y={chartHeight+10}
+                                y={chartHeight+10 * sizeScale}
                                 fill="rgb(161, 161, 170)"
-                                fontSize={6}
+                                fontSize={6 * sizeScale}
                                 textAnchor="middle"
                             >
                                 {formatDate(point.date)}
@@ -309,7 +348,7 @@ export function RankingChart({
                         d={line.path}
                         fill="none"
                         stroke={line.color}
-                        strokeWidth={2}
+                        strokeWidth={2 * sizeScale}
                     />)}
 
                     {/* Punkty na wykresie */}
@@ -325,27 +364,27 @@ export function RankingChart({
                                     <>
                                         <defs>
                                             <clipPath id={`${avatarClipId}-${index}`}>
-                                                <circle cx={x} cy={y} r={6} />
+                                                <circle cx={x} cy={y} r={6 * sizeScale} />
                                             </clipPath>
                                         </defs>
-                                        <circle cx={x} cy={y} r={6.5} fill="rgb(24, 24, 27)" stroke={point.color} strokeWidth={0.8} />
+                                        <circle cx={x} cy={y} r={6.5 * sizeScale} fill="rgb(24, 24, 27)" stroke={point.color} strokeWidth={0.8 * sizeScale} />
                                         <image
                                             href={getPlayerAvatarPath(point.playerName)}
-                                            x={x - 6} y={y - 6} width={12} height={12}
+                                            x={x - 6 * sizeScale} y={y - 6 * sizeScale} width={12 * sizeScale} height={12 * sizeScale}
                                             clipPath={`url(#${avatarClipId}-${index})`}
                                             preserveAspectRatio="xMidYMid slice"
                                         />
-                                        <text x={x + 10} y={y} dominantBaseline="middle" fill={point.color} fontSize={8} fontWeight="600">
-                                            {point.playerName}
+                                        <text x={x + 10 * sizeScale} y={y} dominantBaseline="middle" fill={point.color} fontSize={8 * sizeScale} fontWeight="600">
+                                            {point.playerName} ({Math.round(point.score)})
                                         </text>
                                     </>
                                 ) : <circle
                                     cx={x}
                                     cy={y}
-                                    r={isHovered ? 2.5 : 1.5}
+                                    r={isHovered ? 2.5 * sizeScale : 1.5 * sizeScale}
                                     fill="white"
                                     stroke={point.color}
-                                    strokeWidth={isHovered ? 1 : 0.3}
+                                    strokeWidth={isHovered ? sizeScale : 0.3 * sizeScale}
                                     className="transition-all duration-200"
                                 />}
                                 
@@ -353,7 +392,7 @@ export function RankingChart({
                                 <circle
                                     cx={x}
                                     cy={y}
-                                    r={8}
+                                    r={8 * sizeScale}
                                     fill="transparent"
                                     className={`${point.gameIdentifier ? 'cursor-pointer' : 'cursor-default'}`}
                                     onMouseEnter={(e) => {
