@@ -25,6 +25,28 @@ const MIRA_BUILDS = [
 
 const PLUGIN_NAME = 'DramaAferaStats.Client.dll';
 
+/**
+ * Other plugins the league plays with, always their newest release. AleLuduMod keeps one file
+ * name across releases, so GitHub's `latest/download` link works directly. AUnlocker puts the
+ * version in the file name, so it goes through our route, which serves the newest release as
+ * `AUnlocker.dll`.
+ */
+const EXTRA_PLUGINS = [
+    {
+        name: 'AleLuduMod',
+        href: 'https://github.com/townofus-pl/AleLuduMod/releases/latest/download/AleLuduMod.dll',
+        source: 'https://github.com/townofus-pl/AleLuduMod/releases/latest',
+        note: 'AleLuduMod.dll',
+    },
+    {
+        name: 'AUnlocker',
+        href: '/api/dramaafera/downloads/aunlocker',
+        source: 'https://github.com/astra1dev/AUnlocker/releases/latest',
+        note: 'AUnlocker.dll',
+        warning: 'Masz starszy plik AUnlocker_v….dll? Usuń go z BepInEx/plugins, bo inaczej gra wczyta oba.',
+    },
+];
+
 const plugin = clientManifest.files.find((file) => file.name === PLUGIN_NAME);
 
 export default function DoPobraniaPage() {
@@ -63,11 +85,11 @@ export default function DoPobraniaPage() {
                     </a>
                 </p>
 
-                <h2 className="text-xl font-semibold mb-3">2. Wtyczka ligowa</h2>
+                <h2 className="text-xl font-semibold mb-3">2. Mod ligowy</h2>
                 <p className="text-[#b0aeb8] mb-4">
                     Wrzuć poniższy plik do{' '}
                     <code className="bg-[#23202a] px-1 rounded">BepInEx/plugins</code> w tej kopii.
-                    Bez niego zostaniesz automatycznie wyrzucony z lobby. Plugin ma funkcję auto-update,{' '}
+                    Bez niego zostaniesz automatycznie wyrzucony z lobby. Mod ma funkcję auto-update,{' '}
                     więc przyszłe wersje i pliki czapek/skinów pobiera samodzielnie.
                 </p>
 
@@ -102,6 +124,41 @@ export default function DoPobraniaPage() {
                         </div>
                     </a>
                 )}
+
+                <h2 className="text-xl font-semibold mb-3">3. Pozostałe mody</h2>
+                <p className="text-[#b0aeb8] mb-4">
+                    Wrzuć je do tego samego folderu{' '}
+                    <code className="bg-[#23202a] px-1 rounded">BepInEx/plugins</code>. Linki zawsze
+                    prowadzą do najnowszej wersji.
+                </p>
+
+                <div className="space-y-2 mb-6">
+                    {EXTRA_PLUGINS.map((extra) => (
+                        <div key={extra.name} className="bg-[#23202a] rounded-lg px-4 py-3 border border-[#23202a]">
+                            <div className="flex items-center justify-between gap-4">
+                                <div className="flex items-center gap-2">
+                                    <a href={extra.href} className="font-medium hover:text-white">{extra.name}</a>
+                                    {'warning' in extra && (
+                                        // Same hover tooltip as the game history. Focusable, so it also opens on tap and by keyboard.
+                                        // It opens to the right: the icon sits near the left edge, so a centred tooltip leaves a phone screen.
+                                        <span tabIndex={0} aria-label={extra.warning}
+                                            className="relative group cursor-help text-sm text-[#b0aeb8] outline-none">
+                                            ⓘ
+                                            <span role="tooltip"
+                                                className="absolute bottom-full left-0 mb-2 w-60 px-2 py-1 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 group-focus:opacity-100 transition-opacity pointer-events-none z-10">
+                                                {extra.warning}
+                                            </span>
+                                        </span>
+                                    )}
+                                </div>
+                                <a href={extra.href} className="text-xs text-[#6b6874] font-mono truncate hover:text-white">{extra.note}</a>
+                            </div>
+                            <a href={extra.source} className="text-xs text-[#b0aeb8] underline hover:text-white">
+                                Źródło na GitHubie
+                            </a>
+                        </div>
+                    ))}
+                </div>
             </div>
         </main>
     );
