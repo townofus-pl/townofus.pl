@@ -1,3 +1,4 @@
+import { getPlayerAvatarPath } from "@/app/dramaafera/_utils/gameUtils";
 import Link from "next/link";
 import Image from "next/image";
 import { getGameDatesLightweight } from "@/app/dramaafera/_services";
@@ -20,10 +21,7 @@ function getUniquePlayersFromDate(dateGroup: GameDateEntry): string[] {
     return Array.from(allPlayers).sort();
 }
 
-// Funkcja pomocnicza do generowania ścieżki avatara
-function getPlayerAvatarPath(playerName: string): string {
-    return `/images/avatars/${playerName}.png`;
-}
+
 
 interface HistoriaGierContentProps {
     seasonId: number;

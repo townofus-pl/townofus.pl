@@ -1,5 +1,7 @@
 "use client";
 
+import { getPlayerAvatarPath } from '@/app/dramaafera/_utils/gameUtils';
+
 import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { createPortal } from "react-dom";
 import type { PodsumowanieClientProps } from './types';
@@ -170,7 +172,7 @@ export default function PodsumowanieClient({
             '/images/podium.png',
             '/images/star.svg',
             '/images/avatars/placeholder.png',
-            ...[...nicknames].map(n => `/images/avatars/${n}.png`),
+            ...[...nicknames].map(n => getPlayerAvatarPath(n)),
             ...topPlayerGames.flatMap(g => g.detailedStats.playersData.map(p => getRoleIconPath(p.role, seasonId))),
         ])];
     }, [weeklyStats, emperorPoll, topSigmas, topCwele, emperorHistory, rankingAfterSession, topPlayerGames, seasonId]);
@@ -558,7 +560,7 @@ export default function PodsumowanieClient({
                         <button
                             onClick={togglePresentationFullscreen}
                             disabled={!imagesReady}
-                            className="inline-flex items-center gap-3 bg-amber-600 hover:bg-amber-700 text-white px-8 py-4 rounded-xl font-bold transition-colors shadow-2xl text-2xl mb-6 hover:scale-105 transform disabled:opacity-50 disabled:cursor-wait disabled:hover:scale-100 disabled:hover:bg-amber-600"
+                            className="inline-flex items-center gap-3 bg-amber-600 hover:bg-amber-700 text-white px-8 py-4 rounded-xl font-bold transition-colors shadow-2xl text-2xl mt-6 mb-6 hover:scale-105 transform disabled:opacity-50 disabled:cursor-wait disabled:hover:scale-100 disabled:hover:bg-amber-600"
                         >
                             {imagesReady
                                 ? '🎬 Rozpocznij Prezentację'

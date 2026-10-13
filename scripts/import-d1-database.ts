@@ -45,6 +45,9 @@ const TABLE_ORDER = [
     'meeting_jailed_players',
     'meeting_blackmailed_players',
     'meeting_no_votes',
+    'emperor_polls',
+    'emperor_poll_candidates',
+    'emperor_poll_votes',
     'discord_accounts',
     'discord_sessions',
     'discord_oauth_states',
@@ -166,7 +169,13 @@ function printHelp(): void {
 }
 
 function runCommand(command: string, args: string[], input?: string): void {
-    const result = spawnSync(command, args, {
+    const executable = process.platform === 'win32' && command === 'wrangler'
+        ? process.execPath
+        : command;
+    const executableArgs = process.platform === 'win32' && command === 'wrangler'
+        ? [path.resolve('node_modules/wrangler/bin/wrangler.js'), ...args]
+        : args;
+    const result = spawnSync(executable, executableArgs, {
         encoding: 'utf8',
         input,
         maxBuffer: 50 * 1024 * 1024,
@@ -499,13 +508,13 @@ async function main(): Promise<void> {
     runCommand(wranglerCommand, ['d1', 'execute', options.databaseName, ...where, '--file', options.restoreFile, '--yes']);
 
     console.log('Sprawdzam spójność kluczy obcych...');
-    runCommand(wranglerCommand, ['d1', 'execute', options.databaseName, ...where, '--command', 'PRAGMA foreign_key_check;', '--yes']);
+    runCommand(wranglerCommand, ['d1', 'execute', options.databaseName, ...where, '--command', 'PRAGMA foreign_key_check', '--yes']);
 
     console.log('Sprawdzam liczbę rekordów w kluczowych tabelach...');
     for (const tableName of ['players', 'games', 'player_rankings', 'game_player_statistics', 'meetings', 'game_events']) {
         runCommand(
             wranglerCommand,
-            ['d1', 'execute', options.databaseName, ...where, '--command', `SELECT COUNT(*) AS c FROM ${tableName};`, '--yes'],
+            ['d1', 'execute', options.databaseName, ...where, '--command', `SELECT COUNT(*) AS c FROM ${tableName}`, '--yes'],
         );
     }
 

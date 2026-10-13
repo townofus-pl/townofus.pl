@@ -1,3 +1,4 @@
+import { getPlayerAvatarPath } from '@/app/dramaafera/_utils/gameUtils';
 import { NextRequest } from 'next/server';
 import { getGamesListByDate, getGameData } from '@/app/dramaafera/_services';
 import { normalizeRoleName, getRoleColor, determineTeam, formatDisplayDate } from '@/app/dramaafera/_utils/gameUtils';
@@ -46,7 +47,7 @@ export async function GET(request: NextRequest) {
         if (!playerMap.has(player.nickname)) {
           playerMap.set(player.nickname, {
             name: player.nickname,
-            avatar: `/images/avatars/${player.nickname}.png`,
+            avatar: getPlayerAvatarPath(player.nickname),
             games: 0,
             wins: 0,
             loses: 0,

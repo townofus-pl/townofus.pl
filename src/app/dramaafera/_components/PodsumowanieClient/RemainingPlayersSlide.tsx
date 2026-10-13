@@ -1,3 +1,4 @@
+import { getPlayerAvatarPath } from '@/app/dramaafera/_utils/gameUtils';
 import { useState, useEffect } from 'react';
 import Image from 'next/image';
 import { WeeklyPlayerStats } from './types';
@@ -104,7 +105,7 @@ export default function RemainingPlayersSlide({ isFullscreen, weeklyStats, step 
                                 }}
                             >
                                 <Image
-                                    src={`/images/avatars/${player.nickname}.png`}
+                                    src={getPlayerAvatarPath(player.nickname)}
                                     alt={player.nickname}
                                     width={avatarSize}
                                     height={avatarSize}
@@ -179,7 +180,7 @@ export default function RemainingPlayersSlide({ isFullscreen, weeklyStats, step 
                             }}
                         >
                             <Image
-                                src={`/images/avatars/${player.nickname}.png`}
+                                src={getPlayerAvatarPath(player.nickname)}
                                 alt={player.nickname}
                                 width={avatarSize}
                                 height={avatarSize}

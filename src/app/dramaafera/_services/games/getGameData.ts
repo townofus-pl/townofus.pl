@@ -11,6 +11,7 @@ import { calculateWinnerFromStats } from './winCalculator';
 import { buildPlayerStats } from './_buildPlayerStats';
 import { countVotes } from './_countVotes';
 import { getActionAbility, getKillAbility, getVentAbility } from './_actionAbility';
+import { getDeathsDuringMeetings } from './_meetingDeaths';
 
 // Fetch detailed game data
 // Player relations are selected down to `name` on purpose. Identity columns
@@ -46,8 +47,8 @@ export async function getGameData(gameId: string): Promise<UIGameData | null> {
           meetingVotes: {
             where: { target: withoutDeleted, voter: withoutDeleted },
             include: {
-              target: true,
-              voter: true
+              target: { select: { name: true } },
+              voter: { select: { name: true } }
             }
           },
           skipVotes: {
@@ -144,6 +145,7 @@ export async function getGameData(gameId: string): Promise<UIGameData | null> {
     const deathsSinceLastMeeting = JSON.parse(meeting.deathsSinceLastMeeting || '[]');
 
     return {
+      exiledPlayer: game.gameActions.length > 0 ? meeting.exiledPlayer : undefined,
       meetingNumber: meeting.meetingNumber,
       deathsSinceLastMeeting,
       votes,
@@ -157,6 +159,8 @@ export async function getGameData(gameId: string): Promise<UIGameData | null> {
   });
 
   // Build events data. v2 stores the authoritative timeline in game_actions.timestampMs;
+  const meetingDeaths = getDeathsDuringMeetings(meetings, game.gameActions);
+  meetings.forEach(meeting => { meeting.deathsDuringMeeting = meetingDeaths.get(meeting.meetingNumber) ?? []; });
   // v1 games keep the legacy HH:MM:SS values in game_events.timestamp.
   const legacyEvents: UIGameEvent[] = game.gameEvents.map(event => ({
     timestamp: event.timestamp.toString(),

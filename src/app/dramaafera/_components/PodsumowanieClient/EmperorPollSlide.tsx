@@ -34,9 +34,10 @@ export default function EmperorPollSlide({ isFullscreen, step, emperorPoll }: Em
     const maxVotes = Math.max(1, sortedVotes.length > 0 ? Math.max(...sortedVotes.map(v => v.votes)) : 0);
     const safeTotalVotes = Math.max(1, emperorPoll.totalVotes);
     const chartHeight = isFullscreen ? 400 : 250;
-    const barWidth = isFullscreen ? 120 : 80;
-    const gap = isFullscreen ? 40 : 20;
-    const avatarSize = isFullscreen ? 80 : 50;
+    const count = Math.max(1, sortedVotes.length);
+    const gap = count > 8 ? 12 : isFullscreen ? 40 : 20;
+    const barWidth = Math.max(40, Math.min(isFullscreen ? 120 : 80, Math.floor((1100 - gap * (count - 1)) / count)));
+    const avatarSize = Math.min(barWidth, isFullscreen ? 80 : 50);
 
     return (
         <div className="relative flex items-center justify-center h-full px-8">
@@ -53,7 +54,7 @@ export default function EmperorPollSlide({ isFullscreen, step, emperorPoll }: Em
                 </h2>
 
                 {/* Wykres słupkowy */}
-                <div className="flex items-end justify-center" style={{ gap: `${gap}px`, minHeight: `${chartHeight + 150}px` }}>
+                <div className="flex w-full items-end overflow-x-auto pb-4" style={{ gap: `${gap}px`, minHeight: `${chartHeight + 150}px` }}>
                     {sortedVotes.map((vote, index) => {
                         const barHeight = Math.max(50, (vote.votes / maxVotes) * chartHeight);
                         const percentage = Math.round((vote.votes / safeTotalVotes) * 100);
@@ -61,7 +62,7 @@ export default function EmperorPollSlide({ isFullscreen, step, emperorPoll }: Em
                         return (
                             <div 
                                 key={vote.nickname}
-                                className="flex flex-col items-center"
+                                className="flex flex-shrink-0 flex-col items-center first:ml-auto last:mr-auto"
                                 style={{ width: `${barWidth}px` }}
                             >
                                 {/* Liczba głosów i procent nad słupkiem */}
@@ -129,7 +130,7 @@ export default function EmperorPollSlide({ isFullscreen, step, emperorPoll }: Em
                                             }}
                                         />
                                     </div>
-                                    <div className={`font-bold text-white mt-2 text-center ${isFullscreen ? 'text-2xl' : 'text-lg'}`}>
+                                    <div className={`font-bold text-white mt-2 text-center break-words w-full ${isFullscreen ? 'text-2xl' : 'text-lg'}`}>
                                         {vote.nickname}
                                     </div>
                                 </div>

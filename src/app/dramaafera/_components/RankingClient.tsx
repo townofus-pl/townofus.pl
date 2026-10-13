@@ -1,5 +1,7 @@
 "use client";
 
+import { getPlayerAvatarPath } from "@/app/dramaafera/_utils/gameUtils";
+
 import { useEffect, useState, useCallback, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
@@ -15,10 +17,7 @@ type NumericRankingKey = {
     [K in keyof RankingPlayer]: RankingPlayer[K] extends number ? K : never;
 }[keyof RankingPlayer];
 
-// Funkcja pomocnicza do generowania ścieżki avatara
-function getPlayerAvatarPath(playerName: string): string {
-    return `/images/avatars/${playerName}.png`;
-}
+
 
 function getRecentGameHistories(histories: SeasonRankingHistory[], limit = 10): SeasonRankingHistory[] {
     const gamesByKey = new Map<string, { gameId?: number; gameIdentifier?: string; date: Date }>();
@@ -261,7 +260,7 @@ export default function RankingClient({ initialData, seasonId }: RankingClientPr
                                             <Link href={buildSeasonUrl(`/gracz/${player.playerId}`, seasonId)}>
                                                     <div className="flex items-center space-x-3 hover:bg-gray-700/30 rounded-lg p-2 transition-colors cursor-pointer">
                                                         <Image
-                                                            src={hasRanking && Math.round(player.currentRating) === 2137 ? "/images/avatars/papaj.jpg" : getPlayerAvatarPath(player.playerName)}
+                                                            src={getPlayerAvatarPath(player.playerName, hasRanking && Math.round(player.currentRating) === 2137 ? "papaj" : undefined)}
                                                             alt={`Avatar ${player.playerName}`}
                                                             width={40}
                                                             height={40}

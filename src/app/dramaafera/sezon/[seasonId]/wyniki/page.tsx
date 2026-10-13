@@ -3,7 +3,6 @@ import { getGameDatesLightweight, getSessionSummaryByDate } from '@/app/dramaafe
 import { buildSeasonUrl } from '@/app/dramaafera/_utils/seasonHelpers';
 import { parseAndValidateSeasonId } from '@/app/dramaafera/sezon/_utils/parseSeasonId';
 import WynikiClient from '@/app/dramaafera/_components/WynikiClient';
-import { getListaCweliForDisplay } from '@/app/dramaafera/_services/gameSessionList';
 
 interface PageProps {
     params: Promise<{ seasonId: string }>;
@@ -25,7 +24,6 @@ export default async function SeasonWynikiPage({ params }: PageProps) {
 
     const { dates } = await getGameDatesLightweight(false, seasonId);
 
-    const listaCweli = await getListaCweliForDisplay(seasonId);
 
     const latestDate = dates.length > 0 ? dates[0].date : null;
     const initialResults = latestDate
@@ -37,7 +35,6 @@ export default async function SeasonWynikiPage({ params }: PageProps) {
             initialDates={dates}
             initialResults={initialResults}
             seasonId={seasonId}
-            listaCweli={listaCweli}
         />
     );
 }

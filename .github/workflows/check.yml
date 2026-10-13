@@ -28,6 +28,10 @@ jobs:
 
       - run: npm test
 
+      - run: npm run test:polls
+
+      - run: npm run test:signups
+
       # The manifest's hashes must match the files served beside it. A mismatch makes every
       # player's auto-update fail silently, visible only in their own log.
       - run: npm run mod:publish

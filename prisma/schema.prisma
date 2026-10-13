@@ -81,6 +81,8 @@ model Player {
   friendCode          String?
   hashedProductUserId String? // SHA-256(ProductUserId)[0..8]
 
+  emperorCandidacies EmperorPollCandidate[]
+  emperorVotes EmperorPollVote[]
   discordAccount DiscordAccount?
   discordRequests DiscordLinkRequest[]
 
@@ -564,4 +566,47 @@ model DiscordCommand {
   updatedAt DateTime @updatedAt
   deletedAt DateTime?
   @@map("discord_commands")
+}
+
+
+model EmperorPoll {
+  id Int @id @default(autoincrement())
+  date String @unique
+  season Int
+  closesAt BigInt
+  candidates EmperorPollCandidate[]
+  votes EmperorPollVote[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+  @@map("emperor_polls")
+}
+model EmperorPollCandidate {
+  id Int @id @default(autoincrement())
+  pollId Int
+  playerId Int
+  totalPoints Float
+  poll EmperorPoll @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  player Player @relation(fields: [playerId], references: [id], onDelete: Restrict)
+  votes EmperorPollVote[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+  @@unique([pollId, playerId])
+  @@map("emperor_poll_candidates")
+}
+model EmperorPollVote {
+  id Int @id @default(autoincrement())
+  pollId Int
+  playerId Int
+  candidateId Int
+  poll EmperorPoll @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  player Player @relation(fields: [playerId], references: [id], onDelete: Restrict)
+  candidate EmperorPollCandidate @relation(fields: [candidateId], references: [id], onDelete: Restrict)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+  @@unique([pollId, playerId])
+  @@index([candidateId, id])
+  @@map("emperor_poll_votes")
 }

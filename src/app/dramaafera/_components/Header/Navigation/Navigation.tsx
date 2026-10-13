@@ -42,6 +42,7 @@ const navigationItemConfigs: NavigationItemConfig[] = [
         label: 'Wyniki Dnia',
         seasonDependent: true,
     },
+    { subPath: '/zapisy', href: '/dramaafera/zapisy', label: 'Zapisy', seasonDependent: false },
     {
         subPath: '/historia-gier',
         href: '/dramaafera/historia-gier',

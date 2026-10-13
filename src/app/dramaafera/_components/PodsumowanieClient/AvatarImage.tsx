@@ -1,5 +1,7 @@
 'use client';
 
+import { getPlayerAvatarPath } from '@/app/dramaafera/_utils/gameUtils';
+
 import Image from 'next/image';
 import { useState } from 'react';
 import type { CSSProperties } from 'react';
@@ -18,7 +20,7 @@ export function AvatarImageFill({ nickname, className = 'object-cover', style }:
     const [hasError, setHasError] = useState(false);
     return (
         <Image
-            src={hasError ? '/images/avatars/placeholder.png' : `/images/avatars/${nickname}.png`}
+            src={hasError ? '/images/avatars/placeholder.png' : getPlayerAvatarPath(nickname)}
             alt={nickname}
             fill
             className={className}
@@ -44,7 +46,7 @@ export function AvatarImageSized({ nickname, size, className, priority, style }:
     const [hasError, setHasError] = useState(false);
     return (
         <Image
-            src={hasError ? '/images/avatars/placeholder.png' : `/images/avatars/${nickname}.png`}
+            src={hasError ? '/images/avatars/placeholder.png' : getPlayerAvatarPath(nickname)}
             alt={nickname}
             width={size}
             height={size}

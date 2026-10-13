@@ -1,3 +1,4 @@
+import { getPlayerAvatarPath } from '@/app/dramaafera/_utils/gameUtils';
 import { NextRequest } from 'next/server';
 import { getCloudflareContext } from '@opennextjs/cloudflare';
 import { getPrismaClient, chunkedInQuery } from '../../_database';
@@ -124,7 +125,7 @@ export async function GET(request: NextRequest) {
       if (!playerMap.has(playerName)) {
         playerMap.set(playerName, {
           name: playerName,
-          avatar: `/images/avatars/${playerName}.png`,
+          avatar: getPlayerAvatarPath(playerName),
           totalPoints: 0,
           games: 0,
         });
@@ -177,7 +178,7 @@ export async function GET(request: NextRequest) {
         
         return {
           name: playerName,
-          avatar: `/images/avatars/${playerName}.png`,
+          avatar: getPlayerAvatarPath(playerName),
           rankBefore,
           rankAfter,
           change: rankBefore - rankAfter, // Dodatnia wartość = awans
