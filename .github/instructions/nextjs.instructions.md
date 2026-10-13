@@ -9,6 +9,9 @@ applyTo: "src/app/**/*.tsx,src/app/**/*.ts"
 - Add 'use client' only for: useState, useEffect, useRef, useRouter, useParams,
   usePathname, browser APIs, interactive event handlers
 - Never call Prisma or getCloudflareContext from a client component
+- A `'use server'` file exports async functions only. Put a constant or type that both the
+  action and its caller share in a plain module beside it (e.g. `topGamesConfig.ts` next to
+  `topGamesActions.ts`)
 
 ## Component location
 

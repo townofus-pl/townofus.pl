@@ -130,7 +130,7 @@ export async function GameDetailContent({ date, gameId, seasonId }: GameDetailCo
                     seasonId={seasonId}
                 />
 
-                <GameTimeline events={gameData.detailedStats.events} endTimestamp={gameData.detailedStats.endTimestamp} />
+                {gameData.detailedStats.hasTimeline && <GameTimeline events={gameData.detailedStats.events} endTimestamp={gameData.detailedStats.endTimestamp} />}
 
                 <MeetingsSection meetings={gameData.detailedStats.meetings} playersData={gameData.detailedStats.playersData} seasonId={seasonId} />
 

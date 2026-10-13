@@ -49,6 +49,8 @@ test('renders a single ranking point without invalid coordinates', () => {
     includeStartingPoint: false,
     seasonId: 4,
   }));
+  expect(markup).toContain('x1="0" y1="0" x2="280" y2="0"');
+  expect(markup).toContain('x1="0" y1="130" x2="280" y2="130"');
   expect(markup).not.toContain('NaN');
   expect(markup).not.toContain('Infinity');
 });

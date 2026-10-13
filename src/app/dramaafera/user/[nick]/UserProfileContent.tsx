@@ -1,7 +1,7 @@
 import { getDatabaseClient } from '@/app/dramaafera/_services/db';
 import Link from "next/link";
 import Image from "next/image";
-import { getUserProfileStats, getAllPlayerNames, getPlayersList, getRanking, getPlayerRankingHistory, getPlayerTopGames, getPlayerVotingStats, getPlayerStars } from "../../_services";
+import { getUserProfileStats, getAllPlayerNames, getPlayerRankingHistory, getPlayerTopGames, getPlayerVotingStats, getPlayerStars } from "../../_services";
 import { convertNickToUrlSlug, getPlayerAvatarPath, FIRST_MIRA_SEASON } from "@/app/dramaafera/_utils/gameUtils";
 import PlayerStatsBreakdown from "@/app/_components/PlayerStatsBreakdown";
 import { buildSeasonUrl } from "@/app/dramaafera/_utils/seasonHelpers";
@@ -10,6 +10,7 @@ import CollapsibleSection from "./CollapsibleSection";
 import TopGamesDisplay from "./TopGamesDisplay";
 import VotingStatsDisplay from "./VotingStatsDisplay";
 import RankingHistorySection from "./RankingHistorySection";
+import { TOP_GAMES_INITIAL } from './topGamesConfig';
 
 // Funkcja pomocnicza do konwersji URL slug z powrotem na nick
 function convertUrlSlugToNick(slug: string, allPlayerNames: string[]): string {
@@ -62,16 +63,9 @@ export async function UserProfileContent({ nick, playerId, seasonId }: UserProfi
 
     // Pobierz historię rankingu gracza
     const rankingHistory = await getPlayerRankingHistory(identity, seasonId);
-    const seasonPlayers = await getPlayersList(seasonId);
-    const { ranking: seasonRanking } = await getRanking(seasonId, seasonPlayers.length);
-    const rankedNames = new Set(seasonRanking.map(player => player.playerName));
-    const seasonPlayerNames = [
-        ...seasonRanking.map(player => player.playerName),
-        ...seasonPlayers.filter(name => !rankedNames.has(name)),
-    ];
-    
+
     // Pobierz najlepsze gry gracza
-    const { best: bestGames, hasMore: hasMoreBestGames } = await getPlayerTopGames(identity, 3, seasonId);
+    const { best: bestGames, hasMore: hasMoreBestGames } = await getPlayerTopGames(identity, TOP_GAMES_INITIAL, seasonId);
     
     // Pobierz statystyki głosowań gracza
     const votingStats = await getPlayerVotingStats(identity, seasonId);
@@ -474,7 +468,7 @@ export async function UserProfileContent({ nick, playerId, seasonId }: UserProfi
                 {/* Historia rankingu */}
                 {rankingHistory.length > 0 && (
                     <CollapsibleSection title="Historia rankingu" defaultOpen={false} icon="📈">
-                        <RankingHistorySection key={`${playerNick}-${seasonId}`} rankingHistory={rankingHistory} playerName={playerNick} seasonId={seasonId} playerNames={seasonPlayerNames} />
+                        <RankingHistorySection key={`${playerNick}-${seasonId}`} rankingHistory={rankingHistory} playerName={playerNick} seasonId={seasonId} />
                     </CollapsibleSection>
                 )}
                 
