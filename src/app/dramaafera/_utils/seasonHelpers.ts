@@ -37,7 +37,7 @@ export function buildSeasonUrl(path: string, seasonId: number): string {
  * happened to be on, so switching season from `/changelog`, `/informacje`, `/playlista`,
  * `/do_pobrania`, `/host` or `/lista-cweli` hard-404'd. See #313.
  */
-export const SEASON_SCOPED_SUBPATHS = ['/historia-gier', '/ranking', '/role', '/user', '/wyniki'] as const;
+export const SEASON_SCOPED_SUBPATHS = ['/historia-gier', '/ranking', '/role', '/user', '/gracz', '/wyniki'] as const;
 
 export function isSeasonScopedSubPath(subPath: string): boolean {
   return SEASON_SCOPED_SUBPATHS.some((root) => subPath === root || subPath.startsWith(`${root}/`));

@@ -1,6 +1,7 @@
 'use client';
 
 import { useState } from 'react';
+import DiscordAccountsTab from './DiscordAccountsTab';
 import HostClient from './HostClient';
 import RoleRankingTable from './RoleRankingTable';
 import ListaCweliTab from './ListaCweliTab';
@@ -12,15 +13,17 @@ import type { RoleRankingStats } from '@/app/dramaafera/_services';
 const TAB_HOST = 'host';
 const TAB_ROLES = 'role';
 const TAB_LIST = 'lista';
+const TAB_ACCOUNTS = 'konta';
 const TAB_SETTINGS = 'ustawienia';
 
-type HostTabId = typeof TAB_HOST | typeof TAB_ROLES | typeof TAB_LIST | typeof TAB_SETTINGS;
+type HostTabId = typeof TAB_ACCOUNTS | typeof TAB_HOST | typeof TAB_ROLES | typeof TAB_LIST | typeof TAB_SETTINGS;
 
 const TABS: ReadonlyArray<{ id: HostTabId; label: string }> = [
   { id: TAB_HOST, label: 'Host' },
   { id: TAB_ROLES, label: 'Role' },
   { id: TAB_LIST, label: 'Lista Cweli' },
   { id: TAB_SETTINGS, label: 'Ustawienia' },
+  { id: TAB_ACCOUNTS, label: 'Konta Discord' },
 ];
 
 interface HostTabsProps {
@@ -40,6 +43,8 @@ export default function HostTabs({ initialDates, seasonId, roles }: HostTabsProp
         return <RoleRankingTable roles={roles} seasonId={seasonId} />;
       case TAB_LIST:
         return <ListaCweliTab seasonId={seasonId} />;
+      case TAB_ACCOUNTS:
+        return <DiscordAccountsTab />;
       case TAB_SETTINGS:
         return <SettingsTab />;
       default: {

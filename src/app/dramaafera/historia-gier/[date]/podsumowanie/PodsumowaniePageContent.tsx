@@ -7,10 +7,10 @@ import {
     getRankingAfterSession,
     getSessionSummaryByDate,
 } from '@/app/dramaafera/_services';
-import { getCloudflareContext } from '@opennextjs/cloudflare';
 import PodsumowanieClient from '@/app/dramaafera/_components/PodsumowanieClient';
-import type { EmperorPoll, SigmaPlayer, RankingHistoryPoint } from '@/app/dramaafera/_components/PodsumowanieClient';
+import type { SigmaPlayer, RankingHistoryPoint } from '@/app/dramaafera/_components/PodsumowanieClient';
 import type { RankingHistoryPoint as ServiceRankingHistoryPoint } from '@/app/dramaafera/_services/players/types';
+import { loadSummaryPoll } from '@/app/dramaafera/_polls/server';
 
 // Compute per-game ranking changes for a player from their ranking history.
 // We track `lastRealEntry` (the last non-initial/base entry) rather than using
@@ -56,13 +56,14 @@ interface PodsumowaniePageContentProps {
 
 export async function PodsumowaniePageContent({ date, seasonId }: PodsumowaniePageContentProps) {
     // Fetch all data in parallel
-    const [weeklyStatsResult, topSigmasResult, emperorHistoryData, rankingAfterSessionData, sessionSummary] =
+    const [weeklyStatsResult, topSigmasResult, emperorHistoryData, rankingAfterSessionData, sessionSummary, emperorPoll] =
         await Promise.all([
             getWeeklyStats(date, seasonId),
             getTopSigmas(date, seasonId),
             getEmperorHistory(seasonId),
             getRankingAfterSession(date, seasonId),
             getSessionSummaryByDate(date, seasonId),
+            loadSummaryPoll(date, seasonId),
         ]);
 
     const weeklyStats = weeklyStatsResult.players;
@@ -111,21 +112,6 @@ export async function PodsumowaniePageContent({ date, seasonId }: PodsumowaniePa
         }
     }
 
-    // Emperor poll from static file
-    let emperorPoll: EmperorPoll | null = null;
-    try {
-        const { env } = await getCloudflareContext();
-        if (env.ASSETS) {
-            const response = await env.ASSETS.fetch(
-                new Request(`http://localhost/emperor-polls/${date}.json`),
-            );
-            if (response.ok) {
-                emperorPoll = (await response.json()) as EmperorPoll;
-            }
-        }
-    } catch {
-        // Emperor poll is optional
-    }
 
     // Get detailedGames as topPlayerGames (filter out nulls)
     const topPlayerGames = sessionSummary.detailedGames.filter(

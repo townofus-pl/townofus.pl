@@ -1,5 +1,7 @@
 "use client";
 
+import { getPlayerAvatarPath } from "@/app/dramaafera/_utils/gameUtils";
+
 import { useEffect, useState, useCallback, useRef } from "react";
 import Link from "next/link";
 import Image from "next/image";
@@ -8,17 +10,14 @@ import { CURRENT_SEASON } from "@/app/dramaafera/_constants/seasons";
 import { getRankingAction, getSeasonRankingHistoriesAction } from "@/app/dramaafera/_actions/seasonActions";
 import { getRankName } from "@/app/dramaafera/_constants/rankTiers";
 import { buildSeasonUrl } from "@/app/dramaafera/_utils/seasonHelpers";
-import { convertNickToUrlSlug } from "@/app/dramaafera/_utils/gameUtils";
+
 import { RankingChart } from "./RankingChart";
 
 type NumericRankingKey = {
     [K in keyof RankingPlayer]: RankingPlayer[K] extends number ? K : never;
 }[keyof RankingPlayer];
 
-// Funkcja pomocnicza do generowania ścieżki avatara
-function getPlayerAvatarPath(playerName: string): string {
-    return `/images/avatars/${playerName}.png`;
-}
+
 
 function sortPlayers(players: RankingPlayer[], sortBy: NumericRankingKey, sortOrder: "asc" | "desc") {
     const sorted = [...players];
@@ -231,10 +230,10 @@ export default function RankingClient({ initialData, seasonId }: RankingClientPr
                                                 </div>
                                             </td>
                                             <td className="py-2 px-2">
-                                            <Link href={buildSeasonUrl(`/user/${convertNickToUrlSlug(player.playerName)}`, seasonId)}>
+                                            <Link href={buildSeasonUrl(`/gracz/${player.playerId}`, seasonId)}>
                                                     <div className="flex items-center space-x-3 hover:bg-gray-700/30 rounded-lg p-2 transition-colors cursor-pointer">
                                                         <Image
-                                                            src={hasRanking && Math.round(player.currentRating) === 2137 ? "/images/avatars/papaj.jpg" : getPlayerAvatarPath(player.playerName)}
+                                                            src={getPlayerAvatarPath(player.playerName, hasRanking && Math.round(player.currentRating) === 2137 ? "papaj" : undefined)}
                                                             alt={`Avatar ${player.playerName}`}
                                                             width={40}
                                                             height={40}

@@ -5,6 +5,7 @@ import { formatDisplayDate, getPlayerAvatarPath } from "@/app/dramaafera/_utils/
 import { buildSeasonUrl } from "@/app/dramaafera/_utils/seasonHelpers";
 import { TeamColors } from "@/constants/teams";
 import { notFound } from "next/navigation";
+import PollButton from '@/app/dramaafera/_polls/PollButton';
 
 // Funkcja pomocnicza do generowania chronologicznego numeru partii (odwrócona numeracja)
 function getChronologicalGameNumber(index: number, totalGames: number): string {
@@ -35,6 +36,7 @@ export async function DateGamesContent({ date, seasonId }: DateGamesContentProps
                     <p className="text-center text-gray-300 mt-4 text-lg">
                         {games.length} {games.length === 1 ? 'rozgrywka' : games.length < 5 ? 'rozgrywki' : 'rozgrywek'} z tego dnia
                     </p>
+                    <PollButton date={date} season={seasonId} />
                 </div>
 
                 <div className="space-y-4">

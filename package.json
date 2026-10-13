@@ -11,6 +11,7 @@
         "test": "jest --passWithNoTests",
         "test:watch": "jest --watch",
         "test:coverage": "jest --coverage",
+        "test:polls": "tsx scripts/test-emperor-polls.ts",
         "prepare": "husky && npm run cf-typegen && npm run db:generate",
         "preview": "npm run preview:local",
         "preview:local": "npm run db:migrate:apply:local && opennextjs-cloudflare build && opennextjs-cloudflare preview",
@@ -35,7 +36,8 @@
         "db:execute:local": "wrangler d1 execute townofus-pl --local",
         "db:execute:staging": "wrangler d1 execute townofus_pl_preview --remote --env staging",
         "db:execute:production": "wrangler d1 execute townofus-pl --remote --env production",
-        "db:studio": "npx d1s"
+        "db:studio": "npx d1s",
+        "test:signups": "tsx scripts/test-signups.ts"
     },
     "dependencies": {
         "@asteasolutions/zod-to-openapi": "^8.5.0",

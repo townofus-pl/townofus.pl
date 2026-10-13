@@ -81,6 +81,11 @@ model Player {
   friendCode          String?
   hashedProductUserId String? // SHA-256(ProductUserId)[0..8]
 
+  emperorCandidacies EmperorPollCandidate[]
+  emperorVotes EmperorPollVote[]
+  discordAccount DiscordAccount?
+  discordRequests DiscordLinkRequest[]
+
   // Relationships
   gamePlayerStatistics GamePlayerStatistics[]
   gameEvents           GameEvent[]                @relation("EventPlayer")
@@ -462,4 +467,146 @@ model DramaAferaSettings {
   @@index([uploadedAt])
   @@index([deletedAt])
   @@map("drama_afera_settings")
+}
+
+// These records are physically erased when an account closes, including its audit.
+model DiscordAccount {
+  id Int @id @default(autoincrement())
+  discordUserId String @unique
+  username String
+  avatar String?
+  playerId Int? @unique
+  player Player? @relation(fields: [playerId], references: [id], onDelete: Restrict)
+  retryBlocked Boolean @default(false)
+  isHost Boolean @default(false)
+  version Int @default(0)
+  sessions DiscordSession[]
+  requests DiscordLinkRequest[]
+  audits DiscordLinkAudit[] @relation("DiscordAuditTarget")
+  authoredAudits DiscordLinkAudit[] @relation("DiscordAuditActor")
+  commands DiscordCommand[] @relation("DiscordCommandTarget")
+  authoredCommands DiscordCommand[] @relation("DiscordCommandActor")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+  @@map("discord_accounts")
+}
+model DiscordSession {
+  id Int @id @default(autoincrement())
+  tokenHash String @unique
+  accountId Int
+  account DiscordAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  expiresAt BigInt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+  @@index([accountId])
+  @@index([expiresAt])
+  @@map("discord_sessions")
+}
+model DiscordOAuthState {
+  id Int @id @default(autoincrement())
+  stateHash String @unique
+  expiresAt BigInt
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+  @@map("discord_oauth_states")
+}
+model DiscordLinkRequest {
+  id Int @id @default(autoincrement())
+  accountId Int
+  account DiscordAccount @relation(fields: [accountId], references: [id], onDelete: Cascade)
+  playerId Int
+  player Player @relation(fields: [playerId], references: [id], onDelete: Restrict)
+  status String @default("pending")
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+  @@unique([accountId], map: "discord_requests_one_pending", where: { status: "pending" })
+  @@index([accountId, status])
+  @@index([status, id])
+  @@map("discord_link_requests")
+}
+model DiscordLinkAudit {
+  id Int @id @default(autoincrement())
+  accountId Int
+  account DiscordAccount @relation("DiscordAuditTarget", fields: [accountId], references: [id], onDelete: Cascade)
+  actorAccountId Int?
+  actorAccount DiscordAccount? @relation("DiscordAuditActor", fields: [actorAccountId], references: [id], onDelete: SetNull)
+  actor String
+  action String
+  reason String
+  previousPlayerId Int?
+  newPlayerId Int?
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+  @@index([accountId, id])
+  @@index([actorAccountId], map: "discord_audits_actor_idx")
+  @@map("discord_link_audits")
+}
+
+// Transient commands are inserted and removed in the same native D1 batch.
+// The migration's trigger executes the guarded decision and writes its audit.
+model DiscordCommand {
+  id String @id
+  accountId Int
+  account DiscordAccount @relation("DiscordCommandTarget", fields: [accountId], references: [id], onDelete: Cascade)
+  action String
+  requestId Int?
+  playerId Int?
+  expectedVersion Int
+  actorAccountId Int?
+  actorAccount DiscordAccount? @relation("DiscordCommandActor", fields: [actorAccountId], references: [id], onDelete: SetNull)
+  confirmationNickname String?
+  actor String
+  reason String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+  @@map("discord_commands")
+}
+
+
+model EmperorPoll {
+  id Int @id @default(autoincrement())
+  date String @unique
+  season Int
+  closesAt BigInt
+  candidates EmperorPollCandidate[]
+  votes EmperorPollVote[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+  @@map("emperor_polls")
+}
+model EmperorPollCandidate {
+  id Int @id @default(autoincrement())
+  pollId Int
+  playerId Int
+  totalPoints Float
+  poll EmperorPoll @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  player Player @relation(fields: [playerId], references: [id], onDelete: Restrict)
+  votes EmperorPollVote[]
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+  @@unique([pollId, playerId])
+  @@map("emperor_poll_candidates")
+}
+model EmperorPollVote {
+  id Int @id @default(autoincrement())
+  pollId Int
+  playerId Int
+  candidateId Int
+  poll EmperorPoll @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  player Player @relation(fields: [playerId], references: [id], onDelete: Restrict)
+  candidate EmperorPollCandidate @relation(fields: [candidateId], references: [id], onDelete: Restrict)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+  @@unique([pollId, playerId])
+  @@index([candidateId, id])
+  @@map("emperor_poll_votes")
 }

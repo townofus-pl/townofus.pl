@@ -294,14 +294,7 @@ export async function createGameV2(
                 payload.modVersion,
                 payload.winningFaction,
             ),
-        // Lista Cweli for the day is a pre-session list; the first game of the day settles it.
-        // v1 does this too — dropping it here would silently split the behaviour by era.
-        db
-            .prepare(
-                `UPDATE "lista_cweli" SET "deletedAt" = CURRENT_TIMESTAMP
-                 WHERE "season" = ? AND "deletedAt" IS NULL AND date("date") = ?`,
-            )
-            .bind(season, startTime.toISOString().slice(0, 10)),
+
     ];
 
     for (const row of rows) {

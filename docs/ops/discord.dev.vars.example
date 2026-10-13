@@ -1,0 +1,4 @@
+# Skopiuj wartości do ignorowanego .dev.vars; nigdy nie commituj sekretu.
+DISCORD_CLIENT_ID=
+DISCORD_CLIENT_SECRET=
+DISCORD_REDIRECT_URI=http://localhost:3000/dramaafera/auth/callback

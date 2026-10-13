@@ -252,8 +252,10 @@ export function getModifierColor(modifierName: string): string {
 // ---------------------------------------------------------------------------
 
 // Generate a player avatar image path from their nickname
-export function getPlayerAvatarPath(playerName: string): string {
-  return `/images/avatars/${playerName}.png`;
+export function getPlayerAvatarPath(playerName: string, fallback?: string): string {
+  const query = new URLSearchParams({ name: playerName });
+  if (fallback === 'papaj') query.set('fallback', fallback);
+  return `/dramaafera/avatar?${query}`;
 }
 
 // Convert a role name (possibly PascalCase from DB) to a URL-friendly slug (e.g. "SoulCollector" → "soul-collector")

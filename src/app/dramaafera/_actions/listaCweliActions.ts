@@ -1,4 +1,11 @@
 'use server';
+import { headers } from 'next/headers';
+import { z } from 'zod';
+import { database } from '../_accounts/server';
+import { hashToken, SESSION_COOKIE, validToken } from '../_accounts/security';
+import { upcomingSession } from '../_signups/schedule';
+import { readUpcomingRoster, saveUpcomingRoster } from '../_signups/storage';
+import { requireHost, requireHostMutation } from '@/app/dramaafera/_accounts/requireHost';
 
 import { getDatabaseClient } from '@/app/dramaafera/_services/db';
 import { withoutDeleted } from '@/app/api/schema/common';
@@ -7,7 +14,6 @@ import { createPlayerWithRanking } from '@/app/api/_utils';
 import { findSimilarPlayerName } from '@/app/dramaafera/_utils/textMatch';
 import { getListaCweliPlayerPickerData } from '@/app/dramaafera/_services/gameSessionList/getListaCweliPlayerPicker';
 import type {
-  GameSessionListEntry,
   GameSessionListSummary,
   PlayerPickerData,
 } from '@/app/dramaafera/_services/gameSessionList/types';
@@ -16,6 +22,7 @@ import type {
  * Data for the Lista Cweli player picker (main list + Add-player dialog).
  */
 export async function getPlayerPickerData(seasonId: number): Promise<PlayerPickerData> {
+  await requireHost();
   return getListaCweliPlayerPickerData(seasonId);
 }
 
@@ -26,6 +33,7 @@ export async function getPlayerPickerData(seasonId: number): Promise<PlayerPicke
 export async function checkNewPlayerNames(
   candidateNames: string[]
 ): Promise<Array<{ candidate: string; similarTo: string | null }>> {
+  await requireHost();
   const prisma = await getDatabaseClient();
   if (!prisma) return candidateNames.map((candidate) => ({ candidate, similarTo: null }));
 
@@ -52,6 +60,7 @@ export async function getGameSessionLists(seasonId?: number): Promise<GameSessio
     const lists = await prisma.listaCweli.findMany({
       where: {
         season,
+        ...(season === CURRENT_SEASON ? { date: new Date(`${upcomingSession().date}T00:00:00.000Z`) } : {}),
         ...withoutDeleted,
       },
       orderBy: {
@@ -84,176 +93,43 @@ export async function getGameSessionLists(seasonId?: number): Promise<GameSessio
   }
 }
 
-/**
- * Get a specific game session list by ID
- */
-export async function getGameSessionListById(listId: number): Promise<GameSessionListEntry | null> {
-  const prisma = await getDatabaseClient();
-  if (!prisma) return null;
-
-  try {
-    const list = await prisma.listaCweli.findFirst({
-      where: { id: listId, ...withoutDeleted },
-    });
-
-    if (!list) {
-      return null;
-    }
-
-    return {
-      id: list.id,
-      season: list.season,
-      date: new Date(list.date),
-      playerNames: JSON.parse(list.playerNames),
-      createdAt: list.createdAt,
-      updatedAt: list.updatedAt,
-    };
-  } catch (error) {
-    console.error('Error fetching game session list:', error);
-    return null;
-  }
+/** The host only edits the automatically selected upcoming Wednesday. */
+export async function getUpcomingGameSessionList() {
+  await requireHost();
+  return readUpcomingRoster(await database());
 }
 
-/**
- * Save or update a game session list. `newPlayerNames` (a subset of
- * `playerNames`) are brand-new names picked in the Add-player dialog that
- * don't have a Player row yet — they're created here, on save, never
- * eagerly on Add (Player.name is @unique, so an abandoned draft must not
- * leave a stray row behind).
- */
-export async function saveGameSessionList(
-  seasonId: number,
-  date: Date,
-  playerNames: string[],
-  listIdToUpdate?: number,
-  newPlayerNames: string[] = []
-): Promise<GameSessionListEntry | null> {
-  const prisma = await getDatabaseClient();
-  if (!prisma) return null;
+const rosterSchema = z.object({
+  date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/),
+  names: z.array(z.string().trim().min(1).max(100)).max(200),
+  newNames: z.array(z.string().trim().min(1).max(100)).max(200),
+  revision: z.string().max(25000),
+}).strict();
 
+export async function saveUpcomingGameSessionList(input: z.infer<typeof rosterSchema>) {
+  const host = await requireHostMutation();
+  const parsed = rosterSchema.safeParse(input);
+  if (!parsed.success) return { success: false as const, error: 'Nieprawidłowe dane listy.' };
+  const { date, names, newNames, revision } = parsed.data;
+  const schedule = upcomingSession();
+  if (date !== schedule.date) return { success: false as const, error: 'Rozpoczęły się zapisy na kolejną środę. Odśwież listę.' };
   try {
-    for (const name of newPlayerNames) {
+    const prisma = await getDatabaseClient();
+    if (!prisma) return { success: false as const, error: 'Nie udało się połączyć z bazą.' };
+    for (const name of new Set(newNames.filter(name => names.includes(name)))) {
       const existing = await prisma.player.findFirst({ where: { name, ...withoutDeleted } });
-      if (!existing) {
-        await createPlayerWithRanking(prisma, name);
-      }
+      if (!existing) await createPlayerWithRanking(prisma, name);
     }
-
-    const playerNamesJson = JSON.stringify(playerNames);
-    const normalizedDate = new Date(date);
-    normalizedDate.setUTCHours(0, 0, 0, 0);
-
-    let result;
-    if (listIdToUpdate) {
-      // Update existing
-      result = await prisma.listaCweli.update({
-        where: { id: listIdToUpdate },
-        data: {
-          date: normalizedDate,
-          playerNames: playerNamesJson,
-          deletedAt: null,
-          updatedAt: new Date(),
-        },
-      });
-    } else {
-      // Reuse existing row for the same season/date (including soft-deleted)
-      // to avoid unique constraint collisions on (season, date).
-      const existingForDate = await prisma.listaCweli.findFirst({
-        where: {
-          season: seasonId,
-          date: normalizedDate,
-        },
-      });
-
-      if (existingForDate) {
-        result = await prisma.listaCweli.update({
-          where: { id: existingForDate.id },
-          data: {
-            date: normalizedDate,
-            playerNames: playerNamesJson,
-            deletedAt: null,
-            updatedAt: new Date(),
-          },
-        });
-      } else {
-        // Create new
-        result = await prisma.listaCweli.create({
-          data: {
-            season: seasonId,
-            date: normalizedDate,
-            playerNames: playerNamesJson,
-          },
-        });
-      }
-    }
-
-    return {
-      id: result.id,
-      season: result.season,
-      date: new Date(result.date),
-      playerNames: JSON.parse(result.playerNames),
-      createdAt: result.createdAt,
-      updatedAt: result.updatedAt,
-    };
-  } catch (error) {
-    console.error('Error saving game session list:', error);
-    return null;
-  }
-}
-
-/**
- * Delete a game session list
- */
-export async function deleteGameSessionList(listId: number): Promise<boolean> {
-  const prisma = await getDatabaseClient();
-  if (!prisma) return false;
-
-  try {
-    await prisma.listaCweli.update({
-      where: { id: listId },
-      data: {
-        deletedAt: new Date(),
-      },
-    });
-    return true;
-  } catch (error) {
-    console.error('Error deleting game session list:', error);
-    return false;
-  }
-}
-
-/**
- * Delete game session list when first game is added for that date
- * Called from game creation logic
- */
-export async function deleteGameSessionListByDate(seasonId: number, date: Date): Promise<boolean> {
-  const prisma = await getDatabaseClient();
-  if (!prisma) return false;
-
-  try {
-    const startOfDay = new Date(date);
-    startOfDay.setUTCHours(0, 0, 0, 0);
-
-    const endOfDay = new Date(date);
-    endOfDay.setUTCHours(23, 59, 59, 999);
-
-    const result = await prisma.listaCweli.updateMany({
-      where: {
-        season: seasonId,
-        date: {
-          gte: startOfDay,
-          lte: endOfDay,
-        },
-        deletedAt: null,
-      },
-      data: {
-        deletedAt: new Date(),
-      },
-    });
-
-    return result.count > 0;
-  } catch (error) {
-    console.error('Error deleting game session list by date:', error);
-    return false;
+    const requestHeaders = await headers();
+    const token = requestHeaders.get('cookie')?.split(';').map(part => part.trim())
+      .find(part => part.startsWith(SESSION_COOKIE + '='))?.slice(SESSION_COOKIE.length + 1);
+    if (host.accountId != null && !validToken(token)) return { success: false as const, error: 'Zaloguj się ponownie.' };
+    const tokenHash = host.accountId != null && validToken(token) ? await hashToken(token) : null;
+    const db = await database();
+    const saved = await saveUpcomingRoster(db, date, [...new Set(names)], revision, tokenHash);
+    if (!saved) return { success: false as const, error: 'Lista zmieniła się w międzyczasie lub uprawnienia wygasły. Odśwież ją i spróbuj ponownie.' };
+    return { success: true as const, roster: await readUpcomingRoster(db) };
+  } catch {
+    return { success: false as const, error: 'Nie udało się zapisać listy. Spróbuj ponownie.' };
   }
 }

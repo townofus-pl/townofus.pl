@@ -8,7 +8,7 @@ import type { VotingStatistics } from './types';
  * Pobierz statystyki głosowań gracza
  */
 export async function getPlayerVotingStats(
-  nick: string,
+  nick: string | number,
   seasonId?: number
 ): Promise<VotingStatistics> {
   const prisma = await getDatabaseClient();
@@ -32,7 +32,7 @@ export async function getPlayerVotingStats(
   try {
     const player = await prisma.player.findFirst({
       where: {
-        name: nick,
+        ...(typeof nick === 'number' ? { id: nick } : { name: nick }),
         ...withoutDeleted
       }
     });

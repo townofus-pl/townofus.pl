@@ -10,6 +10,7 @@ import {
 import { calculateWinnerFromStats } from './winCalculator';
 import { buildPlayerStats } from './_buildPlayerStats';
 import { countVotes } from './_countVotes';
+import { getDeathsDuringMeetings } from './_meetingDeaths';
 import { buildGameTimeline } from './_buildGameTimeline';
 
 // Fetch detailed game data
@@ -46,8 +47,8 @@ export async function getGameData(gameId: string): Promise<UIGameData | null> {
           meetingVotes: {
             where: { target: withoutDeleted, voter: withoutDeleted },
             include: {
-              target: true,
-              voter: true
+              target: { select: { name: true } },
+              voter: { select: { name: true } }
             }
           },
           skipVotes: {
@@ -140,6 +141,7 @@ export async function getGameData(gameId: string): Promise<UIGameData | null> {
     const deathsSinceLastMeeting = JSON.parse(meeting.deathsSinceLastMeeting || '[]');
 
     return {
+      exiledPlayer: game.gameActions.length > 0 ? meeting.exiledPlayer : undefined,
       meetingNumber: meeting.meetingNumber,
       deathsSinceLastMeeting,
       votes,
@@ -152,6 +154,8 @@ export async function getGameData(gameId: string): Promise<UIGameData | null> {
     };
   });
 
+  const meetingDeaths = getDeathsDuringMeetings(meetings, game.gameActions);
+  meetings.forEach(meeting => { meeting.deathsDuringMeeting = meetingDeaths.get(meeting.meetingNumber) ?? []; });
   const timeline = buildGameTimeline(game.gameActions, game.season);
 
   const winnerInfo = calculateWinnerFromStats(game.gamePlayerStatistics, game.season);

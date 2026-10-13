@@ -1,17 +1,18 @@
 'use client';
 
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { AvatarImageFill } from '@/app/dramaafera/_components/PodsumowanieClient/AvatarImage';
 import {
-  getGameSessionLists,
-  saveGameSessionList,
-  deleteGameSessionList,
-  getGameSessionListById,
+  getUpcomingGameSessionList,
+  saveUpcomingGameSessionList,
   getPlayerPickerData,
   checkNewPlayerNames,
 } from '@/app/dramaafera/_actions/listaCweliActions';
+import Link from 'next/link';
+import type { UpcomingRoster } from '../_signups/types';
+import { upcomingSession } from '../_signups/schedule';
 import { matchesSearch } from '@/app/dramaafera/_utils/textMatch';
-import type { GameSessionListSummary, PlayerPickerData } from '@/app/dramaafera/_services/gameSessionList/types';
+import type { PlayerPickerData } from '@/app/dramaafera/_services/gameSessionList/types';
 
 interface ListaCweliTabProps {
   seasonId: number;
@@ -215,11 +216,13 @@ function AddPlayerDialog({ otherPlayers, alreadySelected, onClose, onConfirm }: 
 }
 
 export default function ListaCweliTab({ seasonId }: ListaCweliTabProps) {
-  const [savedLists, setSavedLists] = useState<GameSessionListSummary[]>([]);
-  const [selectedListId, setSelectedListId] = useState<number | null>(null);
-  const [selectedDate, setSelectedDate] = useState<string>(new Date().toISOString().split('T')[0]);
+  const [roster, setRoster] = useState<UpcomingRoster | null>(null);
   const [isSaving, setIsSaving] = useState(false);
-  const [editingListId, setEditingListId] = useState<number | null>(null);
+  const [dirty, setDirty] = useState(false);
+  const dirtyRef = useRef(false);
+  const rosterRef = useRef<UpcomingRoster | null>(null);
+  useEffect(() => { dirtyRef.current = dirty; }, [dirty]);
+  useEffect(() => { rosterRef.current = roster; }, [roster]);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
 
   const [pickerData, setPickerData] = useState<PlayerPickerData>(EMPTY_PICKER_DATA);
@@ -234,41 +237,44 @@ export default function ListaCweliTab({ seasonId }: ListaCweliTabProps) {
     return () => clearTimeout(timer);
   }, [message]);
 
+  const refreshRoster = useCallback(async (force = false) => {
+    const fresh = await getUpcomingGameSessionList();
+    const changedWeek = rosterRef.current?.date !== fresh.date;
+    if (force || changedWeek || !dirtyRef.current) {
+      setRoster(fresh);
+      rosterRef.current = fresh;
+      setSelectedNames(new Set(fresh.playerNames));
+      setPendingNewNames(new Set());
+      setDirty(false);
+      dirtyRef.current = false;
+      if (changedWeek) {
+        setIsDialogOpen(false);
+        setPickerData(await getPlayerPickerData(fresh.season));
+      }
+    }
+  }, []);
+
   useEffect(() => {
-    const load = async () => {
-      const data = await getPlayerPickerData(seasonId);
-      setPickerData(data);
-    };
+    const load = () => { void refreshRoster().catch(() => setMessage({ type: 'error', text: 'Nie udało się pobrać listy.' })); };
     load();
-  }, [seasonId]);
+    const interval = setInterval(load, 30000);
+    window.addEventListener('focus', load);
+    return () => { clearInterval(interval); window.removeEventListener('focus', load); };
+  }, [refreshRoster, seasonId]);
 
   useEffect(() => {
-    const loadLists = async () => {
-      const lists = await getGameSessionLists(seasonId);
-      setSavedLists(lists);
-    };
-    loadLists();
-  }, [seasonId]);
-
-  useEffect(() => {
-    if (selectedListId === null) {
+    if (!roster) return;
+    const timer = setTimeout(() => {
+      setIsDialogOpen(false);
       setSelectedNames(new Set());
       setPendingNewNames(new Set());
-      setEditingListId(null);
-      return;
-    }
-
-    const loadList = async () => {
-      const list = await getGameSessionListById(selectedListId);
-      if (list) {
-        setEditingListId(list.id);
-        setSelectedDate(list.date.toISOString().split('T')[0]);
-        setSelectedNames(new Set(list.playerNames));
-        setPendingNewNames(new Set());
-      }
-    };
-    loadList();
-  }, [selectedListId]);
+      setDirty(false);
+      dirtyRef.current = false;
+      setMessage({ type: 'success', text: 'Rozpoczęły się zapisy na kolejną środę.' });
+      void refreshRoster(true).catch(() => setMessage({ type: 'error', text: 'Odśwież stronę, aby pobrać nową listę.' }));
+    }, Math.max(0, roster.closesAt - Date.now()));
+    return () => clearTimeout(timer);
+  }, [roster, refreshRoster]);
 
   const seasonPlayerNameSet = useMemo(
     () => new Set(pickerData.seasonPlayers.map((p) => p.name)),
@@ -291,6 +297,8 @@ export default function ListaCweliTab({ seasonId }: ListaCweliTabProps) {
   );
 
   const handleToggle = useCallback((name: string) => {
+    setDirty(true);
+    dirtyRef.current = true;
     setSelectedNames((prev) => {
       const next = new Set(prev);
       if (next.has(name)) next.delete(name);
@@ -300,6 +308,8 @@ export default function ListaCweliTab({ seasonId }: ListaCweliTabProps) {
   }, []);
 
   const handleRemoveAdded = useCallback((name: string) => {
+    setDirty(true);
+    dirtyRef.current = true;
     setSelectedNames((prev) => {
       const next = new Set(prev);
       next.delete(name);
@@ -313,6 +323,8 @@ export default function ListaCweliTab({ seasonId }: ListaCweliTabProps) {
   }, []);
 
   const handleDialogConfirm = useCallback((existingNames: string[], newNames: string[]) => {
+    setDirty(true);
+    dirtyRef.current = true;
     setSelectedNames((prev) => {
       const next = new Set(prev);
       existingNames.forEach((n) => next.add(n));
@@ -328,65 +340,26 @@ export default function ListaCweliTab({ seasonId }: ListaCweliTabProps) {
   }, []);
 
   const handleSave = useCallback(async () => {
-    if (!selectedDate) {
-      setMessage({ type: 'error', text: 'Wybierz datę' });
-      return;
-    }
-
-    if (selectedNames.size === 0) {
-      setMessage({ type: 'error', text: 'Dodaj co najmniej jednego gracza' });
-      return;
-    }
-
+    if (!roster) return;
     setIsSaving(true);
-    const result = await saveGameSessionList(
-      seasonId,
-      new Date(selectedDate),
-      Array.from(selectedNames),
-      editingListId || undefined,
-      Array.from(pendingNewNames)
-    );
-
-    if (result) {
-      setMessage({
-        type: 'success',
-        text: editingListId ? 'Lista została zaktualizowana' : 'Lista została zapisana',
+    try {
+      const result = await saveUpcomingGameSessionList({
+        date: roster.date, names: Array.from(selectedNames),
+        newNames: Array.from(pendingNewNames), revision: roster.revision,
       });
-
-      const [lists, freshPickerData] = await Promise.all([
-        getGameSessionLists(seasonId),
-        getPlayerPickerData(seasonId),
-      ]);
-      setSavedLists(lists);
-      setPickerData(freshPickerData);
-
-      setSelectedNames(new Set());
-      setPendingNewNames(new Set());
-      setSelectedListId(null);
-      setEditingListId(null);
-    } else {
-      setMessage({ type: 'error', text: 'Błąd przy zapisywaniu listy' });
-    }
-
-    setIsSaving(false);
-  }, [seasonId, selectedDate, selectedNames, pendingNewNames, editingListId]);
-
-  const handleDelete = useCallback(
-    async (listId: number) => {
-      if (!confirm('Czy na pewno chcesz usunąć tę listę?')) return;
-
-      const success = await deleteGameSessionList(listId);
-      if (success) {
-        setMessage({ type: 'success', text: 'Lista została usunięta' });
-        const lists = await getGameSessionLists(seasonId);
-        setSavedLists(lists);
-        setSelectedListId(null);
+      if (result.success) {
+        setMessage({ type: 'success', text: 'Lista została zaktualizowana.' });
+        dirtyRef.current = false;
+        setDirty(false);
+        await refreshRoster(true);
+        setPickerData(await getPlayerPickerData(result.roster.season));
       } else {
-        setMessage({ type: 'error', text: 'Błąd przy usuwaniu listy' });
+        setMessage({ type: 'error', text: result.error });
       }
-    },
-    [seasonId]
-  );
+    } catch {
+      setMessage({ type: 'error', text: 'Nie udało się zapisać listy.' });
+    } finally { setIsSaving(false); }
+  }, [roster, selectedNames, pendingNewNames, refreshRoster]);
 
   return (
     <div className="space-y-6">
@@ -402,35 +375,16 @@ export default function ListaCweliTab({ seasonId }: ListaCweliTabProps) {
         </div>
       )}
 
-      {savedLists.length > 0 && (
-        <div className="bg-zinc-900/50 p-4 rounded-lg border border-zinc-700">
-          <label className="block text-sm font-semibold text-zinc-300 mb-3">Zapisane listy</label>
-          <select
-            value={selectedListId ?? ''}
-            onChange={(e) => {
-              const id = e.target.value ? parseInt(e.target.value, 10) : null;
-              setSelectedListId(id);
-            }}
-            className="w-full px-3 py-2 bg-zinc-800 text-white border border-zinc-600 rounded-lg focus:border-yellow-500 focus:outline-none"
-          >
-            <option value="">-- Nowa lista --</option>
-            {savedLists.map((list) => (
-              <option key={list.id} value={list.id}>
-                {list.dateFormatted} ({list.playerCount} graczy)
-              </option>
-            ))}
-          </select>
-        </div>
-      )}
-
-      <div className="bg-zinc-900/50 p-4 rounded-lg border border-zinc-700">
-        <label className="block text-sm font-semibold text-zinc-300 mb-3">Data sesji</label>
-        <input
-          type="date"
-          value={selectedDate}
-          onChange={(e) => setSelectedDate(e.target.value)}
-          className="w-full px-3 py-2 bg-zinc-800 text-white border border-zinc-600 rounded-lg focus:border-yellow-500 focus:outline-none"
-        />
+      <div className="rounded-xl border border-amber-700/50 bg-amber-950/20 p-5">
+        <p className="text-sm text-amber-400">Lista na najbliższą środę</p>
+        <h2 className="mt-1 font-brook text-3xl text-white">{roster?.displayDate ?? 'Wczytywanie…'}</h2>
+        <p className="mt-2 text-sm text-zinc-400">W środę o 22:00 lista automatycznie przechodzi na kolejny tydzień. Czas polski.</p>
+        <Link href="/dramaafera/zapisy" className="mt-3 inline-block font-semibold text-amber-400 underline">Otwórz stronę zapisów</Link>
+        {dirty && <p className="mt-3 text-sm text-amber-300">Masz niezapisane zmiany.</p>}
+        <button disabled={isSaving} onClick={() => {
+          if (dirty && !confirm('Odrzucić niezapisane zmiany i pobrać aktualną listę?')) return;
+          void refreshRoster(true).catch(() => setMessage({ type: 'error', text: 'Nie udało się odświeżyć listy.' }));
+        }} className="mt-3 ml-4 text-sm text-zinc-300 underline">Odśwież listę</button>
       </div>
 
       <div className="bg-zinc-900/50 p-4 rounded-lg border border-zinc-700">
@@ -438,6 +392,7 @@ export default function ListaCweliTab({ seasonId }: ListaCweliTabProps) {
           <label className="block text-sm font-semibold text-zinc-300">Gracze sezonu</label>
           <button
             onClick={() => setIsDialogOpen(true)}
+            disabled={isSaving || !roster}
             className="px-3 py-1.5 text-sm bg-yellow-600 hover:bg-yellow-700 text-white font-semibold rounded-lg transition-colors"
           >
             + Dodaj gracza
@@ -457,7 +412,7 @@ export default function ListaCweliTab({ seasonId }: ListaCweliTabProps) {
               : 'Brak wyników wyszukiwania.'}
           </p>
         ) : (
-          <div className="grid grid-cols-3 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {filteredSeasonPlayers.map((p) => (
               <label
                 key={p.name}
@@ -470,6 +425,7 @@ export default function ListaCweliTab({ seasonId }: ListaCweliTabProps) {
                 <input
                   type="checkbox"
                   checked={selectedNames.has(p.name)}
+                  disabled={isSaving}
                   onChange={() => handleToggle(p.name)}
                   className="flex-shrink-0 w-5 h-5 cursor-pointer accent-yellow-500"
                 />
@@ -482,7 +438,7 @@ export default function ListaCweliTab({ seasonId }: ListaCweliTabProps) {
       {addedPlayerNames.length > 0 && (
         <div className="bg-zinc-900/50 p-4 rounded-lg border border-zinc-700">
           <label className="block text-sm font-semibold text-zinc-300 mb-4">Dodani gracze</label>
-          <div className="grid grid-cols-3 gap-3">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3">
             {addedPlayerNames.map((name) => (
               <label
                 key={name}
@@ -492,6 +448,7 @@ export default function ListaCweliTab({ seasonId }: ListaCweliTabProps) {
                 <input
                   type="checkbox"
                   checked
+                  disabled={isSaving}
                   onChange={() => handleRemoveAdded(name)}
                   className="flex-shrink-0 w-5 h-5 cursor-pointer accent-yellow-500"
                 />
@@ -508,19 +465,12 @@ export default function ListaCweliTab({ seasonId }: ListaCweliTabProps) {
       <div className="flex gap-3">
         <button
           onClick={handleSave}
-          disabled={isSaving}
+          disabled={isSaving || !roster || roster.date !== upcomingSession().date}
           className="flex-1 px-4 py-3 bg-yellow-600 hover:bg-yellow-700 disabled:bg-gray-600 text-white font-semibold rounded-lg transition-colors"
         >
-          {isSaving ? 'Zapisywanie...' : editingListId ? 'Aktualizuj' : 'Zapisz'}
+          {isSaving ? 'Zapisywanie...' : 'Zapisz listę'}
         </button>
-        {editingListId && (
-          <button
-            onClick={() => handleDelete(editingListId)}
-            className="px-4 py-3 bg-red-900 hover:bg-red-800 text-white font-semibold rounded-lg transition-colors"
-          >
-            Usuń
-          </button>
-        )}
+
       </div>
 
       {isDialogOpen && (

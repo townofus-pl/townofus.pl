@@ -1,3 +1,5 @@
+import { upcomingSession } from '../../_signups/schedule';
+import { CURRENT_SEASON } from '../../_constants/seasons';
 import { getDatabaseClient } from '@/app/dramaafera/_services/db';
 import { withoutDeleted } from '@/app/api/schema/common';
 import type { ListaCweliDisplayEntry } from './types';
@@ -25,6 +27,7 @@ export async function getListaCweliForDisplay(seasonId: number): Promise<ListaCw
         const lists = await prisma.listaCweli.findMany({
             where: {
                 season: seasonId,
+                ...(seasonId === CURRENT_SEASON ? { date: new Date(`${upcomingSession().date}T00:00:00.000Z`) } : {}),
                 ...withoutDeleted,
             },
             orderBy: {

@@ -1,7 +1,7 @@
 'use server';
 
-import { headers } from 'next/headers';
-import { authenticateHeaders } from '@/app/api/_middlewares/auth';
+import {requireHostMutation} from '@/app/dramaafera/_accounts/requireHost';
+
 import {
   validateSettingsFile,
   validateSettingsContent,
@@ -23,14 +23,8 @@ export async function uploadSettingsAction(
   targetVersion?: 'current' | 'old',
 ): Promise<UploadSettingsActionResult> {
   try {
-    // Defense-in-depth: `src/middleware.ts` already gates `/dramaafera/host`
-    // with Basic Auth, but server actions are an independent code path. A
-    // future matcher edit that exempted host subpaths must not silently open
-    // this write surface — re-check the Authorization header in the action.
-    const auth = await authenticateHeaders(await headers());
-    if (!auth.success) {
-      return { success: false, error: 'Brak autoryzacji' };
-    }
+    // Server Actions are independently callable: verify the current host and Origin here.
+    await requireHostMutation();
 
     const file = formData.get('file') as File | null;
     if (!file) {

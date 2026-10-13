@@ -1,3 +1,4 @@
+import { getDatabaseClient } from '@/app/dramaafera/_services/db';
 import Link from "next/link";
 import Image from "next/image";
 import { getUserProfileStats, getAllPlayerNames, getPlayerRankingHistory, getPlayerTopGames, getPlayerVotingStats, getPlayerStars } from "../../_services";
@@ -26,41 +27,51 @@ function convertUrlSlugToNick(slug: string, allPlayerNames: string[]): string {
 }
 
 interface UserProfileContentProps {
-    nick: string;
+    nick?: string;
+    playerId?: number;
     seasonId: number;
 }
 
-export async function UserProfileContent({ nick, seasonId }: UserProfileContentProps) {
+export async function UserProfileContent({ nick, playerId, seasonId }: UserProfileContentProps) {
     // Resolve the slug against *every* known player, not just this season's. Previously this
     // used the season-filtered list, so a season with no games yet made every profile URL
     // notFound() — and because that happens inside a Suspense boundary the response is still
     // HTTP 200 and the page hangs on "Ładowanie..." forever. See #310.
-    const allPlayerNames = await getAllPlayerNames();
-    const playerNick = convertUrlSlugToNick(nick, allPlayerNames);
+    const allPlayerNames = playerId ? [] : await getAllPlayerNames();
+    const prisma = playerId ? await getDatabaseClient() : null;
+    const stablePlayer = playerId && prisma ? await prisma.player.findFirst({ where: { id: playerId, deletedAt: null }, select: { id: true, name: true } }) : null;
+    if (playerId && !stablePlayer) notFound();
+    if (!playerId && allPlayerNames.filter(name => convertNickToUrlSlug(name) === (nick ?? '').toLowerCase()).length > 1) {
+        const db = await getDatabaseClient();
+        const candidates = await db?.player.findMany({where:{deletedAt:null},select:{id:true,name:true}});
+        return <section className="p-6"><h1 className="font-brook text-3xl">Wybierz profil gracza</h1>{candidates?.filter(p=>convertNickToUrlSlug(p.name)===(nick??'').toLowerCase()).map(p=><p key={p.id}><Link href={buildSeasonUrl(`/gracz/${p.id}`,seasonId)}>{p.name} (#{p.id})</Link></p>)}</section>;
+    }
+    const playerNick = stablePlayer?.name ?? convertUrlSlugToNick(nick ?? '', allPlayerNames);
+    const identity = stablePlayer?.id ?? playerNick;
 
     // A nick nobody has ever used is a genuine 404. A known player who simply did not play this
     // season is not.
-    if (!allPlayerNames.includes(playerNick)) {
+    if (!stablePlayer && !allPlayerNames.includes(playerNick)) {
         notFound();
     }
 
-    const playerStats = await getUserProfileStats(playerNick, seasonId);
+    const playerStats = await getUserProfileStats(identity, seasonId);
 
     if (!playerStats) {
         return <NoSeasonData playerNick={playerNick} seasonId={seasonId} />;
     }
 
     // Pobierz historię rankingu gracza
-    const rankingHistory = await getPlayerRankingHistory(playerNick, seasonId);
-    
+    const rankingHistory = await getPlayerRankingHistory(identity, seasonId);
+
     // Pobierz najlepsze gry gracza
-    const { best: bestGames, hasMore: hasMoreBestGames } = await getPlayerTopGames(playerNick, TOP_GAMES_INITIAL, seasonId);
+    const { best: bestGames, hasMore: hasMoreBestGames } = await getPlayerTopGames(identity, TOP_GAMES_INITIAL, seasonId);
     
     // Pobierz statystyki głosowań gracza
-    const votingStats = await getPlayerVotingStats(playerNick, seasonId);
+    const votingStats = await getPlayerVotingStats(identity, seasonId);
     
     // Pobierz liczbę gwiazdek gracza
-    const playerStars = await getPlayerStars(playerNick, seasonId);
+    const playerStars = await getPlayerStars(identity, seasonId);
 
     // Oblicz winratio (już jest obliczone w generateUserProfileStats)
     const winRatio = playerStats.winRate;
@@ -469,7 +480,7 @@ export async function UserProfileContent({ nick, seasonId }: UserProfileContentP
                 {/* Najlepsze występy */}
                 {bestGames.length > 0 && (
                     <CollapsibleSection title="Najlepsze występy" defaultOpen={false} icon="🏆">
-                        <TopGamesDisplay key={`${playerNick}-${seasonId}`} bestGames={bestGames} seasonId={seasonId} playerName={playerNick} hasMore={hasMoreBestGames} />
+                        <TopGamesDisplay key={`${playerNick}-${seasonId}`} bestGames={bestGames} seasonId={seasonId} playerName={identity} hasMore={hasMoreBestGames} />
                     </CollapsibleSection>
                 )}
             </div>

@@ -1,81 +1,24 @@
 "use client";
 
-import { useState, useEffect, useCallback, useRef, useMemo } from "react";
+import { useState, useEffect, useCallback, useRef } from "react";
 
 import PlayerTable from "@/app/_components/PlayerTable";
 import RoleTable from "@/app/_components/RoleTable";
 import type { GameDateEntry, SessionSummary } from "@/app/dramaafera/_services";
 import { CURRENT_SEASON } from "@/app/dramaafera/_constants/seasons";
 import { getSessionResults } from "@/app/dramaafera/_actions/seasonActions";
-import { getGameSessionLists } from "@/app/dramaafera/_actions/listaCweliActions";
-import { AvatarImageFill } from "@/app/dramaafera/_components/PodsumowanieClient/AvatarImage";
-
-interface GameSessionListData {
-    id: number;
-    date: string;
-    displayDate: string;
-    players: Array<{ name: string; eloRanking: number | null }>;
-}
+import PollButton from '@/app/dramaafera/_polls/PollButton';
 
 interface WynikiClientProps {
     initialDates: GameDateEntry[];
     initialResults: SessionSummary | null;
     seasonId: number;
-    listaCweli?: GameSessionListData[];
 }
 
-export default function WynikiClient({ initialDates, initialResults, seasonId, listaCweli = [] }: WynikiClientProps) {
-    // Merge dates and Lista Cweli into combined list
-    const combinedDates = useMemo(() => {
-        const getSortableDateNumber = (date: string): number => {
-            const normalized = date.replace(/[^\d]/g, '');
-            const parsed = Number.parseInt(normalized, 10);
-            return Number.isNaN(parsed) ? 0 : parsed;
-        };
-
-        const combined: Array<{
-            date: string;
-            displayDate: string;
-            type: 'games' | 'lista';
-            gamesData?: GameDateEntry;
-            listaData?: GameSessionListData;
-        }> = [];
-
-        // Add game dates
-        initialDates.forEach((dateEntry) => {
-            combined.push({
-                date: dateEntry.date,
-                displayDate: dateEntry.displayDate,
-                type: 'games',
-                gamesData: dateEntry,
-            });
-        });
-
-        // Add Lista Cweli entries
-        listaCweli.forEach((lista) => {
-            combined.push({
-                date: lista.date,
-                displayDate: lista.displayDate,
-                type: 'lista',
-                listaData: lista,
-            });
-        });
-
-        // Sort by date descending
-        return combined.sort((a, b) => getSortableDateNumber(b.date) - getSortableDateNumber(a.date));
-    }, [initialDates, listaCweli]);
-
-    const [selectedDate, setSelectedDate] = useState<string>(
-        combinedDates[0] ? `${combinedDates[0].date}__${combinedDates[0].type}` : ""
-    );
-    const selectedPlainDate = selectedDate ? selectedDate.split('__')[0] : '';
-    const [resultsData, setResultsData] = useState<SessionSummary | null>(
-        combinedDates[0]?.type === 'games' ? initialResults : null
-    );
-    const [listaCweliData, setListaCweliData] = useState<GameSessionListData | null>(
-        combinedDates[0]?.type === 'lista' ? combinedDates[0]?.listaData ?? null : null
-    );
-    const [selectedDateType, setSelectedDateType] = useState<'games' | 'lista'>(combinedDates[0]?.type ?? 'games');
+export default function WynikiClient({ initialDates, initialResults, seasonId }: WynikiClientProps) {
+    const [selectedDate, setSelectedDate] = useState(initialDates[0]?.date ?? '');
+    const selectedPlainDate = selectedDate;
+    const [resultsData, setResultsData] = useState<SessionSummary | null>(initialResults);
     const [dataLoading, setDataLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [lastUpdateHash, setLastUpdateHash] = useState<string>(() =>
@@ -86,23 +29,12 @@ export default function WynikiClient({ initialDates, initialResults, seasonId, l
               })
             : ""
     );
-    const [listaCweliLastUpdateHash, setListaCweliLastUpdateHash] = useState<string>(() =>
-        listaCweli.length > 0 && combinedDates[0]?.listaData
-            ? JSON.stringify({
-                  players: combinedDates[0].listaData.players.map(p => p.name),
-                  count: combinedDates[0].listaData.players.length,
-              })
-            : ""
-    );
     const [lastUpdateTime, setLastUpdateTime] = useState<Date | null>(null);
     const [isRefreshing, setIsRefreshing] = useState(false);
 
     // Ref to access lastUpdateHash inside useCallback without making it a dependency
     const lastUpdateHashRef = useRef(lastUpdateHash);
     useEffect(() => { lastUpdateHashRef.current = lastUpdateHash; }, [lastUpdateHash]);
-
-    const listaCweliLastUpdateHashRef = useRef(listaCweliLastUpdateHash);
-    useEffect(() => { listaCweliLastUpdateHashRef.current = listaCweliLastUpdateHash; }, [listaCweliLastUpdateHash]);
 
     // Pobieranie wyników przez server action
     const fetchResultsData = useCallback(async (date: string, isAutoRefresh = false) => {
@@ -138,108 +70,21 @@ export default function WynikiClient({ initialDates, initialResults, seasonId, l
         }
     }, [seasonId]);
 
-    // Pobieranie Lista Cweli dla danego dnia
-    const fetchListaCweliData = useCallback(async (date: string, isAutoRefresh = false) => {
-        try {
-            if (isAutoRefresh) {
-                setIsRefreshing(true);
-            } else {
-                setDataLoading(true);
-            }
-            setError(null);
-
-            // Pobierz wszystkie listy dla sezonu
-            const allLists = await getGameSessionLists(seasonId);
-            
-            // Filtruj listę dla wybranego dnia
-            const dateStr = date;
-            const targetList = allLists.find(list => list.date === dateStr);
-
-            if (!targetList) {
-                setListaCweliData(null);
-                return;
-            }
-
-            // Przetransformuj do formatu GameSessionListData
-            const transformedList: GameSessionListData = {
-                id: targetList.id,
-                date: targetList.date,
-                displayDate: targetList.dateFormatted,
-                players: targetList.players.map((p) => ({
-                    name: p.name,
-                    eloRanking: null, // TODO: pobrać ranking
-                })),
-            };
-
-            // Oblicz hash aby sprawdzić czy się zmieniła
-            const dataHash = JSON.stringify({
-                players: transformedList.players.map(p => p.name),
-                count: transformedList.players.length,
-            });
-
-            // Aktualizuj tylko jeśli dane się zmieniły lub to nie jest auto-refresh
-            if (dataHash !== listaCweliLastUpdateHashRef.current || !isAutoRefresh) {
-                setListaCweliData(transformedList);
-                setListaCweliLastUpdateHash(dataHash);
-                setLastUpdateTime(new Date());
-            }
-        } catch (err) {
-            console.error('Błąd pobierania Lista Cweli:', err);
-            setError("Nie udało się pobrać listy. Spróbuj ponownie później.");
-            setListaCweliData(null);
-        } finally {
-            setDataLoading(false);
-            setIsRefreshing(false);
-        }
-    }, [seasonId]);
-
-    // Auto-odświeżanie co 30 sekund tylko dla najnowszej daty (bieżący sezon)
+    // Refresh the latest game day in the current season every five minutes.
     useEffect(() => {
-        if (seasonId !== CURRENT_SEASON) return;
-        if (!selectedDate || !combinedDates.length) return;
-
-        // Sprawdź czy wybrana data to najnowsza i czy to gry (nie Lista Cweli)
-        const newestCompound = combinedDates[0] ? `${combinedDates[0].date}__${combinedDates[0].type}` : '';
-        const isNewestDate = selectedDate === newestCompound;
-        if (!isNewestDate) return;
-
-        const interval = setInterval(() => {
-            if (selectedDateType === 'games') {
-                fetchResultsData(selectedPlainDate, true);
-            } else if (selectedDateType === 'lista') {
-                fetchListaCweliData(selectedPlainDate, true);
-            }
-            // 5 minut, nie 30 s — zob. #299. Dane zmieniają się tylko po wrzuceniu gry.
-        }, 300000);
-
+        if (seasonId !== CURRENT_SEASON || !selectedDate || selectedDate !== initialDates[0]?.date) return;
+        const interval = setInterval(() => { void fetchResultsData(selectedDate, true); }, 300000);
         return () => clearInterval(interval);
-    }, [seasonId, selectedDate, selectedDateType, selectedPlainDate, combinedDates, fetchResultsData, fetchListaCweliData]);
+    }, [seasonId, selectedDate, initialDates, fetchResultsData]);
 
     const handleDateChange = (e: React.ChangeEvent<HTMLSelectElement>) => {
-        const compoundValue = e.target.value;
-        setSelectedDate(compoundValue);
-
-        const [dateValue, typeValueRaw] = compoundValue.split('__');
-        if (!dateValue || (typeValueRaw !== 'games' && typeValueRaw !== 'lista')) {
-            return;
-        }
-
-        const typeValue: 'games' | 'lista' = typeValueRaw;
-        const selectedItem = combinedDates.find(
-            item => item.date === dateValue && item.type === typeValue
-        );
-        if (selectedItem) {
-            setSelectedDateType(selectedItem.type);
-            if (selectedItem.type === 'games') {
-                fetchResultsData(dateValue);
-            } else {
-                // Fetch Lista Cweli for the selected date
-                fetchListaCweliData(dateValue);
-            }
-        }
+        const date = e.target.value;
+        if (!initialDates.some(item => item.date === date)) return;
+        setSelectedDate(date);
+        void fetchResultsData(date);
     };
 
-    if (combinedDates.length === 0) {
+    if (initialDates.length === 0) {
         return (
             <div className="min-h-screen rounded-xl bg-zinc-900/50 text-white container mx-auto px-4 py-8">
                 <div className="flex items-center justify-center py-12">
@@ -252,7 +97,7 @@ export default function WynikiClient({ initialDates, initialResults, seasonId, l
     return (
         <div className="min-h-screen rounded-xl bg-zinc-900/50 text-white container mx-auto px-4 py-8">
             {/* Nagłówek z wyborem daty — zawsze widoczny gdy są dostępne daty */}
-            {combinedDates.length > 0 && (
+            {initialDates.length > 0 && (
                 <div className="max-w-7xl mx-auto mb-8">
                     <h1 className="text-4xl font-bold text-white flex items-center justify-center gap-3 flex-wrap mb-2">
                         Wyniki dnia
@@ -262,22 +107,25 @@ export default function WynikiClient({ initialDates, initialResults, seasonId, l
                             className="bg-zinc-800 border border-gray-600 rounded-lg px-4 py-2 text-white text-2xl font-bold focus:outline-none focus:ring-2 focus:ring-blue-500 font-barlow hover:bg-zinc-700 transition-colors cursor-pointer"
                             style={{ minWidth: '200px' }}
                         >
-                            {combinedDates.map((item) => (
-                                <option key={`${item.date}-${item.type}`} value={`${item.date}__${item.type}`} className="font-barlow text-base">
-                                    {item.displayDate} {item.type === 'lista' ? '(lista)' : ''}
+                            {initialDates.map((item) => (
+                                <option key={item.date} value={item.date} className="font-barlow text-base">
+                                    {item.displayDate}
                                 </option>
                             ))}
                         </select>
                     </h1>
 
                     {/* Wskaźnik auto-refresh dla najnowszej daty (tylko bieżący sezon) */}
-                    {seasonId === CURRENT_SEASON && selectedDate === (combinedDates[0] ? `${combinedDates[0].date}__${combinedDates[0].type}` : '') && (
+                    {seasonId === CURRENT_SEASON && selectedDate === initialDates[0]?.date && (
                         <div className="flex items-center justify-center gap-2 text-sm text-gray-400">
                             <div className={`w-2 h-2 rounded-full ${isRefreshing ? 'bg-yellow-400 animate-pulse' : 'bg-green-400'}`}></div>
                             <span>
                                 {isRefreshing ? 'Odświeżanie...' : lastUpdateTime ? `Ostatnia aktualizacja: ${lastUpdateTime.toLocaleTimeString('pl-PL')}` : 'Auto-odświeżanie włączone'}
                             </span>
                         </div>
+                    )}
+                    {selectedPlainDate && (
+                        <PollButton key={`${seasonId}-${selectedPlainDate}`} date={selectedPlainDate} season={seasonId} />
                     )}
                 </div>
             )}
@@ -300,7 +148,7 @@ export default function WynikiClient({ initialDates, initialResults, seasonId, l
             )}
 
             {/* Wyświetlanie wyników gier */}
-            {selectedDateType === 'games' && resultsData && !dataLoading && resultsData.players.length > 0 && (
+            {resultsData && !dataLoading && resultsData.players.length > 0 && (
                 <div className="max-w-7xl mx-auto bg-zinc-900/80 rounded-xl p-8">
                     <PlayerTable
                         players={resultsData.players}
@@ -337,39 +185,8 @@ export default function WynikiClient({ initialDates, initialResults, seasonId, l
                 </div>
             )}
 
-            {/* Wyświetlanie Lista Cweli */}
-            {selectedDateType === 'lista' && listaCweliData && (
-                <div className="max-w-7xl mx-auto bg-zinc-900/80 rounded-xl p-8">
-                    <div className="space-y-6">
-                        <div className="text-center">
-                            <h2 className="text-3xl font-bold text-yellow-400 mb-2">Lista Cweli</h2>
-                            <p className="text-gray-400">{listaCweliData.players.length} graczy</p>
-                        </div>
-
-                        <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-6 gap-4">
-                            {listaCweliData.players.map((player) => (
-                                <div
-                                    key={player.name}
-                                    className="flex flex-col items-center gap-2 p-3 bg-zinc-800/50 rounded-lg border border-zinc-700 hover:border-yellow-500 transition-colors"
-                                >
-                                    <div className="relative w-16 h-16">
-                                        <AvatarImageFill
-                                            nickname={player.name}
-                                            className="object-cover rounded-lg"
-                                        />
-                                    </div>
-                                    <p className="text-sm font-semibold text-center text-white truncate w-full">
-                                        {player.name} ({player.eloRanking ?? 2000})
-                                    </p>
-                                </div>
-                            ))}
-                        </div>
-                    </div>
-                </div>
-            )}
-
             {/* Brak wyników gier */}
-            {selectedDateType === 'games' && resultsData && !dataLoading && resultsData.players.length === 0 && (
+            {resultsData && !dataLoading && resultsData.players.length === 0 && (
                 <div className="max-w-2xl mx-auto">
                     <div className="bg-gray-800/50 rounded-xl p-6 text-center">
                         <p className="text-gray-300 text-lg">Brak gier dla wybranej daty</p>
@@ -377,14 +194,7 @@ export default function WynikiClient({ initialDates, initialResults, seasonId, l
                 </div>
             )}
 
-            {/* Brak Lista Cweli */}
-            {selectedDateType === 'lista' && !listaCweliData && !dataLoading && (
-                <div className="max-w-2xl mx-auto">
-                    <div className="bg-gray-800/50 rounded-xl p-6 text-center">
-                        <p className="text-gray-300 text-lg">Brak listy graczy dla wybranej daty</p>
-                    </div>
-                </div>
-            )}
+
         </div>
     );
 }

@@ -404,6 +404,17 @@ printf '.scanstats on\n<sql>;\n' | sqlite3 /tmp/d1.sqlite
 
 `.scanstats` prints `rows=` for each step of the plan. Their sum approximates rows read.
 
+## Konta Discord i uprawnienia hosta
+
+- Powiązania kont Discord używają stabilnego `Player.id`, nie nicku, sluga ani identyfikatora gracza z payloadu meczu.
+- Samo logowanie Discord nie nadaje uprawnień hosta. Dostęp zapewnia obecne Basic Auth albo aktywna sesja konta z jawnie nadaną rolą hosta.
+- Uprawnienia hosta Discord sprawdzaj w D1 przy każdym żądaniu i akcji serwerowej; nie przechowuj ich w cookie ani nie polegaj wyłącznie na middleware lub widoczności przycisków.
+- Nadanie i odebranie uprawnień wymagają dokładnego potwierdzenia aktualnym nickiem wybranej osoby, uzasadnienia oraz atomowego audytu. Potwierdzenie, wersję rekordu i uprawnienia autora sprawdzaj również po stronie bazy.
+- Link „Host” w nawigacji pokazuj wyłącznie po pozytywnym sprawdzeniu uprawnień przez serwer.
+- Narzędzia dla sesji Discord udostępniaj pod `/dramaafera/host/*`, z kontrolą Origin dla mutacji. Ogólne API administracyjne i ingest moda nadal wymagają Basic Auth.
+- Zamknięcie konta fizycznie usuwa jego dane Discord, sesje, zgłoszenia i audyty. Odwołania do usuniętego autora w cudzych audytach muszą zostać zanonimizowane, bez zachowania jego accountId lub danych Discord.
+- Powiązanie, korekta i zamknięcie konta nie zmieniają danych gracza, rozgrywek, rankingu ani statystyk.
+
 ## Proposing New Rules
 
 When you notice a pattern used 2+ times, a decision made in this session, or a convention

@@ -1,3 +1,4 @@
+import { getPlayerAvatarPath } from '@/app/dramaafera/_utils/gameUtils';
 import { getDatabaseClient } from '../db';
 import { chunkedInQuery } from '@/app/api/_database';
 import { withoutDeleted } from '@/app/api/schema/common';
@@ -87,7 +88,7 @@ export async function getHostInfo(
     if (!playerMap.has(playerName)) {
       playerMap.set(playerName, {
         name: playerName,
-        avatar: `/images/avatars/${playerName}.png`,
+        avatar: getPlayerAvatarPath(playerName),
         totalPoints: 0,
         games: 0,
       });
@@ -114,7 +115,7 @@ export async function getHostInfo(
 
       return {
         name: playerName,
-        avatar: `/images/avatars/${playerName}.png`,
+        avatar: getPlayerAvatarPath(playerName),
         rankBefore,
         rankAfter,
         change: rankBefore - rankAfter,
