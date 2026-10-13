@@ -1,17 +1,17 @@
 {
-  "version": "1.1.0",
+  "version": "1.2.0",
   "files": [
     {
       "name": "DramaAferaStats.Client.dll",
       "url": "DramaAferaStats.Client.dll",
-      "sha256": "109077aaa5946350354f7669543fb161bd9f806e9c2396781023759ea2227bb9"
+      "sha256": "cc843110a87caa732762eb84c1782abb9a2aee964a2eea98baabcc2f37d13714"
     },
     {
       "name": "malkizhats.bundle",
       "url": "malkizhats.bundle",
       "sha256": "ec0c46fdd5ac557d8538eb259205eb39858e2dcafe2168f07991d21f97d57061"
     },
-    { 
+    {
       "name": "malkizhats.catalog",
       "url": "malkizhats.catalog",
       "sha256": "73a565043e449cfbaa1bea464df03f28b3b85082a03cd6e7321ffbae03552da0"
