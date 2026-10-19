@@ -5,8 +5,8 @@ module.exports = {
     preset: 'ts-jest',
     testEnvironment: 'node',
     // Tests live next to what they test. src/generated/ is excluded from type-checking and has
-    // none.
-    testMatch: ['<rootDir>/src/**/*.test.ts'],
+    // none. scripts/lib/ holds the pure parts of the one-off scripts.
+    testMatch: ['<rootDir>/src/**/*.test.ts', '<rootDir>/scripts/**/*.test.ts'],
     moduleNameMapper: { '^@/(.*)$': '<rootDir>/src/$1' },
     // Build output and agent worktrees each contain a package.json named townofus.pl, which
     // jest-haste-map reports as a naming collision on every run.

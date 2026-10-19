@@ -8,7 +8,7 @@ import { execFileSync } from 'node:child_process';
  * production that difference showed up as `code: 7403, not authorized` from npx while the global
  * binary answered fine, which reads like a broken database rather than a token scope.
  */
-function wranglerCommand(): string[] {
+export function wranglerCommand(): string[] {
     try {
         execFileSync('wrangler', ['--version'], { stdio: 'ignore' });
         return ['wrangler'];
@@ -23,7 +23,7 @@ export type Target = 'local' | 'staging' | 'production';
 /** Runs one SQL statement and returns its rows. */
 export type Runner = (sql: string) => Record<string, unknown>[];
 
-const REMOTE_DB: Record<Exclude<Target, 'local'>, string> = {
+export const REMOTE_DB: Record<Exclude<Target, 'local'>, string> = {
     staging: 'townofus_pl_preview',
     production: 'townofus-pl',
 };
