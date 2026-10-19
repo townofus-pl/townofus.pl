@@ -95,6 +95,8 @@ model Player {
   rankingHistory       PlayerRanking[]            @relation("RankingHistory")
   actionsPerformed     GameAction[]               @relation("ActionPerformer")
   actionsTargeted      GameAction[]               @relation("ActionTarget")
+  discordAccount       DiscordAccount?
+  emperorCandidacies   EmperorPollCandidate[]
 
   @@index([name], map: "players_name_idx")
   @@index([currentRankingId])
@@ -431,6 +433,68 @@ model ListaCweli {
   @@index([date])
   @@index([deletedAt])
   @@map("lista_cweli")
+}
+
+// =============================================================================
+// DISCORD BOT (#351, stage 1)
+// =============================================================================
+// Column names match the `Discord` branch (PR #346) so stage 3 only adds columns.
+
+model DiscordAccount {
+  id            Int     @id @default(autoincrement())
+  discordUserId String  @unique // Discord snowflake (member.user.id)
+  username      String
+  avatar        String?
+  playerId      Int?    @unique
+  player        Player? @relation(fields: [playerId], references: [id], onDelete: Restrict)
+  version       Int     @default(0)
+
+  // Timestamps
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime? // Soft delete
+
+  @@map("discord_accounts")
+}
+
+// One Discord-native Emperor poll per session date. The row is inserted before the
+// message is sent, so the unique `date` blocks a duplicate poll.
+model EmperorPoll {
+  id               Int     @id @default(autoincrement())
+  date             String  @unique // Session date, YYYY-MM-DD (Europe/Warsaw)
+  season           Int
+  closesAt         BigInt // Planned close time, epoch ms
+  discordChannelId String?
+  discordMessageId String? // Null until the poll message is sent
+  closedAt         BigInt? // When the bot ended the poll, epoch ms
+  finalizedAt      BigInt? // When the final vote counts were saved, epoch ms
+
+  candidates EmperorPollCandidate[]
+
+  // Timestamps
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime? // Soft delete
+
+  @@map("emperor_polls")
+}
+
+model EmperorPollCandidate {
+  id        Int         @id @default(autoincrement())
+  pollId    Int
+  playerId  Int
+  nickname  String // Player name at the time the poll was created
+  voteCount Int         @default(0)
+  poll      EmperorPoll @relation(fields: [pollId], references: [id], onDelete: Cascade)
+  player    Player      @relation(fields: [playerId], references: [id], onDelete: Restrict)
+
+  // Timestamps
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  deletedAt DateTime? // Soft delete
+
+  @@unique([pollId, playerId])
+  @@map("emperor_poll_candidates")
 }
 
 // =============================================================================

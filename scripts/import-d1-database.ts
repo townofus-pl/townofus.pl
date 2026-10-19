@@ -30,6 +30,11 @@ const TEMP_RESTORE_FILE = path.join(TEMP_DIR, 'restore-player-current-ranking.sq
 
 const TABLE_ORDER = [
     'players',
+    // Children of players. Listed explicitly so the staging wipe (this list reversed) clears them
+    // before players: their FKs are ON DELETE RESTRICT.
+    'discord_accounts',
+    'emperor_polls',
+    'emperor_poll_candidates',
     'games',
     'lista_cweli',
     'drama_afera_settings',
