@@ -47,10 +47,17 @@ export type StepName = 'closePoll' | 'closeSignups' | 'createPoll';
 
 const WEDNESDAY = 3;
 
-/** The step for a Warsaw time, or `null` when nothing is due. */
+/**
+ * The step for a Warsaw time, or `null` when nothing is due.
+ *
+ * `closePoll` also runs from 19:00 to 21:59. There it finds the poll closed and only waits for
+ * Discord's final tally (`is_finalized`). The tally usually ends long before 18:00. The extra
+ * hours are a fallback, and they also retry an End Poll that failed at 17:00. 18:00 belongs to
+ * the signups, and from 22:00 the next poll is created.
+ */
 export function pickStep(time: WarsawTime): StepName | null {
     if (time.weekday !== WEDNESDAY) return null;
-    if (time.hour === 17) return 'closePoll';
+    if (time.hour === 17 || (time.hour >= 19 && time.hour <= 21)) return 'closePoll';
     if (time.hour === 18) return 'closeSignups';
     if (time.hour >= 22) return 'createPoll';
     return null;
