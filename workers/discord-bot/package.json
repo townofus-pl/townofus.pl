@@ -3,7 +3,7 @@
     "private": true,
     "description": "Discord bot Worker. Uses the dependencies installed at the repo root (npm ci there).",
     "scripts": {
-        "dev": "wrangler dev --env dev --persist-to ../../.wrangler/state",
+        "dev": "wrangler dev --env dev --persist-to ../../.wrangler/state --test-scheduled",
         "test": "jest",
         "typecheck": "tsc --noEmit",
         "dry-run": "wrangler deploy --dry-run --env staging --outdir .wrangler/dry-run && wrangler deploy --dry-run --env production --outdir .wrangler/dry-run",

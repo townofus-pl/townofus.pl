@@ -105,14 +105,31 @@ to the test channel there.
    npm run dev
    ```
 
-3. Run a cron step at a given time (milliseconds since epoch, UTC). Example: 2026-10-21 17:00 in
-   Warsaw:
+3. Run a cron step at any wall-clock time. `GET /__dev/tick?now=<ISO 8601>` runs the cron logic
+   as if the cron fired at `now`, and returns the Warsaw time and the step. The route works only
+   when `ENVIRONMENT` is `"dev"`. In staging and production it does not exist (GET gets `405`).
+
+   ```bash
+   # Close the poll (Wednesday 17:xx Warsaw)
+   curl -G "http://localhost:8787/__dev/tick" --data-urlencode "now=2026-10-21T17:10:00+02:00"
+
+   # Close the signups (Wednesday 18:xx Warsaw)
+   curl -G "http://localhost:8787/__dev/tick" --data-urlencode "now=2026-10-21T18:10:00+02:00"
+
+   # Create the poll (Wednesday 22:xx Warsaw)
+   curl -G "http://localhost:8787/__dev/tick" --data-urlencode "now=2026-10-21T22:10:00+02:00"
+   ```
+
+   The short form `curl "http://localhost:8787/__dev/tick?now=2026-10-21T22:10:00+02:00"` also
+   works. Without `now`, the route uses the current time.
+
+   `npm run dev` also passes `--test-scheduled`, so the real scheduled handler is available.
+   It takes the time in milliseconds since epoch (UTC) and logs the step. Example: 2026-10-21
+   17:00 in Warsaw:
 
    ```bash
    curl "http://localhost:8787/cdn-cgi/handler/scheduled?time=1792594800000"
    ```
-
-   The log shows the Warsaw time and the chosen step.
 
 4. Run the tests and the typecheck:
 

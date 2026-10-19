@@ -39,6 +39,8 @@ database_id = "0edadde7-395f-4e3c-a69d-7d40ece774ad"
 preview_database_id = "44f0d77c-c0b4-43d1-b3a3-7777be86d5d6"
 
 [env.dev.vars]
+# "dev" turns on GET /__dev/tick (run a cron step at any time). Never set it elsewhere.
+ENVIRONMENT = "dev"
 DISCORD_APPLICATION_ID = "1561760814812237875"
 DISCORD_PUBLIC_KEY = "e7455b9762b6a0d8965a67f2870300ac50917260e025634a6a5a34b24b9fdad4"
 # Separate test server, not the league server.
@@ -77,6 +79,7 @@ database_name = "townofus_pl_preview"
 database_id = "44f0d77c-c0b4-43d1-b3a3-7777be86d5d6"
 
 [env.staging.vars]
+ENVIRONMENT = "staging"
 DISCORD_APPLICATION_ID = "1561760899591569438"
 DISCORD_PUBLIC_KEY = "83525f97bf687fa0fa2b5c9154d2a00a384934fd03632a82471e298756249cbb"
 DISCORD_GUILD_ID = "720415026476875807"
@@ -110,6 +113,7 @@ database_name = "townofus-pl"
 database_id = "0edadde7-395f-4e3c-a69d-7d40ece774ad"
 
 [env.production.vars]
+ENVIRONMENT = "production"
 DISCORD_APPLICATION_ID = "1561760994777239793"
 DISCORD_PUBLIC_KEY = "e87c375d5c63ddf8f657574f2c45cf8d9c035054c49e344e892fca0845794e28"
 DISCORD_GUILD_ID = "720415026476875807"

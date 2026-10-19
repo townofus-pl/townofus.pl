@@ -2,12 +2,16 @@
 
 import type { Interaction } from './discord';
 import type { BotEnv } from './env';
+import { handleDevTick } from './devTick';
 import { handleInteraction } from './interactions';
 import { runScheduled } from './schedule';
 import { verifyDiscordRequest } from './verify';
 
 export default {
     async fetch(request, env, ctx): Promise<Response> {
+        const devTick = await handleDevTick(request, env);
+        if (devTick) return devTick;
+
         if (request.method !== 'POST') {
             return new Response('Method Not Allowed', { status: 405, headers: { Allow: 'POST' } });
         }

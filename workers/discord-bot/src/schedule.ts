@@ -60,10 +60,15 @@ export type Step = (env: BotEnv, time: WarsawTime) => Promise<void>;
 
 const STEPS: Record<StepName, Step> = { closePoll, closeSignups, createPoll };
 
-export async function runScheduled(scheduledTime: number, env: BotEnv): Promise<StepName | null> {
-    const time = toWarsawTime(new Date(scheduledTime));
-    const step = pickStep(time);
-    console.log(JSON.stringify({ event: 'scheduled', warsaw: time, step }));
-    if (step) await STEPS[step](env, time);
-    return step;
+export interface ScheduledRun {
+    warsaw: WarsawTime;
+    step: StepName | null;
+}
+
+export async function runScheduled(scheduledTime: number, env: BotEnv): Promise<ScheduledRun> {
+    const warsaw = toWarsawTime(new Date(scheduledTime));
+    const step = pickStep(warsaw);
+    console.log(JSON.stringify({ event: 'scheduled', warsaw, step }));
+    if (step) await STEPS[step](env, warsaw);
+    return { warsaw, step };
 }

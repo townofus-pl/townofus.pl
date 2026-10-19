@@ -2,6 +2,9 @@
 export interface BotEnv {
     DB: D1Database;
 
+    /** "dev" | "staging" | "production". Only "dev" enables the /__dev/tick route. */
+    ENVIRONMENT: string;
+
     DISCORD_APPLICATION_ID: string;
     /** Hex Ed25519 public key from the Developer Portal. Verifies every interaction. */
     DISCORD_PUBLIC_KEY: string;
