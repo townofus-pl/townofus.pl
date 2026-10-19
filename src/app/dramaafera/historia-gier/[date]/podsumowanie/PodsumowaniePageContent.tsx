@@ -6,10 +6,10 @@ import {
     getEmperorHistory,
     getRankingAfterSession,
     getSessionSummaryByDate,
+    getEmperorPoll,
 } from '@/app/dramaafera/_services';
-import { getCloudflareContext } from '@opennextjs/cloudflare';
 import PodsumowanieClient from '@/app/dramaafera/_components/PodsumowanieClient';
-import type { EmperorPoll, SigmaPlayer, RankingHistoryPoint } from '@/app/dramaafera/_components/PodsumowanieClient';
+import type { SigmaPlayer, RankingHistoryPoint } from '@/app/dramaafera/_components/PodsumowanieClient';
 import type { RankingHistoryPoint as ServiceRankingHistoryPoint } from '@/app/dramaafera/_services/players/types';
 
 // Compute per-game ranking changes for a player from their ranking history.
@@ -56,13 +56,15 @@ interface PodsumowaniePageContentProps {
 
 export async function PodsumowaniePageContent({ date, seasonId }: PodsumowaniePageContentProps) {
     // Fetch all data in parallel
-    const [weeklyStatsResult, topSigmasResult, emperorHistoryData, rankingAfterSessionData, sessionSummary] =
+    // Emperor poll: finalized D1 row first, static JSON for older sessions
+    const [weeklyStatsResult, topSigmasResult, emperorHistoryData, rankingAfterSessionData, sessionSummary, emperorPoll] =
         await Promise.all([
             getWeeklyStats(date, seasonId),
             getTopSigmas(date, seasonId),
             getEmperorHistory(seasonId),
             getRankingAfterSession(date, seasonId),
             getSessionSummaryByDate(date, seasonId),
+            getEmperorPoll(date, seasonId),
         ]);
 
     const weeklyStats = weeklyStatsResult.players;
@@ -109,22 +111,6 @@ export async function PodsumowaniePageContent({ date, seasonId }: PodsumowaniePa
         if (topCwele.some(c => c.nickname === nickname)) {
             cwelRankingHistory[nickname] = mapped;
         }
-    }
-
-    // Emperor poll from static file
-    let emperorPoll: EmperorPoll | null = null;
-    try {
-        const { env } = await getCloudflareContext();
-        if (env.ASSETS) {
-            const response = await env.ASSETS.fetch(
-                new Request(`http://localhost/emperor-polls/${date}.json`),
-            );
-            if (response.ok) {
-                emperorPoll = (await response.json()) as EmperorPoll;
-            }
-        }
-    } catch {
-        // Emperor poll is optional
     }
 
     // Get detailedGames as topPlayerGames (filter out nulls)

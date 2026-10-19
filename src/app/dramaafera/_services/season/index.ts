@@ -23,3 +23,6 @@ export { getEmperorHistory } from './getEmperorHistory';
 
 export type { HostRankingChange, HostInfoResult } from './getHostInfo';
 export { getHostInfo } from './getHostInfo';
+
+export type { EmperorPollCandidateRow } from './getEmperorPoll';
+export { getEmperorPoll, mapEmperorPoll, toPollDate } from './getEmperorPoll';
