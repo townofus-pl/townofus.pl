@@ -29,29 +29,29 @@ describe('toWarsawTime', () => {
 });
 
 describe('pickStep', () => {
-    it('summer time (Wednesday 2026-10-21): 15/16/20-21 UTC', () => {
+    it('summer time (Wednesday 2026-10-21): 15 and 17-19 / 16 / 20-21 UTC', () => {
         const steps = CRON_HOURS.map((h) => stepAt(`2026-10-21T${h}:00:00Z`));
         expect(steps).toEqual([
             'closePoll', // 17:00
             'closeSignups', // 18:00
-            null, // 19:00
-            null, // 20:00
-            null, // 21:00
+            'closePoll', // 19:00, waits for the final tally
+            'closePoll', // 20:00
+            'closePoll', // 21:00
             'createPoll', // 22:00
             'createPoll', // 23:00
             null, // 00:00 Thursday
         ]);
     });
 
-    it('winter time (Wednesday 2026-10-28): 16/17/21-22 UTC', () => {
+    it('winter time (Wednesday 2026-10-28): 16 and 18-20 / 17 / 21-22 UTC', () => {
         const steps = CRON_HOURS.map((h) => stepAt(`2026-10-28T${h}:00:00Z`));
         expect(steps).toEqual([
             null, // 16:00
             'closePoll', // 17:00
             'closeSignups', // 18:00
-            null, // 19:00
-            null, // 20:00
-            null, // 21:00
+            'closePoll', // 19:00, waits for the final tally
+            'closePoll', // 20:00
+            'closePoll', // 21:00
             'createPoll', // 22:00
             'createPoll', // 23:00
         ]);

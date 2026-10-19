@@ -9,10 +9,21 @@ The Worker has two entry points:
 | Entry point | What it does |
 |---|---|
 | `fetch` | Receives Discord interactions over HTTP. Verifies the Ed25519 signature on the raw body, returns `401` for a bad signature and PONG for PING, then routes `/ankieta` and the signup buttons. |
-| `scheduled` | Runs on the cron `*/10 15-22 * * WED` (UTC). Calculates the Europe/Warsaw time and runs one step: 17:00 close the poll, 18:00 close the signups, from 22:00 create the poll. |
+| `scheduled` | Runs on the cron `*/10 15-22 * * WED` (UTC). Calculates the Europe/Warsaw time and runs one step: 17:00 close the poll (19:00–21:59 read its result), 18:00 close the signups, from 22:00 create the poll. |
 
-`/ankieta`, the 22:00 step (see `src/poll/`), the signup buttons and the 18:00 step work (see
-[Signups](#signups)). The 17:00 step is a stub in this version.
+`/ankieta`, the 17:00 and 22:00 steps (see `src/poll/`), the signup buttons and the 18:00 step
+work (see [Signups](#signups)).
+
+The 17:00 step (`src/poll/closePoll.ts`) does two things on every tick:
+
+1. End Poll for each poll of this environment's channel that is due (`closesAt` has passed) and
+   not closed. Then it sets `closedAt`. A poll that Discord already ended also gets `closedAt`.
+2. Read each closed poll that has no result yet. When `poll.results.is_finalized` is true, it
+   writes `voteCount` of each candidate and `finalizedAt`. Until then, the next tick reads again.
+
+The same step also runs from 19:00 to 21:59, so the bot can read a late tally or retry a failed
+End Poll. A `401` or `403` stops the tick. A `429` gets one retry when the wait is 5 s or less.
+Otherwise the next tick tries again. The step never touches polls of another channel.
 
 ## Layout
 
