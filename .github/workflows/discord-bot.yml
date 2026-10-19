@@ -92,10 +92,19 @@ jobs:
 
       # The token goes up with the deploy itself (--secrets-file), so the Worker never runs a
       # version without it. The file lives in the runner's temp dir and is deleted afterwards.
+      #
+      # Without the token a push to main skips the deploy with a warning, so the workflow stays
+      # green until the secret exists (#361). A manual dispatch still fails.
       - name: Deploy (${{ env.TARGET }})
         run: |
           if [ -z "$DISCORD_BOT_TOKEN" ]; then
-            echo "::error::DISCORD_BOT_TOKEN is not set in the '$TARGET' GitHub environment"
+            message="DISCORD_BOT_TOKEN is not set in the '$TARGET' GitHub environment"
+            if [ "$GITHUB_EVENT_NAME" = "push" ]; then
+              echo "::warning::$message. Deploy skipped."
+              echo "Deploy skipped: $message." >> "$GITHUB_STEP_SUMMARY"
+              exit 0
+            fi
+            echo "::error::$message"
             exit 1
           fi
           secrets_file="$RUNNER_TEMP/discord-bot-secrets.json"

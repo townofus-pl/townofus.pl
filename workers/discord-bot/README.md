@@ -53,7 +53,11 @@ Each environment declares its own vars. Named environments do not inherit them.
 | `TEXT_SIGNUP_CLOSED` | Text added to the signup message at 18:00 |
 | `TEXT_SIGNUP_CLOSED_REPLY` | Reply to a click after 18:00 |
 
-The IDs are empty placeholders until the deployment ticket fills them in. They are not secret.
+The IDs are not secret. The values marked `TODO(#361)` stay empty until the deployment ticket
+fills them in.
+
+If `DISCORD_BOT_TOKEN` is not set yet, a push to `main` skips the deploy with a warning. A
+manual dispatch fails.
 
 ### Secrets
 
