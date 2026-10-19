@@ -11,7 +11,8 @@ The Worker has two entry points:
 | `fetch` | Receives Discord interactions over HTTP. Verifies the Ed25519 signature on the raw body, returns `401` for a bad signature and PONG for PING, then routes `/ankieta` and the signup buttons. |
 | `scheduled` | Runs on the cron `*/10 15-22 * * WED` (UTC). Calculates the Europe/Warsaw time and runs one step: 17:00 close the poll, 18:00 close the signups, from 22:00 create the poll. |
 
-The signup buttons and the 18:00 step work (see [Signups](#signups)). The other handlers and steps are stubs in this version.
+`/ankieta`, the 22:00 step (see `src/poll/`), the signup buttons and the 18:00 step work (see
+[Signups](#signups)). The 17:00 step is a stub in this version.
 
 ## Layout
 
@@ -23,8 +24,9 @@ src/schedule.ts      Warsaw time and the choice of the cron step
 src/steps.ts         the cron steps
 src/commands.ts      command definitions and button custom_ids
 src/signup/          signup buttons and the 18:00 step
+src/poll/            Emperor poll: candidates, quiet rule, create flow, /ankieta
 scripts/registerCommands.ts
-test/                Jest tests (run in Node; signup tests use a real D1 in Miniflare)
+test/                Jest tests (run in Node; D1 tests use a real D1 in Miniflare)
 ```
 
 The bot has no own dependencies. It uses the packages installed at the repo root, so run

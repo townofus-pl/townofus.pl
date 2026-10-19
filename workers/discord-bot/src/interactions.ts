@@ -1,9 +1,10 @@
-// Routes a verified interaction to its handler. The handlers are stubs: the poll and signup
-// tickets fill them in.
+// Routes a verified interaction to its handler: `/ankieta` (poll/command.ts) and the signup
+// buttons (signup/handler.ts).
 
 import { ANKIETA_COMMAND, SIGNUP_JOIN_BUTTON, SIGNUP_LEAVE_BUTTON } from './commands';
-import { ephemeralReply, Interaction, InteractionResponseType, InteractionType, jsonResponse } from './discord';
+import { Interaction, InteractionResponseType, InteractionType, jsonResponse } from './discord';
 import type { BotEnv } from './env';
+import { handleAnkietaCommand } from './poll/command';
 import { handleSignupButton } from './signup/handler';
 
 export type InteractionHandler = (
@@ -11,10 +12,6 @@ export type InteractionHandler = (
     env: BotEnv,
     ctx: ExecutionContext,
 ) => Promise<Response>;
-
-const NOT_READY = 'Ta funkcja jeszcze nie działa.';
-
-export const handleAnkietaCommand: InteractionHandler = async () => ephemeralReply(NOT_READY);
 
 export const handleSignupJoin: InteractionHandler = handleSignupButton;
 
