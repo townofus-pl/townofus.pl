@@ -11,7 +11,7 @@ The Worker has two entry points:
 | `fetch` | Receives Discord interactions over HTTP. Verifies the Ed25519 signature on the raw body, returns `401` for a bad signature and PONG for PING, then routes `/ankieta` and the signup buttons. |
 | `scheduled` | Runs on the cron `*/10 15-22 * * WED` (UTC). Calculates the Europe/Warsaw time and runs one step: 17:00 close the poll, 18:00 close the signups, from 22:00 create the poll. |
 
-The handlers and the steps are stubs in this version.
+The signup buttons and the 18:00 step work (see [Signups](#signups)). The other handlers and steps are stubs in this version.
 
 ## Layout
 
@@ -22,12 +22,36 @@ src/interactions.ts  routing of commands and buttons to handlers
 src/schedule.ts      Warsaw time and the choice of the cron step
 src/steps.ts         the cron steps
 src/commands.ts      command definitions and button custom_ids
+src/signup/          signup buttons and the 18:00 step
 scripts/registerCommands.ts
-test/                Jest tests (run in Node, no Workers runtime)
+test/                Jest tests (run in Node; signup tests use a real D1 in Miniflare)
 ```
 
 The bot has no own dependencies. It uses the packages installed at the repo root, so run
 `npm ci` there first. All commands below run in `workers/discord-bot/`.
+
+## Signups
+
+The buttons on the signup message have the custom_ids `signup:join:YYYY-MM-DD` and
+`signup:leave:YYYY-MM-DD`. The date is the Wednesday of the session. Build the message with
+`renderSignupMessage` in `src/signup/message.ts`.
+
+- A click changes only the clicker's name, with one SQL statement on the JSON in
+  `lista_cweli.playerNames`. A host edit in the panel stays.
+- The bot answers with UPDATE_MESSAGE (the new list on the message) and sends the confirmation
+  as an ephemeral follow-up.
+- After 18:00 Europe/Warsaw on the session day, a click gets `TEXT_SIGNUP_CLOSED_REPLY`.
+- The 18:00 step finds the bot's own message with the button for that date in the channel
+  history, then disables the buttons and adds `TEXT_SIGNUP_CLOSED`.
+- The identity rules (link, new player, nick of a linked player) are at the top of
+  `src/signup/identity.ts`. When the nick belongs to a player linked to another account, the
+  click changes nothing and the clicker gets a reply that the host will check.
+- The bot matches a nick to a player without regard to case, Polish letters included. On the
+  list, the bot always writes the player's own spelling.
+- **Known limit:** the list compare in SQL (`COLLATE NOCASE`) folds ASCII letters only. If the
+  host types a name with Polish letters in another case ("łoś" for "Łoś"), the bot does not see
+  that name as the same. A join can then add the name a second time, and a leave does not
+  remove the host's version.
 
 ## Configuration
 
@@ -48,6 +72,7 @@ Each environment declares its own vars. Named environments do not inherit them.
 | `DISCORD_GUILD_ID` | Server ID |
 | `DISCORD_CHANNEL_ID` | Channel for the poll and the signup message |
 | `DISCORD_HOST_ROLE_ID` | ID of the "Host" role |
+| `DISCORD_PING_ROLE_ID` | Role that the first send of the poll and of the signup message pings. Empty: no ping. The role must be "mentionable", or the bot needs the "Mention @everyone, @here and All Roles" permission. |
 | `TEXT_POLL_QUESTION` | Poll question |
 | `TEXT_SIGNUP` | Signup message. `{date}` becomes DD.MM of the session. |
 | `TEXT_SIGNUP_CLOSED` | Text added to the signup message at 18:00 |

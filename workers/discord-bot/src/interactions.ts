@@ -4,6 +4,7 @@
 import { ANKIETA_COMMAND, SIGNUP_JOIN_BUTTON, SIGNUP_LEAVE_BUTTON } from './commands';
 import { ephemeralReply, Interaction, InteractionResponseType, InteractionType, jsonResponse } from './discord';
 import type { BotEnv } from './env';
+import { handleSignupButton } from './signup/handler';
 
 export type InteractionHandler = (
     interaction: Interaction,
@@ -15,9 +16,9 @@ const NOT_READY = 'Ta funkcja jeszcze nie działa.';
 
 export const handleAnkietaCommand: InteractionHandler = async () => ephemeralReply(NOT_READY);
 
-export const handleSignupJoin: InteractionHandler = async () => ephemeralReply(NOT_READY);
+export const handleSignupJoin: InteractionHandler = handleSignupButton;
 
-export const handleSignupLeave: InteractionHandler = async () => ephemeralReply(NOT_READY);
+export const handleSignupLeave: InteractionHandler = handleSignupButton;
 
 const commandHandlers: Record<string, InteractionHandler> = {
     [ANKIETA_COMMAND]: handleAnkietaCommand,
@@ -43,7 +44,9 @@ export async function handleInteraction(
         }
 
         case InteractionType.MessageComponent: {
-            const handler = componentHandlers[interaction.data?.custom_id ?? ''];
+            // Match on the first two parts: `signup:join:2026-10-21` → `signup:join`.
+            const key = (interaction.data?.custom_id ?? '').split(':').slice(0, 2).join(':');
+            const handler = componentHandlers[key];
             return handler ? handler(interaction, env, ctx) : jsonResponse({ error: 'Unknown component' }, 400);
         }
 

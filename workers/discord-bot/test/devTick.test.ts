@@ -1,6 +1,9 @@
-import { describe, expect, it } from '@jest/globals';
+import { describe, expect, it, jest } from '@jest/globals';
 import worker from '../src/index';
 import type { BotEnv } from '../src/env';
+
+// This file tests the route, not the steps. The real steps call Discord and D1.
+jest.mock('../src/steps');
 
 const ctx = { waitUntil: () => {}, passThroughOnException: () => {} } as unknown as ExecutionContext;
 
