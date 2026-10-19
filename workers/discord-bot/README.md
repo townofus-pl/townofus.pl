@@ -35,7 +35,7 @@ The bot has no own dependencies. It uses the packages installed at the repo root
 
 | Env | Discord application | Server and channel | D1 |
 |---|---|---|---|
-| `dev` | dev | your test server | local copy of `townofus-pl` |
+| `dev` | dev | separate test server (not the league server), its own channel | local copy of `townofus-pl` |
 | `staging` | staging | production server, test channel | `townofus_pl_preview` |
 | `production` | prod | production server, production channel | `townofus-pl` |
 
