@@ -34,19 +34,42 @@ export const escapeMarkdown = (text: string): string => text.replace(/[\\*_~`|>#
 
 const MAX_CONTENT = 2000;
 
+export interface AllowedMentions {
+    parse: [];
+    roles?: string[];
+}
+
 export interface SignupMessage {
     content: string;
     components: unknown[];
-    allowed_mentions: { parse: [] };
+    allowed_mentions: AllowedMentions;
 }
 
+/** `<@&id>` of DISCORD_PING_ROLE_ID, or '' when the var is empty. */
+export function rolePing(env: Pick<BotEnv, 'DISCORD_PING_ROLE_ID'>): string {
+    return env.DISCORD_PING_ROLE_ID ? `<@&${env.DISCORD_PING_ROLE_ID}>` : '';
+}
+
+/**
+ * For the first send of a message: allows the ping of DISCORD_PING_ROLE_ID and nothing else.
+ * Edits keep `{ parse: [] }`. Discord does not ping on an edit anyway.
+ */
+export function pingAllowedMentions(env: Pick<BotEnv, 'DISCORD_PING_ROLE_ID'>): AllowedMentions {
+    return env.DISCORD_PING_ROLE_ID ? { parse: [], roles: [env.DISCORD_PING_ROLE_ID] } : { parse: [] };
+}
+
+/**
+ * The role ping (when DISCORD_PING_ROLE_ID is set) is the first line of the content, so every
+ * edit keeps the same text. Only the first send pings.
+ */
 export function renderSignupMessage(
-    env: Pick<BotEnv, 'TEXT_SIGNUP' | 'TEXT_SIGNUP_CLOSED'>,
+    env: Pick<BotEnv, 'TEXT_SIGNUP' | 'TEXT_SIGNUP_CLOSED' | 'DISCORD_PING_ROLE_ID'>,
     date: string,
     names: string[],
     closed: boolean,
 ): SignupMessage {
-    const header = env.TEXT_SIGNUP.replace('{date}', formatDayMonth(date));
+    const ping = rolePing(env);
+    const header = `${ping ? `${ping}\n` : ''}${env.TEXT_SIGNUP.replace('{date}', formatDayMonth(date))}`;
     const list = names.length
         ? names.map((name, i) => `${i + 1}. ${escapeMarkdown(name)}`).join('\n')
         : 'Na razie nikt.';

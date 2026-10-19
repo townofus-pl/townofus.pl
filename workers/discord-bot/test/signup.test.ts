@@ -5,7 +5,7 @@ import type { BotEnv } from '../src/env';
 import { closeSignupMessages } from '../src/signup/close';
 import { handleSignupButton } from '../src/signup/handler';
 import { displayName } from '../src/signup/identity';
-import { parseSignupCustomId, signupCustomId, type SignupMessage } from '../src/signup/message';
+import { parseSignupCustomId, pingAllowedMentions, renderSignupMessage, signupCustomId, type SignupMessage } from '../src/signup/message';
 import type { ChannelMessage, SignupRest } from '../src/signup/rest';
 import { joinRoster, readRoster, seasonForSession, signupClosesAt } from '../src/signup/roster';
 import { createTestD1 } from './d1';
@@ -89,6 +89,28 @@ async function click(action: 'join' | 'leave', who: GuildMember, options: { date
 
 const accountOf = async (discordUserId: string) =>
     (await all<{ playerId: number | null }>('SELECT playerId FROM discord_accounts WHERE discordUserId = ?', discordUserId))[0];
+
+describe('role ping', () => {
+    const base = { TEXT_SIGNUP: 'Kto gra w środę {date}?', TEXT_SIGNUP_CLOSED: 'Zamknięte' };
+
+    it('puts the ping on the first line and allows only that role on the first send', () => {
+        const pingEnv = { ...base, DISCORD_PING_ROLE_ID: '42' };
+        const message = renderSignupMessage(pingEnv, '2026-10-28', [], false);
+        expect(message.content.split('\n')[0]).toBe('<@&42>');
+        expect(message.content).toContain('Kto gra w środę 28.10?');
+        // The rendered message is also what edits send: no pings there.
+        expect(message.allowed_mentions).toEqual({ parse: [] });
+        expect(pingAllowedMentions(pingEnv)).toEqual({ parse: [], roles: ['42'] });
+        // A closed message keeps the same first line.
+        expect(renderSignupMessage(pingEnv, '2026-10-28', ['a'], true).content.startsWith('<@&42>\n')).toBe(true);
+    });
+
+    it('has no ping without DISCORD_PING_ROLE_ID', () => {
+        const noPing = { ...base, DISCORD_PING_ROLE_ID: '' };
+        expect(renderSignupMessage(noPing, '2026-10-28', [], false).content.startsWith('Kto gra')).toBe(true);
+        expect(pingAllowedMentions(noPing)).toEqual({ parse: [] });
+    });
+});
 
 describe('custom_id and time', () => {
     it('parses only signup buttons with a real date', () => {

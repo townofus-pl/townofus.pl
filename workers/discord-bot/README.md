@@ -72,6 +72,7 @@ Each environment declares its own vars. Named environments do not inherit them.
 | `DISCORD_GUILD_ID` | Server ID |
 | `DISCORD_CHANNEL_ID` | Channel for the poll and the signup message |
 | `DISCORD_HOST_ROLE_ID` | ID of the "Host" role |
+| `DISCORD_PING_ROLE_ID` | Role that the first send of the poll and of the signup message pings. Empty: no ping. The role must be "mentionable", or the bot needs the "Mention @everyone, @here and All Roles" permission. |
 | `TEXT_POLL_QUESTION` | Poll question |
 | `TEXT_SIGNUP` | Signup message. `{date}` becomes DD.MM of the session. |
 | `TEXT_SIGNUP_CLOSED` | Text added to the signup message at 18:00 |
