@@ -28,6 +28,7 @@ interface Body {
     components?: { components: { custom_id: string }[] }[];
     nonce?: string;
     enforce_nonce?: boolean;
+    allowed_mentions?: unknown;
 }
 interface Sent {
     channelId: string;
@@ -257,6 +258,70 @@ describe('cron step', () => {
         expect(fresh).toMatchObject({ date: SESSION, discordMessageId: 'msg-1' });
         expect(polls()).toHaveLength(1);
         expect(signups().map((s) => s.body.components![0].components[0].custom_id)).toEqual(['signup:join:2026-10-28']);
+    });
+
+    it('sends an unsent row to the current channel after the channel config is fixed', async () => {
+        await seedSession();
+        const { discord, sent, fake } = fakeDiscord(['fail']); // 404 Unknown Channel on the wrong ID
+        const now = LAST_INGEST + 30 * MIN;
+        const wrong = { db, discord, env: { ...env, DISCORD_CHANNEL_ID: 'chan-wrong' }, now };
+
+        fake.clock = now;
+        expect(await createPollTick(wrong, SESSION)).toEqual({ kind: 'sendFailed', date: SESSION });
+        expect((await pollRows())[0]).toMatchObject({ discordChannelId: 'chan-wrong', discordMessageId: null });
+
+        // The config now names the right channel. /ankieta inside the lease waits, the cron sends.
+        expect(await runAnkieta(db, discord, env, now + 2 * MIN)).toMatch(/właśnie wysyłana/);
+        expect(await createPollTick(ctxAt(now + 10 * MIN, discord, fake), SESSION)).toEqual({
+            kind: 'created',
+            date: SESSION,
+            signupSent: true,
+        });
+        expect(sent.map((s) => [s.channelId, s.body.poll ? 'poll' : 'signup'])).toEqual([
+            [CHANNEL, 'poll'],
+            [CHANNEL, 'signup'],
+        ]);
+        expect((await pollRows())[0]).toMatchObject({ discordChannelId: CHANNEL, discordMessageId: 'msg-1' });
+    });
+
+    it('/ankieta also sends an unsent row from a wrong channel config', async () => {
+        await seedSession();
+        const { discord, sent, fake } = fakeDiscord(['fail']);
+        const now = LAST_INGEST + 30 * MIN;
+        fake.clock = now;
+        await createPollTick({ db, discord, env: { ...env, DISCORD_CHANNEL_ID: 'chan-wrong' }, now }, SESSION);
+
+        fake.clock = now + 10 * MIN;
+        expect(await runAnkieta(db, discord, env, now + 10 * MIN)).toBe('Ankieta i zapisy za 21.10 utworzone.');
+        expect(sent.map((s) => s.channelId)).toEqual([CHANNEL, CHANNEL]);
+    });
+
+    it('pings DISCORD_PING_ROLE_ID in the poll and the signup message, and only that role', async () => {
+        await seedSession();
+        const { discord, polls, signups, fake } = fakeDiscord();
+        const now = LAST_INGEST + 30 * MIN;
+        fake.clock = now;
+        await createPollTick({ db, discord, env: { ...env, DISCORD_PING_ROLE_ID: '42' }, now }, SESSION);
+
+        const [poll] = polls();
+        const [signup] = signups();
+        expect(poll.body.content).toBe('<@&42>');
+        expect(poll.body.allowed_mentions).toEqual({ parse: [], roles: ['42'] });
+        expect(signup.body.content!.split('\n')[0]).toBe('<@&42>');
+        expect(signup.body.allowed_mentions).toEqual({ parse: [], roles: ['42'] });
+    });
+
+    it('pings nobody without DISCORD_PING_ROLE_ID', async () => {
+        await seedSession();
+        const { discord, polls, signups, fake } = fakeDiscord();
+        const now = LAST_INGEST + 30 * MIN;
+        fake.clock = now;
+        await createPollTick({ db, discord, env: { ...env, DISCORD_PING_ROLE_ID: '' }, now }, SESSION);
+
+        expect(polls()[0].body).not.toHaveProperty('content');
+        expect(polls()[0].body.allowed_mentions).toEqual({ parse: [] });
+        expect(signups()[0].body.content!.startsWith('Kto gra')).toBe(true);
+        expect(signups()[0].body.allowed_mentions).toEqual({ parse: [] });
     });
 
     it('sends a missing signup message when the poll already exists', async () => {

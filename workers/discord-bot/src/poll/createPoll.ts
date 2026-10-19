@@ -16,7 +16,7 @@
 import { getSeasonForDate } from '../../../../src/app/dramaafera/_constants/seasons';
 import type { BotEnv } from '../env';
 import { findSignupMessages } from '../signup/close';
-import { renderSignupMessage } from '../signup/message';
+import { pingAllowedMentions, renderSignupMessage } from '../signup/message';
 import { type Candidate, type GameDay, isDayQuiet, loadGameDay, pickCandidates } from './candidates';
 import { createDiscordRest, type DiscordRest } from './discordApi';
 import { pollMessage } from './messages';
@@ -46,7 +46,12 @@ export interface PollContext {
     discord: DiscordRest;
     env: Pick<
         BotEnv,
-        'DISCORD_APPLICATION_ID' | 'DISCORD_CHANNEL_ID' | 'TEXT_POLL_QUESTION' | 'TEXT_SIGNUP' | 'TEXT_SIGNUP_CLOSED'
+        | 'DISCORD_APPLICATION_ID'
+        | 'DISCORD_CHANNEL_ID'
+        | 'DISCORD_PING_ROLE_ID'
+        | 'TEXT_POLL_QUESTION'
+        | 'TEXT_SIGNUP'
+        | 'TEXT_SIGNUP_CLOSED'
     >;
     now: number;
 }
@@ -113,22 +118,22 @@ export async function ensurePoll(ctx: PollContext, day: GameDay): Promise<PollOu
 
     if (!row) return { kind: 'blocked', date };
     if (pollInsert.meta.changes === 1) return sendNewPoll(ctx, row);
-    if (row.discordChannelId !== env.DISCORD_CHANNEL_ID || row.closedAt !== null) {
+    // A sent poll on another channel belongs to another environment. An unsent row is ours to
+    // send, on today's channel: the first send may have failed on a wrong channel config.
+    if (row.closedAt !== null || (row.discordMessageId !== null && row.discordChannelId !== env.DISCORD_CHANNEL_ID)) {
         return { kind: 'exists', date, signupSent: false };
     }
     return repairPoll(ctx, row);
 }
 
-/** Cron: closes stale unsent rows, then repairs every open unsent row on this channel. */
+/** Cron: closes stale unsent rows, then repairs every open unsent row (any channel, see repairPoll). */
 export async function resendUnsentPolls(ctx: PollContext): Promise<PollOutcome[]> {
     await closeStaleUnsentPolls(ctx);
     const { results } = await ctx.db
         .prepare(
             `SELECT ${POLL_COLUMNS} FROM "emperor_polls"
-             WHERE "discordChannelId" = ? AND "discordMessageId" IS NULL
-               AND "closedAt" IS NULL AND "deletedAt" IS NULL`,
+             WHERE "discordMessageId" IS NULL AND "closedAt" IS NULL AND "deletedAt" IS NULL`,
         )
-        .bind(ctx.env.DISCORD_CHANNEL_ID)
         .all<PollRow>();
     const outcomes: PollOutcome[] = [];
     for (const row of results) outcomes.push(await repairPoll(ctx, row));
@@ -144,10 +149,10 @@ async function closeStaleUnsentPolls(ctx: PollContext): Promise<void> {
     const result = await ctx.db
         .prepare(
             `UPDATE "emperor_polls" SET "closedAt" = ?, "updatedAt" = ?
-             WHERE "discordChannelId" = ? AND "discordMessageId" IS NULL
+             WHERE "discordMessageId" IS NULL
                AND "closedAt" IS NULL AND "deletedAt" IS NULL AND "closesAt" <= ?`,
         )
-        .bind(ctx.now, stamp, ctx.env.DISCORD_CHANNEL_ID, ctx.now)
+        .bind(ctx.now, stamp, ctx.now)
         .run();
     if (result.meta.changes > 0) {
         console.warn(JSON.stringify({ event: 'stalePollClosed', count: result.meta.changes }));
@@ -157,13 +162,16 @@ async function closeStaleUnsentPolls(ctx: PollContext): Promise<void> {
 async function repairPoll(ctx: PollContext, row: PollRow): Promise<PollOutcome> {
     const { db, now } = ctx;
     // The insert and every claim write `updatedAt`. Only a caller that finds it older than the
-    // lease may act, so two callers never repair the same row at once.
+    // lease may act, so two callers never repair the same row at once. The same claim moves an
+    // unsent row to the current channel: a send that failed on a wrong channel goes to the right
+    // one once the config is fixed.
     const claim = await db
         .prepare(
-            `UPDATE "emperor_polls" SET "updatedAt" = ?
-             WHERE "id" = ? AND "closedAt" IS NULL AND "updatedAt" <= ?`,
+            `UPDATE "emperor_polls" SET "updatedAt" = ?1,
+                 "discordChannelId" = CASE WHEN "discordMessageId" IS NULL THEN ?2 ELSE "discordChannelId" END
+             WHERE "id" = ?3 AND "closedAt" IS NULL AND "updatedAt" <= ?4`,
         )
-        .bind(toDbTimestamp(now), row.id, toDbTimestamp(now - SEND_LEASE_MS))
+        .bind(toDbTimestamp(now), ctx.env.DISCORD_CHANNEL_ID, row.id, toDbTimestamp(now - SEND_LEASE_MS))
         .run();
     if (claim.meta.changes !== 1) {
         return row.discordMessageId === null
@@ -203,7 +211,7 @@ async function postPoll(ctx: PollContext, row: PollRow): Promise<boolean> {
 
     let messageId: string;
     try {
-        const body = pollMessage(row.question, candidates, pollDurationHours(now, Number(row.closesAt)), `poll-${row.id}`);
+        const body = pollMessage(env, row.question, candidates, pollDurationHours(now, Number(row.closesAt)), `poll-${row.id}`);
         messageId = (await discord.createMessage(env.DISCORD_CHANNEL_ID, body)).id;
     } catch (error) {
         console.error(JSON.stringify({ event: 'pollSendFailed', date: row.date, error: String(error) }));
@@ -262,6 +270,8 @@ async function postSignupMessage(ctx: PollContext, row: PollRow): Promise<boolea
     try {
         await ctx.discord.createMessage(ctx.env.DISCORD_CHANNEL_ID, {
             ...renderSignupMessage(ctx.env, wednesday, [], false),
+            // The first send pings DISCORD_PING_ROLE_ID. Edits use the rendered `{ parse: [] }`.
+            allowed_mentions: pingAllowedMentions(ctx.env),
             nonce: `signup-${row.id}`,
             enforce_nonce: true,
         });
