@@ -66,3 +66,57 @@ jobs:
           else
             npm run deploy:staging
           fi
+
+  # The Discord bot (workers/discord-bot/), a separate Worker on the same D1. It runs after the
+  # site's job, so the migrations it depends on are already applied.
+  deploy-bot:
+    needs: deploy
+    runs-on: ubuntu-latest
+
+    environment: ${{ github.event_name == 'push' && 'staging' || inputs.environment }}
+
+    env:
+      TARGET: ${{ github.event_name == 'push' && 'staging' || inputs.environment }}
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: d1287f321cc95882fc773ab71241b51a
+      DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
+
+    defaults:
+      run:
+        working-directory: workers/discord-bot
+
+    steps:
+      # workflow_dispatch can start from any branch. The production bot gets only the code on main.
+      - name: Production only from main
+        if: env.TARGET == 'production' && github.ref != 'refs/heads/main'
+        working-directory: .
+        run: |
+          echo "::error::The production bot deploys only from main. This run is on $GITHUB_REF. Start the workflow from main."
+          exit 1
+
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      # The bot uses the root's dependencies and needs neither the Prisma client nor the typegen.
+      - run: npm ci --ignore-scripts
+        working-directory: .
+
+      # The token goes up with the deploy itself (--secrets-file), so the Worker never runs a
+      # version without it. Without the token the bot deploy is skipped with a warning, so the
+      # pipeline stays green until the secret exists (#361).
+      - name: Deploy bot (${{ env.TARGET }})
+        run: |
+          if [ -z "$DISCORD_BOT_TOKEN" ]; then
+            message="DISCORD_BOT_TOKEN is not set in the '$TARGET' GitHub environment. Bot deploy skipped."
+            echo "::warning::$message"
+            echo "$message" >> "$GITHUB_STEP_SUMMARY"
+            exit 0
+          fi
+          secrets_file="$RUNNER_TEMP/discord-bot-secrets.json"
+          jq -n --arg token "$DISCORD_BOT_TOKEN" '{DISCORD_BOT_TOKEN: $token}' > "$secrets_file"
+          trap 'rm -f "$secrets_file"' EXIT
+          npx wrangler deploy --env "$TARGET" --secrets-file "$secrets_file"

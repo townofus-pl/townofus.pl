@@ -1,0 +1,50 @@
+name: Discord bot commands
+
+# Registers the bot's guild commands (workers/discord-bot/src/commands.ts) in one environment.
+# Manual only. Run it once per environment, and again when the commands change.
+#
+# The bot's checks run in check.yml, and its deploy runs in deploy.yml (job deploy-bot).
+on:
+  workflow_dispatch:
+    inputs:
+      environment:
+        description: 'Target'
+        required: true
+        default: 'staging'
+        type: choice
+        options:
+          - staging
+          - production
+
+jobs:
+  register-commands:
+    runs-on: ubuntu-latest
+    environment: ${{ inputs.environment }}
+
+    env:
+      DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
+
+    defaults:
+      run:
+        working-directory: workers/discord-bot
+
+    steps:
+      # workflow_dispatch can start from any branch. Production gets only the commands on main.
+      - name: Production only from main
+        if: inputs.environment == 'production' && github.ref != 'refs/heads/main'
+        working-directory: .
+        run: |
+          echo "::error::Production command registration runs only from main. This run is on $GITHUB_REF. Start the workflow from main."
+          exit 1
+
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - run: npm ci --ignore-scripts
+        working-directory: .
+
+      - run: npm run register-commands -- --env "${{ inputs.environment }}"

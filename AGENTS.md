@@ -54,6 +54,12 @@ so a failed migration means no code ships against a half-migrated database.
 
 See `docs/ops/LOCAL_TESTING.md` for the local loop and a symptom → cause → fix table.
 
+**The Discord bot is a separate Worker** in `workers/discord-bot/` (own `wrangler.toml`,
+`tsconfig.json` and Jest config, same D1 databases, no own dependencies). The site's tsconfig
+excludes `workers/`. The bot shares the site's pipeline: job `bot` in `check.yml`, job
+`deploy-bot` in `deploy.yml` (after `deploy`). `discord-bot.yml` only registers commands. See
+`workers/discord-bot/README.md`.
+
 ## Ingest: v1 and v2
 
 The league's games arrive from the companion mod, not from a human. Two endpoints are live:

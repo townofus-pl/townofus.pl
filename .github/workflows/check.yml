@@ -31,3 +31,32 @@ jobs:
       # The manifest's hashes must match the files served beside it. A mismatch makes every
       # player's auto-update fail silently, visible only in their own log.
       - run: npm run mod:publish
+
+  # The Discord bot (workers/discord-bot/). It has its own tsconfig and Jest config and uses the
+  # root's dependencies.
+  bot:
+    runs-on: ubuntu-latest
+    env:
+      HUSKY: 0
+    defaults:
+      run:
+        working-directory: workers/discord-bot
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      # A full `npm ci`, with install scripts, the same as the site's job. Tests that use
+      # Miniflare need the workerd binary in place.
+      - run: npm ci
+        working-directory: .
+
+      - run: npm run typecheck
+
+      - run: npm test
+
+      # Bundles and validates the staging and production config without uploading.
+      - run: npm run dry-run
