@@ -22,6 +22,6 @@ export default async function SeasonRankingPage({ params }: PageProps) {
     const { seasonId: seasonIdStr } = await params;
     const seasonId = parseAndValidateSeasonId(seasonIdStr);
 
-    const { ranking } = await getRanking(seasonId);
-    return <RankingClient initialData={ranking} seasonId={seasonId} />;
+    const { ranking, latestEmperorId } = await getRanking(seasonId);
+    return <RankingClient initialData={ranking} initialEmperorId={latestEmperorId} seasonId={seasonId} />;
 }

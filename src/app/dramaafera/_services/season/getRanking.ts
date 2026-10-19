@@ -16,6 +16,7 @@ export interface RankingPlayer {
 
 export interface RankingResult {
   ranking: RankingPlayer[];
+  latestEmperorId: number | null;
 }
 
 interface RankingRow {
@@ -52,7 +53,33 @@ export async function getRanking(
   const targetSeason = seasonId ?? CURRENT_SEASON;
 
   const prisma = await getDatabaseClient();
-  if (!prisma) return { ranking: [] };
+  if (!prisma) return { ranking: [], latestEmperorId: null };
+
+  // Same rule as getPlayerStars: only closed dates award a star. The newest
+  // game date is still open, so retain the latest unique winner before it.
+  // Aggregate in one query to avoid loading the full history and its child rows.
+  const emperors = await prisma.$queryRaw<{ playerId: number }[]>`
+    WITH latest_date AS (
+      SELECT MAX(SUBSTR(startTime, 1, 10)) AS date FROM games
+      WHERE season = ${targetSeason} AND deletedAt IS NULL
+    ), session_points AS (
+      SELECT SUBSTR(g.startTime, 1, 10) AS date, gps.playerId,
+             SUM(gps.totalPoints) AS points
+      FROM games g
+      JOIN game_player_statistics gps ON gps.gameId = g.id
+      JOIN players p ON p.id = gps.playerId AND p.deletedAt IS NULL
+      WHERE g.season = ${targetSeason} AND g.deletedAt IS NULL
+        AND SUBSTR(g.startTime, 1, 10) < (SELECT date FROM latest_date)
+      GROUP BY SUBSTR(g.startTime, 1, 10), gps.playerId
+    ), ranked AS (
+      SELECT date, playerId, RANK() OVER (PARTITION BY date ORDER BY points DESC) AS place
+      FROM session_points
+    )
+    SELECT MAX(playerId) AS playerId FROM ranked
+    WHERE place = 1
+    GROUP BY date HAVING COUNT(*) = 1
+    ORDER BY date DESC LIMIT 1
+  `;
 
   const rows =
     targetSeason === CURRENT_SEASON
@@ -141,5 +168,5 @@ export async function getRanking(
     };
   });
 
-  return { ranking };
+  return { ranking, latestEmperorId: emperors[0]?.playerId ?? null };
 }
