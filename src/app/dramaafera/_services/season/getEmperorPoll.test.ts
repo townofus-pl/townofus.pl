@@ -102,10 +102,18 @@ describe('getEmperorPoll', () => {
         expect(request.url).toBe('http://localhost/emperor-polls/20260923.json');
     });
 
-    test('falls back to the JSON file when the D1 query fails', async () => {
-        findFirst.mockRejectedValue(new Error('D1 down'));
+    test('logs the D1 error and falls back to the JSON file when the D1 query fails', async () => {
+        const error = new Error('D1 down');
+        findFirst.mockRejectedValue(error);
+        const logError = jest.spyOn(console, 'error').mockImplementation(() => {});
 
         expect(await getEmperorPoll('20260923', 5)).toEqual(jsonPoll);
+        expect(logError).toHaveBeenCalledWith(
+            'getEmperorPoll: D1 query failed',
+            { date: '20260923', seasonId: 5 },
+            error,
+        );
+        logError.mockRestore();
     });
 
     test('falls back to the JSON file when no database client exists', async () => {

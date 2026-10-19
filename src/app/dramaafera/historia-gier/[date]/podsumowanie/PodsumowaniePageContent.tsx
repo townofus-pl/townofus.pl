@@ -9,7 +9,7 @@ import {
     getEmperorPoll,
 } from '@/app/dramaafera/_services';
 import PodsumowanieClient from '@/app/dramaafera/_components/PodsumowanieClient';
-import type { EmperorPoll, SigmaPlayer, RankingHistoryPoint } from '@/app/dramaafera/_components/PodsumowanieClient';
+import type { SigmaPlayer, RankingHistoryPoint } from '@/app/dramaafera/_components/PodsumowanieClient';
 import type { RankingHistoryPoint as ServiceRankingHistoryPoint } from '@/app/dramaafera/_services/players/types';
 
 // Compute per-game ranking changes for a player from their ranking history.
@@ -56,13 +56,15 @@ interface PodsumowaniePageContentProps {
 
 export async function PodsumowaniePageContent({ date, seasonId }: PodsumowaniePageContentProps) {
     // Fetch all data in parallel
-    const [weeklyStatsResult, topSigmasResult, emperorHistoryData, rankingAfterSessionData, sessionSummary] =
+    // Emperor poll: finalized D1 row first, static JSON for older sessions
+    const [weeklyStatsResult, topSigmasResult, emperorHistoryData, rankingAfterSessionData, sessionSummary, emperorPoll] =
         await Promise.all([
             getWeeklyStats(date, seasonId),
             getTopSigmas(date, seasonId),
             getEmperorHistory(seasonId),
             getRankingAfterSession(date, seasonId),
             getSessionSummaryByDate(date, seasonId),
+            getEmperorPoll(date, seasonId),
         ]);
 
     const weeklyStats = weeklyStatsResult.players;
@@ -110,9 +112,6 @@ export async function PodsumowaniePageContent({ date, seasonId }: PodsumowaniePa
             cwelRankingHistory[nickname] = mapped;
         }
     }
-
-    // Emperor poll: finalized D1 row first, static JSON for older sessions
-    const emperorPoll: EmperorPoll | null = await getEmperorPoll(date, seasonId);
 
     // Get detailedGames as topPlayerGames (filter out nulls)
     const topPlayerGames = sessionSummary.detailedGames.filter(

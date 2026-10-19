@@ -76,7 +76,8 @@ async function getEmperorPollFromAssets(date: string): Promise<EmperorPoll | nul
     if (!env.ASSETS) return null;
     const response = await env.ASSETS.fetch(
         new Request(`http://localhost/emperor-polls/${date}.json`),
-    );    return response.ok ? ((await response.json()) as EmperorPoll) : null;
+    );
+    return response.ok ? ((await response.json()) as EmperorPoll) : null;
 }
 
 /**
@@ -88,8 +89,10 @@ export async function getEmperorPoll(date: string, seasonId: number): Promise<Em
     try {
         const fromDatabase = await getEmperorPollFromDatabase(date, seasonId);
         if (fromDatabase) return fromDatabase;
-    } catch {
-        // Fall through to the static file.
+    } catch (error) {
+        // Sessions from 2026-10-21 have no JSON file, so a silent failure here would hide the
+        // poll slide with no trace. Log it, then fall through to the static file.
+        console.error('getEmperorPoll: D1 query failed', { date, seasonId }, error);
     }
 
     try {
