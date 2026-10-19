@@ -2,6 +2,7 @@
 // idempotent: check the state in D1 first, because the cron can fire again in the same hour.
 
 import type { BotEnv } from './env';
+import { createPollStep } from './poll/createPoll';
 import type { WarsawTime } from './schedule';
 import { closeSignupMessages } from './signup/close';
 
@@ -15,4 +16,6 @@ export async function closeSignups(env: BotEnv, time: WarsawTime): Promise<void>
 }
 
 /** Wednesday from 22:00: create the poll and the signup message when the day's games are over. */
-export async function createPoll(_env: BotEnv, _time: WarsawTime): Promise<void> {}
+export async function createPoll(env: BotEnv, time: WarsawTime, now: number): Promise<void> {
+    await createPollStep(env, time.date, now);
+}
