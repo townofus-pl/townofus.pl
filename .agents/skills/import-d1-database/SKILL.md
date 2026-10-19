@@ -91,21 +91,25 @@ The dump order is not safe for D1 import. Reorder the INSERTs so parent tables a
 Recommended order for this project (matches `TABLE_ORDER` in `scripts/import-d1-database.ts`):
 
 1. `players` with `currentRankingId` temporarily nulled
-2. `games`
-3. `lista_cweli`
-4. `drama_afera_settings`
-5. `meetings`
-6. `player_rankings`
-7. `game_player_statistics`
-8. `player_roles`
-9. `player_modifiers`
-10. `game_events`
-11. `meeting_votes`
-12. `meeting_skip_votes`
-13. `meeting_jailed_players`
-14. `meeting_blackmailed_players`
-15. `meeting_no_votes`
-16. `sqlite_sequence`
+2. `discord_accounts`
+3. `emperor_polls`
+4. `emperor_poll_candidates`
+5. `games`
+6. `lista_cweli`
+7. `drama_afera_settings`
+8. `meetings`
+9. `player_rankings`
+10. `game_player_statistics`
+11. `player_roles`
+12. `player_modifiers`
+13. `game_events`
+14. `game_actions`
+15. `meeting_votes`
+16. `meeting_skip_votes`
+17. `meeting_jailed_players`
+18. `meeting_blackmailed_players`
+19. `meeting_no_votes`
+20. `sqlite_sequence`
 
 Tables not listed (e.g. a new model added later) are appended alphabetically at the end of the import by the script's catch-all (`scripts/import-d1-database.ts:249-252`). This is safe for FK-free or self-contained tables but should be revisited when introducing a new table with relations into another table.
 
