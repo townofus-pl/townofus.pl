@@ -123,6 +123,9 @@ function main(): void {
     }
     for (const s of plan.skipped) console.log(`SKIP    ${s.date}  ${s.reason}`);
     for (const name of plan.newPlayers) console.log(`PLAYER  "${name}" has no player row: it will be created`);
+    for (const m of plan.seasonMismatches) {
+        console.log(`SEASON  ${m.date}  getSeasonForDate gives ${m.season}, the games that day are in ${m.gameSeasons.join(', ')}`);
+    }
     for (const w of plan.warnings) console.log(`WARN    ${w}`);
 
     const statements = buildImportSql(plan, new Date());
@@ -139,6 +142,14 @@ function main(): void {
     if (!options.write) {
         console.log('Dry run: nothing written. Add --write to import.');
         return;
+    }
+    if (plan.seasonMismatches.length > 0) {
+        // The page reads the poll by its own season: a row with the wrong season never shows.
+        console.error(
+            `Refusing to write: season mismatch on ${plan.seasonMismatches.map((m) => m.date).join(', ')}. ` +
+                'Fix SEASONS or the games first.',
+        );
+        process.exit(1);
     }
 
     if (options.target === 'local') writeLocal(statements);

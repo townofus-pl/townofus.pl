@@ -1,6 +1,7 @@
 import { readdirSync, readFileSync } from 'node:fs';
 import path from 'node:path';
 import { DatabaseSync } from 'node:sqlite';
+import { CURRENT_SEASON } from '../../src/app/dramaafera/_constants/seasons';
 import { mapEmperorPoll } from '../../src/app/dramaafera/_services/season/getEmperorPoll';
 import {
     buildImportSql,
@@ -147,16 +148,14 @@ describe('planImport', () => {
         expect(plan.polls.map((p) => p.date)).toEqual(['2026-09-23', '2026-09-30']);
     });
 
-    test('warns when the games of the day are in another season, or there are none', () => {
+    test('lists a season mismatch apart from the warnings, and warns about a day with no games', () => {
         const plan = planImport(
-            [file('20260923', [['Malkiz', 1]]), file('20260930', [['Malkiz', 1]])],
-            state({ gameSeasons: new Map([['2026-09-23', [3]]]) }),
+            [file('20260923', [['Malkiz', 1]]), file('20260930', [['Malkiz', 1]]), file('20261007', [['Malkiz', 1]])],
+            state({ gameSeasons: new Map([['2026-09-23', [3]], ['2026-10-07', [4]]]) }),
         );
 
-        expect(plan.warnings).toEqual([
-            '2026-09-23: getSeasonForDate gives season 4, the games that day are in 3',
-            '2026-09-30: no games on this date in the database',
-        ]);
+        expect(plan.seasonMismatches).toEqual([{ date: '2026-09-23', season: 4, gameSeasons: [3] }]);
+        expect(plan.warnings).toEqual(['2026-09-30: no games on this date in the database']);
     });
 
     test('warns about a soft-deleted player but still uses the row', () => {
@@ -229,8 +228,12 @@ describe('buildImportSql against the real schema', () => {
         for (const sql of buildImportSql(planImport(files, readState(db)), NOW)) db.exec(sql);
 
         for (const f of files) expect(readBack(db, f.date)).toEqual(f);
-        expect(db.prepare("SELECT friendCode, hashedProductUserId, currentRankingId FROM players WHERE name = 'Newbie'").get())
-            .toEqual({ friendCode: null, hashedProductUserId: null, currentRankingId: null });
+        // Same shape as createPlayerWithRanking: an initial ranking row it points at.
+        const newbie = db.prepare("SELECT id, friendCode, hashedProductUserId, currentRankingId FROM players WHERE name = 'Newbie'")
+            .get() as Record<string, unknown>;
+        expect(newbie).toMatchObject({ friendCode: null, hashedProductUserId: null });
+        expect(db.prepare('SELECT id, score, reason, season, gameId FROM player_rankings WHERE playerId = ?').all(Number(newbie.id)))
+            .toEqual([{ id: newbie.currentRankingId, score: 2000, reason: 'initial_value', season: CURRENT_SEASON, gameId: null }]);
         const poll = db.prepare("SELECT * FROM emperor_polls WHERE date = '2026-09-23'").get() as Record<string, unknown>;
         expect(poll).toMatchObject({
             season: 4,
@@ -242,6 +245,24 @@ describe('buildImportSql against the real schema', () => {
             createdAt: '2026-10-19T12:00:00.000+00:00',
             updatedAt: '2026-10-19T12:00:00.000+00:00',
         });
+    });
+
+    test('a player created between the dry run and the write does not stop the import', () => {
+        const db = freshDatabase();
+        const files = [file('20260923', [['Newbie', 1]])];
+        const plan = planImport(files, readState(db));
+        // Created meanwhile the way the bot does it, ranking and all.
+        db.exec("INSERT INTO players (name, createdAt, updatedAt) VALUES ('Newbie', '2026-10-19', '2026-10-19');");
+        db.exec("INSERT INTO player_rankings (playerId, score, reason, season, createdAt) SELECT id, 2000, 'initial_value', 4, '2026-10-19' FROM players WHERE name = 'Newbie';");
+        db.exec("UPDATE players SET currentRankingId = (SELECT MAX(id) FROM player_rankings) WHERE name = 'Newbie';");
+
+        db.exec('BEGIN');
+        for (const sql of buildImportSql(plan, NOW)) db.exec(sql);
+        db.exec('COMMIT');
+
+        expect(readBack(db, '20260923')).toEqual(files[0]);
+        expect(db.prepare("SELECT COUNT(*) AS n FROM players WHERE name = 'Newbie'").get()).toEqual({ n: 1 });
+        expect(db.prepare('SELECT COUNT(*) AS n FROM player_rankings').get()).toEqual({ n: 1 });
     });
 
     test('a second run plans nothing', () => {

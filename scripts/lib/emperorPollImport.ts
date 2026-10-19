@@ -3,7 +3,11 @@
  * `emperor_poll_candidates` (#360). No I/O here: `scripts/import-emperor-polls.ts` reads the
  * files and the database, and this module decides what to write.
  */
-import { getSeasonForDate } from '../../src/app/dramaafera/_constants/seasons';
+import { PlayerRankingReason } from '../../src/app/api/_constants/rankingTypes';
+import { CURRENT_SEASON, getSeasonForDate } from '../../src/app/dramaafera/_constants/seasons';
+
+/** Same initial ranking as `createPlayerWithRanking` and the bot's sign-up (#366). */
+const INITIAL_SCORE = 2000.0;
 
 /** One `public/emperor-polls/<YYYYMMDD>.json` file, the shape the presentation reads. */
 export interface PollFile {
@@ -33,6 +37,12 @@ export interface ImportPlan {
     polls: PlannedPoll[];
     skipped: { date: string; reason: string }[];
     newPlayers: string[];
+    /**
+     * Dates where `getSeasonForDate` differs from the season of that day's games. The page
+     * looks the poll up by the page's season, so such a row would never show. `--write` refuses
+     * to run while this list is not empty.
+     */
+    seasonMismatches: { date: string; season: number; gameSeasons: number[] }[];
     warnings: string[];
 }
 
@@ -121,7 +131,7 @@ export function seasonForPollDate(pollDate: string): number {
 
 /** Decides, per file, whether to import it, and with which player for each candidate. */
 export function planImport(files: PollFile[], state: DatabaseState): ImportPlan {
-    const plan: ImportPlan = { polls: [], skipped: [], newPlayers: [], warnings: [] };
+    const plan: ImportPlan = { polls: [], skipped: [], newPlayers: [], seasonMismatches: [], warnings: [] };
     const sorted = [...files].sort((a, b) => a.date.localeCompare(b.date));
 
     for (const file of sorted) {
@@ -136,9 +146,7 @@ export function planImport(files: PollFile[], state: DatabaseState): ImportPlan 
         if (seasonsOfGames.length === 0) {
             plan.warnings.push(`${date}: no games on this date in the database`);
         } else if (seasonsOfGames.some((s) => s !== season)) {
-            plan.warnings.push(
-                `${date}: getSeasonForDate gives season ${season}, the games that day are in ${seasonsOfGames.join(', ')}`,
-            );
+            plan.seasonMismatches.push({ date, season, gameSeasons: seasonsOfGames });
         }
 
         const candidates = file.votes.map((v): PlannedCandidate => {
@@ -174,15 +182,29 @@ export function toPrismaDateTime(date: Date): string {
  * find their parent through a subquery on a unique key (`players.name`, `emperor_polls.date`),
  * so the statements need no ids from each other and can run as one file or one transaction.
  *
- * A new player is created the way the bot's sign-up creates one (#357): only the name, no
- * friend code, no hash, no ranking row. The v2 ingest matches it by name at the first game.
+ * A new player gets the same shape as from `createPlayerWithRanking` and the bot's sign-up
+ * (#366): the name, an initial `player_rankings` row in the current season, and
+ * `currentRankingId`. Each of the three statements is a no-op when the player already exists
+ * (for example, the bot created it between the dry run and the write), so the import does not
+ * roll back. Candidates then find the player by name.
  */
 export function buildImportSql(plan: ImportPlan, now: Date): string[] {
     const ts = sqlString(toPrismaDateTime(now));
     const statements: string[] = [];
 
     for (const name of plan.newPlayers) {
-        statements.push(`INSERT INTO players (name, createdAt, updatedAt) VALUES (${sqlString(name)}, ${ts}, ${ts});`);
+        const player = `(SELECT id FROM players WHERE name = ${sqlString(name)} AND deletedAt IS NULL)`;
+        statements.push(
+            `INSERT INTO players (name, createdAt, updatedAt) VALUES (${sqlString(name)}, ${ts}, ${ts}) ` +
+                'ON CONFLICT (name) DO NOTHING;',
+            'INSERT INTO player_rankings (playerId, score, reason, season, createdAt) ' +
+                `SELECT p.id, ${INITIAL_SCORE.toFixed(1)}, ${sqlString(PlayerRankingReason.InitialValue)}, ${CURRENT_SEASON}, ${ts} ` +
+                `FROM players p WHERE p.id = ${player} ` +
+                'AND NOT EXISTS (SELECT 1 FROM player_rankings r WHERE r.playerId = p.id);',
+            'UPDATE players SET currentRankingId = ' +
+                '(SELECT MAX(r.id) FROM player_rankings r WHERE r.playerId = players.id) ' +
+                `WHERE id = ${player} AND currentRankingId IS NULL;`,
+        );
     }
 
     for (const poll of plan.polls) {
