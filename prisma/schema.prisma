@@ -463,6 +463,7 @@ model EmperorPoll {
   id               Int     @id @default(autoincrement())
   date             String  @unique // Session date, YYYY-MM-DD (Europe/Warsaw)
   season           Int
+  question         String // The question text this poll was sent with (it comes from config)
   closesAt         BigInt // Planned close time, epoch ms
   discordChannelId String?
   discordMessageId String? // Null until the poll message is sent

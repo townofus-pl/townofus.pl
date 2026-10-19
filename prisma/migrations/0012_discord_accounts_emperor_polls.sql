@@ -23,6 +23,7 @@ CREATE TABLE "emperor_polls" (
     "id" INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
     "date" TEXT NOT NULL,
     "season" INTEGER NOT NULL,
+    "question" TEXT NOT NULL,
     "closesAt" BIGINT NOT NULL,
     "discordChannelId" TEXT,
     "discordMessageId" TEXT,
