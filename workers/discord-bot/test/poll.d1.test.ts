@@ -1,9 +1,10 @@
-import { afterAll, beforeAll, beforeEach, describe, expect, it } from '@jest/globals';
+import { afterAll, afterEach, beforeAll, beforeEach, describe, expect, it, jest } from '@jest/globals';
 import type { BotEnv } from '../src/env';
 import { latestGameDate, loadGameDay } from '../src/poll/candidates';
 import { runAnkieta } from '../src/poll/command';
-import { createPollTick, ensurePoll, type PollContext } from '../src/poll/createPoll';
+import { createPollStep, createPollTick, ensurePoll, type PollContext } from '../src/poll/createPoll';
 import { DiscordApiError, type DiscordRest, type PollChannelMessage } from '../src/poll/discordApi';
+import { toDbTimestamp } from '../src/poll/time';
 import { clearPollTables, createTestD1, seedGames } from './d1';
 
 const CHANNEL = 'chan-staging';
@@ -339,6 +340,59 @@ describe('cron step', () => {
             date: '2026-10-24',
         });
         expect(await pollRows()).toHaveLength(2);
+    });
+});
+
+describe('createPollStep', () => {
+    // The real clock disagrees with the cron's time in both tests. The step must use the cron's.
+    afterEach(() => {
+        jest.restoreAllMocks();
+    });
+    const stepEnv = () => ({ ...env, DB: db }) as BotEnv;
+
+    it('runs the quiet rule and the close-time math at the cron time, not at Date.now()', async () => {
+        await seedSession();
+        const { discord, polls, fake } = fakeDiscord();
+        jest.spyOn(Date, 'now').mockReturnValue(LAST_INGEST + MIN);
+        const scheduled = LAST_INGEST + 110 * MIN;
+        fake.clock = scheduled;
+
+        await createPollStep(stepEnv(), SESSION, scheduled, discord);
+
+        expect(polls()).toHaveLength(1);
+        // 2026-10-21 21:51 UTC → 2026-10-28 16:00 UTC is 162 h 9 min. From Date.now() it is 165.
+        expect(polls()[0].body.poll!.duration).toBe(164);
+        expect((await pollRows())[0]).toMatchObject({ createdAt: toDbTimestamp(scheduled) });
+    });
+
+    it('waits when the cron time is inside the quiet window, even if Date.now() is past it', async () => {
+        await seedSession();
+        const { discord, sent } = fakeDiscord();
+        jest.spyOn(Date, 'now').mockReturnValue(LAST_INGEST + 3 * 60 * MIN);
+
+        await createPollStep(stepEnv(), SESSION, LAST_INGEST + 10 * MIN, discord);
+
+        expect(sent).toHaveLength(0);
+        expect(await pollRows()).toHaveLength(0);
+    });
+
+    it('closes a stale unsent row only when its close time has passed at the cron time', async () => {
+        await seedSession();
+        // An unsent row for 14.10 that closes at 21.10 17:00 Warsaw (15:00 UTC).
+        await db
+            .prepare(
+                `INSERT INTO "emperor_polls" ("date", "season", "question", "closesAt", "discordChannelId", "createdAt", "updatedAt")
+                 VALUES ('2026-10-14', 4, 'q', ?, ?, '2026-10-14T20:30:00.000+00:00', '2026-10-14T21:50:00.000+00:00')`,
+            )
+            .bind(Date.parse('2026-10-21T15:00:00Z'), CHANNEL)
+            .run();
+        const { discord } = fakeDiscord(['fail']);
+        // The real clock is past the close time. The cron time is not.
+        jest.spyOn(Date, 'now').mockReturnValue(Date.parse('2026-10-21T16:00:00Z'));
+
+        await createPollStep(stepEnv(), '2026-10-14', Date.parse('2026-10-21T14:00:00Z'), discord);
+
+        expect((await pollRows())[0]).toMatchObject({ date: '2026-10-14', closedAt: null });
     });
 });
 

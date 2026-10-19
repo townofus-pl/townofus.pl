@@ -56,7 +56,8 @@ export function pickStep(time: WarsawTime): StepName | null {
     return null;
 }
 
-export type Step = (env: BotEnv, time: WarsawTime) => Promise<void>;
+/** `now` is the cron's time (epoch ms). `/__dev/tick?now=` sets it. */
+export type Step = (env: BotEnv, time: WarsawTime, now: number) => Promise<void>;
 
 const STEPS: Record<StepName, Step> = { closePoll, closeSignups, createPoll };
 
@@ -69,6 +70,6 @@ export async function runScheduled(scheduledTime: number, env: BotEnv): Promise<
     const warsaw = toWarsawTime(new Date(scheduledTime));
     const step = pickStep(warsaw);
     console.log(JSON.stringify({ event: 'scheduled', warsaw, step }));
-    if (step) await STEPS[step](env, warsaw);
+    if (step) await STEPS[step](env, warsaw, scheduledTime);
     return { warsaw, step };
 }

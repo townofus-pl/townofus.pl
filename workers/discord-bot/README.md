@@ -147,7 +147,9 @@ to the test channel there.
    ```
 
    The short form `curl "http://localhost:8787/__dev/tick?now=2026-10-21T22:10:00+02:00"` also
-   works. Without `now`, the route uses the current time.
+   works. Without `now`, the route uses the current time. The create-poll step uses `now` for
+   all of its time checks: the 30-minute quiet rule, the stale-row repair and the poll close
+   time. `/ankieta` always uses the real current time.
 
    `npm run dev` also passes `--test-scheduled`, so the real scheduled handler is available.
    It takes the time in milliseconds since epoch (UTC) and logs the step. Example: 2026-10-21

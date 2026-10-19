@@ -16,6 +16,6 @@ export async function closeSignups(env: BotEnv, time: WarsawTime): Promise<void>
 }
 
 /** Wednesday from 22:00: create the poll and the signup message when the day's games are over. */
-export async function createPoll(env: BotEnv, time: WarsawTime): Promise<void> {
-    await createPollStep(env, time.date);
+export async function createPoll(env: BotEnv, time: WarsawTime, now: number): Promise<void> {
+    await createPollStep(env, time.date, now);
 }

@@ -281,9 +281,17 @@ export async function createPollTick(ctx: PollContext, date: string): Promise<Po
     return ensurePoll(ctx, day);
 }
 
-/** The entry point for steps.ts. */
-export async function createPollStep(env: BotEnv, date: string): Promise<void> {
-    const ctx = { db: env.DB, discord: createDiscordRest(env), env, now: Date.now() };
+/**
+ * The entry point for steps.ts. `now` is the cron's time, not `Date.now()`, so `/__dev/tick?now=`
+ * runs the quiet rule, the stale-row repair and the close-time math at that time too.
+ */
+export async function createPollStep(
+    env: BotEnv,
+    date: string,
+    now: number,
+    discord: DiscordRest = createDiscordRest(env),
+): Promise<void> {
+    const ctx = { db: env.DB, discord, env, now };
     const outcome = await createPollTick(ctx, date);
     console.log(JSON.stringify({ event: 'createPoll', date, outcome }));
 }
