@@ -32,6 +32,7 @@
         "mod:publish": "tsx scripts/publish-client-mod.ts",
         "ranking:oracle": "tsx scripts/ranking-oracle.ts",
         "replay": "tsx scripts/replay-payload.ts",
+        "emperor-polls:import": "tsx scripts/import-emperor-polls.ts",
         "db:execute:local": "wrangler d1 execute townofus-pl --local",
         "db:execute:staging": "wrangler d1 execute townofus_pl_preview --remote --env staging",
         "db:execute:production": "wrangler d1 execute townofus-pl --remote --env production",
