@@ -56,8 +56,9 @@ See `docs/ops/LOCAL_TESTING.md` for the local loop and a symptom → cause → f
 
 **The Discord bot is a separate Worker** in `workers/discord-bot/` (own `wrangler.toml`,
 `tsconfig.json` and Jest config, same D1 databases, no own dependencies). The site's tsconfig
-excludes `workers/`. Its workflow is `.github/workflows/discord-bot.yml`, path-filtered to the
-bot. See `workers/discord-bot/README.md`.
+excludes `workers/`. The bot shares the site's pipeline: job `bot` in `check.yml`, job
+`deploy-bot` in `deploy.yml` (after `deploy`). `discord-bot.yml` only registers commands. See
+`workers/discord-bot/README.md`.
 
 ## Ingest: v1 and v2
 

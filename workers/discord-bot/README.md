@@ -56,9 +56,6 @@ Each environment declares its own vars. Named environments do not inherit them.
 The IDs are not secret. The values marked `TODO(#361)` stay empty until the deployment ticket
 fills them in.
 
-If `DISCORD_BOT_TOKEN` is not set yet, a push to `main` skips the deploy with a warning. A
-manual dispatch fails.
-
 ### Secrets
 
 | Name | Where |
@@ -72,23 +69,19 @@ GitHub secret, then run the deploy again.
 
 ## Deploy
 
-The workflow `.github/workflows/discord-bot.yml` runs only when files in `workers/discord-bot/`
-(or the workflow) change.
+The bot uses the site's pipeline. It has no deploy workflow of its own.
 
-- Pull request: typecheck, tests, `wrangler deploy --dry-run` for staging and production.
-- Push to `main`: the same checks, then deploy to staging.
-- `workflow_dispatch` with `action: deploy`: deploy to the environment you select.
-- `workflow_dispatch` with `action: register-commands`: register the guild commands in the
-  environment you select. Do this once per environment, and again when `src/commands.ts`
-  changes.
+| Workflow | Job | What it does |
+|---|---|---|
+| `check.yml` (every PR, and before every deploy) | `bot` | Typecheck, tests, `wrangler deploy --dry-run` for staging and production. |
+| `deploy.yml` (push to `main` → staging, `workflow_dispatch` → the environment you select) | `deploy-bot` | Runs after the site's `deploy` job (so after the migrations), then deploys the bot to the same environment. |
+| `discord-bot.yml` (`workflow_dispatch` only) | `register-commands` | Registers the guild commands in the environment you select. Do this once per environment, and again when `src/commands.ts` changes. |
 
-A production deploy or command registration runs only from `main`. A dispatch from another branch
-fails at the first step.
-
-The workflow also runs when the root `package.json` or `package-lock.json` changes, because the
-bot uses the root's dependencies.
-
-The deploy job sends `DISCORD_BOT_TOKEN` with the deploy (`wrangler deploy --secrets-file`).
+- A production deploy or production command registration runs only from `main`. A dispatch from
+  another branch fails at the first step.
+- `deploy-bot` sends `DISCORD_BOT_TOKEN` with the deploy (`wrangler deploy --secrets-file`).
+- If `DISCORD_BOT_TOKEN` is not set in the GitHub environment yet, `deploy-bot` skips the deploy
+  with a warning in the job summary. The site deploy is not affected.
 
 After the first deploy, set the Interactions Endpoint URL of the Discord application to the
 Worker URL (`https://<worker name>.<subdomain>.workers.dev/`). Discord sends a PING to check it.
