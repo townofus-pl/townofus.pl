@@ -1,0 +1,2 @@
+# Copy to .dev.vars (git ignores it). Bot token of the **dev** Discord application only.
+DISCORD_BOT_TOKEN=
