@@ -9,15 +9,20 @@ on:
   pull_request:
     branches:
       - main
+    # The bot uses the root's dependencies, so a root dependency bump must run its checks too.
     paths:
       - 'workers/discord-bot/**'
       - '.github/workflows/discord-bot.yml'
+      - 'package.json'
+      - 'package-lock.json'
   push:
     branches:
       - main
     paths:
       - 'workers/discord-bot/**'
       - '.github/workflows/discord-bot.yml'
+      - 'package.json'
+      - 'package-lock.json'
   workflow_dispatch:
     inputs:
       environment:
@@ -80,6 +85,14 @@ jobs:
       DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
 
     steps:
+      # workflow_dispatch can start from any branch. Production gets only the code on main.
+      - name: Production only from main
+        if: env.TARGET == 'production' && github.ref != 'refs/heads/main'
+        working-directory: .
+        run: |
+          echo "::error::Production deploy runs only from main. This run is on $GITHUB_REF. Start the workflow from main."
+          exit 1
+
       - uses: actions/checkout@v4
 
       - uses: actions/setup-node@v4
@@ -122,6 +135,13 @@ jobs:
       DISCORD_BOT_TOKEN: ${{ secrets.DISCORD_BOT_TOKEN }}
 
     steps:
+      - name: Production only from main
+        if: inputs.environment == 'production' && github.ref != 'refs/heads/main'
+        working-directory: .
+        run: |
+          echo "::error::Production command registration runs only from main. This run is on $GITHUB_REF. Start the workflow from main."
+          exit 1
+
       - uses: actions/checkout@v4
 
       - uses: actions/setup-node@v4

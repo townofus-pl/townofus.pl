@@ -82,6 +82,12 @@ The workflow `.github/workflows/discord-bot.yml` runs only when files in `worker
   environment you select. Do this once per environment, and again when `src/commands.ts`
   changes.
 
+A production deploy or command registration runs only from `main`. A dispatch from another branch
+fails at the first step.
+
+The workflow also runs when the root `package.json` or `package-lock.json` changes, because the
+bot uses the root's dependencies.
+
 The deploy job sends `DISCORD_BOT_TOKEN` with the deploy (`wrangler deploy --secrets-file`).
 
 After the first deploy, set the Interactions Endpoint URL of the Discord application to the
