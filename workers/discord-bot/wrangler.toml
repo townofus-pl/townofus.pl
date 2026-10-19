@@ -98,8 +98,11 @@ TEXT_SIGNUP_CLOSED_REPLY = "Zapisy zamknięte, napisz do hosta"
 # --------------------------------------------------------------------------------------------
 [env.production]
 name = "townofus-discord-bot"
-workers_dev = true
+# Interactions Endpoint URL of the prod Discord application: https://dramaafera-bot.townofus.pl
+# Same custom-domain setup as the site's production worker (root wrangler.toml).
+workers_dev = false
 preview_urls = false
+route = { pattern = "dramaafera-bot.townofus.pl", custom_domain = true }
 
 [env.production.secrets]
 required = ["DISCORD_BOT_TOKEN"]

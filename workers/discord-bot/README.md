@@ -126,7 +126,8 @@ The bot uses the site's pipeline. It has no deploy workflow of its own.
   with a warning in the job summary. The site deploy is not affected.
 
 After the first deploy, set the Interactions Endpoint URL of the Discord application to the
-Worker URL (`https://<worker name>.<subdomain>.workers.dev/`). Discord sends a PING to check it.
+Worker URL. Production uses the custom domain `https://dramaafera-bot.townofus.pl`. Staging uses
+`https://townofus-discord-bot-staging.<subdomain>.workers.dev/`. Discord sends a PING to check it.
 
 `/ankieta` has `default_member_permissions: "0"`, so only admins see it at first. A server admin
 must allow the "Host" role in Server Settings > Integrations. For staging, also limit the command
