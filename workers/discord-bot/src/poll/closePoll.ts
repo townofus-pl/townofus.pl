@@ -3,10 +3,13 @@
 // Two phases on every tick of the step, each idempotent:
 //   1. Close. Every poll on this environment's channel with a message, `closedAt` NULL and
 //      `closesAt` <= now gets End Poll, then `closedAt`. A poll that Discord already ended (by
-//      `duration`, or by an earlier tick whose D1 write failed) also gets `closedAt`.
-//   2. Finalize. Every closed poll on this channel with `finalizedAt` NULL: read the message.
-//      Only when `poll.results.is_finalized` is true, write `voteCount` of each candidate and
-//      `finalizedAt` in one batch. Before that, the next tick reads again.
+//      `duration`, or by an earlier tick whose D1 write failed) also gets `closedAt`. From
+//      `closesAt` + DISCORD_END_MARGIN_MS, Discord has ended the poll by `duration` for sure, so
+//      the poll gets `closedAt` without a call. An open row would block the next poll at 22:00.
+//   2. Finalize. Every poll on this channel closed in the last READ_WINDOW_MS with `finalizedAt`
+//      NULL: read the message. Only when `poll.results.is_finalized` is true, write `voteCount`
+//      of each candidate and `finalizedAt` in one batch. Before that, the next tick reads again.
+//      After the window the bot gives up on the result and logs that once.
 //
 // The channel filter matters: the D1 import copies production polls to staging, and only the
 // author of a poll can end or read it.
@@ -18,11 +21,24 @@
 import type { BotEnv } from '../env';
 import { createDiscordPollRest, DiscordApiError, type DiscordPollRest, type PollMessage } from './discordApi';
 import { MAX_ANSWER_LENGTH } from './messages';
+import { toWarsawTime } from '../schedule';
 import { toDbTimestamp } from './time';
 
 /** Discord JSON error codes. */
 export const UNKNOWN_MESSAGE = 10008;
 export const POLL_EXPIRED = 520001;
+
+const HOUR_MS = 3_600_000;
+const DAY_MS = 24 * HOUR_MS;
+
+/**
+ * `pollDurationHours` rounds up and adds one hour, so Discord ends the poll by `duration` before
+ * `closesAt` + 2 h.
+ */
+export const DISCORD_END_MARGIN_MS = 2 * HOUR_MS;
+
+/** How long after `closedAt` the bot reads the result. Covers the next Wednesday's 17:00 ticks. */
+export const READ_WINDOW_MS = 8 * DAY_MS;
 
 export interface ClosePollContext {
     db: D1Database;
@@ -40,6 +56,8 @@ export interface CloseTickResult {
     waiting: string[];
     /** Failed for this poll only. The next tick tries again. */
     failed: string[];
+    /** Closed more than READ_WINDOW_MS ago without a result. Reported once, then never read. */
+    gaveUp: string[];
     /** Why the tick stopped early, or null. */
     stopped: null | 'auth' | 'rateLimited';
 }
@@ -47,6 +65,7 @@ export interface CloseTickResult {
 interface PollRow {
     id: number;
     date: string;
+    closesAt: number;
     discordMessageId: string;
 }
 
@@ -68,10 +87,18 @@ function log(event: string, date: string, error: unknown): void {
 }
 
 export async function closePollTick(ctx: ClosePollContext): Promise<CloseTickResult> {
-    const result: CloseTickResult = { closed: [], finalized: [], waiting: [], failed: [], stopped: null };
+    const result: CloseTickResult = {
+        closed: [],
+        finalized: [],
+        waiting: [],
+        failed: [],
+        gaveUp: [],
+        stopped: null,
+    };
     try {
         await closeDuePolls(ctx, result);
         await finalizeClosedPolls(ctx, result);
+        await reportGivenUp(ctx, result);
     } catch (error) {
         if (!(error instanceof StopTick)) throw error;
         result.stopped = error.reason;
@@ -82,7 +109,7 @@ export async function closePollTick(ctx: ClosePollContext): Promise<CloseTickRes
 async function closeDuePolls(ctx: ClosePollContext, result: CloseTickResult): Promise<void> {
     const { results: due } = await ctx.db
         .prepare(
-            `SELECT "id", "date", "discordMessageId" FROM "emperor_polls"
+            `SELECT "id", "date", "closesAt", "discordMessageId" FROM "emperor_polls"
              WHERE "discordChannelId" = ? AND "discordMessageId" IS NOT NULL
                AND "closedAt" IS NULL AND "deletedAt" IS NULL AND "closesAt" <= ?
              ORDER BY "closesAt"`,
@@ -91,14 +118,19 @@ async function closeDuePolls(ctx: ClosePollContext, result: CloseTickResult): Pr
         .all<PollRow>();
 
     for (const poll of due) {
-        try {
-            await ctx.discord.expirePoll(ctx.channelId, poll.discordMessageId);
-        } catch (error) {
-            stopOn(error);
-            if (!(await hasEnded(ctx, poll, error))) {
-                log('pollCloseFailed', poll.date, error);
-                result.failed.push(poll.date);
-                continue;
+        if (ctx.now >= Number(poll.closesAt) + DISCORD_END_MARGIN_MS) {
+            // End Poll failed on every tick so far (5xx, network). Discord has ended it anyway.
+            console.warn(JSON.stringify({ event: 'pollClosedWithoutDiscord', date: poll.date }));
+        } else {
+            try {
+                await ctx.discord.expirePoll(ctx.channelId, poll.discordMessageId);
+            } catch (error) {
+                stopOn(error);
+                if (!(await hasEnded(ctx, poll, error))) {
+                    log('pollCloseFailed', poll.date, error);
+                    result.failed.push(poll.date);
+                    continue;
+                }
             }
         }
         const update = await ctx.db
@@ -130,12 +162,12 @@ async function hasEnded(ctx: ClosePollContext, poll: PollRow, error: unknown): P
 async function finalizeClosedPolls(ctx: ClosePollContext, result: CloseTickResult): Promise<void> {
     const { results: closed } = await ctx.db
         .prepare(
-            `SELECT "id", "date", "discordMessageId" FROM "emperor_polls"
+            `SELECT "id", "date", "closesAt", "discordMessageId" FROM "emperor_polls"
              WHERE "discordChannelId" = ? AND "discordMessageId" IS NOT NULL
-               AND "closedAt" IS NOT NULL AND "finalizedAt" IS NULL AND "deletedAt" IS NULL
+               AND "closedAt" >= ? AND "finalizedAt" IS NULL AND "deletedAt" IS NULL
              ORDER BY "closesAt"`,
         )
-        .bind(ctx.channelId)
+        .bind(ctx.channelId, ctx.now - READ_WINDOW_MS)
         .all<PollRow>();
 
     for (const poll of closed) {
@@ -159,10 +191,34 @@ async function finalizeClosedPolls(ctx: ClosePollContext, result: CloseTickResul
 }
 
 /**
+ * Logs the polls whose read window ended, once each, without a new column. `closedAt` is a
+ * Wednesday from 17:00, so it is past the window (8 days) and inside the 7 days after it on
+ * exactly one Wednesday. Only the first tick of that Wednesday (17:00-17:09 Warsaw) reports it.
+ */
+async function reportGivenUp(ctx: ClosePollContext, result: CloseTickResult): Promise<void> {
+    const warsaw = toWarsawTime(new Date(ctx.now));
+    if (warsaw.hour !== 17 || warsaw.minute >= 10) return;
+    const { results } = await ctx.db
+        .prepare(
+            `SELECT "date" FROM "emperor_polls"
+             WHERE "discordChannelId" = ? AND "discordMessageId" IS NOT NULL
+               AND "closedAt" < ? AND "closedAt" >= ? AND "finalizedAt" IS NULL AND "deletedAt" IS NULL
+             ORDER BY "closesAt"`,
+        )
+        .bind(ctx.channelId, ctx.now - READ_WINDOW_MS, ctx.now - READ_WINDOW_MS - 7 * DAY_MS)
+        .all<{ date: string }>();
+    for (const { date } of results) {
+        console.error(JSON.stringify({ event: 'pollFinalizeGaveUp', date }));
+        result.gaveUp.push(date);
+    }
+}
+
+/**
  * Discord does not say which answer is which candidate, and the create flow does not store `answer_id`. The
  * create flow sends the answers in candidate `id` order, and Discord returns `poll.answers` in the
  * order it got them. So the n-th answer is the n-th candidate. Its text must be that candidate's
- * nickname, or nothing is written. The votes then come from `answer_counts` by that answer's
+ * nickname (cut to 55 characters, both sides trimmed in case Discord trims), or nothing is
+ * written. The votes then come from `answer_counts` by that answer's
  * `answer_id`, never by position.
  */
 async function saveVotes(
@@ -181,7 +237,9 @@ async function saveVotes(
     const answers = discordPoll.answers;
     const matches =
         answers.length === candidates.length &&
-        answers.every((a, i) => a.poll_media.text === candidates[i].nickname.slice(0, MAX_ANSWER_LENGTH));
+        answers.every(
+            (a, i) => (a.poll_media.text ?? '').trim() === candidates[i].nickname.slice(0, MAX_ANSWER_LENGTH).trim(),
+        );
     if (!matches) {
         console.error(
             JSON.stringify({

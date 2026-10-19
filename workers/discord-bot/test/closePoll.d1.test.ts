@@ -150,6 +150,45 @@ describe('close', () => {
         expect((await closePollTick(ctxAt(CLOSES_AT + 10 * MIN, discord))).closed).toEqual(['2026-10-21']);
     });
 
+    it('closes a poll whose message was deleted (10008), and its result then fails to read', async () => {
+        await seedPoll({ date: '2026-10-21' });
+        const { discord, calls } = fakeDiscord(); // no message: 404 with code 10008
+        const spy = jest.spyOn(console, 'error').mockImplementation(() => {});
+
+        expect(await closePollTick(ctxAt(CLOSES_AT, discord))).toMatchObject({
+            closed: ['2026-10-21'],
+            failed: ['2026-10-21'],
+            stopped: null,
+        });
+        expect(calls).toEqual(['expire chan-staging msg-2026-10-21', 'get chan-staging msg-2026-10-21']);
+        expect((await pollRow('2026-10-21'))!.closedAt).toBe(CLOSES_AT);
+        spy.mockRestore();
+    });
+
+    it('after closesAt + 2 h, sets closedAt without Discord when End Poll kept failing', async () => {
+        await seedPoll({ date: '2026-10-21' });
+        const { discord, calls, errors, addPoll } = fakeDiscord();
+        addPoll('msg-2026-10-21');
+        errors.expire = new DiscordApiError(503, 'upstream');
+        errors.get = new DiscordApiError(503, 'upstream');
+        const spy = jest.spyOn(console, 'error').mockImplementation(() => {});
+        const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
+
+        for (const at of [CLOSES_AT, CLOSES_AT + 60 * MIN, CLOSES_AT + 119 * MIN]) {
+            expect((await closePollTick(ctxAt(at, discord))).failed).toEqual(['2026-10-21']);
+        }
+        expect((await pollRow('2026-10-21'))!.closedAt).toBeNull();
+        expect(calls.filter((c) => c.startsWith('expire'))).toHaveLength(3);
+
+        const at = CLOSES_AT + 120 * MIN;
+        expect((await closePollTick(ctxAt(at, discord))).closed).toEqual(['2026-10-21']);
+        expect(calls.filter((c) => c.startsWith('expire'))).toHaveLength(3);
+        expect((await pollRow('2026-10-21'))!.closedAt).toBe(at);
+        expect(warn.mock.calls[0][0]).toContain('pollClosedWithoutDiscord');
+        spy.mockRestore();
+        warn.mockRestore();
+    });
+
     it('never touches a poll of another channel, nor one without a message', async () => {
         await seedPoll({ date: '2026-10-14', channel: OTHER_CHANNEL, closesAt: CLOSES_AT - 7 * 24 * 60 * MIN });
         await seedPoll({ date: '2026-10-21', messageId: null });
@@ -160,6 +199,7 @@ describe('close', () => {
             finalized: [],
             waiting: [],
             failed: [],
+            gaveUp: [],
             stopped: null,
         });
         expect(calls).toEqual([]);
@@ -227,6 +267,38 @@ describe('finalize', () => {
 
         expect((await closePollTick(ctxAt(CLOSES_AT + MIN, discord))).finalized).toEqual(['2026-10-21']);
         expect(await votes(pollId)).toEqual([['Alfa', 0], [long, 3]]);
+    });
+
+    it('matches a nickname with a trailing space to a trimmed answer', async () => {
+        const pollId = await seedPoll({ date: '2026-10-21', closedAt: CLOSES_AT, nicknames: ['Kuba ', 'Beta'] });
+        const { discord, messages, addPoll } = fakeDiscord();
+        addPoll('msg-2026-10-21', ['Kuba', 'Beta'], { Kuba: 2 });
+        messages.get('msg-2026-10-21')!.finalized = true;
+
+        expect((await closePollTick(ctxAt(CLOSES_AT + MIN, discord))).finalized).toEqual(['2026-10-21']);
+        expect(await votes(pollId)).toEqual([['Kuba ', 2], ['Beta', 0]]);
+    });
+
+    it('stops reading after 8 days and reports the given-up poll once', async () => {
+        await seedPoll({ date: '2026-10-21', closedAt: CLOSES_AT });
+        const { discord, calls, addPoll } = fakeDiscord();
+        addPoll('msg-2026-10-21'); // never finalized
+        const spy = jest.spyOn(console, 'error').mockImplementation(() => {});
+        const WEEK = 7 * 24 * 60 * MIN;
+
+        // Next Wednesday 17:00: still inside the window.
+        expect(await closePollTick(ctxAt(CLOSES_AT + WEEK, discord))).toMatchObject({ waiting: ['2026-10-21'], gaveUp: [] });
+        const reads = calls.length;
+
+        // The Wednesday after: past the window. Only its first tick reports it.
+        expect(await closePollTick(ctxAt(CLOSES_AT + 2 * WEEK, discord))).toMatchObject({ waiting: [], gaveUp: ['2026-10-21'] });
+        for (const at of [CLOSES_AT + 2 * WEEK + 10 * MIN, CLOSES_AT + 2 * WEEK + 3 * 60 * MIN, CLOSES_AT + 3 * WEEK]) {
+            expect(await closePollTick(ctxAt(at, discord))).toMatchObject({ waiting: [], gaveUp: [] });
+        }
+        expect(calls).toHaveLength(reads);
+        expect(spy.mock.calls.filter((c) => String(c[0]).includes('pollFinalizeGaveUp'))).toHaveLength(1);
+        expect((await pollRow('2026-10-21'))!.finalizedAt).toBeNull();
+        spy.mockRestore();
     });
 
     it('writes nothing when the answers do not match the candidates', async () => {

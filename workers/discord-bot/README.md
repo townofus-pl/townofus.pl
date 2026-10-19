@@ -25,6 +25,10 @@ The same step also runs from 19:00 to 21:59, so the bot can read a late tally or
 End Poll. A `401` or `403` stops the tick. A `429` gets one retry when the wait is 5 s or less.
 Otherwise the next tick tries again. The step never touches polls of another channel.
 
+If End Poll fails until `closesAt` + 2 h, the step sets `closedAt` without Discord, because by then
+`duration` has ended the poll. An open row would block the next poll. The step reads a result for
+8 days after `closedAt`. After that it logs `pollFinalizeGaveUp` once and stops.
+
 ## Layout
 
 ```
