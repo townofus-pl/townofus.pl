@@ -6,8 +6,8 @@ import {
     getEmperorHistory,
     getRankingAfterSession,
     getSessionSummaryByDate,
+    getEmperorPoll,
 } from '@/app/dramaafera/_services';
-import { getCloudflareContext } from '@opennextjs/cloudflare';
 import PodsumowanieClient from '@/app/dramaafera/_components/PodsumowanieClient';
 import type { EmperorPoll, SigmaPlayer, RankingHistoryPoint } from '@/app/dramaafera/_components/PodsumowanieClient';
 import type { RankingHistoryPoint as ServiceRankingHistoryPoint } from '@/app/dramaafera/_services/players/types';
@@ -111,21 +111,8 @@ export async function PodsumowaniePageContent({ date, seasonId }: PodsumowaniePa
         }
     }
 
-    // Emperor poll from static file
-    let emperorPoll: EmperorPoll | null = null;
-    try {
-        const { env } = await getCloudflareContext();
-        if (env.ASSETS) {
-            const response = await env.ASSETS.fetch(
-                new Request(`http://localhost/emperor-polls/${date}.json`),
-            );
-            if (response.ok) {
-                emperorPoll = (await response.json()) as EmperorPoll;
-            }
-        }
-    } catch {
-        // Emperor poll is optional
-    }
+    // Emperor poll: finalized D1 row first, static JSON for older sessions
+    const emperorPoll: EmperorPoll | null = await getEmperorPoll(date, seasonId);
 
     // Get detailedGames as topPlayerGames (filter out nulls)
     const topPlayerGames = sessionSummary.detailedGames.filter(
