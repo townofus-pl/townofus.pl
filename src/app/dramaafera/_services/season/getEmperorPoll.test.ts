@@ -1,6 +1,6 @@
 import { getCloudflareContext } from '@opennextjs/cloudflare';
 import { getDatabaseClient } from '../db';
-import { EMPEROR_POLL_QUESTION, getEmperorPoll, mapEmperorPoll, toPollDate } from './getEmperorPoll';
+import { getEmperorPoll, mapEmperorPoll, toPollDate } from './getEmperorPoll';
 
 jest.mock('@opennextjs/cloudflare', () => ({ getCloudflareContext: jest.fn() }));
 jest.mock('../db', () => ({ getDatabaseClient: jest.fn() }));
@@ -11,6 +11,8 @@ const getClient = jest.mocked(getDatabaseClient);
 
 const findFirst = jest.fn();
 const assetsFetch = jest.fn();
+
+const QUESTION = 'KTO ZOSTANIE EMPEROREM PO DZISIEJSZEJ SESJI?';
 
 const jsonPoll = {
     date: '20260923',
@@ -39,14 +41,14 @@ describe('toPollDate', () => {
 
 describe('mapEmperorPoll', () => {
     test('gives the JSON shape, with the current player name and summed votes', () => {
-        const poll = mapEmperorPoll('20261021', [
+        const poll = mapEmperorPoll('20261021', QUESTION, [
             { nickname: 'OldName', voteCount: 4, player: { name: 'NewName', deletedAt: null } },
             { nickname: 'Subek', voteCount: 0, player: { name: 'Subek', deletedAt: null } },
             { nickname: 'Olivka', voteCount: 2, player: { name: 'Olivka', deletedAt: null } },
         ]);
         expect(poll).toEqual({
             date: '20261021',
-            question: EMPEROR_POLL_QUESTION,
+            question: QUESTION,
             totalVotes: 6,
             votes: [
                 { nickname: 'NewName', votes: 4 },
@@ -57,21 +59,22 @@ describe('mapEmperorPoll', () => {
     });
 
     test('falls back to the saved nickname when the player is missing or soft-deleted', () => {
-        const poll = mapEmperorPoll('20261021', [
+        const poll = mapEmperorPoll('20261021', QUESTION, [
             { nickname: 'Gone', voteCount: 1, player: null },
             { nickname: 'Deleted', voteCount: 1, player: { name: 'Renamed', deletedAt: new Date() } },
         ]);
         expect(poll.votes.map((v) => v.nickname)).toEqual(['Gone', 'Deleted']);
     });
 
-    test('uses the same question as the JSON files', () => {
-        expect(EMPEROR_POLL_QUESTION).toBe('KTO ZOSTANIE EMPEROREM PO DZISIEJSZEJ SESJI?');
+    test('keeps the question text the poll was sent with', () => {
+        expect(mapEmperorPoll('20261021', 'Kto zostanie Emperorem?', []).question).toBe('Kto zostanie Emperorem?');
     });
 });
 
 describe('getEmperorPoll', () => {
     test('reads a finalized, not deleted poll for the date and season from D1', async () => {
         findFirst.mockResolvedValue({
+            question: 'KTO BĘDZIE EMPEROREM PO DZIŚ?!',
             candidates: [{ nickname: 'ziomson', voteCount: 5, player: { name: 'ziomson', deletedAt: null } }],
         });
 
@@ -79,13 +82,14 @@ describe('getEmperorPoll', () => {
 
         expect(poll).toEqual({
             date: '20261021',
-            question: EMPEROR_POLL_QUESTION,
+            question: 'KTO BĘDZIE EMPEROREM PO DZIŚ?!',
             totalVotes: 5,
             votes: [{ nickname: 'ziomson', votes: 5 }],
         });
         expect(findFirst).toHaveBeenCalledWith(expect.objectContaining({
             where: { deletedAt: null, date: '2026-10-21', season: 6, finalizedAt: { not: null } },
         }));
+        expect(findFirst.mock.calls[0][0].select.question).toBe(true);
         expect(findFirst.mock.calls[0][0].select.candidates.where).toEqual({ deletedAt: null });
         expect(assetsFetch).not.toHaveBeenCalled();
     });

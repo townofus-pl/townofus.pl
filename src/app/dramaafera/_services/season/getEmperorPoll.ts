@@ -3,12 +3,6 @@ import { getDatabaseClient } from '../db';
 import { withoutDeleted } from '@/app/api/schema/common';
 import type { EmperorPoll } from '@/app/dramaafera/_components/PodsumowanieClient/types';
 
-/**
- * The question the hosts' JSON files use today. D1 stores no question, so the presentation
- * shows this one for every poll read from D1.
- */
-export const EMPEROR_POLL_QUESTION = 'KTO ZOSTANIE EMPEROREM PO DZISIEJSZEJ SESJI?';
-
 export interface EmperorPollCandidateRow {
     nickname: string;
     voteCount: number;
@@ -22,18 +16,23 @@ export function toPollDate(date: string): string | null {
 }
 
 /**
- * Maps a finalized D1 poll to the shape the JSON files have. The nickname is the player's
- * current name, so a rename after the poll still shows the name the rest of the page uses.
- * The candidate's saved nickname is the fallback when the player row is gone.
+ * Maps a finalized D1 poll to the shape the JSON files have. The question is the text the poll
+ * was sent with. The nickname is the player's current name, so a rename after the poll still
+ * shows the name the rest of the page uses. The candidate's saved nickname is the fallback when
+ * the player row is gone or soft-deleted.
  */
-export function mapEmperorPoll(date: string, candidates: EmperorPollCandidateRow[]): EmperorPoll {
+export function mapEmperorPoll(
+    date: string,
+    question: string,
+    candidates: EmperorPollCandidateRow[],
+): EmperorPoll {
     const votes = candidates.map((c) => ({
         nickname: c.player && c.player.deletedAt === null ? c.player.name : c.nickname,
         votes: c.voteCount,
     }));
     return {
         date,
-        question: EMPEROR_POLL_QUESTION,
+        question,
         totalVotes: votes.reduce((sum, v) => sum + v.votes, 0),
         votes,
     };
@@ -56,6 +55,7 @@ async function getEmperorPollFromDatabase(date: string, seasonId: number): Promi
             finalizedAt: { not: null },
         },
         select: {
+            question: true,
             candidates: {
                 where: withoutDeleted,
                 orderBy: { id: 'asc' },
@@ -68,7 +68,7 @@ async function getEmperorPollFromDatabase(date: string, seasonId: number): Promi
         },
     });
 
-    return poll ? mapEmperorPoll(date, poll.candidates) : null;
+    return poll ? mapEmperorPoll(date, poll.question, poll.candidates) : null;
 }
 
 async function getEmperorPollFromAssets(date: string): Promise<EmperorPoll | null> {
