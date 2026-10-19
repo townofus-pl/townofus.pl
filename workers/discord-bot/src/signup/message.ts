@@ -30,7 +30,7 @@ export function formatDayMonth(date: string): string {
 }
 
 // Nicks are free text. Escape Markdown so `_x_` stays `_x_`, and never ping anyone.
-const escapeMarkdown = (text: string): string => text.replace(/[\\*_~`|>#[\]()-]/g, '\\$&');
+export const escapeMarkdown = (text: string): string => text.replace(/[\\*_~`|>#[\]()-]/g, '\\$&');
 
 const MAX_CONTENT = 2000;
 

@@ -44,7 +44,14 @@ The buttons on the signup message have the custom_ids `signup:join:YYYY-MM-DD` a
 - The 18:00 step finds the bot's own message with the button for that date in the channel
   history, then disables the buttons and adds `TEXT_SIGNUP_CLOSED`.
 - The identity rules (link, new player, nick of a linked player) are at the top of
-  `src/signup/identity.ts`.
+  `src/signup/identity.ts`. When the nick belongs to a player linked to another account, the
+  click changes nothing and the clicker gets a reply that the host will check.
+- The bot matches a nick to a player without regard to case, Polish letters included. On the
+  list, the bot always writes the player's own spelling.
+- **Known limit:** the list compare in SQL (`COLLATE NOCASE`) folds ASCII letters only. If the
+  host types a name with Polish letters in another case ("łoś" for "Łoś"), the bot does not see
+  that name as the same. A join can then add the name a second time, and a leave does not
+  remove the host's version.
 
 ## Configuration
 

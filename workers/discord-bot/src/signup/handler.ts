@@ -5,12 +5,12 @@
 // PATCH. An interaction has exactly one response, so the confirmation for the clicker is an
 // ephemeral follow-up message, sent from waitUntil after the response. The D1 work before the
 // response is a few short queries, far below Discord's 3 s limit. A click that changes nothing
-// (closed, bad button, error) gets one ephemeral reply and leaves the message as it is.
+// (closed, bad button, nick taken, error) gets one ephemeral reply and leaves the message as it is.
 
 import { ephemeralReply, jsonResponse, type Interaction } from '../discord';
 import type { BotEnv } from '../env';
 import { resolveForJoin, resolveForLeave, type SignupIdentity } from './identity';
-import { formatDayMonth, parseSignupCustomId, renderSignupMessage } from './message';
+import { escapeMarkdown, formatDayMonth, parseSignupCustomId, renderSignupMessage } from './message';
 import { discordRest, type SignupRest } from './rest';
 import { joinRoster, leaveRoster, seasonForSession, signupClosesAt } from './roster';
 
@@ -28,11 +28,15 @@ const FAILED = 'Coś poszło nie tak. Spróbuj jeszcze raz.';
 function confirmation(action: 'join' | 'leave', date: string, identity: SignupIdentity): string {
     const day = formatDayMonth(date);
     if (action === 'leave') return `Nie ma cię na liście na ${day}.`;
-    const base = `Jesteś na liście na ${day} jako **${identity.name}**.`;
-    if (identity.outcome === 'taken') {
-        return `${base} Ten nick ma już inne konto Discord, więc host sprawdzi, kim jesteś.`;
-    }
-    return base;
+    return `Jesteś na liście na ${day} jako **${escapeMarkdown(identity.name)}**.`;
+}
+
+/** The nick belongs to a player linked to another account: the click changes nothing. */
+function takenReply(action: 'join' | 'leave', identity: SignupIdentity): string {
+    const nick = `**${escapeMarkdown(identity.name)}**`;
+    return action === 'join'
+        ? `Nick ${nick} ma gracz powiązany z innym kontem Discord, więc nie zapisuję cię. Host to sprawdzi.`
+        : `Nick ${nick} ma gracz powiązany z innym kontem Discord, więc nikogo nie wypisuję. Napisz do hosta.`;
 }
 
 export async function handleSignupButton(
@@ -53,6 +57,7 @@ export async function handleSignupButton(
         const season = seasonForSession(button.date);
         const join = button.action === 'join';
         const identity = join ? await resolveForJoin(env.DB, member) : await resolveForLeave(env.DB, member);
+        if (identity.outcome === 'taken') return ephemeralReply(takenReply(button.action, identity));
         const names = join
             ? await joinRoster(env.DB, season, button.date, identity.name, closesAt)
             : await leaveRoster(env.DB, season, button.date, identity.name, closesAt);

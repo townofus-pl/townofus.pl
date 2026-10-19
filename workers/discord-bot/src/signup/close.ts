@@ -1,8 +1,10 @@
 // Wednesday 18:00: disable the buttons on the signup message and add TEXT_SIGNUP_CLOSED.
 //
 // Finding the message needs no table: the bot reads the channel history and takes its own
-// messages that carry the button `signup:join:<date>`. The custom_id holds the date, so it
-// identifies the message exactly. A bot can read the components of its own messages without the
+// messages (author.id = DISCORD_APPLICATION_ID, the bot user's ID) that carry the button
+// `signup:join:<date>`. Another app's message (dev, staging) on the same channel is skipped, so
+// a 403 on its PATCH cannot block ours. The custom_id holds the date, so it identifies the
+// message exactly. A bot can read the components of its own messages without the
 // MESSAGE_CONTENT intent, and READ_MESSAGE_HISTORY is already in the bot's permissions. The
 // message is posted the Wednesday before, so the search stops at messages older than 8 days.
 //
@@ -19,7 +21,12 @@ const SEARCH_WINDOW_MS = 8 * 24 * 3_600_000;
 
 const buttons = (message: ChannelMessage) => (message.components ?? []).flatMap((row) => row.components ?? []);
 
-export async function findSignupMessages(rest: SignupRest, channelId: string, date: string): Promise<ChannelMessage[]> {
+export async function findSignupMessages(
+    rest: SignupRest,
+    channelId: string,
+    botUserId: string,
+    date: string,
+): Promise<ChannelMessage[]> {
     const joinId = signupCustomId('join', date);
     const oldest = Date.parse(`${date}T00:00:00Z`) - SEARCH_WINDOW_MS;
     const found: ChannelMessage[] = [];
@@ -27,7 +34,7 @@ export async function findSignupMessages(rest: SignupRest, channelId: string, da
     for (let page = 0; page < MAX_PAGES; page++) {
         const messages = await rest.listMessages(channelId, before);
         for (const message of messages) {
-            if (message.author?.bot && buttons(message).some((b) => b.custom_id === joinId)) found.push(message);
+            if (message.author?.id === botUserId && buttons(message).some((b) => b.custom_id === joinId)) found.push(message);
         }
         const last = messages[messages.length - 1];
         if (messages.length < 100 || !last || Date.parse(last.timestamp) < oldest) break;
@@ -42,7 +49,7 @@ export async function closeSignupMessages(
     date: string,
     rest: SignupRest = discordRest(env),
 ): Promise<number> {
-    const open = (await findSignupMessages(rest, env.DISCORD_CHANNEL_ID, date)).filter((message) =>
+    const open = (await findSignupMessages(rest, env.DISCORD_CHANNEL_ID, env.DISCORD_APPLICATION_ID, date)).filter((message) =>
         buttons(message).some((b) => !b.disabled),
     );
     if (open.length === 0) return 0;

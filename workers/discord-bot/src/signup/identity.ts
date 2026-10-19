@@ -4,7 +4,11 @@
 // 2. Unlinked, nick matches a player without an account → link to that player.
 // 3. Unlinked, no player with that nick → new player (name only) + its initial ranking row, the
 //    same rows the site's createPlayerWithRanking writes, + link.
-// 4. Unlinked, the player has another account → no link, the nick as it is.
+// 4. Unlinked, the nick belongs to a player linked to another account → "taken": the click
+//    changes nothing on the list. The name there is someone else's, so this account can neither
+//    add it nor remove it. The host checks who it is.
+//
+// An account removes only its own player's name, or its own nick when no linked player has it.
 //
 // D1 has no interactive transactions, so every write is guarded in SQL and the account is read
 // again at the end. Two clicks at the same time end in the same state as two in a row.
@@ -44,37 +48,56 @@ async function linkedPlayerName(db: D1Database, discordUserId: string): Promise<
     return row?.name ?? null;
 }
 
-interface PlayerMatch {
+interface Player {
     id: number;
     name: string;
-    hasAccount: number;
 }
+
+type NickMatch =
+    | { kind: 'none' }
+    | { kind: 'free'; player: Player }
+    | { kind: 'taken' }
+    /** Several players differ from the nick only in case, and none of them is linked. */
+    | { kind: 'ambiguous' };
+
+// SQLite's NOCASE folds ASCII only, so "łoś" would not find "Łoś". Fold in JS instead.
+const fold = (name: string) => name.toLocaleLowerCase('pl');
 
 /**
  * The player whose name equals the nick: the exact match first, otherwise a case-insensitive
- * match when there is exactly one. `ambiguous` when several players differ only in case.
+ * match (Polish letters included) when there is exactly one.
+ *
+ * Reads every non-deleted player (id and name only): one row read per player, a few hundred at
+ * most, and only for clicks from accounts without a link.
  */
-async function findPlayer(db: D1Database, nick: string): Promise<PlayerMatch | 'ambiguous' | null> {
-    const { results } = await db
-        .prepare(
-            `SELECT p.id, p.name,
-                    EXISTS (SELECT 1 FROM discord_accounts a WHERE a.playerId = p.id) AS hasAccount
-             FROM players p
-             WHERE p.name = ?1 COLLATE NOCASE AND p.deletedAt IS NULL
-             ORDER BY p.name = ?1 DESC
-             LIMIT 2`,
-        )
-        .bind(nick)
-        .all<PlayerMatch>();
-    if (results.length === 0) return null;
-    if (results[0].name === nick || results.length === 1) return results[0];
-    return 'ambiguous';
+async function matchNick(db: D1Database, nick: string): Promise<NickMatch> {
+    const { results: players } = await db
+        .prepare('SELECT id, name FROM players WHERE deletedAt IS NULL')
+        .all<Player>();
+    const exact = players.find((p) => p.name === nick);
+    const candidates = exact ? [exact] : players.filter((p) => fold(p.name) === fold(nick));
+    if (candidates.length === 0) return { kind: 'none' };
+
+    const { results: linked } = await db
+        .prepare(`SELECT playerId FROM discord_accounts WHERE playerId IN (${candidates.map(() => '?').join(',')})`)
+        .bind(...candidates.map((p) => p.id))
+        .all<{ playerId: number }>();
+    if (linked.length > 0) return { kind: 'taken' };
+    return candidates.length === 1 ? { kind: 'free', player: candidates[0] } : { kind: 'ambiguous' };
+}
+
+/** The name an unlinked account may write or remove: a free player's own spelling, or the nick. */
+function unlinkedIdentity(nick: string, match: NickMatch): SignupIdentity {
+    if (match.kind === 'taken') return { name: nick, outcome: 'taken' };
+    return { name: match.kind === 'free' ? match.player.name : nick, outcome: 'unlinked' };
 }
 
 /** Read-only, for "Wypisz mnie": a leave never creates a player or a link. */
 export async function resolveForLeave(db: D1Database, member: GuildMember): Promise<SignupIdentity> {
     const linked = await linkedPlayerName(db, member.user.id);
-    return linked ? { name: linked, outcome: 'linked' } : { name: displayName(member), outcome: 'unlinked' };
+    if (linked) return { name: linked, outcome: 'linked' };
+    const nick = displayName(member);
+    return unlinkedIdentity(nick, await matchNick(db, nick));
 }
 
 /** For "Gram": creates the account row, and the link or the player when the rules allow it. */
@@ -96,30 +119,32 @@ export async function resolveForJoin(db: D1Database, member: Member): Promise<Si
         .bind(userId, member.user.username, member.user.avatar ?? null)
         .run();
 
-    const match = await findPlayer(db, nick);
-    if (match === 'ambiguous' || (match && match.hasAccount)) return { name: nick, outcome: 'taken' };
+    const match = await matchNick(db, nick);
+    if (match.kind === 'taken' || match.kind === 'ambiguous') return unlinkedIdentity(nick, match);
 
-    let expected: IdentityOutcome;
-    if (match) {
-        expected = 'newLink';
+    if (match.kind === 'free') {
         await db
             .prepare(
                 `UPDATE discord_accounts SET playerId = ?1, version = version + 1, updatedAt = ${SQL_NOW}
                  WHERE discordUserId = ?2 AND playerId IS NULL AND deletedAt IS NULL
                    AND NOT EXISTS (SELECT 1 FROM discord_accounts WHERE playerId = ?1)`,
             )
-            .bind(match.id, userId)
+            .bind(match.player.id, userId)
             .run();
     } else {
-        expected = 'newPlayer';
         await createLinkedPlayer(db, userId, nick);
     }
 
     // Whatever happened in between (a double click, another account with the same nick), the
     // stored link decides.
     const name = await linkedPlayerName(db, userId);
-    if (!name) return { name: nick, outcome: 'taken' };
-    return { name, outcome: name === (match ? match.name : nick) ? expected : 'linked' };
+    if (name) {
+        const expected = match.kind === 'free' ? match.player.name : nick;
+        if (name !== expected) return { name, outcome: 'linked' };
+        return { name, outcome: match.kind === 'free' ? 'newLink' : 'newPlayer' };
+    }
+    // No link: another account took the player first, or a deleted player holds the name.
+    return unlinkedIdentity(nick, await matchNick(db, nick));
 }
 
 /**

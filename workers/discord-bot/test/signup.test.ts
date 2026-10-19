@@ -24,6 +24,7 @@ beforeAll(async () => {
     env = {
         DB: db,
         DISCORD_CHANNEL_ID: 'channel',
+        DISCORD_APPLICATION_ID: 'app',
         TEXT_SIGNUP: 'Kto gra w środę {date}? Kliknij Gram.',
         TEXT_SIGNUP_CLOSED: 'Zapisy zamknięte',
         TEXT_SIGNUP_CLOSED_REPLY: 'Zapisy zamknięte, napisz do hosta',
@@ -220,12 +221,48 @@ describe('identity', () => {
         expect(await roster()).toEqual(['Nowy']);
     });
 
-    it('nick of a player linked to another account: no link, the nick as it is', async () => {
+    it('nick of a player linked to another account: no link, nothing written', async () => {
         await addPlayer('Quarties', 'owner');
-        const { followups } = await click('join', member('2', 'QUARTIES'));
+        const { response, followups } = await click('join', member('2', 'QUARTIES'));
+        expect(response.type).toBe(4);
+        expect(response.data.flags).toBe(MessageFlags.Ephemeral);
+        expect(response.data.content).toContain('Host to sprawdzi');
+        expect(followups).toEqual([]);
         expect(await accountOf('2')).toEqual({ playerId: null });
-        expect(await roster()).toEqual(['QUARTIES']);
-        expect(followups[0]).toContain('host sprawdzi');
+        expect(await roster()).toEqual([]);
+    });
+
+    it('A linked to a player, B unlinked with the same nick: B cannot claim or remove A', async () => {
+        await addPlayer('Quarties', 'A');
+        await click('join', member('A', 'Quarties'));
+        expect(await roster()).toEqual(['Quarties']);
+
+        const join = await click('join', member('B', 'Quarties'));
+        expect(join.response.type).toBe(4);
+        expect(join.response.data.content).not.toContain('Jesteś na liście');
+        expect(join.followups).toEqual([]);
+
+        const leave = await click('leave', member('B', 'Quarties'));
+        expect(leave.response.type).toBe(4);
+        expect(leave.response.data.content).toContain('nikogo nie wypisuję');
+        expect(await roster()).toEqual(['Quarties']);
+        expect(await accountOf('B')).toEqual({ playerId: null });
+
+        await click('leave', member('A', 'Quarties'));
+        expect(await roster()).toEqual([]);
+    });
+
+    it('matches Polish letters in another case and writes the player own spelling', async () => {
+        const id = await addPlayer('Łoś');
+        await click('join', member('1', 'łoś'));
+        expect(await accountOf('1')).toEqual({ playerId: id });
+        expect(await all('SELECT name FROM players')).toEqual([{ name: 'Łoś' }]);
+        expect(await roster()).toEqual(['Łoś']);
+    });
+
+    it('escapes Markdown in the confirmation', async () => {
+        const { followups } = await click('join', member('1', '_x_'));
+        expect(followups).toEqual(['Jesteś na liście na 02.01 jako **\\_x\\_**.']);
     });
 
     it('never moves an existing link', async () => {
@@ -276,10 +313,10 @@ describe('closeSignups step', () => {
         return { rest, edits };
     }
 
-    const signupMessage = (id: string, date: string, bot = true): ChannelMessage => ({
+    const signupMessage = (id: string, date: string, authorId = 'app'): ChannelMessage => ({
         id,
         timestamp: new Date().toISOString(),
-        author: { id: 'app', bot },
+        author: { id: authorId, bot: true },
         components: [{ components: [{ custom_id: signupCustomId('join', date) }, { custom_id: signupCustomId('leave', date) }] }],
     });
 
@@ -288,7 +325,7 @@ describe('closeSignups step', () => {
         const { rest, edits } = fakeChannel([
             signupMessage('other-date', '2029-12-26'),
             signupMessage('mine', DATE),
-            signupMessage('not-a-bot', DATE, false),
+            signupMessage('other-app', DATE, 'staging-app'),
         ]);
 
         expect(await closeSignupMessages(env, DATE, rest)).toBe(1);

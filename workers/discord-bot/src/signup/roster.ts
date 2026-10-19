@@ -2,8 +2,10 @@
 //
 // Join and leave are one SQL statement each on the JSON stored at that moment, the pattern of
 // `changeSignup` on the `Discord` branch (PR #346). The bot never writes a list it read earlier,
-// so a host edit in the panel between two clicks stays. Names compare case-insensitively, so
-// "quarties" typed by the host and "Quarties" from the bot are one person.
+// so a host edit in the panel between two clicks stays. Names compare with NOCASE, so
+// "quarties" typed by the host and "Quarties" from the bot are one person. NOCASE folds ASCII
+// only ("łoś" ≠ "Łoś"). The bot always writes a matched player's own spelling, so this matters
+// only for a name the host typed in another case.
 //
 // The SQL clock also checks the deadline, so a click that arrives late cannot change the list.
 
