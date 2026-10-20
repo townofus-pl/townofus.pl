@@ -105,7 +105,7 @@ export interface DiscordPollRest {
 }
 
 /** Seconds from the body's `retry_after`, else from the `Retry-After` header. */
-function retryAfterMs(response: Response, body: string): number | undefined {
+export function retryAfterMs(response: Response, body: string): number | undefined {
     let seconds = Number.NaN;
     try {
         seconds = Number((JSON.parse(body) as { retry_after?: unknown }).retry_after);

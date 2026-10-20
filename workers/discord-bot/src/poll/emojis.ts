@@ -11,11 +11,12 @@
 // new name, so the bot creates a new emoji and deletes the older versions of that player.
 //
 // This is decoration. Every failure (fetch, create, a 429 after one short retry, a timeout, the
-// time budget) only removes the emoji of that answer. The poll is always sent.
+// time budget) only removes the emoji of that answer. The budget is a hard cap: the resolver
+// returns when it is spent, whatever is still in flight. The poll is always sent.
 
 import type { BotEnv } from '../env';
 import type { Candidate } from './candidates';
-import { MAX_INLINE_RETRY_MS } from './discordApi';
+import { MAX_INLINE_RETRY_MS, retryAfterMs } from './discordApi';
 
 const API = 'https://discord.com/api/v10';
 
@@ -58,6 +59,14 @@ interface Identity {
 }
 
 class EmojiError extends Error {}
+
+/** The state of one resolver call. */
+interface Run {
+    /** Set when the hard budget is spent: no new request starts. */
+    stopped: boolean;
+    /** The requests in flight, aborted when the budget is spent. */
+    controllers: Set<AbortController>;
+}
 
 export function emojiName(playerId: number, hash: string): string {
     return `av_${playerId}_${hash.slice(0, 8)}`;
@@ -105,43 +114,48 @@ export function createAvatarEmojis(
     const appPath = `${API}/applications/${env.DISCORD_APPLICATION_ID}/emojis`;
     const auth = { Authorization: `Bot ${env.DISCORD_BOT_TOKEN}` };
 
-    /** One request with a timeout. The race also covers a fetcher that ignores the signal. */
-    async function timedFetch(url: string, init: RequestInit = {}): Promise<Response> {
+    /**
+     * One request with a timeout. `read` consumes the body inside the timeout: the signal stays
+     * armed until the body is fully read, so a body that never ends is cut too. The race also
+     * covers a fetcher that ignores the signal. `run.stopped` (the hard budget) aborts it at once.
+     */
+    async function timedFetch<T>(
+        run: Run,
+        url: string,
+        init: RequestInit,
+        read: (response: Response) => Promise<T>,
+    ): Promise<T> {
+        if (run.stopped) throw new EmojiError(`emoji budget spent: ${url}`);
         const controller = new AbortController();
-        let timer: ReturnType<typeof setTimeout> | undefined;
-        const timeout = new Promise<never>((_, reject) => {
-            timer = setTimeout(() => {
-                controller.abort();
-                reject(new EmojiError(`timeout after ${timeoutMs} ms: ${url}`));
-            }, timeoutMs);
+        const aborted = new Promise<never>((_, reject) => {
+            controller.signal.addEventListener('abort', () => reject(controller.signal.reason), { once: true });
         });
+        const timer = setTimeout(
+            () => controller.abort(new EmojiError(`timeout after ${timeoutMs} ms: ${url}`)),
+            timeoutMs,
+        );
+        run.controllers.add(controller);
         try {
-            return await Promise.race([fetcher(url, { ...init, signal: controller.signal }), timeout]);
+            return await Promise.race([fetcher(url, { ...init, signal: controller.signal }).then(read), aborted]);
         } finally {
             clearTimeout(timer);
+            run.controllers.delete(controller);
         }
     }
 
-    /** A Discord call. A 429 with a short wait gets one retry. */
-    async function discordCall(method: string, url: string, body?: unknown): Promise<Response> {
+    /** A Discord call. A 429 with a short wait gets one retry. Returns the parsed JSON body, or null. */
+    async function discordCall(run: Run, method: string, url: string, body?: unknown): Promise<unknown> {
         const init: RequestInit = {
             method,
             headers: body === undefined ? auth : { ...auth, 'Content-Type': 'application/json' },
             ...(body === undefined ? {} : { body: JSON.stringify(body) }),
         };
         for (let attempt = 0; ; attempt++) {
-            const response = await timedFetch(url, init);
-            if (response.ok) return response;
-            const text = await response.text();
+            const { response, text } = await timedFetch(run, url, init, async (r) => ({ response: r, text: await r.text() }));
+            if (response.ok) return text === '' ? null : JSON.parse(text);
             if (response.status === 429 && attempt === 0) {
-                let seconds = Number.NaN;
-                try {
-                    seconds = Number((JSON.parse(text) as { retry_after?: unknown }).retry_after);
-                } catch {
-                    seconds = Number(response.headers.get('Retry-After'));
-                }
-                const wait = Math.ceil(seconds * 1000);
-                if (Number.isFinite(wait) && wait >= 0 && wait <= MAX_INLINE_RETRY_MS) {
+                const wait = retryAfterMs(response, text);
+                if (wait !== undefined && wait <= MAX_INLINE_RETRY_MS) {
                     await sleep(wait);
                     continue;
                 }
@@ -151,17 +165,18 @@ export function createAvatarEmojis(
     }
 
     /** The image bytes and type, or null for a 404, a non-image or an image over the limit. */
-    async function fetchImage(url: string): Promise<{ bytes: ArrayBuffer; type: string } | null> {
+    async function fetchImage(run: Run, url: string): Promise<{ bytes: ArrayBuffer; type: string } | null> {
         try {
-            const response = await timedFetch(url);
-            if (!response.ok) return null;
-            const type = (response.headers.get('Content-Type') ?? '').split(';')[0].trim().toLowerCase();
-            if (!IMAGE_TYPES.includes(type)) return null;
-            const length = Number(response.headers.get('Content-Length'));
-            if (Number.isFinite(length) && length > MAX_EMOJI_BYTES) return null;
-            const bytes = await response.arrayBuffer();
-            if (bytes.byteLength === 0 || bytes.byteLength > MAX_EMOJI_BYTES) return null;
-            return { bytes, type };
+            return await timedFetch(run, url, {}, async (response) => {
+                if (!response.ok) return null;
+                const type = (response.headers.get('Content-Type') ?? '').split(';')[0].trim().toLowerCase();
+                if (!IMAGE_TYPES.includes(type)) return null;
+                const length = Number(response.headers.get('Content-Length'));
+                if (Number.isFinite(length) && length > MAX_EMOJI_BYTES) return null;
+                const bytes = await response.arrayBuffer();
+                if (bytes.byteLength === 0 || bytes.byteLength > MAX_EMOJI_BYTES) return null;
+                return { bytes, type };
+            });
         } catch (error) {
             console.warn(JSON.stringify({ event: 'avatarFetchFailed', url, error: String(error) }));
             return null;
@@ -183,52 +198,79 @@ export function createAvatarEmojis(
         return new Map(results.map((r) => [r.playerId, r]));
     }
 
-    async function imageFor(candidate: Candidate, identity: Identity | undefined) {
+    async function imageFor(run: Run, candidate: Candidate, identity: Identity | undefined) {
         // The current name: a player renamed after the poll row was written has the avatar file
         // under the new name.
-        const site = await fetchImage(siteAvatarUrl(baseUrl, identity?.name ?? candidate.nickname));
+        const site = await fetchImage(run, siteAvatarUrl(baseUrl, identity?.name ?? candidate.nickname));
         if (site) return site;
         if (identity?.discordUserId && identity.avatar) {
-            return fetchImage(discordAvatarUrl(identity.discordUserId, identity.avatar));
+            return fetchImage(run, discordAvatarUrl(identity.discordUserId, identity.avatar));
         }
         return null;
     }
 
+    /**
+     * The hard cap: after `budgetMs` the resolver returns the emojis that are ready, whatever the
+     * work is waiting for (a request, a body that never ends, D1). Every request still open is
+     * aborted and no new one starts, so nothing left behind blocks the poll send.
+     */
     return async (candidates) => {
         const emojis: AvatarEmojis = new Map();
         if (candidates.length === 0) return emojis;
-        const deadline = clock() + budgetMs;
+        const run: Run = { stopped: false, controllers: new Set() };
+        let timer: ReturnType<typeof setTimeout> | undefined;
+        const cutoff = new Promise<'cutoff'>((resolve) => {
+            timer = setTimeout(() => resolve('cutoff'), budgetMs);
+        });
+        const work = resolveAll(run, candidates, emojis, clock() + budgetMs)
+            .then(() => 'done' as const)
+            .catch((error: unknown) => {
+                console.warn(JSON.stringify({ event: 'avatarEmojisFailed', error: String(error) }));
+                return 'done' as const;
+            });
+        try {
+            if ((await Promise.race([work, cutoff])) === 'cutoff') {
+                console.warn(JSON.stringify({ event: 'avatarEmojiBudgetSpent', ready: emojis.size }));
+            }
+        } finally {
+            clearTimeout(timer);
+            run.stopped = true;
+            for (const controller of run.controllers) controller.abort(new EmojiError('emoji budget spent'));
+        }
+        // A copy: work cut by the budget can still settle later, and must not change the poll.
+        return new Map(emojis);
+    };
 
+    async function resolveAll(run: Run, candidates: Candidate[], emojis: AvatarEmojis, deadline: number) {
         let existing: AppEmoji[];
         let identities: Map<number, Identity>;
         try {
             identities = await loadIdentities(candidates);
-            const listed = (await (await discordCall('GET', appPath)).json()) as { items?: AppEmoji[] };
-            existing = listed.items ?? [];
+            const listed = (await discordCall(run, 'GET', appPath)) as { items?: AppEmoji[] } | null;
+            existing = listed?.items ?? [];
         } catch (error) {
             console.warn(JSON.stringify({ event: 'avatarEmojisSkipped', error: String(error) }));
-            return emojis;
+            return;
         }
 
         for (const candidate of candidates) {
+            if (run.stopped) return;
             if (clock() >= deadline) {
                 console.warn(JSON.stringify({ event: 'avatarEmojiBudgetSpent', playerId: candidate.playerId }));
                 break;
             }
             const { playerId } = candidate;
             try {
-                const image = await imageFor(candidate, identities.get(playerId));
+                const image = await imageFor(run, candidate, identities.get(playerId));
                 if (!image) continue;
                 const name = emojiName(playerId, await sha256Hex(image.bytes));
 
                 let emoji = existing.find((e) => e.name === name);
                 if (!emoji) {
-                    const created = (await (
-                        await discordCall('POST', appPath, {
-                            name,
-                            image: `data:${image.type};base64,${toBase64(image.bytes)}`,
-                        })
-                    ).json()) as AppEmoji;
+                    const created = (await discordCall(run, 'POST', appPath, {
+                        name,
+                        image: `data:${image.type};base64,${toBase64(image.bytes)}`,
+                    })) as AppEmoji;
                     emoji = { id: created.id, name };
                     existing.push(emoji);
                 }
@@ -238,9 +280,9 @@ export function createAvatarEmojis(
                 // an unused emoji, and the next poll tries again.
                 const old = new RegExp(`^av_${playerId}_[0-9a-f]{8}$`);
                 for (const stale of existing.filter((e) => e.name !== name && old.test(e.name))) {
-                    if (clock() >= deadline) break;
+                    if (run.stopped || clock() >= deadline) break;
                     try {
-                        await discordCall('DELETE', `${appPath}/${stale.id}`);
+                        await discordCall(run, 'DELETE', `${appPath}/${stale.id}`);
                         existing = existing.filter((e) => e.id !== stale.id);
                     } catch (error) {
                         console.warn(JSON.stringify({ event: 'avatarEmojiDeleteFailed', name: stale.name, error: String(error) }));
@@ -251,6 +293,5 @@ export function createAvatarEmojis(
                 console.warn(JSON.stringify({ event: 'avatarEmojiFailed', playerId, error: String(error) }));
             }
         }
-        return emojis;
-    };
+    }
 }

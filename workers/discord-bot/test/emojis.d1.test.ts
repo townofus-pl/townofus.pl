@@ -4,7 +4,7 @@ import type { BotEnv } from '../src/env';
 import { loadGameDay } from '../src/poll/candidates';
 import { runAnkieta } from '../src/poll/command';
 import { ensurePoll } from '../src/poll/createPoll';
-import type { DiscordRest } from '../src/poll/discordApi';
+import { DiscordApiError, type DiscordRest } from '../src/poll/discordApi';
 import {
     createAvatarEmojis,
     discordAvatarUrl,
@@ -98,6 +98,25 @@ function fakeNet(options: {
         creates: () => calls.filter((c) => c.method === 'POST'),
         deletes: () => calls.filter((c) => c.method === 'DELETE').map((c) => c.url.slice(EMOJIS.length + 1)),
     };
+}
+
+/**
+ * `url` answers 200 image/png with a body that never ends. The body errors when the request's
+ * signal aborts, as a real fetch does. `signals` collects that request's signal.
+ */
+function endlessBody(url: string, fallback: typeof fetch, signals: AbortSignal[]): typeof fetch {
+    return (async (input: RequestInfo | URL, init?: RequestInit) => {
+        if (String(input) !== url) return fallback(input, init);
+        const signal = init!.signal!;
+        signals.push(signal);
+        const body = new ReadableStream({
+            start(controller) {
+                controller.enqueue(new Uint8Array([1, 2, 3]));
+                signal.addEventListener('abort', () => controller.error(signal.reason), { once: true });
+            },
+        });
+        return new Response(body, { status: 200, headers: { 'Content-Type': 'image/png' } });
+    }) as typeof fetch;
 }
 
 /** Captures the poll body. Everything else succeeds. */
@@ -286,6 +305,107 @@ describe('avatar emojis', () => {
         expect([...result.keys()]).toEqual([ids.Pacia]);
     });
 
+    it('the per-request timeout also covers a body that never ends', async () => {
+        const ids = await seed();
+        const net = fakeNet({ images: { [siteAvatarUrl(BASE, 'Pacia')]: { bytes: png('p') } } });
+        const signals: AbortSignal[] = [];
+        const fetcher = endlessBody(siteAvatarUrl(BASE, 'Bartek'), net.deps.fetcher, signals);
+        jest.spyOn(console, 'warn').mockImplementation(() => {});
+
+        const result = await createAvatarEmojis(env, db, { ...net.deps, fetcher, timeoutMs: 20 })(
+            candidatesOf(ids, 'Bartek', 'Pacia'),
+        );
+
+        expect([...result.keys()]).toEqual([ids.Pacia]);
+        expect(signals[0].aborted).toBe(true);
+    });
+
+    it('the hard budget returns the ready emojis while a body never ends, and aborts it', async () => {
+        const ids = await seed();
+        const net = fakeNet({ images: { [siteAvatarUrl(BASE, 'Pacia')]: { bytes: png('p') } } });
+        const signals: AbortSignal[] = [];
+        const fetcher = endlessBody(siteAvatarUrl(BASE, 'Bartek'), net.deps.fetcher, signals);
+        jest.spyOn(console, 'warn').mockImplementation(() => {});
+        const started = Date.now();
+
+        // The per-request timeout is far away: only the hard budget can end this.
+        const result = await createAvatarEmojis(env, db, { ...net.deps, fetcher, timeoutMs: 60_000, budgetMs: 200 })(
+            candidatesOf(ids, 'Pacia', 'Bartek', 'Łoś'),
+        );
+
+        expect(Date.now() - started).toBeLessThan(5_000);
+        expect([...result.keys()]).toEqual([ids.Pacia]);
+        expect(signals[0].aborted).toBe(true);
+        // Nothing starts after the cut.
+        await new Promise((resolve) => setTimeout(resolve, 20));
+        expect(net.calls.some((c) => c.url === siteAvatarUrl(BASE, 'Łoś'))).toBe(false);
+    });
+
+    it('the hard budget also cuts a fetcher that ignores the signal', async () => {
+        const ids = await seed();
+        const net = fakeNet();
+        const fetcher = (async () => new Response(new ReadableStream({ start() {} }), {
+            headers: { 'Content-Type': 'image/png' },
+        })) as typeof fetch;
+        jest.spyOn(console, 'warn').mockImplementation(() => {});
+
+        const result = await createAvatarEmojis(env, db, { ...net.deps, fetcher, timeoutMs: 60_000, budgetMs: 50 })(
+            candidatesOf(ids, 'Bartek'),
+        );
+
+        expect(result.size).toBe(0);
+    });
+
+    it('no new candidate starts once the clock passes the budget', async () => {
+        const ids = await seed();
+        const net = fakeNet({
+            images: {
+                [siteAvatarUrl(BASE, 'Bartek')]: { bytes: png('b') },
+                [siteAvatarUrl(BASE, 'Łoś')]: { bytes: png('l') },
+                [siteAvatarUrl(BASE, 'Pacia')]: { bytes: png('p') },
+            },
+        });
+        // Every request moves the clock 5 s. List, site, create: 15 s, over the 12 s budget.
+        let now = 0;
+        const fetcher = ((input: RequestInfo | URL, init?: RequestInit) => {
+            now += 5_000;
+            return net.deps.fetcher(input, init);
+        }) as typeof fetch;
+        jest.spyOn(console, 'warn').mockImplementation(() => {});
+
+        const result = await createAvatarEmojis(env, db, { ...net.deps, fetcher, clock: () => now, budgetMs: 12_000 })(
+            candidatesOf(ids, 'Bartek', 'Łoś', 'Pacia'),
+        );
+
+        expect([...result.keys()]).toEqual([ids.Bartek]);
+        expect(net.calls.map((c) => c.method)).toEqual(['GET', 'GET', 'POST']);
+    });
+
+    it('a 429 without retry_after in the body uses the Retry-After header', async () => {
+        const ids = await seed();
+        const net = fakeNet({ images: { [siteAvatarUrl(BASE, 'Bartek')]: { bytes: png('b') } } });
+        let limited = false;
+        const waits: number[] = [];
+        const fetcher = ((input: RequestInfo | URL, init?: RequestInit) => {
+            if (init?.method === 'POST' && !limited) {
+                limited = true;
+                return Promise.resolve(Response.json({}, { status: 429, headers: { 'Retry-After': '2' } }));
+            }
+            return net.deps.fetcher(input, init);
+        }) as typeof fetch;
+
+        const result = await createAvatarEmojis(env, db, {
+            ...net.deps,
+            fetcher,
+            sleep: async (ms) => {
+                waits.push(ms);
+            },
+        })(candidatesOf(ids, 'Bartek'));
+
+        expect(result.get(ids.Bartek)).toBe('900');
+        expect(waits).toEqual([2_000]);
+    });
+
     it('a failed list gives no emojis and no creates', async () => {
         const ids = await seed();
         const net = fakeNet({ images: { [siteAvatarUrl(BASE, 'Bartek')]: { bytes: png('b') } }, failList: true });
@@ -341,6 +461,90 @@ describe('poll payload with avatar emojis', () => {
                 { poll_media: { text: 'Pacia' } },
             ],
         ]);
+    });
+
+    describe('Discord refuses the poll', () => {
+        type Body = { nonce: string; poll: { answers: { poll_media: { text: string; emoji?: { id: string } } }[] } };
+
+        /** `status` for every poll body with an emoji (or for every body with `always`). */
+        function refusing(status: number, always = false) {
+            const sent: Body[] = [];
+            const discord: DiscordRest = {
+                ...fakeDiscord().discord,
+                async createMessage(_channel, raw) {
+                    const body = raw as Body;
+                    if (!(raw as { poll?: unknown }).poll) return { id: 'msg-signup' };
+                    sent.push(body);
+                    if (always || body.poll.answers.some((a) => a.poll_media.emoji)) {
+                        throw new DiscordApiError(status, '{"code":50035,"message":"Invalid Form Body"}');
+                    }
+                    return { id: 'msg-plain' };
+                },
+            };
+            return { discord, sent };
+        }
+
+        const emojiFor = (ids: Record<string, number>) => async () => new Map([[ids.Bartek, '111']]);
+
+        it('a 4xx on a poll with emojis sends it once more without emojis, with the same nonce', async () => {
+            const ids = await seed();
+            const { discord, sent } = refusing(400);
+            const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
+
+            const outcome = await ensurePoll(
+                { db, discord, env, now: NOW, avatarEmojis: emojiFor(ids) },
+                await loadGameDay(db, SESSION),
+            );
+
+            expect(outcome).toMatchObject({ kind: 'created' });
+            expect(sent).toHaveLength(2);
+            expect(sent[0].poll.answers[0].poll_media.emoji).toEqual({ id: '111' });
+            expect(sent[1].poll.answers.every((a) => a.poll_media.emoji === undefined)).toBe(true);
+            expect(sent[1].nonce).toBe(sent[0].nonce);
+            expect(warn.mock.calls.some(([line]) => String(line).includes('pollEmojisRejected'))).toBe(true);
+            const row = await db.prepare('SELECT "discordMessageId" FROM "emperor_polls"').first<{ discordMessageId: string }>();
+            expect(row?.discordMessageId).toBe('msg-plain');
+        });
+
+        it.each([429, 500])('a %i is not retried without emojis', async (status) => {
+            const ids = await seed();
+            const { discord, sent } = refusing(status);
+            jest.spyOn(console, 'error').mockImplementation(() => {});
+
+            const outcome = await ensurePoll(
+                { db, discord, env, now: NOW, avatarEmojis: emojiFor(ids) },
+                await loadGameDay(db, SESSION),
+            );
+
+            expect(outcome).toMatchObject({ kind: 'sendFailed' });
+            expect(sent).toHaveLength(1);
+        });
+
+        it('a 4xx on a poll without emojis is not retried', async () => {
+            await seed();
+            const { discord, sent } = refusing(400, true);
+            jest.spyOn(console, 'error').mockImplementation(() => {});
+
+            const outcome = await ensurePoll({ db, discord, env, now: NOW }, await loadGameDay(db, SESSION));
+
+            expect(outcome).toMatchObject({ kind: 'sendFailed' });
+            expect(sent).toHaveLength(1);
+        });
+
+        it('a retry that is refused too gives sendFailed after two sends', async () => {
+            const ids = await seed();
+            const { discord, sent } = refusing(403, true);
+            jest.spyOn(console, 'warn').mockImplementation(() => {});
+            jest.spyOn(console, 'error').mockImplementation(() => {});
+
+            const outcome = await ensurePoll(
+                { db, discord, env, now: NOW, avatarEmojis: emojiFor(ids) },
+                await loadGameDay(db, SESSION),
+            );
+
+            expect(outcome).toMatchObject({ kind: 'sendFailed' });
+            expect(sent).toHaveLength(2);
+        });
     });
 
     it('a resolver that throws does not stop the poll', async () => {

@@ -85,8 +85,11 @@ Each answer of the Emperor poll can show the avatar of the player as an applicat
    emojis of that player.
 
 The emojis are decoration. A failed fetch, create or delete, a timeout (5 s per request), an image
-over 256 KiB, or a 429 after one short retry removes only the emoji of that answer. All emoji work
-stops after 12 s, so the poll still goes out inside the `waitUntil` time. The poll is always sent.
+over 256 KiB, or a 429 after one short retry removes only the emoji of that answer. The 5 s
+timeout also covers the body read. All emoji work has a hard cap of 12 s: then the bot aborts the
+open requests and sends the poll with the emojis that are ready, so the poll still goes out inside
+the `waitUntil` time. If Discord refuses the poll with a 4xx (not 429) and the poll has emojis, the
+bot sends it once more without emojis, with the same nonce. The poll is always sent.
 An application can have 2000 emojis.
 
 The value is `https://townofus.pl/cdn-cgi/image/width=128,height=128,fit=cover,format=png/images/avatars`

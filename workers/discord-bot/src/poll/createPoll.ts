@@ -18,7 +18,7 @@ import type { BotEnv } from '../env';
 import { findSignupMessages } from '../signup/close';
 import { renderSignupMessage } from '../signup/message';
 import { type Candidate, type GameDay, isDayQuiet, loadGameDay, pickCandidates } from './candidates';
-import { createDiscordRest, type DiscordRest } from './discordApi';
+import { createDiscordRest, DiscordApiError, type DiscordRest } from './discordApi';
 import type { AvatarEmojiResolver } from './emojis';
 import { pollMessage } from './messages';
 import { nextWednesday, parseDbTimestamp, pollClosesAt, pollDurationHours, toDbTimestamp } from './time';
@@ -224,23 +224,44 @@ async function postPoll(ctx: PollContext, row: PollRow): Promise<boolean> {
         }
     }
 
-    let messageId: string;
-    try {
+    const send = async (answerEmojis: Map<number, string>) => {
         const body = pollMessage(
             env,
             row.question,
             candidates,
             pollDurationHours(now, Number(row.closesAt)),
             `poll-${row.id}`,
-            emojis,
+            answerEmojis,
         );
-        messageId = (await discord.createMessage(env.DISCORD_CHANNEL_ID, body)).id;
+        return (await discord.createMessage(env.DISCORD_CHANNEL_ID, body)).id;
+    };
+
+    let messageId: string;
+    try {
+        try {
+            messageId = await send(emojis);
+        } catch (error) {
+            if (emojis.size === 0 || !isRejection(error)) throw error;
+            // Discord refused the payload (e.g. an emoji it does not accept), so it created no
+            // message and the nonce is still free. The same nonce keeps the retry idempotent: a
+            // lost reply followed by a repair send still gives one message.
+            console.warn(JSON.stringify({ event: 'pollEmojisRejected', date: row.date, error: String(error) }));
+            messageId = await send(new Map());
+        }
     } catch (error) {
         console.error(JSON.stringify({ event: 'pollSendFailed', date: row.date, error: String(error) }));
         return false;
     }
     await saveMessageId(ctx, row.id, messageId);
     return true;
+}
+
+/**
+ * A 4xx that is not a 429: Discord read the request and refused it. A 429, a 5xx or a network
+ * error may be transient, or (network) the message may exist, so no emoji-less retry for those.
+ */
+function isRejection(error: unknown): boolean {
+    return error instanceof DiscordApiError && error.status >= 400 && error.status < 500 && error.status !== 429;
 }
 
 async function saveMessageId(ctx: PollContext, pollId: number, messageId: string): Promise<void> {
