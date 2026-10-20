@@ -14,6 +14,9 @@ const env = {
     DISCORD_CHANNEL_ID: CHANNEL,
     TEXT_POLL_QUESTION: 'KTO ZOSTANIE EMPEROREM?',
     TEXT_SIGNUP: 'Kto gra w środę {date}? Kliknij Gram.',
+    TEXT_SIGNUP_LIST: 'LISTA CWELI {date}',
+    TEXT_SIGNUP_JOIN: 'CHUJ',
+    TEXT_SIGNUP_LEAVE: 'wypisz mnie',
     TEXT_SIGNUP_CLOSED: 'Zapisy zamknięte',
 } as BotEnv;
 
@@ -296,7 +299,7 @@ describe('cron step', () => {
         expect(sent.map((s) => s.channelId)).toEqual([CHANNEL, CHANNEL]);
     });
 
-    it('pings DISCORD_PING_ROLE_ID in the poll and the signup message, and only that role', async () => {
+    it('pings DISCORD_PING_ROLE_ID only in the poll message, and only that role', async () => {
         await seedSession();
         const { discord, polls, signups, fake } = fakeDiscord();
         const now = LAST_INGEST + 30 * MIN;
@@ -307,8 +310,8 @@ describe('cron step', () => {
         const [signup] = signups();
         expect(poll.body.content).toBe('<@&42>');
         expect(poll.body.allowed_mentions).toEqual({ parse: [], roles: ['42'] });
-        expect(signup.body.content!.split('\n')[0]).toBe('<@&42>');
-        expect(signup.body.allowed_mentions).toEqual({ parse: [], roles: ['42'] });
+        expect(signup.body.content).not.toContain('<@&');
+        expect(signup.body.allowed_mentions).toEqual({ parse: [] });
     });
 
     it('pings nobody without DISCORD_PING_ROLE_ID', async () => {

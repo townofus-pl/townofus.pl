@@ -11,12 +11,16 @@ export interface BotEnv {
     DISCORD_GUILD_ID: string;
     DISCORD_CHANNEL_ID: string;
     DISCORD_HOST_ROLE_ID: string;
-    /** Role pinged by the first send of the poll and the signup message. Empty: no ping. */
+    /** Role pinged by the first send of the poll message. Empty: no ping. */
     DISCORD_PING_ROLE_ID: string;
 
     TEXT_POLL_QUESTION: string;
     /** `{date}` is replaced with DD.MM of the session. */
     TEXT_SIGNUP: string;
+    /** Heading above the list of names. `{date}` is replaced with DD.MM of the session. */
+    TEXT_SIGNUP_LIST: string;
+    TEXT_SIGNUP_JOIN: string;
+    TEXT_SIGNUP_LEAVE: string;
     TEXT_SIGNUP_CLOSED: string;
     TEXT_SIGNUP_CLOSED_REPLY: string;
 

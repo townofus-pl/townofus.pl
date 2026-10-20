@@ -59,22 +59,22 @@ export function pingAllowedMentions(env: Pick<BotEnv, 'DISCORD_PING_ROLE_ID'>): 
 }
 
 /**
- * The role ping (when DISCORD_PING_ROLE_ID is set) is the first line of the content, so every
- * edit keeps the same text. Only the first send pings.
+ * The signup message pings nobody: it goes out right after the poll, and the poll message
+ * carries the role ping.
  */
 export function renderSignupMessage(
-    env: Pick<BotEnv, 'TEXT_SIGNUP' | 'TEXT_SIGNUP_CLOSED' | 'DISCORD_PING_ROLE_ID'>,
+    env: Pick<BotEnv, 'TEXT_SIGNUP' | 'TEXT_SIGNUP_LIST' | 'TEXT_SIGNUP_JOIN' | 'TEXT_SIGNUP_LEAVE' | 'TEXT_SIGNUP_CLOSED'>,
     date: string,
     names: string[],
     closed: boolean,
 ): SignupMessage {
-    const ping = rolePing(env);
-    const header = `${ping ? `${ping}\n` : ''}${env.TEXT_SIGNUP.replace('{date}', formatDayMonth(date))}`;
+    const day = formatDayMonth(date);
+    const header = env.TEXT_SIGNUP.replace('{date}', day);
     const list = names.length
         ? names.map((name, i) => `${i + 1}. ${escapeMarkdown(name)}`).join('\n')
         : 'Na razie nikt.';
     const footer = closed ? `\n\n**${env.TEXT_SIGNUP_CLOSED}**` : '';
-    let content = `${header}\n\n**Gramy (${names.length}):**\n${list}${footer}`;
+    let content = `${header}\n\n**${env.TEXT_SIGNUP_LIST.replace('{date}', day)}**\n${list}${footer}`;
     if (content.length > MAX_CONTENT) content = `${content.slice(0, MAX_CONTENT - footer.length - 2)}…${footer}`;
 
     return {
@@ -83,8 +83,8 @@ export function renderSignupMessage(
             {
                 type: 1, // ACTION_ROW
                 components: [
-                    { type: 2, style: 3, label: 'Gram', custom_id: signupCustomId('join', date), disabled: closed },
-                    { type: 2, style: 2, label: 'Wypisz mnie', custom_id: signupCustomId('leave', date), disabled: closed },
+                    { type: 2, style: 3, label: env.TEXT_SIGNUP_JOIN, custom_id: signupCustomId('join', date), disabled: closed },
+                    { type: 2, style: 2, label: env.TEXT_SIGNUP_LEAVE, custom_id: signupCustomId('leave', date), disabled: closed },
                 ],
             },
         ],
