@@ -55,6 +55,9 @@ TEXT_SIGNUP_JOIN = "HUJ"
 TEXT_SIGNUP_LEAVE = "wypisz mnie"
 TEXT_SIGNUP_CLOSED = "Zapisy zamknięte"
 TEXT_SIGNUP_CLOSED_REPLY = "Zapisy zamknięte, napisz do hosta"
+# Resized site avatars for the poll answer emojis (Cloudflare image transformations on the
+# townofus.pl zone, the only zone with them, so every env uses it). Empty: no avatar emojis.
+AVATAR_EMOJI_BASE_URL = "https://townofus.pl/cdn-cgi/image/width=128,height=128,fit=cover,format=png/images/avatars"
 
 # --------------------------------------------------------------------------------------------
 # staging — staging Discord application, production server, test channel
@@ -98,6 +101,9 @@ TEXT_SIGNUP_JOIN = "HUJ"
 TEXT_SIGNUP_LEAVE = "wypisz mnie"
 TEXT_SIGNUP_CLOSED = "Zapisy zamknięte"
 TEXT_SIGNUP_CLOSED_REPLY = "Zapisy zamknięte, napisz do hosta"
+# Resized site avatars for the poll answer emojis (Cloudflare image transformations on the
+# townofus.pl zone, the only zone with them, so every env uses it). Empty: no avatar emojis.
+AVATAR_EMOJI_BASE_URL = "https://townofus.pl/cdn-cgi/image/width=128,height=128,fit=cover,format=png/images/avatars"
 
 # --------------------------------------------------------------------------------------------
 # production — prod Discord application, production server, production channel
@@ -140,3 +146,6 @@ TEXT_SIGNUP_JOIN = "HUJ"
 TEXT_SIGNUP_LEAVE = "wypisz mnie"
 TEXT_SIGNUP_CLOSED = "Zapisy zamknięte"
 TEXT_SIGNUP_CLOSED_REPLY = "Zapisy zamknięte, napisz do hosta"
+# Resized site avatars for the poll answer emojis (Cloudflare image transformations on the
+# townofus.pl zone, the only zone with them, so every env uses it). Empty: no avatar emojis.
+AVATAR_EMOJI_BASE_URL = "https://townofus.pl/cdn-cgi/image/width=128,height=128,fit=cover,format=png/images/avatars"

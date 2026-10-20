@@ -19,6 +19,7 @@ import { findSignupMessages } from '../signup/close';
 import { renderSignupMessage } from '../signup/message';
 import { type Candidate, type GameDay, isDayQuiet, loadGameDay, pickCandidates } from './candidates';
 import { createDiscordRest, type DiscordRest } from './discordApi';
+import type { AvatarEmojiResolver } from './emojis';
 import { pollMessage } from './messages';
 import { nextWednesday, parseDbTimestamp, pollClosesAt, pollDurationHours, toDbTimestamp } from './time';
 
@@ -57,6 +58,8 @@ export interface PollContext {
         | 'TEXT_SIGNUP_CLOSED'
     >;
     now: number;
+    /** Avatar emojis for the answers. Absent: no emojis. A failure here never stops the send. */
+    avatarEmojis?: AvatarEmojiResolver;
 }
 
 interface PollRow {
@@ -212,9 +215,25 @@ async function postPoll(ctx: PollContext, row: PollRow): Promise<boolean> {
         .bind(row.id)
         .all<Candidate>();
 
+    let emojis = new Map<number, string>();
+    if (ctx.avatarEmojis) {
+        try {
+            emojis = await ctx.avatarEmojis(candidates);
+        } catch (error) {
+            console.error(JSON.stringify({ event: 'avatarEmojisFailed', date: row.date, error: String(error) }));
+        }
+    }
+
     let messageId: string;
     try {
-        const body = pollMessage(env, row.question, candidates, pollDurationHours(now, Number(row.closesAt)), `poll-${row.id}`);
+        const body = pollMessage(
+            env,
+            row.question,
+            candidates,
+            pollDurationHours(now, Number(row.closesAt)),
+            `poll-${row.id}`,
+            emojis,
+        );
         messageId = (await discord.createMessage(env.DISCORD_CHANNEL_ID, body)).id;
     } catch (error) {
         console.error(JSON.stringify({ event: 'pollSendFailed', date: row.date, error: String(error) }));

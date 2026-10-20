@@ -70,6 +70,35 @@ The buttons on the signup message have the custom_ids `signup:join:YYYY-MM-DD` a
   that name as the same. A join can then add the name a second time, and a leave does not
   remove the host's version.
 
+## Avatar emojis
+
+Each answer of the Emperor poll can show the avatar of the player as an application emoji.
+`/ankieta` makes the emojis before it sends the poll (`src/poll/emojis.ts`).
+
+1. The bot reads the application's emojis once (`GET /applications/{id}/emojis`).
+2. For each candidate, the bot gets one image, in this order:
+   - the site avatar: `AVATAR_EMOJI_BASE_URL` + `/<current player name>.png`;
+   - the avatar of the Discord account that `discord_accounts` links to the player;
+   - no image: the answer has no emoji.
+3. The emoji name is `av_<playerId>_<first 8 hex of SHA-256 of the image>`. An emoji with that
+   name is used again. Otherwise the bot creates it and then deletes the older `av_<playerId>_*`
+   emojis of that player.
+
+The emojis are decoration. A failed fetch, create or delete, a timeout (5 s per request), an image
+over 256 KiB, or a 429 after one short retry removes only the emoji of that answer. All emoji work
+stops after 12 s, so the poll still goes out inside the `waitUntil` time. The poll is always sent.
+An application can have 2000 emojis.
+
+The value is `https://townofus.pl/cdn-cgi/image/width=128,height=128,fit=cover,format=png/images/avatars`
+in every environment. Some files in `public/images/avatars/` are over 2 MB, more than the Discord
+limit, so the bot needs the resized 128x128 PNG.
+
+- This URL needs **Images > Transformations** enabled on the `townofus.pl` zone in the Cloudflare
+  dashboard. Only that zone has it, so staging and dev use the production URL too.
+- The free plan includes 5000 unique transformations per month. One avatar is one transformation
+  until the file changes, so the poll uses very few of them.
+- To turn the feature off, set the var to `""` in that environment and deploy.
+
 ## Configuration
 
 `wrangler.toml` has three environments. Always give `--env`.
@@ -97,6 +126,7 @@ Each environment declares its own vars. Named environments do not inherit them.
 | `TEXT_SIGNUP_LEAVE` | Label of the leave button |
 | `TEXT_SIGNUP_CLOSED` | Text added to the signup message at 18:00 |
 | `TEXT_SIGNUP_CLOSED_REPLY` | Reply to a click after 18:00 |
+| `AVATAR_EMOJI_BASE_URL` | Base URL of the resized site avatars for the poll answer emojis. See [Avatar emojis](#avatar-emojis). Empty: no avatar emojis. |
 
 The IDs are not secret. The values marked `TODO(#361)` stay empty until the deployment ticket
 fills them in.
