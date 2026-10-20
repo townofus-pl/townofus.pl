@@ -7,6 +7,8 @@
 //   2. The avatar of the Discord account linked in `discord_accounts`.
 //   3. No emoji.
 //
+// A PNG gets a circular mask (`roundPng.ts`). A JPEG, or a PNG the mask cannot read, stays square.
+//
 // The emoji name is `av_<playerId>_<first 8 hex of SHA-256 of the image>`. A changed avatar gives a
 // new name, so the bot creates a new emoji and deletes the older versions of that player.
 //
@@ -16,6 +18,7 @@
 import type { BotEnv } from '../env';
 import type { Candidate } from './candidates';
 import { MAX_INLINE_RETRY_MS } from './discordApi';
+import { roundPng } from './roundPng';
 
 const API = 'https://discord.com/api/v10';
 
@@ -83,7 +86,22 @@ function toBase64(bytes: ArrayBuffer): string {
     return btoa(binary);
 }
 
-const realSleep = (ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
+/**
+ * The image with a circular mask. A PNG that the mask cannot read, a JPEG (Cloudflare sends one
+ * for an avatar without transparency), or a result over the limit stays square.
+ */
+async function rounded(image: { bytes: ArrayBuffer; type: string }, playerId: number) {
+    if (image.type !== 'image/png') return image;
+    try {
+        const bytes = await roundPng(image.bytes);
+        if (bytes.byteLength <= MAX_EMOJI_BYTES) return { bytes, type: 'image/png' };
+    } catch (error) {
+        console.warn(JSON.stringify({ event: 'avatarMaskFailed', playerId, error: String(error) }));
+    }
+    return image;
+}
+
+const realSleep =(ms: number) => new Promise<void>((resolve) => setTimeout(resolve, ms));
 
 /**
  * The resolver for `/ankieta`. With an empty AVATAR_EMOJI_BASE_URL the feature is off: no
@@ -217,8 +235,10 @@ export function createAvatarEmojis(
             }
             const { playerId } = candidate;
             try {
-                const image = await imageFor(candidate, identities.get(playerId));
-                if (!image) continue;
+                const square = await imageFor(candidate, identities.get(playerId));
+                if (!square) continue;
+                // Before the hash: a round image gets a new name, so the square one is deleted below.
+                const image = await rounded(square, playerId);
                 const name = emojiName(playerId, await sha256Hex(image.bytes));
 
                 let emoji = existing.find((e) => e.name === name);

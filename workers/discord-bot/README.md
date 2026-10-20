@@ -80,7 +80,11 @@ Each answer of the Emperor poll can show the avatar of the player as an applicat
    - the site avatar: `AVATAR_EMOJI_BASE_URL` + `/<current player name>.png`;
    - the avatar of the Discord account that `discord_accounts` links to the player;
    - no image: the answer has no emoji.
-3. The emoji name is `av_<playerId>_<first 8 hex of SHA-256 of the image>`. An emoji with that
+3. A PNG gets a circular mask with a soft edge (`src/poll/roundPng.ts`, no dependencies): the
+   corners become transparent. The image stays square when the mask cannot read it: a JPEG, a
+   PNG that is not square, 16-bit, grayscale or interlaced, or a broken file. Cloudflare sends a
+   JPEG for an avatar without transparency (an RGB file), so those avatars stay square.
+4. The emoji name is `av_<playerId>_<first 8 hex of SHA-256 of the image>`. An emoji with that
    name is used again. Otherwise the bot creates it and then deletes the older `av_<playerId>_*`
    emojis of that player.
 

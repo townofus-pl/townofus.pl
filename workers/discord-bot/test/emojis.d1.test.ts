@@ -13,6 +13,7 @@ import {
     siteAvatarUrl,
     type AvatarEmojiDeps,
 } from '../src/poll/emojis';
+import { encodePng, roundPng } from '../src/poll/roundPng';
 import { clearPollTables, createTestD1, seedGames } from './d1';
 
 const APP = 'app-staging';
@@ -257,6 +258,46 @@ describe('avatar emojis', () => {
         expect(result.get(ids.Bartek)).toBe('900');
         expect(net.deletes()).toEqual(['1']);
         expect(net.emojis.map((e) => e.id).sort()).toEqual(['2', '3', '4', '900']);
+    });
+
+    it('uploads a PNG with the circular mask, named by the hash of the round image', async () => {
+        const ids = await seed();
+        const square = new Uint8Array(await encodePng(16, 16, new Uint8Array(16 * 16 * 4).fill(255)));
+        const round = new Uint8Array(await roundPng(square.buffer));
+        const net = fakeNet({
+            images: { [siteAvatarUrl(BASE, 'Bartek')]: { bytes: square } },
+            // The square version from before the mask: replaced and deleted.
+            emojis: [{ id: '1', name: emojiName(ids.Bartek, hash8(square)) }],
+        });
+
+        const result = await createAvatarEmojis(env, db, net.deps)(candidatesOf(ids, 'Bartek'));
+
+        expect(result.get(ids.Bartek)).toBe('900');
+        expect(net.creates()[0].body).toEqual({
+            name: emojiName(ids.Bartek, hash8(round)),
+            image: `data:image/png;base64,${Buffer.from(round).toString('base64')}`,
+        });
+        expect(net.deletes()).toEqual(['1']);
+    });
+
+    it.each([
+        ['a PNG the mask cannot read', 'image/png'],
+        ['a JPEG', 'image/jpeg'],
+    ])('uploads %s square', async (_, type) => {
+        const ids = await seed();
+        const square = png('not-a-real-png');
+        const net = fakeNet({ images: { [siteAvatarUrl(BASE, 'Bartek')]: { bytes: square, type } } });
+        const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
+
+        const result = await createAvatarEmojis(env, db, net.deps)(candidatesOf(ids, 'Bartek'));
+
+        expect(result.get(ids.Bartek)).toBe('900');
+        expect(net.creates()[0].body).toEqual({
+            name: emojiName(ids.Bartek, hash8(square)),
+            image: `data:${type};base64,${Buffer.from(square).toString('base64')}`,
+        });
+        // Only a PNG that fails is logged. A JPEG is expected.
+        expect(warn.mock.calls.some(([line]) => String(line).includes('avatarMaskFailed'))).toBe(type === 'image/png');
     });
 
     it('a 429 with a short wait is retried once', async () => {
