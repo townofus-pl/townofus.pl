@@ -1,12 +1,12 @@
 // Which cron step to run.
 //
-// The cron (`*/10 15-22 * * WED`) runs in UTC. 17:00 in Warsaw is 15:00 UTC in summer time and
+// The cron (`*/10 15-20 * * WED`) runs in UTC. 17:00 in Warsaw is 15:00 UTC in summer time and
 // 16:00 UTC in winter time, so the cron covers both and the code decides from the local time.
 // A step runs on every tick inside its local hour, not only at :00. Each step must be
 // idempotent, so a later tick retries a failed one.
 
 import type { BotEnv } from './env';
-import { closePoll, closeSignups, createPoll } from './steps';
+import { closePoll, closeSignups } from './steps';
 
 export const TIME_ZONE = 'Europe/Warsaw';
 
@@ -43,7 +43,7 @@ export function toWarsawTime(instant: Date): WarsawTime {
     };
 }
 
-export type StepName = 'closePoll' | 'closeSignups' | 'createPoll';
+export type StepName = 'closePoll' | 'closeSignups';
 
 const WEDNESDAY = 3;
 
@@ -53,20 +53,22 @@ const WEDNESDAY = 3;
  * `closePoll` also runs from 19:00 to 21:59. There it finds the poll closed and only waits for
  * Discord's final tally (`is_finalized`). The tally usually ends long before 18:00. The extra
  * hours are a fallback, and they also retry an End Poll that failed at 17:00. 18:00 belongs to
- * the signups, and from 22:00 the next poll is created.
+ * the signups.
+ *
+ * The cron does not create the poll: the host runs `/ankieta` after the session (decision of
+ * 2026-10-21, #361). Only the end of the session is a reliable trigger.
  */
 export function pickStep(time: WarsawTime): StepName | null {
     if (time.weekday !== WEDNESDAY) return null;
     if (time.hour === 17 || (time.hour >= 19 && time.hour <= 21)) return 'closePoll';
     if (time.hour === 18) return 'closeSignups';
-    if (time.hour >= 22) return 'createPoll';
     return null;
 }
 
 /** `now` is the cron's time (epoch ms). `/__dev/tick?now=` sets it. */
 export type Step = (env: BotEnv, time: WarsawTime, now: number) => Promise<void>;
 
-const STEPS: Record<StepName, Step> = { closePoll, closeSignups, createPoll };
+const STEPS: Record<StepName, Step> = { closePoll, closeSignups };
 
 export interface ScheduledRun {
     warsaw: WarsawTime;

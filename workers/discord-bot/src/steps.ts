@@ -3,7 +3,6 @@
 
 import type { BotEnv } from './env';
 import { closePollStep } from './poll/closePoll';
-import { createPollStep } from './poll/createPoll';
 import type { WarsawTime } from './schedule';
 import { closeSignupMessages } from './signup/close';
 
@@ -19,9 +18,4 @@ export async function closePoll(env: BotEnv, _time: WarsawTime, now: number): Pr
 export async function closeSignups(env: BotEnv, time: WarsawTime): Promise<void> {
     const edited = await closeSignupMessages(env, time.date);
     console.log(JSON.stringify({ event: 'closeSignups', date: time.date, edited }));
-}
-
-/** Wednesday from 22:00: create the poll and the signup message when the day's games are over. */
-export async function createPoll(env: BotEnv, time: WarsawTime, now: number): Promise<void> {
-    await createPollStep(env, time.date, now);
 }

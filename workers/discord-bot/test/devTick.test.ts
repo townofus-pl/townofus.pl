@@ -17,9 +17,9 @@ describe('GET /__dev/tick', () => {
     it.each([
         ['2026-10-21T17:10:00%2B02:00', 'closePoll'],
         ['2026-10-21T18:10:00%2B02:00', 'closeSignups'],
-        ['2026-10-21T22:10:00%2B02:00', 'createPoll'],
-        ['2026-10-28T22:10:00%2B01:00', 'createPoll'],
-        ['2026-10-21T22:10:00+02:00', 'createPoll'], // unencoded plus decodes to a space
+        ['2026-10-21T22:10:00%2B02:00', null], // the host creates the poll with /ankieta
+        ['2026-10-28T19:10:00%2B01:00', 'closePoll'],
+        ['2026-10-21T18:10:00+02:00', 'closeSignups'], // unencoded plus decodes to a space
         ['2026-10-22T17:10:00%2B02:00', null], // Thursday
     ])('in dev runs the step for now=%s', async (now, step) => {
         const response = await tick('dev', `now=${now}`);
