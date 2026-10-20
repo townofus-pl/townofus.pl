@@ -193,15 +193,13 @@ to the test channel there.
 
    # Close the signups (Wednesday 18:xx Warsaw)
    curl -G "http://localhost:8787/__dev/tick" --data-urlencode "now=2026-10-21T18:10:00+02:00"
-
-   # Create the poll (Wednesday 22:xx Warsaw)
-   curl -G "http://localhost:8787/__dev/tick" --data-urlencode "now=2026-10-21T22:10:00+02:00"
    ```
 
-   The short form `curl "http://localhost:8787/__dev/tick?now=2026-10-21T22:10:00+02:00"` also
-   works. Without `now`, the route uses the current time. The create-poll step uses `now` for
-   all of its time checks: the 30-minute quiet rule, the stale-row repair and the poll close
-   time. `/ankieta` always uses the real current time.
+   The short form `curl "http://localhost:8787/__dev/tick?now=2026-10-21T17:10:00+02:00"` also
+   works. Without `now`, the route uses the current time.
+
+   The cron does not create the poll. To test the create flow, use `/ankieta` over a tunnel
+   (see below). `/ankieta` always uses the real current time.
 
    `npm run dev` also passes `--test-scheduled`, so the real scheduled handler is available.
    It takes the time in milliseconds since epoch (UTC) and logs the step. Example: 2026-10-21
