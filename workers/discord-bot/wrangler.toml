@@ -28,7 +28,7 @@ workers_dev = false
 required = ["DISCORD_BOT_TOKEN"]
 
 [env.dev.triggers]
-crons = ["*/10 15-22 * * WED"]
+crons = ["*/10 15-20 * * WED"]
 
 # Same block as the site's top level, so `--persist-to ../../.wrangler/state` reads the site's
 # local D1 file.
@@ -72,7 +72,7 @@ required = ["DISCORD_BOT_TOKEN"]
 # UTC. Covers 17:00, 18:00 and 22:00-23:59 Europe/Warsaw in summer and winter time. The code
 # picks the step from the local time (src/schedule.ts).
 [env.staging.triggers]
-crons = ["*/10 15-22 * * WED"]
+crons = ["*/10 15-20 * * WED"]
 
 [env.staging.observability]
 enabled = true
@@ -114,7 +114,7 @@ route = { pattern = "dramaafera-bot.townofus.pl", custom_domain = true }
 required = ["DISCORD_BOT_TOKEN"]
 
 [env.production.triggers]
-crons = ["*/10 15-22 * * WED"]
+crons = ["*/10 15-20 * * WED"]
 
 [env.production.observability]
 enabled = true

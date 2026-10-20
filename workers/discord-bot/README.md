@@ -9,7 +9,7 @@ The Worker has two entry points:
 | Entry point | What it does |
 |---|---|
 | `fetch` | Receives Discord interactions over HTTP. Verifies the Ed25519 signature on the raw body, returns `401` for a bad signature and PONG for PING, then routes `/ankieta` and the signup buttons. |
-| `scheduled` | Runs on the cron `*/10 15-22 * * WED` (UTC). Calculates the Europe/Warsaw time and runs one step: 17:00 close the poll (19:00–21:59 read its result), 18:00 close the signups, from 22:00 create the poll. |
+| `scheduled` | Runs on the cron `*/10 15-20 * * WED` (UTC). Calculates the Europe/Warsaw time and runs one step: 17:00 close the poll (19:00–21:59 read its result), 18:00 close the signups. The cron does not create the poll: the host runs `/ankieta` after the session. |
 
 `/ankieta`, the 17:00 and 22:00 steps (see `src/poll/`), the signup buttons and the 18:00 step
 work (see [Signups](#signups)).
