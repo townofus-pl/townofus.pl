@@ -26,6 +26,9 @@ beforeAll(async () => {
         DISCORD_CHANNEL_ID: 'channel',
         DISCORD_APPLICATION_ID: 'app',
         TEXT_SIGNUP: 'Kto gra w środę {date}? Kliknij Gram.',
+    TEXT_SIGNUP_LIST: 'LISTA CWELI {date}',
+    TEXT_SIGNUP_JOIN: 'CHUJ',
+    TEXT_SIGNUP_LEAVE: 'wypisz mnie',
         TEXT_SIGNUP_CLOSED: 'Zapisy zamknięte',
         TEXT_SIGNUP_CLOSED_REPLY: 'Zapisy zamknięte, napisz do hosta',
     } as BotEnv;
@@ -90,25 +93,28 @@ async function click(action: 'join' | 'leave', who: GuildMember, options: { date
 const accountOf = async (discordUserId: string) =>
     (await all<{ playerId: number | null }>('SELECT playerId FROM discord_accounts WHERE discordUserId = ?', discordUserId))[0];
 
-describe('role ping', () => {
-    const base = { TEXT_SIGNUP: 'Kto gra w środę {date}?', TEXT_SIGNUP_CLOSED: 'Zamknięte' };
+describe('signup message', () => {
+    const base = {
+        TEXT_SIGNUP: 'KTO GRA W NASTĘPNĄ ŚRODĘ KLIKA "CHUJ"',
+        TEXT_SIGNUP_LIST: 'LISTA CWELI {date}',
+        TEXT_SIGNUP_JOIN: 'CHUJ',
+        TEXT_SIGNUP_LEAVE: 'wypisz mnie',
+        TEXT_SIGNUP_CLOSED: 'Zamknięte',
+    };
 
-    it('puts the ping on the first line and allows only that role on the first send', () => {
-        const pingEnv = { ...base, DISCORD_PING_ROLE_ID: '42' };
-        const message = renderSignupMessage(pingEnv, '2026-10-28', [], false);
-        expect(message.content.split('\n')[0]).toBe('<@&42>');
-        expect(message.content).toContain('Kto gra w środę 28.10?');
-        // The rendered message is also what edits send: no pings there.
-        expect(message.allowed_mentions).toEqual({ parse: [] });
-        expect(pingAllowedMentions(pingEnv)).toEqual({ parse: [], roles: ['42'] });
-        // A closed message keeps the same first line.
-        expect(renderSignupMessage(pingEnv, '2026-10-28', ['a'], true).content.startsWith('<@&42>\n')).toBe(true);
+    it('renders the configured texts, the dated list heading and the button labels', () => {
+        const message = renderSignupMessage(base, '2026-10-28', ['A', 'B'], false);
+        expect(message.content).toBe('KTO GRA W NASTĘPNĄ ŚRODĘ KLIKA "CHUJ"\n\n**LISTA CWELI 28.10**\n1. A\n2. B');
+        const buttons = (message.components[0] as { components: { label: string }[] }).components;
+        expect(buttons.map((b) => b.label)).toEqual(['CHUJ', 'wypisz mnie']);
     });
 
-    it('has no ping without DISCORD_PING_ROLE_ID', () => {
-        const noPing = { ...base, DISCORD_PING_ROLE_ID: '' };
-        expect(renderSignupMessage(noPing, '2026-10-28', [], false).content.startsWith('Kto gra')).toBe(true);
-        expect(pingAllowedMentions(noPing)).toEqual({ parse: [] });
+    it('pings nobody, also with DISCORD_PING_ROLE_ID set: the poll message carries the ping', () => {
+        const message = renderSignupMessage({ ...base, DISCORD_PING_ROLE_ID: '42' } as typeof base, '2026-10-28', [], false);
+        expect(message.content).not.toContain('<@&');
+        expect(message.allowed_mentions).toEqual({ parse: [] });
+        expect(pingAllowedMentions({ DISCORD_PING_ROLE_ID: '42' })).toEqual({ parse: [], roles: ['42'] });
+        expect(pingAllowedMentions({ DISCORD_PING_ROLE_ID: '' })).toEqual({ parse: [] });
     });
 });
 
