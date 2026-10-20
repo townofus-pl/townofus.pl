@@ -16,7 +16,7 @@
 import { getSeasonForDate } from '../../../../src/app/dramaafera/_constants/seasons';
 import type { BotEnv } from '../env';
 import { findSignupMessages } from '../signup/close';
-import { pingAllowedMentions, renderSignupMessage } from '../signup/message';
+import { renderSignupMessage } from '../signup/message';
 import { type Candidate, type GameDay, isDayQuiet, loadGameDay, pickCandidates } from './candidates';
 import { createDiscordRest, type DiscordRest } from './discordApi';
 import { pollMessage } from './messages';
@@ -51,6 +51,9 @@ export interface PollContext {
         | 'DISCORD_PING_ROLE_ID'
         | 'TEXT_POLL_QUESTION'
         | 'TEXT_SIGNUP'
+        | 'TEXT_SIGNUP_LIST'
+        | 'TEXT_SIGNUP_JOIN'
+        | 'TEXT_SIGNUP_LEAVE'
         | 'TEXT_SIGNUP_CLOSED'
     >;
     now: number;
@@ -269,9 +272,8 @@ async function postSignupMessage(ctx: PollContext, row: PollRow): Promise<boolea
     const wednesday = nextWednesday(row.date);
     try {
         await ctx.discord.createMessage(ctx.env.DISCORD_CHANNEL_ID, {
+            // No role ping: the poll message right before it carries the ping.
             ...renderSignupMessage(ctx.env, wednesday, [], false),
-            // The first send pings DISCORD_PING_ROLE_ID. Edits use the rendered `{ parse: [] }`.
-            allowed_mentions: pingAllowedMentions(ctx.env),
             nonce: `signup-${row.id}`,
             enforce_nonce: true,
         });
