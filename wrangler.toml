@@ -6,10 +6,10 @@
 #   npm run deploy:staging     -> env.staging     (townofus-pl-staging, preview D1)
 #   npm run deploy             -> env.production  (townofus.pl, production D1)
 #
-# ⚠️ Named environments do **not** inherit bindings. `[[d1_databases]]`, `[assets]` and `[vars]`
-# must be redeclared in full inside every `[env.*]` block — a binding present only at the top
-# level is simply absent from the deployed environment. Verbose, but you can read one block and
-# know exactly what that environment talks to.
+# ⚠️ Named environments do **not** inherit bindings. `[[d1_databases]]`, `[[r2_buckets]]`,
+# `[assets]` and `[vars]` must be redeclared in full inside every `[env.*]` block — a binding
+# present only at the top level is simply absent from the deployed environment. Verbose, but you
+# can read one block and know exactly what that environment talks to.
 
 main = ".open-next/worker.js"
 name = "townofus-pl-dev"
@@ -29,6 +29,14 @@ database_name = "townofus-pl"
 database_id = "0edadde7-395f-4e3c-a69d-7d40ece774ad"
 preview_database_id = "44f0d77c-c0b4-43d1-b3a3-7777be86d5d6"
 migrations_dir = "prisma/migrations"
+
+# Host plugin files (`GET /api/mod/host/[name]`, behind Basic auth). The dev config points at the
+# staging bucket, so a `--remote` command from here never touches production. `next dev` and
+# `preview:local` use the local Miniflare copy: `wrangler r2 object put
+# townofus-pl-host-files-staging/<name> --file <path> --local`.
+[[r2_buckets]]
+binding = "HOST_FILES"
+bucket_name = "townofus-pl-host-files-staging"
 
 # --------------------------------------------------------------------------------------------
 # staging — where the mod points during v2 testing (DRAMAAFERA_API_URL)
@@ -54,6 +62,10 @@ database_name = "townofus_pl_preview"
 database_id = "44f0d77c-c0b4-43d1-b3a3-7777be86d5d6"
 migrations_dir = "prisma/migrations"
 
+[[env.staging.r2_buckets]]
+binding = "HOST_FILES"
+bucket_name = "townofus-pl-host-files-staging"
+
 # --------------------------------------------------------------------------------------------
 # production
 # --------------------------------------------------------------------------------------------
@@ -74,3 +86,7 @@ binding = "DB"
 database_name = "townofus-pl"
 database_id = "0edadde7-395f-4e3c-a69d-7d40ece774ad"
 migrations_dir = "prisma/migrations"
+
+[[env.production.r2_buckets]]
+binding = "HOST_FILES"
+bucket_name = "townofus-pl-host-files"

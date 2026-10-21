@@ -9,7 +9,7 @@ The Worker has two entry points:
 | Entry point | What it does |
 |---|---|
 | `fetch` | Receives Discord interactions over HTTP. Verifies the Ed25519 signature on the raw body, returns `401` for a bad signature and PONG for PING, then routes `/ankieta` and the signup buttons. |
-| `scheduled` | Runs on the cron `*/10 15-22 * * WED` (UTC). Calculates the Europe/Warsaw time and runs one step: 17:00 close the poll (19:00–21:59 read its result), 18:00 close the signups, from 22:00 create the poll. |
+| `scheduled` | Runs on the cron `*/10 15-20 * * WED` (UTC). Calculates the Europe/Warsaw time and runs one step: 17:00 close the poll (19:00–21:59 read its result), 18:00 close the signups. The cron does not create the poll: the host runs `/ankieta` after the session. |
 
 `/ankieta`, the 17:00 and 22:00 steps (see `src/poll/`), the signup buttons and the 18:00 step
 work (see [Signups](#signups)).
@@ -70,6 +70,38 @@ The buttons on the signup message have the custom_ids `signup:join:YYYY-MM-DD` a
   that name as the same. A join can then add the name a second time, and a leave does not
   remove the host's version.
 
+## Avatar emojis
+
+Each answer of the Emperor poll can show the avatar of the player as an application emoji.
+`/ankieta` makes the emojis before it sends the poll (`src/poll/emojis.ts`).
+
+1. The bot reads the application's emojis once (`GET /applications/{id}/emojis`).
+2. For each candidate, the bot gets one image, in this order:
+   - the site avatar: `AVATAR_EMOJI_BASE_URL` + `/<current player name>.png`;
+   - the avatar of the Discord account that `discord_accounts` links to the player;
+   - no image: the answer has no emoji.
+3. The emoji name is `av_<playerId>_<first 8 hex of SHA-256 of the image>`. An emoji with that
+   name is used again. Otherwise the bot creates it and then deletes the older `av_<playerId>_*`
+   emojis of that player.
+
+The emojis are decoration. A failed fetch, create or delete, a timeout (5 s per request), an image
+over 256 KiB, or a 429 after one short retry removes only the emoji of that answer. The 5 s
+timeout also covers the body read. All emoji work has a hard cap of 12 s: then the bot aborts the
+open requests and sends the poll with the emojis that are ready, so the poll still goes out inside
+the `waitUntil` time. If Discord refuses the poll with a 4xx (not 429) and the poll has emojis, the
+bot sends it once more without emojis, with the same nonce. The poll is always sent.
+An application can have 2000 emojis.
+
+The value is `https://townofus.pl/cdn-cgi/image/width=128,height=128,fit=cover,format=png/images/avatars`
+in every environment. Some files in `public/images/avatars/` are over 2 MB, more than the Discord
+limit, so the bot needs the resized 128x128 PNG.
+
+- This URL needs **Images > Transformations** enabled on the `townofus.pl` zone in the Cloudflare
+  dashboard. Only that zone has it, so staging and dev use the production URL too.
+- The free plan includes 5000 unique transformations per month. One avatar is one transformation
+  until the file changes, so the poll uses very few of them.
+- To turn the feature off, set the var to `""` in that environment and deploy.
+
 ## Configuration
 
 `wrangler.toml` has three environments. Always give `--env`.
@@ -97,6 +129,7 @@ Each environment declares its own vars. Named environments do not inherit them.
 | `TEXT_SIGNUP_LEAVE` | Label of the leave button |
 | `TEXT_SIGNUP_CLOSED` | Text added to the signup message at 18:00 |
 | `TEXT_SIGNUP_CLOSED_REPLY` | Reply to a click after 18:00 |
+| `AVATAR_EMOJI_BASE_URL` | Base URL of the resized site avatars for the poll answer emojis. See [Avatar emojis](#avatar-emojis). Empty: no avatar emojis. |
 
 The IDs are not secret. The values marked `TODO(#361)` stay empty until the deployment ticket
 fills them in.
@@ -160,15 +193,13 @@ to the test channel there.
 
    # Close the signups (Wednesday 18:xx Warsaw)
    curl -G "http://localhost:8787/__dev/tick" --data-urlencode "now=2026-10-21T18:10:00+02:00"
-
-   # Create the poll (Wednesday 22:xx Warsaw)
-   curl -G "http://localhost:8787/__dev/tick" --data-urlencode "now=2026-10-21T22:10:00+02:00"
    ```
 
-   The short form `curl "http://localhost:8787/__dev/tick?now=2026-10-21T22:10:00+02:00"` also
-   works. Without `now`, the route uses the current time. The create-poll step uses `now` for
-   all of its time checks: the 30-minute quiet rule, the stale-row repair and the poll close
-   time. `/ankieta` always uses the real current time.
+   The short form `curl "http://localhost:8787/__dev/tick?now=2026-10-21T17:10:00+02:00"` also
+   works. Without `now`, the route uses the current time.
+
+   The cron does not create the poll. To test the create flow, use `/ankieta` over a tunnel
+   (see below). `/ankieta` always uses the real current time.
 
    `npm run dev` also passes `--test-scheduled`, so the real scheduled handler is available.
    It takes the time in milliseconds since epoch (UTC) and logs the step. Example: 2026-10-21

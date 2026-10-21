@@ -33,6 +33,7 @@ export async function clearPollTables(db: D1Database): Promise<void> {
             'DELETE FROM "emperor_poll_candidates"',
             'DELETE FROM "emperor_polls"',
             'DELETE FROM "game_player_statistics"',
+            'DELETE FROM "discord_accounts"',
             'DELETE FROM "games"',
             'UPDATE "players" SET "currentRankingId" = NULL',
             'DELETE FROM "player_rankings"',

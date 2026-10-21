@@ -27,7 +27,7 @@ beforeAll(async () => {
         DISCORD_APPLICATION_ID: 'app',
         TEXT_SIGNUP: 'Kto gra w środę {date}? Kliknij Gram.',
     TEXT_SIGNUP_LIST: 'LISTA CWELI {date}',
-    TEXT_SIGNUP_JOIN: 'CHUJ',
+    TEXT_SIGNUP_JOIN: 'HUJ',
     TEXT_SIGNUP_LEAVE: 'wypisz mnie',
         TEXT_SIGNUP_CLOSED: 'Zapisy zamknięte',
         TEXT_SIGNUP_CLOSED_REPLY: 'Zapisy zamknięte, napisz do hosta',
@@ -95,18 +95,18 @@ const accountOf = async (discordUserId: string) =>
 
 describe('signup message', () => {
     const base = {
-        TEXT_SIGNUP: 'KTO GRA W NASTĘPNĄ ŚRODĘ KLIKA "CHUJ"',
+        TEXT_SIGNUP: 'KTO GRA W NASTĘPNĄ ŚRODĘ KLIKA "HUJ"',
         TEXT_SIGNUP_LIST: 'LISTA CWELI {date}',
-        TEXT_SIGNUP_JOIN: 'CHUJ',
+        TEXT_SIGNUP_JOIN: 'HUJ',
         TEXT_SIGNUP_LEAVE: 'wypisz mnie',
         TEXT_SIGNUP_CLOSED: 'Zamknięte',
     };
 
     it('renders the configured texts, the dated list heading and the button labels', () => {
         const message = renderSignupMessage(base, '2026-10-28', ['A', 'B'], false);
-        expect(message.content).toBe('KTO GRA W NASTĘPNĄ ŚRODĘ KLIKA "CHUJ"\n\n**LISTA CWELI 28.10**\n1. A\n2. B');
+        expect(message.content).toBe('KTO GRA W NASTĘPNĄ ŚRODĘ KLIKA "HUJ"\n\n**LISTA CWELI 28.10**\n1. A\n2. B');
         const buttons = (message.components[0] as { components: { label: string }[] }).components;
-        expect(buttons.map((b) => b.label)).toEqual(['CHUJ', 'wypisz mnie']);
+        expect(buttons.map((b) => b.label)).toEqual(['HUJ', 'wypisz mnie']);
     });
 
     it('pings nobody, also with DISCORD_PING_ROLE_ID set: the poll message carries the ping', () => {

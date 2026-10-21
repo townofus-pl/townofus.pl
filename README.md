@@ -80,12 +80,12 @@ nothing, across all five tables.
 `wrangler.toml`'s top level is a **dev** config that deploys nowhere useful. Every real target is
 a named environment, so nothing ships by accident.
 
-| | worker | D1 |
-|---|---|---|
-| staging | `townofus-pl-staging` | `townofus_pl_preview` |
-| production | `townofus-pl` | `townofus-pl` |
+| | worker | D1 | R2 `HOST_FILES` |
+|---|---|---|---|
+| staging | `townofus-pl-staging` | `townofus_pl_preview` | `townofus-pl-host-files-staging` |
+| production | `townofus-pl` | `townofus-pl` | `townofus-pl-host-files` |
 
-Named environments **do not inherit bindings** — `[[d1_databases]]`, `[assets]` and `[vars]` are
+Named environments **do not inherit bindings** — `[[d1_databases]]`, `[[r2_buckets]]`, `[assets]` and `[vars]` are
 redeclared in full in each `[env.*]` block. `[env.*.secrets] required` is enforced: a deploy is
 refused outright if a listed secret is unset.
 

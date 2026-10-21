@@ -39,12 +39,15 @@ npm run deploy                       # Build + deploy to production
 `wrangler.toml`'s top level is a **dev** config that deploys nowhere useful. Every real target is
 a named environment, so nothing deploys by accident:
 
-| | worker | D1 |
-|---|---|---|
-| staging | `townofus-pl-staging` | `townofus_pl_preview` (`44f0d77c-…`) |
-| production | `townofus-pl` | `townofus-pl` (`0edadde7-…`) |
+| | worker | D1 | R2 `HOST_FILES` |
+|---|---|---|---|
+| staging | `townofus-pl-staging` | `townofus_pl_preview` (`44f0d77c-…`) | `townofus-pl-host-files-staging` |
+| production | `townofus-pl` | `townofus-pl` (`0edadde7-…`) | `townofus-pl-host-files` |
 
-**Named environments do not inherit bindings** — `[[d1_databases]]`, `[assets]` and `[vars]` are
+`HOST_FILES` holds the host plugin files that `GET /api/mod/host/[name]` gives out behind Basic
+auth. The mod repo uploads them (`wrangler r2 object put`). A host release needs no site deploy.
+
+**Named environments do not inherit bindings** — `[[d1_databases]]`, `[[r2_buckets]]`, `[assets]` and `[vars]` are
 redeclared in full inside each `[env.*]` block. `[env.*.secrets] required` is **enforced** by
 wrangler: a deploy is refused outright if a listed secret is unset.
 
@@ -98,6 +101,10 @@ Three rules. Breaking any of them corrupts data quietly rather than loudly:
 - **Identity ladder.** `players` carries `hashedProductUserId` and `friendCode`; a payload
   resolves against those before falling back to the display name. A name collision against a
   different hash is a 422, not a silent merge.
+- **The Recorder.** `schemaVersion` `3.0.0` requires `recorderFriendCode`: the friend code of
+  the machine that recorded the match, not always the lobby host. `games.recorderFriendCode`
+  stores it and `games.recorderPlayerId` names the player when exactly one matches (see
+  `recorder.ts`). Both are D1 only. No page and no response shows them (#287).
 
 `POST /api/v2/games` is idempotent on `gameIdentifier` — a re-submit is a 409 with zero writes.
 
