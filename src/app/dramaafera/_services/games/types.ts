@@ -122,6 +122,9 @@ export interface UIGameEvent {
 }
 
 export interface UIMeetingData {
+  deathsDuringMeeting?: string[];
+  /** Undefined for legacy games where the outcome was not recorded explicitly. */
+  exiledPlayer?: string | null;
   meetingNumber: number;
   deathsSinceLastMeeting: string[];
   votes: { [playerName: string]: string[] };

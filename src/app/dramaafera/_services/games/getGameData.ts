@@ -11,6 +11,7 @@ import { calculateWinnerFromStats } from './winCalculator';
 import { buildPlayerStats } from './_buildPlayerStats';
 import { countVotes } from './_countVotes';
 import { buildGameTimeline } from './_buildGameTimeline';
+import { getDeathsDuringMeetings } from './_meetingDeaths';
 
 // Fetch detailed game data
 // Player relations are selected down to `name` on purpose. Identity columns
@@ -46,8 +47,8 @@ export async function getGameData(gameId: string): Promise<UIGameData | null> {
           meetingVotes: {
             where: { target: withoutDeleted, voter: withoutDeleted },
             include: {
-              target: true,
-              voter: true
+              target: { select: { name: true } },
+              voter: { select: { name: true } }
             }
           },
           skipVotes: {
@@ -140,6 +141,7 @@ export async function getGameData(gameId: string): Promise<UIGameData | null> {
     const deathsSinceLastMeeting = JSON.parse(meeting.deathsSinceLastMeeting || '[]');
 
     return {
+      exiledPlayer: game.gameActions.length > 0 ? meeting.exiledPlayer : undefined,
       meetingNumber: meeting.meetingNumber,
       deathsSinceLastMeeting,
       votes,
@@ -151,6 +153,9 @@ export async function getGameData(gameId: string): Promise<UIGameData | null> {
       wasBlessed: meeting.wasBlessed
     };
   });
+
+  const meetingDeaths = getDeathsDuringMeetings(meetings, game.gameActions);
+  meetings.forEach(meeting => { meeting.deathsDuringMeeting = meetingDeaths.get(meeting.meetingNumber) ?? []; });
 
   const timeline = buildGameTimeline(game.gameActions, game.season);
 
