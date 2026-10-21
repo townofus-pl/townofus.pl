@@ -18,6 +18,7 @@ import { determineTeam } from '@/app/dramaafera/_utils/gameUtils';
 import { Teams } from '@/constants/teams';
 import type { V2Action, V2GamePayload } from '@/app/api/schema/gamesV2';
 import { aggregatePayload, PayloadRejected, type AggregatedPlayer } from './aggregate';
+import { resolveRecorderPlayerId } from './recorder';
 
 export class IngestRejected extends Error {
     constructor(
@@ -267,6 +268,16 @@ export async function createGameV2(
     const dbIdByPlayerId = await resolvePlayers(prisma, payload);
     const dbIdByName = new Map(rows.map((r) => [r.name, dbIdByPlayerId.get(r.playerId)!]));
 
+    const recorderPlayerId = await resolveRecorderPlayerId(payload, dbIdByPlayerId, async (friendCode) =>
+        (
+            await prisma.player.findMany({
+                where: { friendCode, ...withoutDeleted },
+                select: { id: true },
+                take: 2,
+            })
+        ).map((p) => p.id),
+    );
+
     const gid = `(SELECT "id" FROM "games" WHERE "gameIdentifier" = ?)`;
     const statsId = `(SELECT "id" FROM "game_player_statistics" WHERE "gameId" = ${gid} AND "playerId" = ?)`;
     const meetingId = `(SELECT "id" FROM "meetings" WHERE "gameId" = ${gid} AND "meetingNumber" = ?)`;
@@ -276,8 +287,8 @@ export async function createGameV2(
             .prepare(
                 `INSERT INTO "games" ("gameIdentifier", "startTime", "endTime", "map", "maxTasks",
                     "winnerTeam", "winCondition", "season", "modVersion", "winningFaction",
-                    "createdAt", "updatedAt")
-                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`,
+                    "recorderFriendCode", "recorderPlayerId", "createdAt", "updatedAt")
+                 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)`,
             )
             .bind(
                 gameIdentifier,
@@ -293,6 +304,8 @@ export async function createGameV2(
                 season,
                 payload.modVersion,
                 payload.winningFaction,
+                payload.recorderFriendCode,
+                recorderPlayerId,
             ),
         // Lista Cweli for the day is a pre-session list; the first game of the day settles it.
         // v1 does this too — dropping it here would silently split the behaviour by era.

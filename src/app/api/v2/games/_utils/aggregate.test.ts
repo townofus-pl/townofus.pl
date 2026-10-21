@@ -24,8 +24,9 @@ const act = (over: Partial<V2Action> & Pick<V2Action, 'type'>): V2Action =>
 
 const payloadOf = (players: V2Player[], actions: V2Action[]): V2GamePayload =>
     ({
-        schemaVersion: '2.0.0',
+        schemaVersion: '3.0.0',
         modVersion: '1.0.0+910decf',
+        recorderFriendCode: 'quarties#1234',
         gameStart: '2026-09-06T18:05:12.3456789Z',
         gameEnd: '2026-09-06T18:21:40.0000000Z',
         mapName: 'Polus',

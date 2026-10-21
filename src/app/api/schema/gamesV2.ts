@@ -1,6 +1,6 @@
 /**
  * v2 ingest payload — a faithful mirror of the mod's `game_data.schema.json` (schemaVersion
- * `2.0.0`), which is the contract. When the two disagree, the mod's file wins: it is generated
+ * `3.0.0`), which is the contract. When the two disagree, the mod's file wins: it is generated
  * from the type that actually serialises the match.
  *
  * Source: `dramaafera-stats-mod/DramaAferaStats.Core/Export/game_data.schema.json`.
@@ -137,10 +137,17 @@ export const V2MeetingSchema = z
 export const V2GamePayloadSchema = z
     .object({
         $schema: z.string().optional(), // present in on-disk captures, absent over the wire
-        schemaVersion: z.literal('2.0.0'),
+        // 3.0.0 added `recorderFriendCode`. The endpoint stays /api/v2/games, because the endpoint
+        // and the payload shape have separate versions. A 2.0.0 payload is refused.
+        schemaVersion: z.literal('3.0.0'),
         // The build that scored this match, e.g. "1.0.0+910decf…". Carries the git commit, so it
         // names the exact points table — scoring lives in the mod (#285).
         modVersion: z.string().min(1),
+        // The friend code of the machine that recorded the match (the Recorder). The Recorder is
+        // not always the lobby host. The host can change during a match, and an observer can send
+        // its own copy. The mod writes null when it has none and keeps such a game on disk, so
+        // null here is a 400.
+        recorderFriendCode: z.string().min(1),
         gameStart: z.string().datetime({ offset: true }),
         gameEnd: z.string().datetime({ offset: true }),
         mapName: z.string().min(1),
