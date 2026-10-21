@@ -132,6 +132,7 @@ Project-authored:
 | `plan-feature`           | Plan a new feature: design decisions, tasks, and phased impl   |
 | `weekly-content-update`  | Weekly game data and ranking content update workflow           |
 | `publish-client-mod`     | Publish new hats or a client build; rewrite the update manifest|
+| `fix-duplicate-player`   | Move a bot-made duplicate player's Discord link to the real one |
 
 Use `import-d1-database` when syncing production D1 data into local state and the raw export fails because of foreign keys, dump ordering, or wrangler transaction limits.
 
