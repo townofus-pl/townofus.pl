@@ -18,10 +18,10 @@
 import { createHash } from 'node:crypto';
 import { existsSync, mkdirSync, readFileSync, readdirSync, statSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
+import { assertSafeName, urlProblem } from './lib/clientManifest';
 
 const PUBLISH_DIR = 'public/mod/client';
 const MANIFEST_NAME = 'latest.json';
-const PRODUCTION_BASE = 'https://townofus.pl/mod/client';
 
 type ManifestFile = { name: string; url: string; sha256: string };
 type Manifest = { version: string; files: ManifestFile[] };
@@ -32,23 +32,12 @@ type Row = {
     state: State;
     sha256: string | null;
     size: number | null;
-    /** Set when the manifest's `url` is not the relative form the mod resolves beside it. */
+    /** Set when the manifest's `url` is not the bare file name the mod resolves beside it. */
     urlProblem?: string;
 };
 
 function sha256Of(file: string): string {
     return createHash('sha256').update(readFileSync(file)).digest('hex');
-}
-
-/**
- * The mod writes `name` straight into the player's `BepInEx/plugins` folder and refuses anything
- * containing a separator or `..`. Rejecting it here too means a bad name can never be published,
- * rather than being published and then declined by every client.
- */
-function assertSafeName(name: string): void {
-    if (name.includes('/') || name.includes('\\') || name.includes('..')) {
-        throw new Error(`Unsafe file name for a manifest entry: ${name}`);
-    }
 }
 
 function readManifest(): Manifest | null {
@@ -76,29 +65,16 @@ function reconcile(): Row[] {
         const previous = claimed.get(name);
         claimed.delete(name);
 
-        // Two forms are legitimate and the choice is the mod's, not ours:
-        //
-        //   `name`                         relative, resolved beside the manifest. Lets
-        //                                  DRAMAAFERA_BASE_URL point a client at staging and get
-        //                                  staging's files.
-        //   `https://townofus.pl/mod/…`    absolute. Required while players are still on the
-        //                                  September build, whose updater cannot follow a
-        //                                  relative entry at all.
-        //
-        // Anything else is wrong: a leading slash resolves to the site root rather than beside
-        // the manifest, and a url naming a different file is a copy-paste that would install the
-        // wrong bytes under the right name.
-        const urlProblem =
-            previous && previous.url !== name && previous.url !== `${PRODUCTION_BASE}/${name}`
-                ? `url is "${previous.url}", expected "${name}" or "${PRODUCTION_BASE}/${name}"`
-                : undefined;
+        // Only the bare file name. The mod resolves it beside the manifest and fails the whole
+        // update on an absolute url or one with a separator, so such an entry is never published.
+        const problem = previous ? urlProblem(name, previous.url) ?? undefined : undefined;
 
         return {
             name,
             state: previous === undefined ? 'NEW' : previous.sha256.toLowerCase() === sha256 ? 'same' : 'CHANGED',
             sha256,
             size: statSync(path.join(PUBLISH_DIR, name)).size,
-            urlProblem,
+            urlProblem: problem,
         };
     });
 
@@ -123,27 +99,15 @@ function report(rows: Row[], version: string | null): void {
 }
 
 function buildManifest(version: string, rows: Row[]): Manifest {
-    const existing = new Map((readManifest()?.files ?? []).map((file) => [file.name, file.url]));
-
     return {
         version,
         files: rows
             .filter((row) => row.state !== 'MISSING')
             .map((row) => {
                 assertSafeName(row.name);
-                // Keep whichever form the manifest already uses. Relative is the better default
-                // — it makes DRAMAAFERA_BASE_URL point a client at staging and get staging's
-                // files — but absolute is currently required, because a player still on the
-                // September build has an updater that cannot follow a relative entry. Switching
-                // back to relative is safe only once nobody is on that build.
-                const absolute = `${PRODUCTION_BASE}/${row.name}`;
-                const previous = existing.get(row.name);
-
-                return {
-                    name: row.name,
-                    url: previous === absolute ? absolute : row.name,
-                    sha256: row.sha256!,
-                };
+                // Always the bare name: the only form the mod accepts. An absolute url that an
+                // older manifest holds is replaced here, never kept.
+                return { name: row.name, url: row.name, sha256: row.sha256! };
             }),
     };
 }
