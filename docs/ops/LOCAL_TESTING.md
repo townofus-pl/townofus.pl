@@ -127,9 +127,13 @@ npm run replay -- --file <p.json> --url https://<staging-host>/api/v2/games --tw
 deploys nowhere useful; `npm run deploy` is `-e production` and `npm run deploy:staging` is
 `-e staging`. Nothing deploys by accident.
 
-**Named environments do not inherit bindings.** `[[d1_databases]]`, `[assets]` and `[vars]` are
+**Named environments do not inherit bindings.** `[[d1_databases]]`, `[[r2_buckets]]`, `[assets]` and `[vars]` are
 redeclared in full inside each `[env.*]` block. A binding present only at the top level is simply
 absent from the deployed environment.
+
+**The local `HOST_FILES` bucket starts empty**, so `GET /api/mod/host/<name>` gives `404` under
+`next dev` and `preview:local`. Put a file into the local Miniflare copy from this checkout:
+`npx wrangler r2 object put townofus-pl-host-files-staging/latest.json --file <path> --local`.
 
 **Staging uses the pre-existing `townofus_pl_preview` D1 database** (`44f0d77c-…`), which is a
 genuinely separate database from production's `townofus-pl` (`0edadde7-…`).
