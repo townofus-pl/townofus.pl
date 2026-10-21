@@ -12,9 +12,15 @@ interface RouteContext {
   params: Promise<{ name: string }>;
 }
 
-/** The `createErrorResponse` shape. The `_utils` barrel is not imported, because it loads Prisma. */
+/**
+ * The `createErrorResponse` shape. The `_utils` barrel is not imported, because it loads Prisma.
+ * `no-store` as on a 200, so a 404 from before an upload is never served after it.
+ */
 function notFound(): NextResponse {
-  return NextResponse.json({ success: false, error: 'Not found' }, { status: 404 });
+  return NextResponse.json(
+    { success: false, error: 'Not found' },
+    { status: 404, headers: { 'Cache-Control': 'private, no-store' } },
+  );
 }
 
 function isHostFileName(name: string): name is (typeof HOST_FILE_NAMES)[number] {

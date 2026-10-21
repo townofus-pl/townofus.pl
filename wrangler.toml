@@ -8,8 +8,8 @@
 #
 # ⚠️ Named environments do **not** inherit bindings. `[[d1_databases]]`, `[[r2_buckets]]`,
 # `[assets]` and `[vars]` must be redeclared in full inside every `[env.*]` block — a binding
-# present only at the top level is simply absent from the deployed environment. Verbose, but you can read one block and
-# know exactly what that environment talks to.
+# present only at the top level is simply absent from the deployed environment. Verbose, but you
+# can read one block and know exactly what that environment talks to.
 
 main = ".open-next/worker.js"
 name = "townofus-pl-dev"

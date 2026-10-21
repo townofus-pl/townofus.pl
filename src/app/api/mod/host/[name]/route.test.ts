@@ -57,6 +57,7 @@ describe('GET /api/mod/host/[name]', () => {
     for (const name of ['other.dll', 'latest.JSON', '..%2Flatest.json', 'DramaAferaStats.Client.dll']) {
       const response = await call(name, `${USER}:${PASS}`);
       expect(response.status).toBe(404);
+      expect(response.headers.get('Cache-Control')).toBe('private, no-store');
     }
     expect(files.get).not.toHaveBeenCalled();
   });
@@ -64,6 +65,7 @@ describe('GET /api/mod/host/[name]', () => {
   it('gives 404 for a name on the list with no object in the bucket', async () => {
     const response = await call('DramaAferaStats.Host.dll', `${USER}:${PASS}`);
     expect(response.status).toBe(404);
+    expect(response.headers.get('Cache-Control')).toBe('private, no-store');
     expect(files.get).toHaveBeenCalledWith('DramaAferaStats.Host.dll');
   });
 
