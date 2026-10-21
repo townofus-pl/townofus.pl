@@ -22,7 +22,7 @@ cp ~/Downloads/malkizhats/* public/mod/client/
 ```
 
 Bare file names only. The mod writes `name` straight into the player's `BepInEx/plugins` folder
-and refuses anything containing `/`, `\` or `..`, and so does this tool.
+and refuses anything containing `/`, `\`, `:` or `..`, and so does this tool.
 
 ## Step 2 — read the report before changing anything
 
@@ -46,7 +46,7 @@ public/mod/client/latest.json — version 1.0.0
 | `CHANGED` | the file differs from the manifest — players will fetch it |
 | `NEW` | published but not in the manifest yet — no client would fetch it |
 | `MISSING` | in the manifest with no file beside it — every client fails that entry, every launch |
-| `+url` | the entry's `url` is not the relative form (see below) |
+| `+url` | the entry's `url` is not the bare file name (see below) |
 
 **This is the checkpoint.** A file you meant to replace that reads `same` means you copied the
 version that is already live. A file you did not touch that reads `CHANGED` means something
@@ -66,23 +66,14 @@ git add public/mod/client && git commit -m "feat(mod): new hat bundle"
 
 Deploying is a separate, deliberate step. Nothing reaches players until production is deployed.
 
-## The two legitimate url forms
+## The url form
 
-`AutoUpdater.cs` resolves each entry against the manifest's own URL
-(`Uri.TryCreate(new Uri(manifestUrl), file.Url, …)`), so both of these work:
+`url` is always the bare file name, the same string as `name`. The mod resolves it beside the
+manifest, so `DRAMAAFERA_BASE_URL` pointed at staging fetches staging's files.
 
-| Form | When |
-|---|---|
-| `malkizhats.bundle` | relative. Resolved beside the manifest, so `DRAMAAFERA_BASE_URL` pointed at staging fetches staging's files. The better default. |
-| `https://townofus.pl/mod/client/malkizhats.bundle` | absolute. **Currently required**: a player still on the September build has an updater that cannot follow a relative entry. |
-
-Absolute is the live choice until nobody is on that build. Its cost is that a client pointed at
-staging downloads **production** bytes — so staging cannot exercise the real update path while it
-stands. Switch back to relative once the old updaters are gone.
-
-Anything else fails the report as `+url`: a leading `/` resolves to the site root rather than
-beside the manifest, and a url naming a different file installs the wrong bytes under the right
-name. `--write` preserves whichever form the manifest already uses.
+The mod's updater fails the **whole** update on an entry whose `url` or `name` holds `/`, `\`,
+`:` or `..`, and on an absolute url. The report marks such an entry `+url` and fails. `--write`
+always writes the bare name, so it also repairs an old absolute entry.
 
 ### The ordering trap
 `public/mod/` shipped to production in the v2 release, so the urls resolve today. The trap is the
