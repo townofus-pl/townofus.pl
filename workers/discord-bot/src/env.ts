@@ -24,6 +24,12 @@ export interface BotEnv {
     TEXT_SIGNUP_CLOSED: string;
     TEXT_SIGNUP_CLOSED_REPLY: string;
 
+    /**
+     * Base URL of the resized site avatars (Cloudflare image transformations), without the file
+     * name. `/<player name>.png` is appended. Empty: the poll answers get no avatar emoji.
+     */
+    AVATAR_EMOJI_BASE_URL: string;
+
     /** Secret. `.dev.vars` locally, GitHub environment secret in CI. */
     DISCORD_BOT_TOKEN: string;
 }

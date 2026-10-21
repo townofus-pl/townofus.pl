@@ -9,6 +9,7 @@ import type { InteractionHandler } from '../interactions';
 import { latestGameDate, loadGameDay } from './candidates';
 import { ensurePoll, type PollOutcome } from './createPoll';
 import { createDiscordRest, type DiscordRest } from './discordApi';
+import { createAvatarEmojis, type AvatarEmojiResolver } from './emojis';
 import { formatDayMonth } from '../signup/message';
 
 const DEFERRED_CHANNEL_MESSAGE = 5;
@@ -43,10 +44,16 @@ export function outcomeReply(outcome: PollOutcome | null): string {
     }
 }
 
-export async function runAnkieta(db: D1Database, discord: DiscordRest, env: BotEnv, now: number): Promise<string> {
+export async function runAnkieta(
+    db: D1Database,
+    discord: DiscordRest,
+    env: BotEnv,
+    now: number,
+    avatarEmojis?: AvatarEmojiResolver,
+): Promise<string> {
     const date = await latestGameDate(db, now);
     if (!date) return outcomeReply(null);
-    return outcomeReply(await ensurePoll({ db, discord, env, now }, await loadGameDay(db, date)));
+    return outcomeReply(await ensurePoll({ db, discord, env, now, avatarEmojis }, await loadGameDay(db, date)));
 }
 
 export function createAnkietaHandler(makeDiscord: (env: BotEnv) => DiscordRest): InteractionHandler {
@@ -58,7 +65,7 @@ export function createAnkietaHandler(makeDiscord: (env: BotEnv) => DiscordRest):
             (async () => {
                 let reply: string;
                 try {
-                    reply = await runAnkieta(env.DB, discord, env, Date.now());
+                    reply = await runAnkieta(env.DB, discord, env, Date.now(), createAvatarEmojis(env, env.DB));
                 } catch (error) {
                     console.error(JSON.stringify({ event: 'ankietaFailed', error: String(error) }));
                     reply = 'Coś poszło nie tak. Spróbuj ponownie za 5 minut.';

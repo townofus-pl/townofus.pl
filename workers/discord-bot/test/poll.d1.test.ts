@@ -15,7 +15,7 @@ const env = {
     TEXT_POLL_QUESTION: 'KTO ZOSTANIE EMPEROREM?',
     TEXT_SIGNUP: 'Kto gra w środę {date}? Kliknij Gram.',
     TEXT_SIGNUP_LIST: 'LISTA CWELI {date}',
-    TEXT_SIGNUP_JOIN: 'CHUJ',
+    TEXT_SIGNUP_JOIN: 'HUJ',
     TEXT_SIGNUP_LEAVE: 'wypisz mnie',
     TEXT_SIGNUP_CLOSED: 'Zapisy zamknięte',
 } as BotEnv;

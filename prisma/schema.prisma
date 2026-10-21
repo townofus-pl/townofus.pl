@@ -41,6 +41,13 @@ model Game {
   modVersion     String? // mod build that scored the match, e.g. "1.0.0+910decf"
   winningFaction String? // TOU-Mira's authoritative end-game result, colour markup stripped
 
+  // The Recorder: the machine that recorded the match (payload 3.0.0). Null on older games. D1
+  // only — never selected into a response body (#287). recorderPlayerId is set when the friend
+  // code names exactly one player, see recorder.ts.
+  recorderFriendCode String?
+  recorderPlayerId   Int?
+  recorder           Player? @relation("GameRecorder", fields: [recorderPlayerId], references: [id], onDelete: SetNull)
+
   // Timestamps
   createdAt DateTime  @default(now())
   updatedAt DateTime  @updatedAt
@@ -61,6 +68,7 @@ model Game {
   @@index([season])
   @@index([season, deletedAt])
   @@index([season, winnerTeam])
+  @@index([recorderPlayerId])
   @@map("games")
 }
 
@@ -97,6 +105,7 @@ model Player {
   actionsTargeted      GameAction[]               @relation("ActionTarget")
   discordAccount       DiscordAccount?
   emperorCandidacies   EmperorPollCandidate[]
+  recordedGames        Game[]                     @relation("GameRecorder")
 
   @@index([name], map: "players_name_idx")
   @@index([currentRankingId])

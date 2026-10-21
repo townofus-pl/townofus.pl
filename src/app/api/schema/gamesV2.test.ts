@@ -63,8 +63,9 @@ describe('V2ActionSchema — fields added by mod 1.1.0', () => {
 
 describe('V2GamePayloadSchema', () => {
     const payload = {
-        schemaVersion: '2.0.0',
+        schemaVersion: '3.0.0',
         modVersion: '1.0.0+910decf',
+        recorderFriendCode: 'quarties#1234',
         // C#'s ToString("o") emits seven fractional digits.
         gameStart: '2026-09-06T18:05:12.3456789Z',
         gameEnd: '2026-09-06T18:21:40.0000000Z',
@@ -118,5 +119,19 @@ describe('V2GamePayloadSchema', () => {
 
     it('rejects a schemaVersion it was not written against', () => {
         expect(V2GamePayloadSchema.safeParse({ ...payload, schemaVersion: '2.1.0' }).success).toBe(false);
+    });
+
+    it('rejects a 2.0.0 payload, the shape before recorderFriendCode', () => {
+        expect(V2GamePayloadSchema.safeParse({ ...payload, schemaVersion: '2.0.0' }).success).toBe(false);
+    });
+
+    it('rejects a payload with no recorderFriendCode', () => {
+        const { recorderFriendCode: _omitted, ...without } = payload;
+        expect(V2GamePayloadSchema.safeParse(without).success).toBe(false);
+    });
+
+    it('rejects a null or empty recorderFriendCode', () => {
+        expect(V2GamePayloadSchema.safeParse({ ...payload, recorderFriendCode: null }).success).toBe(false);
+        expect(V2GamePayloadSchema.safeParse({ ...payload, recorderFriendCode: '' }).success).toBe(false);
     });
 });

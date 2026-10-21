@@ -28,7 +28,7 @@ workers_dev = false
 required = ["DISCORD_BOT_TOKEN"]
 
 [env.dev.triggers]
-crons = ["*/10 15-22 * * WED"]
+crons = ["*/10 15-20 * * WED"]
 
 # Same block as the site's top level, so `--persist-to ../../.wrangler/state` reads the site's
 # local D1 file.
@@ -49,12 +49,15 @@ DISCORD_CHANNEL_ID = "1561763053652156466"
 DISCORD_HOST_ROLE_ID = "1561769324463526039"
 DISCORD_PING_ROLE_ID = "1561783249972236328"
 TEXT_POLL_QUESTION = "KTO ZOSTANIE EMPEROREM PO DZISIEJSZEJ SESJI?"
-TEXT_SIGNUP = 'KTO GRA W NASTĘPNĄ ŚRODĘ KLIKA "CHUJ"'
+TEXT_SIGNUP = 'KTO GRA W NASTĘPNĄ ŚRODĘ KLIKA "HUJ"'
 TEXT_SIGNUP_LIST = "LISTA CWELI {date}"
-TEXT_SIGNUP_JOIN = "CHUJ"
+TEXT_SIGNUP_JOIN = "HUJ"
 TEXT_SIGNUP_LEAVE = "wypisz mnie"
 TEXT_SIGNUP_CLOSED = "Zapisy zamknięte"
 TEXT_SIGNUP_CLOSED_REPLY = "Zapisy zamknięte, napisz do hosta"
+# Resized site avatars for the poll answer emojis (Cloudflare image transformations on the
+# townofus.pl zone, the only zone with them, so every env uses it). Empty: no avatar emojis.
+AVATAR_EMOJI_BASE_URL = "https://townofus.pl/cdn-cgi/image/width=128,height=128,fit=cover,format=png/images/avatars"
 
 # --------------------------------------------------------------------------------------------
 # staging — staging Discord application, production server, test channel
@@ -72,7 +75,7 @@ required = ["DISCORD_BOT_TOKEN"]
 # UTC. Covers 17:00, 18:00 and 22:00-23:59 Europe/Warsaw in summer and winter time. The code
 # picks the step from the local time (src/schedule.ts).
 [env.staging.triggers]
-crons = ["*/10 15-22 * * WED"]
+crons = ["*/10 15-20 * * WED"]
 
 [env.staging.observability]
 enabled = true
@@ -92,12 +95,15 @@ DISCORD_CHANNEL_ID = "1562178595898662982"
 DISCORD_HOST_ROLE_ID = "1560290520650092704"
 DISCORD_PING_ROLE_ID = "1331029494408155146"
 TEXT_POLL_QUESTION = "KTO ZOSTANIE EMPEROREM PO DZISIEJSZEJ SESJI?"
-TEXT_SIGNUP = 'KTO GRA W NASTĘPNĄ ŚRODĘ KLIKA "CHUJ"'
+TEXT_SIGNUP = 'KTO GRA W NASTĘPNĄ ŚRODĘ KLIKA "HUJ"'
 TEXT_SIGNUP_LIST = "LISTA CWELI {date}"
-TEXT_SIGNUP_JOIN = "CHUJ"
+TEXT_SIGNUP_JOIN = "HUJ"
 TEXT_SIGNUP_LEAVE = "wypisz mnie"
 TEXT_SIGNUP_CLOSED = "Zapisy zamknięte"
 TEXT_SIGNUP_CLOSED_REPLY = "Zapisy zamknięte, napisz do hosta"
+# Resized site avatars for the poll answer emojis (Cloudflare image transformations on the
+# townofus.pl zone, the only zone with them, so every env uses it). Empty: no avatar emojis.
+AVATAR_EMOJI_BASE_URL = "https://townofus.pl/cdn-cgi/image/width=128,height=128,fit=cover,format=png/images/avatars"
 
 # --------------------------------------------------------------------------------------------
 # production — prod Discord application, production server, production channel
@@ -114,7 +120,7 @@ route = { pattern = "dramaafera-bot.townofus.pl", custom_domain = true }
 required = ["DISCORD_BOT_TOKEN"]
 
 [env.production.triggers]
-crons = ["*/10 15-22 * * WED"]
+crons = ["*/10 15-20 * * WED"]
 
 [env.production.observability]
 enabled = true
@@ -134,9 +140,12 @@ DISCORD_CHANNEL_ID = "1331259305881505864"
 DISCORD_HOST_ROLE_ID = "1560290520650092704"
 DISCORD_PING_ROLE_ID = "1331029494408155146"
 TEXT_POLL_QUESTION = "KTO ZOSTANIE EMPEROREM PO DZISIEJSZEJ SESJI?"
-TEXT_SIGNUP = 'KTO GRA W NASTĘPNĄ ŚRODĘ KLIKA "CHUJ"'
+TEXT_SIGNUP = 'KTO GRA W NASTĘPNĄ ŚRODĘ KLIKA "HUJ"'
 TEXT_SIGNUP_LIST = "LISTA CWELI {date}"
-TEXT_SIGNUP_JOIN = "CHUJ"
+TEXT_SIGNUP_JOIN = "HUJ"
 TEXT_SIGNUP_LEAVE = "wypisz mnie"
 TEXT_SIGNUP_CLOSED = "Zapisy zamknięte"
 TEXT_SIGNUP_CLOSED_REPLY = "Zapisy zamknięte, napisz do hosta"
+# Resized site avatars for the poll answer emojis (Cloudflare image transformations on the
+# townofus.pl zone, the only zone with them, so every env uses it). Empty: no avatar emojis.
+AVATAR_EMOJI_BASE_URL = "https://townofus.pl/cdn-cgi/image/width=128,height=128,fit=cover,format=png/images/avatars"
