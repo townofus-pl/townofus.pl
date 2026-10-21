@@ -6,7 +6,9 @@ import Link from 'next/link';
 import type { UIGameData, UIPlayerData } from '@/app/dramaafera/_services/games/types';
 import { buildSeasonUrl } from '@/app/dramaafera/_utils/seasonHelpers';
 import { convertRoleToUrlSlug, FIRST_MIRA_SEASON } from '@/app/dramaafera/_utils/gameUtils';
-import { getRoleIconPath } from '@/app/dramaafera/_utils/gameUtils';
+import { getRoleIconPath, getPlayerAvatarPath } from '@/app/dramaafera/_utils/gameUtils';
+import ResultImage from './ResultImage';
+import { getWinRatioColor } from '@/app/dramaafera/_utils/winRatioColor';
 import PlayerStatsBreakdown from './PlayerStatsBreakdown';
 import { addGame, type RoleBreakdown } from '@/app/dramaafera/_utils/statsBreakdown';
 
@@ -257,14 +259,30 @@ export default function RoleTable({ roles, reversedGames, detailedGames, date, h
                   <td className="px-2 py-1 text-center">{role.games}</td>
                   <td className="px-2 py-1 text-center text-green-400 font-bold">{role.wins}</td>
                   <td className="px-2 py-1 text-center text-red-400 font-bold">{role.loses}</td>
-                  <td className="px-2 py-1 text-center font-bold" style={{ color: role.winRatio >= 50 ? '#22C55E' : role.winRatio >= 30 ? '#F59E0B' : '#EF4444' }}>{role.winRatio.toFixed(0)}%</td>
+                  <td className="px-2 py-1 text-center font-bold" style={{ color: getWinRatioColor(role.winRatio) }}>{role.winRatio.toFixed(0)}%</td>
                   {role.results.map((res, i) => (
                     <td
                       key={i}
                       className={`text-center font-bold ${res === 'W' ? 'bg-green-700/80 text-green-300' : res === 'L' ? 'bg-red-800/80 text-red-300' : 'bg-zinc-900/40'}`}
                       style={{ minWidth: '2.5rem', width: '2.5rem', maxWidth: '3.5rem', height: '2.5rem', padding: 0 }}
                     >
-                      <span className="flex items-center justify-center w-full h-full" style={{ minHeight: '2.5rem' }}>{res || ''}</span>
+                      <span className="flex flex-wrap gap-0.5 items-center justify-center w-full h-full py-1" style={{ minHeight: '2.5rem' }}>
+                        {res && detailedGames[i]?.detailedStats?.playersData
+                          .filter((player) => (player.roleHistory?.[0] || player.role || 'Unknown') === role.name)
+                          .map((player) => (
+                            <span key={player.nickname} className="relative group inline-flex">
+                              <ResultImage
+                                src={getPlayerAvatarPath(player.nickname)}
+                                label={player.nickname}
+                                won={player.win}
+                                avatar
+                              />
+                              <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-1 px-3 py-2 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10 max-w-xs shadow-lg border border-gray-700">
+                                {player.nickname}
+                              </span>
+                            </span>
+                          ))}
+                      </span>
                     </td>
                   ))}
                 </tr>

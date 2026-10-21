@@ -4,7 +4,7 @@ import RankingClient from "@/app/dramaafera/_components/RankingClient";
 
 export default async function RankingPage() {
     const seasonId = CURRENT_SEASON;
-    const { ranking } = await getRanking(seasonId);
+    const { ranking, latestEmperorId } = await getRanking(seasonId);
 
-    return <RankingClient initialData={ranking} seasonId={seasonId} />;
+    return <RankingClient initialData={ranking} initialEmperorId={latestEmperorId} seasonId={seasonId} />;
 }
