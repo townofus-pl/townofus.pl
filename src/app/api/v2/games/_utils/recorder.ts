@@ -4,10 +4,27 @@
  * match, and an observer can send its own copy. Both values stay in D1 only and never reach a
  * response body (#287). An admin reads them with `wrangler d1 execute`.
  */
+import type { PrismaClient } from '@prisma/client';
+import { withoutDeleted } from '@/app/api/schema/common';
 import type { V2GamePayload } from '@/app/api/schema/gamesV2';
 
 /** The live (not soft-deleted) player ids with this friend code. Two are enough to know it is not one. */
 export type FindPlayerIdsByFriendCode = (friendCode: string) => Promise<number[]>;
+
+/**
+ * The D1 lookup for step 2 below: live players only, and at most two rows, because two already
+ * mean "not exactly one".
+ */
+export function findLivePlayerIdsByFriendCode(prisma: Pick<PrismaClient, 'player'>): FindPlayerIdsByFriendCode {
+    return async (friendCode) =>
+        (
+            await prisma.player.findMany({
+                where: { friendCode, ...withoutDeleted },
+                select: { id: true },
+                take: 2,
+            })
+        ).map((p) => p.id);
+}
 
 /**
  * `games.recorderPlayerId` for a payload. Never rejects the upload.

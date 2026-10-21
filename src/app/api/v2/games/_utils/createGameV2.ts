@@ -18,7 +18,7 @@ import { determineTeam } from '@/app/dramaafera/_utils/gameUtils';
 import { Teams } from '@/constants/teams';
 import type { V2Action, V2GamePayload } from '@/app/api/schema/gamesV2';
 import { aggregatePayload, PayloadRejected, type AggregatedPlayer } from './aggregate';
-import { resolveRecorderPlayerId } from './recorder';
+import { findLivePlayerIdsByFriendCode, resolveRecorderPlayerId } from './recorder';
 
 export class IngestRejected extends Error {
     constructor(
@@ -268,14 +268,10 @@ export async function createGameV2(
     const dbIdByPlayerId = await resolvePlayers(prisma, payload);
     const dbIdByName = new Map(rows.map((r) => [r.name, dbIdByPlayerId.get(r.playerId)!]));
 
-    const recorderPlayerId = await resolveRecorderPlayerId(payload, dbIdByPlayerId, async (friendCode) =>
-        (
-            await prisma.player.findMany({
-                where: { friendCode, ...withoutDeleted },
-                select: { id: true },
-                take: 2,
-            })
-        ).map((p) => p.id),
+    const recorderPlayerId = await resolveRecorderPlayerId(
+        payload,
+        dbIdByPlayerId,
+        findLivePlayerIdsByFriendCode(prisma),
     );
 
     const gid = `(SELECT "id" FROM "games" WHERE "gameIdentifier" = ?)`;

@@ -1,5 +1,6 @@
 import type { V2GamePayload, V2Player } from '@/app/api/schema/gamesV2';
-import { resolveRecorderPlayerId } from './recorder';
+import type { PrismaClient } from '@prisma/client';
+import { findLivePlayerIdsByFriendCode, resolveRecorderPlayerId } from './recorder';
 
 const player = (name: string, playerId: number, friendCode: string | null): V2Player =>
     ({
@@ -55,5 +56,21 @@ describe('resolveRecorderPlayerId', () => {
             jest.fn().mockResolvedValue(ids),
         );
         expect(id).toBeNull();
+    });
+});
+
+describe('findLivePlayerIdsByFriendCode', () => {
+    it('asks D1 for live players with the friend code, at most two rows', async () => {
+        const findMany = jest.fn().mockResolvedValue([{ id: 555 }, { id: 556 }]);
+        const prisma = { player: { findMany } } as unknown as Pick<PrismaClient, 'player'>;
+
+        const ids = await findLivePlayerIdsByFriendCode(prisma)('observer#77');
+
+        expect(ids).toEqual([555, 556]);
+        expect(findMany).toHaveBeenCalledWith({
+            where: { friendCode: 'observer#77', deletedAt: null },
+            select: { id: true },
+            take: 2,
+        });
     });
 });
