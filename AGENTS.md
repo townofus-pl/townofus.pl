@@ -101,6 +101,10 @@ Three rules. Breaking any of them corrupts data quietly rather than loudly:
 - **Identity ladder.** `players` carries `hashedProductUserId` and `friendCode`; a payload
   resolves against those before falling back to the display name. A name collision against a
   different hash is a 422, not a silent merge.
+- **The Recorder.** `schemaVersion` `3.0.0` requires `recorderFriendCode`: the friend code of
+  the machine that recorded the match, not always the lobby host. `games.recorderFriendCode`
+  stores it and `games.recorderPlayerId` names the player when exactly one matches (see
+  `recorder.ts`). Both are D1 only. No page and no response shows them (#287).
 
 `POST /api/v2/games` is idempotent on `gameIdentifier` — a re-submit is a 409 with zero writes.
 
