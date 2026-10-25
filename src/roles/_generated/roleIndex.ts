@@ -554,7 +554,7 @@ export const MIRA_ROLE_INDEX: readonly SlimRole[] = [
         "team": "Crewmate",
         "color": "#e3d477",
         "icon": "/images/mira/roles/Barkeeper.png",
-        "subgroup": "protective"
+        "subgroup": "support"
     },
     {
         "id": "mira_blackmailer",

@@ -20,7 +20,7 @@ export const MiraLookout: Role = {
     color: '#33FF66',
     team: Teams.Crewmate,
     icon: '/images/mira/roles/Lookout.png',
-    description: 'Lookout może obserwować graczy podczas rund i podczas spotkania dowiaduje się, które role wchodziły w interakcje z obserwowanymi celami.',
+    description: 'Lookout może obserwować wybranych graczy podczas rundy. Na następnym spotkaniu dowiaduje się, kto wchodził z nimi w interakcje. Zależnie od ustawień otrzymuje nicki graczy albo nazwy ich ról. Może również wykrywać ataki pośrednie, takie jak wybuch bomby, jeśli odpowiednia opcja jest włączona.',
     settings: {
         ...probabilityOfAppearing(0),
         'Watch Cooldown': {

@@ -24,7 +24,7 @@ export const MiraOracle: Role = {
     color: '#BF00BF',
     team: Teams.Crewmate,
     icon: '/images/mira/roles/Oracle.png',
-    description: 'Oracle może zmuszać graczy do wyznania informacji i później korzystać z ich wyznania, aby wskazać możliwych złych. Może też błogosławić graczy podczas spotkań, chroniąc ich przed zgadywaniem i wyrzuceniem.',
+    description: 'Oracle może użyć Confess na wybranym graczu. Na następnym spotkaniu otrzymuje trzy nicki, w tym nick sprawdzonego gracza, jako wskazówkę dotyczącą możliwych złych. Jeśli Oracle umrze przed spotkaniem, frakcja sprawdzonego gracza zostaje ujawniona wszystkim, z dokładnością zależną od ustawień. Oracle może też błogosławić graczy, chroniąc ich przed zgadywaniem i wyrzuceniem podczas spotkań.',
     settings: {
         ...probabilityOfAppearing(0),
         'Confess Cooldown': {

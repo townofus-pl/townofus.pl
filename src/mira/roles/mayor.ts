@@ -14,7 +14,7 @@ export const MiraMayor: Role = {
     color: '#660099',
     team: Teams.Crewmate,
     icon: '/images/mira/roles/Mayor.png',
-    description: 'Mayor może ujawnić się podczas spotkania po skutecznym przekonaniu połowy załogi jako Politician. Po ujawnieniu zyskuje 3 głosy, a jego rola jest widoczna dla wszystkich w trakcie rundy.',
+    description: 'Politician może ujawnić się jako Mayor podczas spotkania, jeśli skutecznie przeprowadził kampanię wśród przynajmniej połowy żywych Crewmate’ów. Po ujawnieniu jego głos liczy się potrójnie, a jego rola jest widoczna dla wszystkich również w trakcie rundy. Ujawnionego Mayora nie można zabić przez zgadnięcie roli podczas spotkania.',
     settings: {
         ...probabilityOfAppearing(0),
     },
