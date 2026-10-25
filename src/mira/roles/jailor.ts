@@ -24,7 +24,7 @@ export const MiraJailor: Role = {
     color: '#A6A6A6',
     team: Teams.Crewmate,
     icon: '/images/mira/roles/Jailor.png',
-    description: 'Jailor może więzić innych graczy. Podczas spotkania wszyscy widzą, kto jest uwięziony, a Jailor może prywatnie rozmawiać z więźniem i później go wykonać.',
+    description: 'Jailor może uwięzić wybranego gracza. Podczas następnego spotkania wszyscy widzą, kto jest więźniem, a Jailor może z nim prywatnie rozmawiać i zdecydować o wykonaniu egzekucji. Jeśli zabije w ten sposób Crewmate’a, traci możliwość dalszego więzienia. Imitator naśladujący Jailora nie może wykonywać egzekucji.',
     settings: {
         ...probabilityOfAppearing(0),
         'Jail Cooldown': {

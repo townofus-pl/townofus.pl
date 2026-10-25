@@ -24,7 +24,7 @@ export const MiraInquisitor: Role = {
     color: '#D94291',
     team: Teams.Neutral,
     icon: '/images/mira/roles/Inquisitor.png',
-    description: 'Inquisitor wygrywa przez eliminację heretyków i może ich wyszukiwać poprzez zdolność Inquire podczas spotkań.',
+    description: 'Inquisitor otrzymuje listę heretyckich ról i wygrywa, gdy wymagana liczba jego celów zostanie wyeliminowana. Podczas spotkań może używać Inquire, aby sprawdzać, czy wybrany gracz jest heretykiem. Może też sam zabijać zdolnością Vanquish, ale zabicie osoby, która nie jest heretykiem, odbiera mu tę możliwość do końca gry. Heretycy nie muszą zginąć z jego ręki.',
     settings: {
         ...probabilityOfAppearing(0),
         'Vanquish Cooldown': {
