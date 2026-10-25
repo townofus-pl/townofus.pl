@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { Fragment, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import type { UIGameData, UIPlayerData } from '@/app/dramaafera/_services/games/types';
@@ -208,7 +208,7 @@ export default function RoleTable({ roles, reversedGames, detailedGames, date, h
             const roleStats = getRoleAggregatedStats(role.name);
             
             return (
-              <>
+              <Fragment key={role.name}>
                 <tr key={role.name} className="border-b border-zinc-700">
                   <td
                     className="text-center text-yellow-300 font-bold"
@@ -220,10 +220,9 @@ export default function RoleTable({ roles, reversedGames, detailedGames, date, h
                     <Image 
                       src={getRoleIconPath(role.name, seasonId)} 
                       alt={role.displayName} 
-                      width={32} 
-                      height={32} 
-                      className="rounded border-2"
-                      style={{ borderColor: role.color }}
+                      width={32}
+                      height={32}
+                      className="h-8 w-8 shrink-0 object-contain"
                     />
                     <Link
                       href={buildSeasonUrl(`/role/${convertRoleToUrlSlug(role.name)}`, seasonId)}
@@ -524,7 +523,7 @@ export default function RoleTable({ roles, reversedGames, detailedGames, date, h
                     </td>
                   </tr>
                 )}
-              </>
+              </Fragment>
             );
           })}
         </tbody>

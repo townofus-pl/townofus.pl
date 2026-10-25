@@ -3,254 +3,21 @@ import Image from "next/image";
 import { notFound } from "next/navigation";
 import { RoleImage } from "../_components/RoleImage";
 import { getAllGamesData, getDramaAferaSettings } from "../../_services";
-import { FIRST_MIRA_SEASON, isKillerRole, getRoleColor, convertRoleNameForDisplay, convertUrlSlugToRole, convertNickToUrlSlug, getPlayerAvatarPath } from "@/app/dramaafera/_utils/gameUtils";
+import { FIRST_MIRA_SEASON, getRoleColor, convertUrlSlugToRole, convertNickToUrlSlug, getPlayerAvatarPath } from "@/app/dramaafera/_utils/gameUtils";
 import { buildSeasonUrl } from "@/app/dramaafera/_utils/seasonHelpers";
-import type { UIGameData, UIPlayerData } from "../../_services";
 import { findFullRole } from "@/app/dramaafera/_utils/roleRegistry";
 import type { Role } from "@/constants/rolesAndModifiers";
 import { SettingsList } from "@/app/_components/RolesList/RoleCard/SettingsList";
 import { parseSettingsFile, getMatchingFileName, updateSettingValue } from '../../_utils/settingsParser';
 import { buildMiraRoleSettings, looksLikeMiraConfig } from "@/app/dramaafera/_utils/miraConfig";
 import { getCloudflareContext } from "@opennextjs/cloudflare";
-import PlayerStatsBreakdown from "@/app/_components/PlayerStatsBreakdown";
-import { addGame, type RoleBreakdown } from "@/app/dramaafera/_utils/statsBreakdown";
-
-// Interface dla statystyk roli
-interface RoleStats {
-    roleName: string;
-    gamesPlayed: number;
-    totalAppearances: number;
-    wins: number;
-    winRate: number;
-    players: PlayerRoleStats[];
-    /** Season 4+: the day-results groups for this role, broken down by player. */
-    byPlayer: RoleBreakdown;
-    totalCorrectKills?: number;
-    totalIncorrectKills?: number;
-    isKillerRole: boolean;
-    totalTasks: number;
-    maxTasks: number;
-    correctGuesses: number;
-    incorrectGuesses: number;
-    correctProsecutes: number;
-    incorrectProsecutes: number;
-    correctDeputyShoots: number;
-    incorrectDeputyShoots: number;
-    correctJailorExecutes: number;
-    incorrectJailorExecutes: number;
-    correctProtects: number;
-    incorrectProtects: number;
-    correctWardenFortifies: number;
-    incorrectWardenFortifies: number;
-    janitorCleans: number;
-    survivedRounds: number;
-    totalRounds: number;
-    correctAltruistRevives: number;
-    incorrectAltruistRevives: number;
-    correctSwaps: number;
-    incorrectSwaps: number;
-}
-
-// Interface dla statystyk gracza z daną rolą
-interface PlayerRoleStats {
-    name: string;
-    gamesWithRole: number;
-    winsWithRole: number;
-    winRateWithRole: number;
-    correctKills?: number;
-    incorrectKills?: number;
-}
-
-
-// Funkcja do generowania statystyk roli
-function generateRoleStats(allGames: UIGameData[], targetRole: string, seasonId: number): RoleStats {
-    let totalGamesPlayed = 0;
-    let totalAppearances = 0;
-    let totalWins = 0;
-    let totalCorrectKills = 0;
-    let totalIncorrectKills = 0;
-    let totalTasks = 0;
-    let maxTasks = 0;
-    let correctGuesses = 0;
-    let incorrectGuesses = 0;
-    let correctProsecutes = 0;
-    let incorrectProsecutes = 0;
-    let correctDeputyShoots = 0;
-    let incorrectDeputyShoots = 0;
-    let correctJailorExecutes = 0;
-    let incorrectJailorExecutes = 0;
-    let correctProtects = 0;
-    let incorrectProtects = 0;
-    let correctWardenFortifies = 0;
-    let incorrectWardenFortifies = 0;
-    let janitorCleans = 0;
-    let survivedRounds = 0;
-    let totalRounds = 0;
-    let correctAltruistRevives = 0;
-    let incorrectAltruistRevives = 0;
-    let correctSwaps = 0;
-    let incorrectSwaps = 0;
-
-    const isKiller = isKillerRole(targetRole, seasonId);
-    const byPlayer: RoleBreakdown = {};
-
-    const playerStats = new Map<string, {
-        games: number;
-        wins: number;
-        correctKills: number;
-        incorrectKills: number;
-    }>();
-
-    allGames.forEach(game => {
-        let maxRoundsInThisGame = 0;
-        game.detailedStats.playersData.forEach(p => {
-            if (p.originalStats?.survivedRounds) {
-                maxRoundsInThisGame = Math.max(maxRoundsInThisGame, p.originalStats.survivedRounds);
-            }
-        });
-
-        game.detailedStats.playersData.forEach((player: UIPlayerData) => {
-            const normalizedPlayerRole = convertRoleNameForDisplay(player.role);
-            const normalizedRoleHistory = player.roleHistory?.map(r => convertRoleNameForDisplay(r));
-
-            const hasRoleInHistory = normalizedPlayerRole === targetRole ||
-                (normalizedRoleHistory && normalizedRoleHistory.includes(targetRole));
-
-            if (hasRoleInHistory) {
-                totalAppearances++;
-            }
-
-            const originalRole = normalizedRoleHistory && normalizedRoleHistory.length > 0
-                ? normalizedRoleHistory[0]
-                : normalizedPlayerRole;
-            const hasRole = originalRole === targetRole;
-
-            if (hasRole) {
-                totalGamesPlayed++;
-
-                const current = playerStats.get(player.nickname) || {
-                    games: 0,
-                    wins: 0,
-                    correctKills: 0,
-                    incorrectKills: 0
-                };
-                current.games++;
-                // The role at the end of the game, as the day results and the profile use: it decides
-                // whether the protect counters hold a Monarch's knighting.
-                const finalRole = player.roleHistory?.[player.roleHistory.length - 1] ?? player.role;
-                if (player.originalStats) addGame(byPlayer, player.nickname, player.originalStats, seasonId, false, finalRole);
-
-                if (player.win) {
-                    totalWins++;
-                    current.wins++;
-                }
-
-                const kills = player.correctKills || 0;
-                const incorrectKill = player.incorrectKills || 0;
-                current.correctKills += kills;
-                current.incorrectKills += incorrectKill;
-                totalCorrectKills += kills;
-                totalIncorrectKills += incorrectKill;
-
-                const completedTasks = player.completedTasks || 0;
-                totalTasks += completedTasks;
-                if (completedTasks > 0 && game.maxTasks) {
-                    maxTasks += game.maxTasks;
-                }
-
-                correctGuesses += player.correctGuesses || 0;
-                incorrectGuesses += player.incorrectGuesses || 0;
-                correctProsecutes += player.correctProsecutes || 0;
-                incorrectProsecutes += player.incorrectProsecutes || 0;
-                correctDeputyShoots += player.correctDeputyShoots || 0;
-                incorrectDeputyShoots += player.incorrectDeputyShoots || 0;
-                correctJailorExecutes += player.correctJailorExecutes || 0;
-                incorrectJailorExecutes += player.incorrectJailorExecutes || 0;
-                correctProtects += player.correctProtects || 0;
-                incorrectProtects += player.incorrectProtects || 0;
-                correctWardenFortifies += player.correctWardenFortifies || 0;
-                incorrectWardenFortifies += player.incorrectWardenFortifies || 0;
-                janitorCleans += player.janitorCleans || 0;
-                survivedRounds += player.survivedRounds || 0;
-                totalRounds += maxRoundsInThisGame;
-                correctAltruistRevives += player.correctAltruistRevives || 0;
-                incorrectAltruistRevives += player.incorrectAltruistRevives || 0;
-                correctSwaps += player.correctSwaps || 0;
-                incorrectSwaps += player.incorrectSwaps || 0;
-
-                playerStats.set(player.nickname, current);
-            }
-        });
-    });
-
-    const players: PlayerRoleStats[] = Array.from(playerStats.entries())
-        .map(([name, stats]) => {
-            const baseStats = {
-                name,
-                gamesWithRole: stats.games,
-                winsWithRole: stats.wins,
-                winRateWithRole: stats.games > 0 ? parseFloat(((stats.wins / stats.games) * 100).toFixed(1)) : 0
-            };
-
-            if (isKiller) {
-                return {
-                    ...baseStats,
-                    correctKills: stats.correctKills,
-                    incorrectKills: stats.incorrectKills
-                };
-            }
-
-            return baseStats;
-        })
-        .sort((a, b) => {
-            if (b.winRateWithRole !== a.winRateWithRole) {
-                return b.winRateWithRole - a.winRateWithRole;
-            }
-            return b.gamesWithRole - a.gamesWithRole;
-        });
-
-    const baseStats = {
-        roleName: targetRole,
-        byPlayer,
-        gamesPlayed: totalGamesPlayed,
-        totalAppearances: totalAppearances,
-        wins: totalWins,
-        winRate: totalGamesPlayed > 0 ? parseFloat(((totalWins / totalGamesPlayed) * 100).toFixed(1)) : 0,
-        players,
-        isKillerRole: isKiller,
-        totalTasks,
-        maxTasks,
-        correctGuesses,
-        incorrectGuesses,
-        correctProsecutes,
-        incorrectProsecutes,
-        correctDeputyShoots,
-        incorrectDeputyShoots,
-        correctJailorExecutes,
-        incorrectJailorExecutes,
-        correctProtects,
-        incorrectProtects,
-        correctWardenFortifies,
-        incorrectWardenFortifies,
-        janitorCleans,
-        survivedRounds,
-        totalRounds,
-        correctAltruistRevives,
-        incorrectAltruistRevives,
-        correctSwaps,
-        incorrectSwaps
-    };
-
-    if (isKiller) {
-        return {
-            ...baseStats,
-            totalCorrectKills,
-            totalIncorrectKills
-        };
-    }
-
-    return baseStats;
-}
+import CollapsibleSection from '@/app/dramaafera/_components/CollapsibleSection';
+import RoleTopPerformances from './RoleTopPerformances';
+import { getRoleTopPerformances } from './_getRoleTopPerformances';
+import RoleDetailedStats from './RoleDetailedStats';
+import { normalizeRoleName } from '@/app/dramaafera/_utils/gameUtils';
+import { isKnownRole } from '@/app/dramaafera/_utils/gameUtils';
+import { generateRoleStats } from './_generateRoleStats';
 
 interface RoleDetailContentProps {
     nazwa: string;
@@ -258,35 +25,18 @@ interface RoleDetailContentProps {
 }
 
 export async function RoleDetailContent({ nazwa, seasonId }: RoleDetailContentProps) {
-    // Pobierz wszystkie gry z bazy danych
-    const games = await getAllGamesData(seasonId);
-
-    // Pobierz listę wszystkich ról
-    const allRoles: string[] = [];
-    games.forEach(game => {
-        game.detailedStats.playersData.forEach(player => {
-            if (!allRoles.includes(player.role)) {
-                allRoles.push(player.role);
-            }
-            if (player.roleHistory) {
-                player.roleHistory.forEach(role => {
-                    if (!allRoles.includes(role)) {
-                        allRoles.push(role);
-                    }
-                });
-            }
-        });
-    });
-
-    const roleName = convertUrlSlugToRole(nazwa, allRoles);
+    const roleName = normalizeRoleName(convertUrlSlugToRole(nazwa, []), seasonId);
+    if (!isKnownRole(roleName, seasonId)) notFound();
+    const games = await getAllGamesData(seasonId, roleName);
 
     // Wygeneruj statystyki dla roli
     const roleStats = generateRoleStats(games, roleName, seasonId);
+    const topPerformances = getRoleTopPerformances(games, roleName, role => normalizeRoleName(role, seasonId));
 
     // A role nobody has played this season is not a missing page — same distinction #310 drew
     // for user profiles. A role that exists in neither registry for this era still 404s, which
     // is handled by findFullRole returning undefined below.
-    if (roleStats.gamesPlayed === 0) {
+    if (roleStats.totalAppearances === 0) {
         const known = findFullRole(roleName, seasonId);
         if (!known) {
             notFound();
@@ -383,10 +133,11 @@ export async function RoleDetailContent({ nazwa, seasonId }: RoleDetailContentPr
     }
 
     return (
-        <div className="min-h-screen bg-zinc-900/50 text-white">
+        <div className="min-h-screen rounded-xl bg-zinc-900/50 text-white">
             {/* Header */}
             <div className="bg-zinc-900/50 backdrop-blur-md border-b border-zinc-700/50 p-6">
                 <div className="max-w-4xl mx-auto">
+                    <Link href={buildSeasonUrl('/role', seasonId)} className="mb-4 inline-flex items-center gap-2 text-white transition-colors hover:text-gray-300">← Powrót do wyników ról</Link>
                     <h1 className="text-4xl font-bold text-white">
                         Statystyki roli
                     </h1>
@@ -405,7 +156,6 @@ export async function RoleDetailContent({ nazwa, seasonId }: RoleDetailContentPr
                                     seasonId={seasonId}
                                     width={128}
                                     height={128}
-                                    className="scale-[1.7]"
                                 />
                             </div>
                         </div>
@@ -434,7 +184,7 @@ export async function RoleDetailContent({ nazwa, seasonId }: RoleDetailContentPr
                                     <div className="text-3xl font-bold text-blue-400 mb-1">
                                         {roleStats.gamesPlayed}
                                     </div>
-                                    <div className="text-sm text-zinc-400 uppercase tracking-wide">
+                                    <div className="text-sm text-zinc-400 uppercase tracking-wide" title="Każdy gracz rozpoczynający grę tą rolą liczy się jako jeden występ.">
                                         Gier jako pierwotna rola
                                     </div>
                                 </div>
@@ -463,6 +213,7 @@ export async function RoleDetailContent({ nazwa, seasonId }: RoleDetailContentPr
 
                 {/* Opis roli i ustawienia */}
                 {roleDefinitionWithSettings && (
+                    <CollapsibleSection title="Opis i ustawienia roli" defaultOpen={false} icon="⚙️">
                     <div className="grid grid-cols-1 gap-y-5 p-5 bg-zinc-900/50 rounded-xl border-l-5 mb-6"
                          style={{borderColor: roleColor}}>
                         <div className="grid grid-cols-1 md:grid-cols-2/1 gap-5">
@@ -489,265 +240,26 @@ export async function RoleDetailContent({ nazwa, seasonId }: RoleDetailContentPr
                             </div>
                         )}
                     </div>
+                    </CollapsibleSection>
                 )}
 
-                {/* Szczegółowe statystyki roli */}
-                <div className="bg-zinc-900/50 backdrop-blur-md rounded-xl border border-zinc-700/50 p-6 mb-6">
-                    <h3 className="text-2xl font-bold mb-3 text-center">Szczegółowe statystyki</h3>
-                    <div className="text-xs text-zinc-400 tracking-wide mb-4 text-center"> Widzisz statystykę niepasującą do roli? To kwestia zmiany roli w trakcie gry.</div>
-
-                    {seasonId >= FIRST_MIRA_SEASON && (
-                        <div className="mb-4">
-                            <PlayerStatsBreakdown breakdown={roleStats.byPlayer} seasonId={seasonId} hideZeroStats={true} rows="player" variant="wide" />
-                        </div>
-                    )}
-
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        {seasonId < FIRST_MIRA_SEASON && (
-                        <>
-                        {roleStats.isKillerRole && (roleStats.totalCorrectKills! > 0 || roleStats.totalIncorrectKills! > 0) && (
-                            <>
-                                <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
-                                    <div className="text-xl font-bold text-green-400">
-                                        {roleStats.totalCorrectKills}
-                                    </div>
-                                    <div className="text-sm text-zinc-400">
-                                        Correct kills
-                                    </div>
-                                </div>
-
-                                <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
-                                    <div className="text-xl font-bold text-red-400">
-                                        {roleStats.totalIncorrectKills}
-                                    </div>
-                                    <div className="text-sm text-zinc-400">
-                                        Incorrect kills
-                                    </div>
-                                </div>
-                            </>
-                        )}
-                        </>
-                        )}
-
-                        {roleStats.totalTasks > 0 && (
-                            <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
-                                <div className="text-xl font-bold text-pink-400">
-                                    {roleStats.maxTasks > 0 ? `${roleStats.totalTasks}/${roleStats.maxTasks}` : roleStats.totalTasks}
-                                </div>
-                                <div className="text-sm text-zinc-400">
-                                    Wykonanych tasków
-                                </div>
-                            </div>
-                        )}
-
-                        {seasonId < FIRST_MIRA_SEASON && (
-                        <>
-                        {roleStats.correctGuesses > 0 && (
-                            <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
-                                <div className="text-xl font-bold text-green-400">
-                                    {roleStats.correctGuesses}
-                                </div>
-                                <div className="text-sm text-zinc-400">
-                                    Correct guesses
-                                </div>
-                            </div>
-                        )}
-
-                        {roleStats.incorrectGuesses > 0 && (
-                            <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
-                                <div className="text-xl font-bold text-red-400">
-                                    {roleStats.incorrectGuesses}
-                                </div>
-                                <div className="text-sm text-zinc-400">
-                                    Incorrect guesses
-                                </div>
-                            </div>
-                        )}
-
-                        {roleStats.correctProsecutes > 0 && (
-                            <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
-                                <div className="text-xl font-bold text-green-400">
-                                    {roleStats.correctProsecutes}
-                                </div>
-                                <div className="text-sm text-zinc-400">
-                                    Correct Prosecutes
-                                </div>
-                            </div>
-                        )}
-
-                        {roleStats.incorrectProsecutes > 0 && (
-                            <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
-                                <div className="text-xl font-bold text-red-400">
-                                    {roleStats.incorrectProsecutes}
-                                </div>
-                                <div className="text-sm text-zinc-400">
-                                    Incorrect Prosecutes
-                                </div>
-                            </div>
-                        )}
-
-                        {roleStats.correctDeputyShoots > 0 && (
-                            <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
-                                <div className="text-xl font-bold text-green-400">
-                                    {roleStats.correctDeputyShoots}
-                                </div>
-                                <div className="text-sm text-zinc-400">
-                                    Correct Deputy shoots
-                                </div>
-                            </div>
-                        )}
-
-                        {roleStats.incorrectDeputyShoots > 0 && (
-                            <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
-                                <div className="text-xl font-bold text-red-400">
-                                    {roleStats.incorrectDeputyShoots}
-                                </div>
-                                <div className="text-sm text-zinc-400">
-                                    Incorrect Deputy shoots
-                                </div>
-                            </div>
-                        )}
-
-                        {roleStats.correctJailorExecutes > 0 && (
-                            <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
-                                <div className="text-xl font-bold text-green-400">
-                                    {roleStats.correctJailorExecutes}
-                                </div>
-                                <div className="text-sm text-zinc-400">
-                                    Correct executions
-                                </div>
-                            </div>
-                        )}
-
-                        {roleStats.incorrectJailorExecutes > 0 && (
-                            <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
-                                <div className="text-xl font-bold text-red-400">
-                                    {roleStats.incorrectJailorExecutes}
-                                </div>
-                                <div className="text-sm text-zinc-400">
-                                    Incorrect executions
-                                </div>
-                            </div>
-                        )}
-
-                        {roleStats.correctProtects > 0 && (
-                            <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
-                                <div className="text-xl font-bold text-green-400">
-                                    {roleStats.correctProtects}
-                                </div>
-                                <div className="text-sm text-zinc-400">
-                                    {seasonId < FIRST_MIRA_SEASON ? 'Correct shields' : 'Correct protects'}
-                                </div>
-                            </div>
-                        )}
-
-                        {roleStats.incorrectProtects > 0 && (
-                            <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
-                                <div className="text-xl font-bold text-red-400">
-                                    {roleStats.incorrectProtects}
-                                </div>
-                                <div className="text-sm text-zinc-400">
-                                    {seasonId < FIRST_MIRA_SEASON ? 'Incorrect shields' : 'Incorrect protects'}
-                                </div>
-                            </div>
-                        )}
-
-                        {roleStats.correctWardenFortifies > 0 && (
-                            <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
-                                <div className="text-xl font-bold text-green-400">
-                                    {roleStats.correctWardenFortifies}
-                                </div>
-                                <div className="text-sm text-zinc-400">
-                                    Correct Warden fortifies
-                                </div>
-                            </div>
-                        )}
-
-                        {roleStats.incorrectWardenFortifies > 0 && (
-                            <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
-                                <div className="text-xl font-bold text-red-400">
-                                    {roleStats.incorrectWardenFortifies}
-                                </div>
-                                <div className="text-sm text-zinc-400">
-                                    Incorrect Warden fortifies
-                                </div>
-                            </div>
-                        )}
-
-                        {roleStats.correctAltruistRevives > 0 && (
-                            <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
-                                <div className="text-xl font-bold text-green-400">
-                                    {roleStats.correctAltruistRevives}
-                                </div>
-                                <div className="text-sm text-zinc-400">
-                                    Correct Altruist revives
-                                </div>
-                            </div>
-                        )}
-
-                        {roleStats.incorrectAltruistRevives > 0 && (
-                            <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
-                                <div className="text-xl font-bold text-red-400">
-                                    {roleStats.incorrectAltruistRevives}
-                                </div>
-                                <div className="text-sm text-zinc-400">
-                                    Incorrect Altruist revives
-                                </div>
-                            </div>
-                        )}
-
-                        {roleStats.correctSwaps > 0 && (
-                            <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
-                                <div className="text-xl font-bold text-green-400">
-                                    {roleStats.correctSwaps}
-                                </div>
-                                <div className="text-sm text-zinc-400">
-                                    Correct swaps
-                                </div>
-                            </div>
-                        )}
-
-                        {roleStats.incorrectSwaps > 0 && (
-                            <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
-                                <div className="text-xl font-bold text-red-400">
-                                    {roleStats.incorrectSwaps}
-                                </div>
-                                <div className="text-sm text-zinc-400">
-                                    Incorrect swaps
-                                </div>
-                            </div>
-                        )}
-
-                        {roleStats.janitorCleans > 0 && (
-                            <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
-                                <div className="text-xl font-bold text-purple-400">
-                                    {roleStats.janitorCleans}
-                                </div>
-                                <div className="text-sm text-zinc-400">
-                                    Janitor cleans
-                                </div>
-                            </div>
-                        )}
-                        </>
-                        )}
-
-                        {roleStats.survivedRounds > 0 && (
-                            <div className="text-center p-4 bg-zinc-800/30 rounded-lg">
-                                <div className="text-xl font-bold text-cyan-400">
-                                    {roleStats.totalRounds > 0 ? `${roleStats.survivedRounds}/${roleStats.totalRounds}` : roleStats.survivedRounds}
-                                </div>
-                                <div className="text-sm text-zinc-400">
-                                    Przeżytych rund
-                                </div>
-                                {roleStats.totalRounds > 0 && (
-                                    <div className="text-xs text-zinc-500 mt-1">
-                                        {Math.round((roleStats.survivedRounds / roleStats.totalRounds) * 100)}% przeżywalności
-                                    </div>
-                                )}
-                            </div>
-                        )}
-                    </div>
-                </div>
+                <RoleDetailedStats
+                    key={`${roleName}-${seasonId}`}
+                    roleName={roleName}
+                    seasonId={seasonId}
+                    games={games.map(game => ({
+                        id: game.id,
+                        hasActionData: game.hasActionData,
+                        maxTasks: game.maxTasks,
+                        detailedStats: { playersData: game.detailedStats.playersData
+                            .filter(player => (player.roleHistory?.length ? player.roleHistory : [player.role])
+                                .some(role => normalizeRoleName(role, seasonId) === normalizeRoleName(roleName, seasonId)))
+                            .map(player => ({ nickname: player.nickname, role: player.role, roleHistory: player.roleHistory, win: player.win, originalStats: player.originalStats })) },
+                    })).filter(game => game.detailedStats.playersData.length > 0)}
+                />
+                <CollapsibleSection title="Najlepsze występy" defaultOpen={false} icon="🏆">
+                    <RoleTopPerformances key={`${roleName}-${seasonId}`} performances={topPerformances} seasonId={seasonId} />
+                </CollapsibleSection>
 
                 {/* Ranking graczy którzy grali jako ta rola */}
                 <div className="bg-zinc-900/50 backdrop-blur-md rounded-xl border border-zinc-700/50 p-6">
@@ -764,6 +276,7 @@ export async function RoleDetailContent({ nazwa, seasonId }: RoleDetailContentPr
                                         <th className="text-left py-3 px-4 text-yellow-400 font-semibold">Gracz</th>
                                         <th className="text-left py-3 px-4 text-yellow-400 font-semibold">Gry</th>
                                         <th className="text-left py-3 px-4 text-yellow-400 font-semibold">Wygrane</th>
+                                        <th className="text-left py-3 px-4 text-yellow-400 font-semibold">Porażki</th>
                                         <th className="text-left py-3 px-4 text-yellow-400 font-semibold">Win Rate</th>
                                     </tr>
                                 </thead>
@@ -800,6 +313,9 @@ export async function RoleDetailContent({ nazwa, seasonId }: RoleDetailContentPr
                                                     {playerStats.winsWithRole}
                                                 </span>
                                             </td>
+                                            <td className="py-3 px-4 text-red-400 font-semibold">
+                                                {playerStats.gamesWithRole - playerStats.winsWithRole}
+                                            </td>
                                             <td className="py-3 px-4">
                                                 <span
                                                     className="font-bold text-lg"
@@ -826,6 +342,9 @@ export async function RoleDetailContent({ nazwa, seasonId }: RoleDetailContentPr
                         Łącznie {roleStats.players.length} różnych graczy grało tą rolą
                     </div>
                 </div>
+
+
+
             </div>
         </div>
     );

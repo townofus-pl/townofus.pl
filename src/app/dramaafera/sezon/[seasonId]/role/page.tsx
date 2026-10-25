@@ -1,15 +1,18 @@
+import type { Metadata } from 'next';
 import { parseAndValidateSeasonId } from '@/app/dramaafera/sezon/_utils/parseSeasonId';
-import InnePage from '../../../role/page';
+import RoleRankingContent from '@/app/dramaafera/role/RoleRankingContent';
+import { buildSeasonUrl } from '@/app/dramaafera/_utils/seasonHelpers';
 
 interface PageProps {
     params: Promise<{ seasonId: string }>;
 }
 
-export default async function SeasonRolePage({ params }: PageProps) {
-    const { seasonId: seasonIdStr } = await params;
-    parseAndValidateSeasonId(seasonIdStr);
+export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
+    const { seasonId } = await params;
+    return { alternates: { canonical: buildSeasonUrl('/role', parseAndValidateSeasonId(seasonId)) } };
+}
 
-    // TODO: Pass seasonId to InnePage once it supports season-scoped role listing
-    // (Phase 7+ — InnePage currently shows all roles regardless of season)
-    return <InnePage />;
+export default async function SeasonRolePage({ params }: PageProps) {
+    const { seasonId } = await params;
+    return <RoleRankingContent seasonId={parseAndValidateSeasonId(seasonId)} />;
 }
