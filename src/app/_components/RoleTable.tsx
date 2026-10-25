@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { Fragment, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import type { UIGameData, UIPlayerData } from '@/app/dramaafera/_services/games/types';
@@ -31,9 +31,10 @@ interface RoleTableProps {
   date: string;
   hideZeroStats?: boolean; // Nowy prop do kontrolowania wyświetlania statystyk równych 0
   seasonId: number;
+  colorblindMode?: boolean;
 }
 
-export default function RoleTable({ roles, reversedGames, detailedGames, date, hideZeroStats = false, seasonId }: RoleTableProps) {
+export default function RoleTable({ roles, reversedGames, detailedGames, date, hideZeroStats = false, seasonId, colorblindMode = false }: RoleTableProps) {
   const [expandedRoles, setExpandedRoles] = useState<Set<string>>(new Set());
 
   // Icons come from the season-aware resolver, not a local map. There were four independent
@@ -171,8 +172,8 @@ export default function RoleTable({ roles, reversedGames, detailedGames, date, h
   };
 
   return (
-    <div className="overflow-x-visible">
-      <table className="w-full border border-zinc-700 bg-zinc-800/80 rounded-lg table-fixed">
+    <div className="overflow-x-auto">
+      <table className="w-full border border-zinc-700 bg-zinc-800/80 rounded-lg table-fixed" style={{ minWidth: `${30 + reversedGames.length * 2.5}rem` }}>
         <thead>
           <tr className="bg-zinc-900/80">
             <th
@@ -210,7 +211,7 @@ export default function RoleTable({ roles, reversedGames, detailedGames, date, h
             const roleStats = getRoleAggregatedStats(role.name);
             
             return (
-              <>
+              <Fragment key={role.name}>
                 <tr key={role.name} className="border-b border-zinc-700">
                   <td
                     className="text-center text-yellow-300 font-bold"
@@ -275,6 +276,7 @@ export default function RoleTable({ roles, reversedGames, detailedGames, date, h
                                 src={getPlayerAvatarPath(player.nickname)}
                                 label={player.nickname}
                                 won={player.win}
+                                colorblindMode={colorblindMode}
                                 avatar
                               />
                               <span className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-1 px-3 py-2 bg-black text-white text-xs rounded opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none whitespace-nowrap z-10 max-w-xs shadow-lg border border-gray-700">
@@ -542,7 +544,7 @@ export default function RoleTable({ roles, reversedGames, detailedGames, date, h
                     </td>
                   </tr>
                 )}
-              </>
+              </Fragment>
             );
           })}
         </tbody>

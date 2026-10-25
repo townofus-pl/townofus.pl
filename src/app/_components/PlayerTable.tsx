@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { Fragment, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import type { UIGameData, UIPlayerData } from '@/app/dramaafera/_services/games/types';
@@ -29,9 +29,10 @@ interface PlayerTableProps {
   date: string;
   hideZeroStats?: boolean; // Nowy prop do kontrolowania wyświetlania statystyk równych 0
   seasonId: number;
+  colorblindMode?: boolean;
 }
 
-export default function PlayerTable({ players, reversedGames, detailedGames, date, hideZeroStats = false, seasonId }: PlayerTableProps) {
+export default function PlayerTable({ players, reversedGames, detailedGames, date, hideZeroStats = false, seasonId, colorblindMode = false }: PlayerTableProps) {
   const [expandedPlayers, setExpandedPlayers] = useState<Set<string>>(new Set());
 
   const togglePlayerExpansion = (playerName: string) => {
@@ -161,8 +162,8 @@ export default function PlayerTable({ players, reversedGames, detailedGames, dat
   };
 
   return (
-    <div className="overflow-x-visible">
-      <table className="w-full border border-zinc-700 bg-zinc-800/80 rounded-lg table-fixed">
+    <div className="overflow-x-auto">
+      <table className="w-full border border-zinc-700 bg-zinc-800/80 rounded-lg table-fixed" style={{ minWidth: `${26 + reversedGames.length * 2.5}rem` }}>
         <thead>
           <tr className="bg-zinc-900/80">
             <th
@@ -199,7 +200,7 @@ export default function PlayerTable({ players, reversedGames, detailedGames, dat
             const playerStats = getPlayerAggregatedStats(player.name);
             
             return (
-              <>
+              <Fragment key={player.name}>
                 <tr key={player.name} className="border-b border-zinc-700">
                   <td
                     className="text-center text-yellow-300 font-bold"
@@ -249,8 +250,9 @@ export default function PlayerTable({ players, reversedGames, detailedGames, dat
                         style={{ minWidth: '2.5rem', width: '2.5rem', maxWidth: '3.5rem', height: '2.5rem', padding: 0 }}
                       >
                         <span className="flex items-center justify-center w-full h-full" style={{ minHeight: '2.5rem' }}>
+                          {res && !role && <span>{res}</span>}
                           {res && role && (
-                            <ResultImage src={getRoleIconPath(role, seasonId)} label={role} won={res === 'W'} />
+                            <ResultImage src={getRoleIconPath(role, seasonId)} label={role} won={res === 'W'} colorblindMode={colorblindMode} />
                           )}
                         </span>
                         {role && (
@@ -361,7 +363,7 @@ export default function PlayerTable({ players, reversedGames, detailedGames, dat
                     </td>
                   </tr>
                 )}
-              </>
+              </Fragment>
             );
           })}
         </tbody>

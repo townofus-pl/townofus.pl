@@ -258,13 +258,14 @@ export default function RankingClient({ initialData, initialEmperorId, seasonId 
                                                         {rankIcon && (
                                                             <Image
                                                                 src={rankIcon}
-                                                                alt=""
+                                                                alt={getRankName(Math.round(player.currentRating))}
+                                                                title={getRankName(Math.round(player.currentRating))}
                                                                 width={28}
                                                                 height={28}
                                                                 className="h-7 w-7 shrink-0 object-contain"
                                                             />
                                                         )}
-                                                        <span>{getRankName(Math.round(player.currentRating))}</span>
+                                                        <span className={rankIcon ? "hidden sm:inline" : undefined}>{getRankName(Math.round(player.currentRating))}</span>
                                                     </span>
                                                 ) : '-'}
                                             </td>

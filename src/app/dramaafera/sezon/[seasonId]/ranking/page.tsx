@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { getRanking } from '@/app/dramaafera/_services';
+import { getRanking, getLatestEmperorId } from '@/app/dramaafera/_services';
 import { buildSeasonUrl } from '@/app/dramaafera/_utils/seasonHelpers';
 import { parseAndValidateSeasonId } from '@/app/dramaafera/sezon/_utils/parseSeasonId';
 import RankingClient from '@/app/dramaafera/_components/RankingClient';
@@ -22,6 +22,9 @@ export default async function SeasonRankingPage({ params }: PageProps) {
     const { seasonId: seasonIdStr } = await params;
     const seasonId = parseAndValidateSeasonId(seasonIdStr);
 
-    const { ranking, latestEmperorId } = await getRanking(seasonId);
+    const [{ ranking }, latestEmperorId] = await Promise.all([
+        getRanking(seasonId),
+        getLatestEmperorId(seasonId),
+    ]);
     return <RankingClient initialData={ranking} initialEmperorId={latestEmperorId} seasonId={seasonId} />;
 }
