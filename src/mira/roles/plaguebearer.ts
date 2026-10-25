@@ -20,7 +20,7 @@ export const MiraPlaguebearer: Role = {
     color: '#E6FFB3',
     team: Teams.Neutral,
     icon: '/images/mira/roles/Plaguebearer.png',
-    description: 'Plaguebearer wygrywa jako ostatni zabójca. Musi zarazić wszystkich żywych graczy, aby przemienić się w Pestilence.',
+    description: 'Plaguebearer musi zarazić wszystkich pozostałych żywych graczy, aby przemienić się w Pestilence i wygrać jako ostatni zabójca. Może zarażać wybrane osoby zdolnością Infect. Infekcja rozprzestrzenia się również przez interakcje między graczami, w tym zgłaszanie zarażonych ciał.',
     settings: {
         ...probabilityOfAppearing(0),
         'Instant Pestilence Chance': {

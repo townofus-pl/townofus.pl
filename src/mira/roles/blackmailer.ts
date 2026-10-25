@@ -21,7 +21,7 @@ export const MiraBlackmailer: Role = {
     color: '#FF1919',
     team: Teams.Impostor,
     icon: '/images/mira/roles/Blackmailer.png',
-    description: 'Blackmailer może uciszyć gracza na następne spotkanie, blokując mu możliwość pisania na czacie.',
+    description: 'Blackmailer może zaszantażować wybranego gracza, blokując mu możliwość pisania na czacie podczas następnego spotkania. Zaszantażowany gracz nie może również głosować, dopóki liczba żywych graczy przekracza próg określony w ustawieniach. Zależnie od ustawień informacja o szantażu może być widoczna także dla pozostałych graczy.',
     settings: {
         ...probabilityOfAppearing(0),
         'Number Of Blackmail Uses Per Game': {

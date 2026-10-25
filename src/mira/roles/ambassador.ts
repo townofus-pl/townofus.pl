@@ -21,7 +21,7 @@ export const MiraAmbassador: Role = {
     color: '#FF1919',
     team: Teams.Impostor,
     icon: '/images/mira/roles/Ambassador.png',
-    description: 'Ambassador może przeszkalać Impostorów do innych ról z tej samej kategorii.',
+    description: 'Ambassador podczas spotkania wybiera siebie lub innego Impostora do przeszkolenia, a zmiana roli następuje na początku następnej rundy. Role Concealing i Support mogą zmieniać się w inne dostępne role z tych dwóch kategorii, a role Killing i Power mogą zmieniać się w dostępne role Impostorów poza kategorią Power. Ambassador lub wybrany gracz musi mieć wymaganą w ustawieniach liczbę zabójstw. Dostępność przeszkolenia zależy też od numeru rundy, limitu użyć i przerwy między przeszkoleniami. Każdego gracza można przeszkolić tylko raz. Zależnie od ustawień gracz musi zaakceptować proponowaną zmianę.',
     settings: {
         ...probabilityOfAppearing(0),
         'Max Retrains Available': {

@@ -20,7 +20,7 @@ export const MiraMedic: Role = {
     color: '#006400',
     team: Teams.Crewmate,
     icon: '/images/mira/roles/Medic.png',
-    description: 'Medic może osłonić wybranego gracza tarczą chroniącą go przed zabiciem. Medic widzi zieloną poświatę na ekranie, jeśli ktoś spróbuje zabić jego podopiecznego. Jeśli Medic zgłosi martwe ciało odpowiednio szybko, może otrzymać raport zawierający wskazówki na temat tożsamości Zabójcy. Tarcza znika dopiero po śmierci Medica.',
+    description: 'Medic może osłonić wybranego gracza tarczą chroniącą go przed zabiciem. Próba zabójstwa chronionego gracza wywołuje zielony błysk u osób określonych w ustawieniach. Tarcza znika po śmierci Medica, a zależnie od ustawień może też pęknąć przy próbie zabójstwa. Medic może otrzymać możliwość przenoszenia tarczy na innych graczy w kolejnych rundach. Jeśli odpowiednio szybko zgłosi ciało, może otrzymać raport z nickiem zabójcy lub informacją o jasnym albo ciemnym kolorze.',
     settings: {
         ...probabilityOfAppearing(0),
         'Show Shielded Player': {
