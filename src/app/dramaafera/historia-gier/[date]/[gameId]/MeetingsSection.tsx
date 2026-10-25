@@ -10,13 +10,13 @@ function Player({ name, seasonId, count = 1, player, compact = false, avatarOnly
     return (
         <Link href={buildSeasonUrl(`/user/${convertNickToUrlSlug(name)}`, seasonId)}
             aria-label={avatarOnly ? `${name} — ${roles.map(convertRoleNameForDisplay).join(" → ")}${count > 1 ? `, ${count} głosy` : ""}` : undefined}
-            className={`group relative inline-flex max-w-full items-center rounded-lg border border-white/10 bg-black/20 hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-400 ${avatarOnly ? 'shrink-0 gap-0 p-1 text-xs hover:z-30 focus:z-30' : compact ? 'overflow-hidden gap-2 px-2 py-1 text-xs' : 'overflow-hidden gap-3 px-3 py-2 text-sm'}`}>
+            className={`group relative inline-flex max-w-full items-center rounded-lg border border-white/10 bg-black/20 hover:bg-white/10 focus-visible:outline focus-visible:outline-2 focus-visible:outline-cyan-400 ${avatarOnly ? 'shrink-0 flex-col gap-1 p-1 text-xs hover:z-30 focus:z-30 sm:flex-row sm:gap-0' : compact ? 'overflow-hidden gap-2 px-2 py-1 text-xs' : 'overflow-hidden gap-3 px-3 py-2 text-sm'}`}>
             <span className={`relative shrink-0 ${compact ? 'h-8 w-8' : 'h-12 w-12'}`}>
                 <Image src={getPlayerAvatarPath(name)} alt="" width={compact ? 32 : 48} height={compact ? 32 : 48} className="h-full w-full rounded-full" />
                 {blackmailed && <Image src="/images/mira/abilities/BlackmailLetter.png" alt="Uciszony przez Blackmailera" title="Uciszony przez Blackmailera" width={compact ? 24 : 32} height={compact ? 24 : 32} className="absolute bottom-0 left-1/2 -translate-x-1/2 object-contain" />}
                 {jailed && <Image src="/images/mira/abilities/InJail.png" alt="Uwięziony" title="Uwięziony" width={compact ? 32 : 48} height={compact ? 32 : 48} className="absolute inset-0 h-full w-full object-contain" />}
             </span>
-            <span className={`min-w-0 text-center ${avatarOnly ? "pointer-events-none absolute left-full top-1/2 z-30 ml-1 w-max max-w-64 -translate-x-2 -translate-y-1/2 rounded-lg border border-white/20 bg-zinc-900 px-3 py-2 opacity-0 shadow-xl transition-[opacity,transform] duration-200 ease-out group-hover:translate-x-0 group-hover:opacity-100 group-focus-visible:translate-x-0 group-focus-visible:opacity-100 motion-reduce:transition-none" : ""}`}>
+            <span className={`min-w-0 text-center ${avatarOnly ? "pointer-events-none absolute bottom-full left-1/2 z-30 mb-1 hidden w-max max-w-64 -translate-x-1/2 translate-y-1 sm:block rounded-lg border border-white/20 bg-zinc-900 px-3 py-2 opacity-0 shadow-xl transition-[opacity,transform] duration-200 ease-out group-hover:translate-y-0 group-hover:opacity-100 group-focus-visible:translate-y-0 group-focus-visible:opacity-100 motion-reduce:transition-none" : ""}`}>
                 <span className={`flex flex-wrap items-center justify-center gap-1 ${compact ? 'mb-0.5 text-[10px]' : 'mb-1 text-xs'}`} aria-label="Historia ról gracza">
                     {roles.length ? roles.map((role, index) => (
                         <span key={`${role}-${index}`} className="inline-flex items-center gap-1" style={{ color: getRoleColor(role, seasonId) }}>
@@ -28,6 +28,7 @@ function Player({ name, seasonId, count = 1, player, compact = false, avatarOnly
                 </span>
                 <span className={`block font-semibold ${avatarOnly ? "whitespace-nowrap" : "break-all"}`}>{name}</span>
             </span>
+            {avatarOnly && <span className="max-w-20 break-all text-center text-[10px] leading-tight sm:hidden">{name}</span>}
             {count > 1 && <span className="text-cyan-300" aria-label={`${count} głosy`}>×{count}</span>}
             {blackmailed && !suppressBlackmailOverlay && <span aria-hidden="true" className="pointer-events-none absolute inset-0 z-10 rounded-lg bg-red-500/20" />}
         </Link>
@@ -62,22 +63,24 @@ export function MeetingsSection({ meetings, seasonId, playersData }: { meetings:
                     const outcome = meeting.exiledPlayer ? `Wyrzucono: ${meeting.exiledPlayer}`
                         : meeting.wasTie ? 'Remis' : meeting.exiledPlayer === null ? 'Nikogo nie wyrzucono' : 'Wynik nie został zapisany';
                     const groups = [
-                        ...targets.filter(([, voters]) => voters.length > 0).map(([name, voters]) => ({ name, voters, skip: false })),
-                        ...playersWithoutVotes.map(name => ({ name, voters: [] as string[], skip: false })),
+                        ...targets.filter(([, voters]) => voters.length > 0).map(([name, voters]) => ({ name, voters })),
+                        ...playersWithoutVotes.map(name => ({ name, voters: [] as string[] })),
                     ];
                     function MeetingPlayer({ name, compact = false, count = 1, avatarOnly = false, suppressBlackmailOverlay = false }: { name: string; compact?: boolean; count?: number; avatarOnly?: boolean; suppressBlackmailOverlay?: boolean }) {
                         return <Player name={name} compact={compact} avatarOnly={avatarOnly} count={count} suppressBlackmailOverlay={suppressBlackmailOverlay} player={playersByName.get(name)} seasonId={seasonId}
                             blackmailed={meeting.blackmailedPlayers?.includes(name)} jailed={meeting.jailedPlayers?.includes(name)} />;
                     }
                     return (
-                        <article key={meeting.meetingNumber} className="overflow-hidden rounded-xl border border-gray-700/60 bg-gray-800/40">
-                            <header className="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 bg-black/20 p-5">
+                        <article key={meeting.meetingNumber} className="rounded-xl border border-gray-700/60 bg-gray-800/40">
+                            <header className="flex flex-wrap items-center justify-between gap-3 rounded-t-xl border-b border-white/10 bg-black/20 p-5">
                                 <div>
                                     <h3 className="font-brook text-2xl text-blue-300">Spotkanie #{meeting.meetingNumber}</h3>
                                     <p className="mt-1 text-sm text-gray-400">Głosujących: {votersCount} · Zapisanych głosów: {totalVotes} · Bez głosu: {new Set(meeting.noVotes).size}</p>
                                 </div>
                                 <div className="flex flex-wrap gap-2">
-                                    <span className={`rounded-lg border px-3 py-2 text-sm ${meeting.exiledPlayer ? 'border-red-400/30 bg-red-500/10 text-red-300' : 'border-yellow-400/30 bg-yellow-500/10 text-yellow-200'}`}>{outcome}</span>
+                                    {(meeting.exiledPlayer !== undefined || meeting.wasTie) && (
+                                        <span className={`rounded-lg border px-3 py-2 text-sm ${meeting.exiledPlayer ? 'border-red-400/30 bg-red-500/10 text-red-300' : 'border-yellow-400/30 bg-yellow-500/10 text-yellow-200'}`}>{outcome}</span>
+                                    )}
                                     {meeting.wasTie && meeting.exiledPlayer && <span className="rounded-lg bg-yellow-500/10 px-3 py-2 text-yellow-200">Remis</span>}
                                     {meeting.wasBlessed && <span className="rounded-lg bg-purple-500/10 px-3 py-2 text-purple-300">Błogosławione spotkanie</span>}
                                 </div>
@@ -112,14 +115,14 @@ export function MeetingsSection({ meetings, seasonId, playersData }: { meetings:
                                         group.voters.forEach(name => counts.set(name, (counts.get(name) ?? 0) + 1));
 
                     return (
-                                            <div key={group.name + group.skip} className="relative rounded-lg border border-white/10 bg-black/20 p-3">
+                                            <div key={group.name} className="relative rounded-lg border border-white/10 bg-black/20 p-3">
                                                 <div className="mb-2 flex flex-wrap items-center justify-between gap-3">
-                                                    {group.skip ? <span className="font-semibold text-yellow-300">Pominięcie</span> : <MeetingPlayer suppressBlackmailOverlay name={group.name} />}
+                                                    <MeetingPlayer suppressBlackmailOverlay name={group.name} />
                                                     <span className="shrink-0 text-sm text-gray-300">Głosy: <strong className="text-white">{group.voters.length}</strong></span>
                                                 </div>
                                                 {meeting.deathsDuringMeeting?.includes(group.name) && <p className="mb-2 text-xs font-semibold text-red-300">Zginął na spotkaniu</p>}
                                                 <div className="mb-3 h-1.5 overflow-hidden rounded-full bg-white/5" aria-hidden="true">
-                                                    <div className={`h-full rounded-full ${group.skip ? 'bg-yellow-400' : 'bg-cyan-400'}`} style={{ width: `${totalVotes ? group.voters.length / totalVotes * 100 : 0}%` }} />
+                                                    <div className="h-full rounded-full bg-cyan-400" style={{ width: `${totalVotes ? group.voters.length / totalVotes * 100 : 0}%` }} />
                                                 </div>
                                                 <p className="mb-2 text-xs text-gray-400">{group.voters.length ? 'Głosowali:' : 'Nikt nie oddał głosu na tego gracza.'}</p>
                                                 <div className="flex flex-wrap gap-2">{Array.from(counts, ([name, count]) => <MeetingPlayer compact avatarOnly key={name} name={name} count={count} />)}</div>
