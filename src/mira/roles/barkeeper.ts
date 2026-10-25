@@ -18,13 +18,13 @@ export const MiraBarkeeperAbilities = {
 export const MiraBarkeeper: Role = {
     type: RoleOrModifierTypes.Role,
     source: ModSource.Mira,
-    subgroup: RoleSubgroups.Protective,
+    subgroup: RoleSubgroups.Support,
     name: 'Barkeeper',
     id: 'mira_barkeeper',
     color: '#e3d477',
     team: Teams.Crewmate,
     icon: '/images/mira/roles/Barkeeper.png',
-    description: 'Barkeeper może pić z innymi, aby zablokować ich role, tymczasowo wyłączając ich zdolności. Może również wylać drinka na innego gracza, aby przyspieszyć lub spowolnić jego ruch.',
+    description: 'Barkeeper może pić z innymi graczami, aby tymczasowo zablokować ich zdolności. Może również rozlać drinka na mapie. Gracze, którzy w niego wejdą, zostaną przyspieszeni, jeśli napój jest świeży, albo spowolnieni, jeśli zdążył się zestarzeć. Każdy rozlany drink może zadziałać na danego gracza tylko raz.',
     settings: {
         ...probabilityOfAppearing(0),
         'Roleblock Cooldown': {

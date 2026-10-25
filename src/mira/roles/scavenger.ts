@@ -14,7 +14,7 @@ export const MiraScavenger: Role = {
     color: '#FF1919',
     team: Teams.Impostor,
     icon: '/images/mira/roles/Scavenger.png',
-    description: 'Scavenger musi zabijać swoje cele. Jeśli trafi poprawnie, dostaje krótszy cooldown; jeśli nie, cooldown znacząco rośnie.',
+    description: 'Scavenger otrzymuje cel, którym w momencie jego wyznaczenia jest najbliższy gracz. Zabicie wskazanego celu skraca cooldown zabijania, a zabicie innej osoby znacząco go wydłuża. Scavenger może wpływać na wybór kolejnego celu, ustawiając się blisko wybranego gracza przed jego odświeżeniem.',
     settings: {
         ...probabilityOfAppearing(0),
         'Scavenge Duration': {

@@ -25,7 +25,7 @@ export const MiraSpellslinger: Role = {
     color: '#FF1919',
     team: Teams.Impostor,
     icon: '/images/mira/roles/Spellslinger.png',
-    description: 'Spellslinger może hexować graczy, a po zaklęciu wszystkich nie-impostorów uruchamia odliczanie do wybuchu Hex Bomby która zabija wszystkich graczy, co skutkuje wygraną Impostorów.',
+    description: 'Spellslinger może nakładać hexy na graczy. Gdy wszyscy żywi gracze poza Impostorami zostaną zaklęci, może uruchomić odliczanie do wybuchu Hex Bomby, zapewniającej zwycięstwo Impostorom. Po rozpoczęciu odliczania jedynym sposobem zatrzymania bomby jest wyeliminowanie Spellslingera przed upływem czasu.',
     settings: {
         ...probabilityOfAppearing(0),
         'Hex Cooldown': {

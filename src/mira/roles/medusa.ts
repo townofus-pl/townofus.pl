@@ -28,7 +28,7 @@ export const MiraMedusa: Role = {
     color: '#783edc',
     team: Teams.Neutral,
     icon: '/images/mira/roles/Medusa.png',
-    description: 'Medusa wygrywa jako ostatni zabójca. Zabija graczy zamieniając ich w kamienne posągi których nie można zreportować.',
+    description: 'Medusa wygrywa jako ostatni zabójca. Może unieruchamiać graczy i stopniowo zamieniać ich w kamienne posągi, których nie można zgłosić. Nierozbite posągi pozostają na mapie między rundami. Jeśli odpowiednia opcja jest włączona, Medusa może używać Stone Gaze, aby petryfikować graczy wchodzących z nią w interakcję. Stone Gaze nie chroni przed próbą zabójstwa.',
     settings: {
         ...probabilityOfAppearing(0),
         'Petrify Cooldown': {

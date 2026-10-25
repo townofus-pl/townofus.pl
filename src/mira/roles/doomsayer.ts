@@ -24,7 +24,7 @@ export const MiraDoomsayer: Role = {
     color: '#00FF80',
     team: Teams.Neutral,
     icon: '/images/mira/roles/Doomsayer.png',
-    description: 'Doomsayer wygrywa przez poprawne zgadywanie ról graczy i może obserwować cele, by dostać zawężoną listę podejrzeń.',
+    description: 'Doomsayer wygrywa po poprawnym odgadnięciu wymaganej liczby ról graczy podczas spotkań. Błędne zgadnięcie go nie zabija. Jeśli odpowiednia opcja jest włączona, może obserwować graczy, aby na następnym spotkaniu otrzymać wskazówkę zawężającą listę ich możliwych ról. Zależnie od ustawień wszystkie poprawne zgadnięcia mogą być wymagane podczas jednego spotkania.',
     settings: {
         ...probabilityOfAppearing(0),
         'Observe Cooldown': {

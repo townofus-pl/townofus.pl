@@ -24,7 +24,7 @@ export const MiraPestilence: Role = {
     color: '#606870',
     team: Teams.Neutral,
     icon: '/images/mira/roles/Pestilence.png',
-    description: 'Pestilence wygrywa jako ostatni zabójca. Pestilence to nieśmiertelna siła, która zyskuje zdolność zabijania i można ją zabić tylko przez głosowanie. Nawet śmierć Loversa nie zabije Pestilence.',
+    description: 'Pestilence wygrywa jako ostatni zabójca. Jest odporny na ataki i inne interakcje, a każdy gracz, który wejdzie z nim w interakcję, ginie. Pestilence może umrzeć przez wyrzucenie na spotkaniu lub własne błędne zgadnięcie roli. Nawet śmierć Loversa go nie zabije.',
     settings: {
         ...probabilityOfAppearing(0),
         'Pestilence Kill Cooldown': {
