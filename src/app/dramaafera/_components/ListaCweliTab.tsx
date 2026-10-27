@@ -116,7 +116,11 @@ function AddPlayerDialog({ otherPlayers, alreadySelected, onClose, onConfirm }: 
             {availablePlayers.map((p) => (
               <label
                 key={p.name}
-                className="flex items-center gap-3 p-2 bg-zinc-800/50 rounded-lg hover:bg-zinc-800 cursor-pointer"
+                className={`flex items-center gap-3 p-2 rounded-lg cursor-pointer transition-colors ${
+                  checkedExisting.has(p.name)
+                    ? 'bg-green-900/40 hover:bg-green-900/50'
+                    : 'bg-zinc-800/50 hover:bg-zinc-800'
+                }`}
               >
                 <input
                   type="checkbox"
@@ -461,7 +465,11 @@ export default function ListaCweliTab({ seasonId }: ListaCweliTabProps) {
             {filteredSeasonPlayers.map((p) => (
               <label
                 key={p.name}
-                className="flex items-center gap-3 p-4 bg-zinc-800/50 rounded-lg border border-zinc-600 hover:border-yellow-500 cursor-pointer transition-colors"
+                className={`flex items-center gap-3 p-4 rounded-lg border cursor-pointer transition-colors ${
+                  selectedNames.has(p.name)
+                    ? 'bg-green-900/40 border-green-500 hover:border-green-400'
+                    : 'bg-zinc-800/50 border-zinc-600 hover:border-yellow-500'
+                }`}
               >
                 <div className="flex-shrink-0 w-12 h-12 relative rounded overflow-hidden bg-zinc-700">
                   <AvatarImageFill nickname={p.name} className="object-cover" />
@@ -486,7 +494,7 @@ export default function ListaCweliTab({ seasonId }: ListaCweliTabProps) {
             {addedPlayerNames.map((name) => (
               <label
                 key={name}
-                className="flex items-center gap-3 p-3 bg-zinc-800/50 rounded-lg border border-zinc-600 hover:border-yellow-500 cursor-pointer transition-colors"
+                className="flex items-center gap-3 p-3 bg-green-900/40 rounded-lg border border-green-500 hover:border-green-400 cursor-pointer transition-colors"
               >
                 <span className="flex-1 text-sm font-medium text-zinc-200 min-w-0 truncate">{name}</span>
                 <input
