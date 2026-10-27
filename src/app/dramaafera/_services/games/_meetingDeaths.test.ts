@@ -105,3 +105,34 @@ test('ignores unrelated actions without reading their details', () => {
     Object.defineProperty(unrelated, 'detail', { get() { throw new Error('Unrelated detail read'); } });
     expect(Array.from(getDeathsDuringMeetings(meetings, [unrelated, action()]))).toEqual([[1, ['A']]]);
 });
+
+
+test.each([false, true, null])('a Doomsayer guess without a death does not remove its living target (%s)', (isCorrect) => {
+    const sessions = [
+        { meetingNumber: 1, deathsSinceLastMeeting: [] },
+        { meetingNumber: 2, deathsSinceLastMeeting: [] },
+        { meetingNumber: 3, deathsSinceLastMeeting: [] },
+    ];
+    const deaths = getDeathsDuringMeetings(sessions, [action({ performerRole: 'Doomsayer', isCorrect })]);
+    expect(Array.from(deaths)).toEqual([]);
+    const uiMeetings: UIMeetingData[] = sessions.map(meeting => ({
+        ...meeting, votes: {}, skipVotes: [], noVotes: [], wasTie: false, wasBlessed: false,
+        deathsDuringMeeting: deaths.get(meeting.meetingNumber),
+    }));
+    expect(getMeetingParticipants(uiMeetings, ['A', 'B']).get(3)).toEqual(['A', 'B']);
+});
+
+test('a final meeting guess is retained when a matching death confirms it', () => {
+    expect(getDeathsDuringMeetings(meetings, [
+        action({ target: { name: 'C' } }),
+        action({ type: 'death', performer: { name: 'C' }, target: null, detail: '{"causeOfDeath":"Guess"}' }),
+    ]).get(2)).toEqual(['C']);
+});
+
+
+test('a later ordinary death does not turn a Doomsayer miss into a meeting death', () => {
+    expect(Array.from(getDeathsDuringMeetings(meetings, [
+        action({ performerRole: 'Doomsayer', isCorrect: false }),
+        action({ type: 'death', performer: { name: 'A' }, target: null, timestampMs: 2000, detail: '{"causeOfDeath":"Murdered"}' }),
+    ]))).toEqual([]);
+});

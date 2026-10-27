@@ -48,6 +48,9 @@ export function getDeathsDuringMeetings(meetings: Meeting[], actions: Action[]):
         const isMeetingDeath = isGuess || MEETING_CAUSES.has(String(detail.causeOfDeath)) ||
             (action.type === 'kill' && MEETING_KILLERS.has(action.performerRole));
         if (!isMeetingDeath) continue;
+        // A Doomsayer miss never kills. A later, unrelated death of the target
+        // in a summary must not turn this attempt into a meeting kill either.
+        if (action.type === 'kill' && isGuess && action.performerRole === 'Doomsayer' && action.isCorrect === false) continue;
 
         let name = action.type === 'death' ? action.performer.name : action.target?.name;
         if (action.type === 'kill') {
@@ -64,6 +67,10 @@ export function getDeathsDuringMeetings(meetings: Meeting[], actions: Action[]):
             }
         }
         if (!name) continue;
+        // Guess attempts (notably Doomsayer misses) can be recorded as kills
+        // without anyone dying. Require evidence before changing the roster.
+        if (action.type === 'kill' && isGuess &&
+            !firstSummaryByVictim.has(name) && !recordedDeaths.get(action.timestampMs)?.has(name)) continue;
         // Meeting deaths appear in the following meeting's death summary. The final
         // meeting has no following summary, so its guess/execution victims need actions.
         const nextIndex = firstSummaryByVictim.get(name) ?? -1;
