@@ -18,6 +18,8 @@ export interface RoleRankingStats {
   gamesPlayed: number;
   wins: number;
   winRate: number;
+  /** Number of appearances included in the DAP totals and average. */
+  dapGames: number;
   totalPoints: number;
   averagePoints: number;
   players: Array<{

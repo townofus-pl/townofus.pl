@@ -23,9 +23,10 @@ const numberFormat = new Intl.NumberFormat('pl-PL', { maximumFractionDigits: 2 }
 interface RoleRankingTableProps {
     roles: RoleRankingSummary[];
     seasonId: number;
+    excludeLatestDay?: boolean;
 }
 
-export default function RoleRankingTable({ roles: initialRoles, seasonId }: RoleRankingTableProps) {
+export default function RoleRankingTable({ roles: initialRoles, seasonId, excludeLatestDay = true }: RoleRankingTableProps) {
     const [roles, setRoles] = useState(initialRoles);
     const [sortBy, setSortBy] = useState<SortKey>('totalPoints');
     const [ascending, setAscending] = useState(false);
@@ -40,7 +41,14 @@ export default function RoleRankingTable({ roles: initialRoles, seasonId }: Role
 
     const sortedRoles = useMemo(() => roles
         .filter(role => (!team || role.team === team) && role.displayName.toLocaleLowerCase('pl').includes(search.trim().toLocaleLowerCase('pl')))
-        .sort((a, b) => (ascending ? a[sortBy] - b[sortBy] : b[sortBy] - a[sortBy]) || a.displayName.localeCompare(b.displayName, 'pl')),
+        .sort((a, b) => {
+            // Missing DAP belongs below measured values, including negative scores.
+            if (sortBy === 'totalPoints' || sortBy === 'averagePoints') {
+                const missing = Number(a.dapGames === 0) - Number(b.dapGames === 0);
+                if (missing) return missing;
+            }
+            return (ascending ? a[sortBy] - b[sortBy] : b[sortBy] - a[sortBy]) || a.displayName.localeCompare(b.displayName, 'pl');
+        }),
     [roles, team, search, sortBy, ascending]);
 
     async function loadRange(reset = false) {
@@ -48,7 +56,7 @@ export default function RoleRankingTable({ roles: initialRoles, seasonId }: Role
         setIsLoading(true);
         setError('');
         try {
-            const data = await getRoleRankingsByDateRange(seasonId, reset ? undefined : dateFrom || undefined, reset ? undefined : dateTo || undefined);
+            const data = await getRoleRankingsByDateRange(seasonId, reset ? undefined : dateFrom || undefined, reset ? undefined : dateTo || undefined, excludeLatestDay);
             setRoles(data);
             setAppliedRange(reset || (!dateFrom && !dateTo) ? 'Cały sezon' : `${dateFrom || 'Początek sezonu'} — ${dateTo || 'Koniec sezonu'}`);
             if (reset) { setDateFrom(''); setDateTo(''); }
@@ -94,7 +102,7 @@ export default function RoleRankingTable({ roles: initialRoles, seasonId }: Role
                     </label>
                 </div>
                 <p className="mb-4 text-sm text-gray-400">Liczba ról: {sortedRoles.length}. Kliknij nazwę roli, aby zobaczyć wyniki graczy. Rozgrywki oznaczają występy graczy z daną rolą początkową.</p>
-                <p className="mb-4 text-sm text-gray-400">Suma i średnia DAP pomijają najnowszy dzień z grami w sezonie, tak jak w rankingu graczy. Aktualizują się po rozpoczęciu kolejnej sesji. Średnia obejmuje tylko rozgrywki uwzględnione w DAP.</p>
+                <p className="mb-4 text-sm text-gray-400">{excludeLatestDay ? 'Suma i średnia DAP pomijają najnowszy dzień z grami w sezonie, tak jak w rankingu graczy. Aktualizują się po rozpoczęciu kolejnej sesji.' : 'Suma i średnia DAP obejmują wszystkie dni wybranego okresu, także najnowszą sesję.'} Średnia obejmuje tylko rozgrywki uwzględnione w DAP. „—” oznacza brak takich rozgrywek w wybranym okresie. Liczba rozgrywek i wygranych obejmuje cały wybrany okres.</p>
 
                 <div className="overflow-x-auto" aria-busy={isLoading}>
                     <table className={`w-full min-w-[780px] border border-zinc-700 bg-zinc-800/80 text-sm md:text-base ${isLoading ? 'opacity-50' : ''}`}>
@@ -124,8 +132,8 @@ export default function RoleRankingTable({ roles: initialRoles, seasonId }: Role
                                     <td className="px-2 py-1 text-center font-bold text-green-400">{role.wins}</td>
                                     <td className="px-2 py-1 text-center font-bold text-red-400">{role.gamesPlayed - role.wins}</td>
                                     <td className="px-2 py-1 text-center font-bold" style={{ color: getWinRatioColor(role.winRate) }}>{role.winRate}%</td>
-                                    <td className="px-2 py-1 text-center text-blue-400">{numberFormat.format(role.totalPoints)}</td>
-                                    <td className="px-2 py-1 text-center text-cyan-400">{numberFormat.format(role.averagePoints)}</td>
+                                    <td className="px-2 py-1 text-center text-blue-400">{role.dapGames > 0 ? numberFormat.format(role.totalPoints) : '—'}</td>
+                                    <td className="px-2 py-1 text-center text-cyan-400">{role.dapGames > 0 ? numberFormat.format(role.averagePoints) : '—'}</td>
                                 </tr>
                             )}
                             {sortedRoles.length === 0 && <tr><td colSpan={8} className="p-12 text-center text-gray-400">{roles.length ? 'Brak ról pasujących do filtrów.' : 'Brak wyników ról w wybranym okresie.'}</td></tr>}

@@ -14,7 +14,7 @@ interface RoleRankingRow {
 }
 
 // One bounded statement: no full-season nested relation fetches or IN parameter lists.
-export async function generateRoleRankingStats(seasonId?: number, dateFrom?: Date, dateTo?: Date, includePlayers = true): Promise<RoleRankingStats[]> {
+export async function generateRoleRankingStats(seasonId?: number, dateFrom?: Date, dateTo?: Date, includePlayers = true, { excludeLatestDay = false } = {}): Promise<RoleRankingStats[]> {
   const prisma = await getDatabaseClient();
   if (!prisma) return [];
   const season = seasonId ?? CURRENT_SEASON;
@@ -27,16 +27,21 @@ export async function generateRoleRankingStats(seasonId?: number, dateFrom?: Dat
   const playerName = includePlayers ? Prisma.sql`p.name` : Prisma.sql`NULL`;
   // Keep the same player eligibility as the full breakdown, without returning names.
   const activePlayers = includePlayers ? Prisma.empty : Prisma.sql`AND p.name <> ''`;
-  const stats = await prisma.$queryRaw<RoleRankingRow[]>`
-    WITH latest_day AS (
+  // Only the role table delays DAP. Existing API/host callers include every day.
+  const dapEligibility = excludeLatestDay
+    ? Prisma.sql`CASE WHEN SUBSTR(g.startTime, 1, 10) < (SELECT date FROM latest_day) THEN 1 ELSE 0 END`
+    : Prisma.sql`1`;
+  const latestDay = excludeLatestDay ? Prisma.sql`WITH latest_day AS (
       SELECT MAX(SUBSTR(startTime, 1, 10)) AS date
       FROM games WHERE season = ${season} AND deletedAt IS NULL
-    )
+    )` : Prisma.empty;
+  const stats = await prisma.$queryRaw<RoleRankingRow[]>`
+    ${latestDay}
     SELECT ${playerName} AS playerName, gps.win, gps.totalPoints,
            COALESCE((SELECT r.roleName FROM player_roles r
                      WHERE r.gamePlayerStatisticsId = gps.id
                      ORDER BY r."order" ASC LIMIT 1), 'Nieznana rola') AS roleName,
-           CASE WHEN SUBSTR(g.startTime, 1, 10) < (SELECT date FROM latest_day) THEN 1 ELSE 0 END AS includeDap
+           ${dapEligibility} AS includeDap
     FROM games g
     JOIN game_player_statistics gps ON gps.gameId = g.id
     JOIN players p ON p.id = gps.playerId AND p.deletedAt IS NULL
@@ -126,6 +131,7 @@ export async function generateRoleRankingStats(seasonId?: number, dateFrom?: Dat
       gamesPlayed: data.gamesPlayed,
       wins: data.wins,
       winRate,
+      dapGames: data.dapGames,
       totalPoints: data.totalPoints,
       averagePoints,
       players
@@ -137,7 +143,7 @@ export async function generateRoleRankingStats(seasonId?: number, dateFrom?: Dat
 }
 
 /** Lightweight table response; per-player breakdowns remain available to existing callers. */
-export async function generateRoleRankingSummary(seasonId?: number, dateFrom?: Date, dateTo?: Date): Promise<RoleRankingSummary[]> {
-  const roles = await generateRoleRankingStats(seasonId, dateFrom, dateTo, false);
+export async function generateRoleRankingSummary(seasonId?: number, dateFrom?: Date, dateTo?: Date, { excludeLatestDay = true } = {}): Promise<RoleRankingSummary[]> {
+  const roles = await generateRoleRankingStats(seasonId, dateFrom, dateTo, false, { excludeLatestDay });
   return roles.map(({ players: _players, ...role }) => role);
 }

@@ -8,7 +8,8 @@ import { getSeasonById } from '@/app/dramaafera/_constants/seasons';
 export async function getRoleRankingsByDateRange(
   seasonId: number,
   dateFromStr?: string,
-  dateToStr?: string
+  dateToStr?: string,
+  excludeLatestDay = true
 ): Promise<RoleRankingSummary[]> {
   if (!getSeasonById(seasonId)) throw new Error('Nieprawidłowy sezon.');
   const dateSchema = z.iso.date();
@@ -28,5 +29,5 @@ export async function getRoleRankingsByDateRange(
     dateTo = new Date(`${dateToStr}T23:59:59.999Z`);
   }
 
-  return generateRoleRankingSummary(seasonId, dateFrom, dateTo);
+  return generateRoleRankingSummary(seasonId, dateFrom, dateTo, { excludeLatestDay: z.boolean().parse(excludeLatestDay) });
 }

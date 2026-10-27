@@ -28,7 +28,7 @@ beforeEach(() => {
 afterEach(() => db.close());
 
 test('one SQL statement excludes latest-day DAP but counts every active initial-role appearance', async () => {
-    const [role] = await generateRoleRankingStats(4);
+    const [role] = await generateRoleRankingStats(4, undefined, undefined, true, { excludeLatestDay: true });
     expect(role).toMatchObject({ name: 'Sheriff', gamesPlayed: 2, wins: 1, totalPoints: 12, averagePoints: 12 });
     expect(role.players[0]).toMatchObject({ gamesPlayed: 2, wins: 1, averagePoints: 12 });
     expect(query).toHaveBeenCalledTimes(1);
@@ -36,13 +36,13 @@ test('one SQL statement excludes latest-day DAP but counts every active initial-
 
 test('a role played only on the newest day has zero DAP without division by zero', async () => {
     db.exec("UPDATE player_roles SET roleName='Medic' WHERE gamePlayerStatisticsId=2");
-    const roles = await generateRoleRankingStats(4);
+    const roles = await generateRoleRankingStats(4, undefined, undefined, true, { excludeLatestDay: true });
     expect(roles.find(role => role.name === 'Medic')).toMatchObject({ gamesPlayed: 1, totalPoints: 0, averagePoints: 0 });
 });
 
 test('starting a new session includes the preceding session in DAP', async () => {
     db.exec("INSERT INTO games VALUES (6,4,'2026-10-27T20:00:00.000+00:00',NULL)");
-    const [role] = await generateRoleRankingStats(4);
+    const [role] = await generateRoleRankingStats(4, undefined, undefined, true, { excludeLatestDay: true });
     expect(role).toMatchObject({ totalPoints: 52, averagePoints: 26 });
 });
 
@@ -53,14 +53,14 @@ test('date ranges use UTC day bounds without redefining the season-wide DAP cuto
 
 test('normalizes role aliases before grouping', async () => {
     db.exec("UPDATE player_roles SET roleName='TimeLord' WHERE gamePlayerStatisticsId=1 AND \"order\"=0; UPDATE player_roles SET roleName='Time Lord' WHERE gamePlayerStatisticsId=2");
-    const roles = await generateRoleRankingStats(4);
+    const roles = await generateRoleRankingStats(4, undefined, undefined, true, { excludeLatestDay: true });
     expect(roles).toHaveLength(1);
     expect(roles[0]).toMatchObject({ name: 'Time Lord', gamesPlayed: 2 });
 });
 
 
 test('lightweight summary preserves aggregates without returning player breakdowns', async () => {
-    const full = await generateRoleRankingStats(4);
+    const full = await generateRoleRankingStats(4, undefined, undefined, true, { excludeLatestDay: true });
     const summary = await generateRoleRankingSummary(4);
     expect(summary).toEqual(full.map(({ players: _players, ...role }) => role));
     expect(summary[0]).not.toHaveProperty('players');
@@ -70,4 +70,32 @@ test('date bounds include late games and stop at the following month', async () 
     db.exec("UPDATE games SET startTime='2026-10-31 23:59:59.999' WHERE id=1; UPDATE games SET startTime='2026-11-01T00:00:00Z' WHERE id=2");
     const roles = await generateRoleRankingSummary(4, new Date('2026-10-31T00:00:00Z'), new Date('2026-10-31T23:59:59.999Z'));
     expect(roles[0]).toMatchObject({ gamesPlayed: 1, totalPoints: 12 });
+});
+
+
+test('API and host defaults include the newest day in role and player DAP', async () => {
+    const [role] = await generateRoleRankingStats(4);
+    expect(role).toMatchObject({ gamesPlayed: 2, wins: 1, totalPoints: 52, averagePoints: 26 });
+    expect(role.players[0]).toMatchObject({ gamesPlayed: 2, averagePoints: 26 });
+    expect(query).toHaveBeenCalledTimes(1);
+    const sql = Prisma.sql(query.mock.calls[0][0], ...query.mock.calls[0].slice(1));
+    expect(sql.sql).not.toContain('latest_day');
+});
+
+test('newest-day-only table filters keep appearances but expose no eligible DAP games', async () => {
+    const [role] = await generateRoleRankingSummary(4, new Date('2026-10-25T00:00:00Z'), new Date('2026-10-25T23:59:59.999Z'));
+    expect(role).toMatchObject({ gamesPlayed: 1, wins: 0, dapGames: 0 });
+});
+
+test('a genuine zero DAP remains distinguishable from excluded DAP', async () => {
+    db.exec('UPDATE game_player_statistics SET totalPoints=0 WHERE id=1');
+    const [role] = await generateRoleRankingSummary(4);
+    expect(role).toMatchObject({ dapGames: 1, totalPoints: 0, averagePoints: 0 });
+});
+
+
+test('host table filters can include newest-day DAP without player breakdowns', async () => {
+    const [role] = await generateRoleRankingSummary(4, new Date('2026-10-25T00:00:00Z'), new Date('2026-10-25T23:59:59.999Z'), { excludeLatestDay: false });
+    expect(role).toMatchObject({ gamesPlayed: 1, wins: 0, dapGames: 1, totalPoints: 40, averagePoints: 40 });
+    expect(role).not.toHaveProperty('players');
 });
