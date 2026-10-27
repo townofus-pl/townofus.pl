@@ -1,7 +1,7 @@
 'use server';
 
-import { generateRoleRankingStats } from '@/app/dramaafera/_services';
-import type { RoleRankingStats } from '@/app/dramaafera/_services';
+import { generateRoleRankingSummary } from '@/app/dramaafera/_services';
+import type { RoleRankingSummary } from '@/app/dramaafera/_services';
 import { z } from 'zod';
 import { getSeasonById } from '@/app/dramaafera/_constants/seasons';
 
@@ -9,7 +9,7 @@ export async function getRoleRankingsByDateRange(
   seasonId: number,
   dateFromStr?: string,
   dateToStr?: string
-): Promise<RoleRankingStats[]> {
+): Promise<RoleRankingSummary[]> {
   if (!getSeasonById(seasonId)) throw new Error('Nieprawidłowy sezon.');
   const dateSchema = z.iso.date();
   if (dateFromStr) dateSchema.parse(dateFromStr);
@@ -28,5 +28,5 @@ export async function getRoleRankingsByDateRange(
     dateTo = new Date(`${dateToStr}T23:59:59.999Z`);
   }
 
-  return generateRoleRankingStats(seasonId, dateFrom, dateTo);
+  return generateRoleRankingSummary(seasonId, dateFrom, dateTo);
 }

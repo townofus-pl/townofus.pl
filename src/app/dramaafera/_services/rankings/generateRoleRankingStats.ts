@@ -1,5 +1,5 @@
 import { Teams } from '@/constants/teams';
-import type { RoleRankingStats } from './types';
+import type { RoleRankingStats, RoleRankingSummary } from './types';
 import { Prisma } from '@prisma/client';
 import { convertRoleNameForDisplay, normalizeRoleName, getRoleColor, determineTeam } from '@/app/dramaafera/_utils/gameUtils';
 import { getDatabaseClient } from '../db';
@@ -7,25 +7,32 @@ import { CURRENT_SEASON } from '@/app/dramaafera/_constants/seasons';
 
 interface RoleRankingRow {
   roleName: string;
-  playerName: string;
+  playerName: string | null;
   win: boolean | number;
   totalPoints: number;
   includeDap: number;
 }
 
 // One bounded statement: no full-season nested relation fetches or IN parameter lists.
-export async function generateRoleRankingStats(seasonId?: number, dateFrom?: Date, dateTo?: Date): Promise<RoleRankingStats[]> {
+export async function generateRoleRankingStats(seasonId?: number, dateFrom?: Date, dateTo?: Date, includePlayers = true): Promise<RoleRankingStats[]> {
   const prisma = await getDatabaseClient();
   if (!prisma) return [];
   const season = seasonId ?? CURRENT_SEASON;
-  const from = dateFrom ? Prisma.sql`AND SUBSTR(g.startTime, 1, 10) >= ${dateFrom.toISOString().slice(0, 10)}` : Prisma.empty;
-  const to = dateTo ? Prisma.sql`AND SUBSTR(g.startTime, 1, 10) <= ${dateTo.toISOString().slice(0, 10)}` : Prisma.empty;
+  // Compare the stored timestamp directly so a narrow date range can use startTime's index.
+  // Date-only bounds also cover both ISO T and SQLite space-separated timestamps.
+  const from = dateFrom ? Prisma.sql`AND g.startTime >= ${dateFrom.toISOString().slice(0, 10)}` : Prisma.empty;
+  const end = dateTo ? new Date(dateTo) : null;
+  end?.setUTCDate(end.getUTCDate() + 1);
+  const to = end ? Prisma.sql`AND g.startTime < ${end.toISOString().slice(0, 10)}` : Prisma.empty;
+  const playerName = includePlayers ? Prisma.sql`p.name` : Prisma.sql`NULL`;
+  // Keep the same player eligibility as the full breakdown, without returning names.
+  const activePlayers = includePlayers ? Prisma.empty : Prisma.sql`AND p.name <> ''`;
   const stats = await prisma.$queryRaw<RoleRankingRow[]>`
     WITH latest_day AS (
       SELECT MAX(SUBSTR(startTime, 1, 10)) AS date
       FROM games WHERE season = ${season} AND deletedAt IS NULL
     )
-    SELECT p.name AS playerName, gps.win, gps.totalPoints,
+    SELECT ${playerName} AS playerName, gps.win, gps.totalPoints,
            COALESCE((SELECT r.roleName FROM player_roles r
                      WHERE r.gamePlayerStatisticsId = gps.id
                      ORDER BY r."order" ASC LIMIT 1), 'Nieznana rola') AS roleName,
@@ -33,7 +40,7 @@ export async function generateRoleRankingStats(seasonId?: number, dateFrom?: Dat
     FROM games g
     JOIN game_player_statistics gps ON gps.gameId = g.id
     JOIN players p ON p.id = gps.playerId AND p.deletedAt IS NULL
-    WHERE g.season = ${season} AND g.deletedAt IS NULL ${from} ${to}
+    WHERE g.season = ${season} AND g.deletedAt IS NULL ${from} ${to} ${activePlayers}
   `;
 
   const roleStats = new Map<string, {
@@ -48,7 +55,7 @@ export async function generateRoleRankingStats(seasonId?: number, dateFrom?: Dat
     // Primary role = first entry in ascending order
     const roleName = normalizeRoleName(stat.roleName, season);
     const playerName = stat.playerName;
-    if (!playerName) return;
+    if (includePlayers && !playerName) return;
 
     if (!roleStats.has(roleName)) {
       roleStats.set(roleName, {
@@ -71,6 +78,7 @@ export async function generateRoleRankingStats(seasonId?: number, dateFrom?: Dat
       roleData.wins += 1;
     }
 
+    if (!includePlayers || !playerName) return;
     if (!roleData.players.has(playerName)) {
       roleData.players.set(playerName, { gamesPlayed: 0, wins: 0, totalPoints: 0, dapGames: 0 });
     }
@@ -126,4 +134,10 @@ export async function generateRoleRankingStats(seasonId?: number, dateFrom?: Dat
 
   roleRankingStats.sort((a, b) => b.gamesPlayed - a.gamesPlayed);
   return roleRankingStats;
+}
+
+/** Lightweight table response; per-player breakdowns remain available to existing callers. */
+export async function generateRoleRankingSummary(seasonId?: number, dateFrom?: Date, dateTo?: Date): Promise<RoleRankingSummary[]> {
+  const roles = await generateRoleRankingStats(seasonId, dateFrom, dateTo, false);
+  return roles.map(({ players: _players, ...role }) => role);
 }

@@ -15,7 +15,10 @@ export default function RoleDetailedStats({ games, roleName, seasonId }: { games
         setLoading(true);
         setError(false);
         try {
-            const actions = await getRoleStatActionsAction(roleName, seasonId);
+            // v1 games already contain counters and have no action stream to load.
+            const actions = games.some(game => game.hasActionData)
+                ? await getRoleStatActionsAction(roleName, seasonId)
+                : [];
             setStats(buildRoleActionStats(games, actions, roleName, seasonId));
         } catch { setError(true); }
         finally { setLoading(false); }

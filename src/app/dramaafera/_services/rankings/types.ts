@@ -28,3 +28,6 @@ export interface RoleRankingStats {
     averagePoints: number;
   }>;
 }
+
+/** Role table fields, without the unused per-player breakdown. */
+export type RoleRankingSummary = Omit<RoleRankingStats, 'players'>;

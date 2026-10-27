@@ -3,7 +3,7 @@
 import { Fragment, useMemo, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import type { RoleRankingStats } from '@/app/dramaafera/_services';
+import type { RoleRankingSummary } from '@/app/dramaafera/_services';
 import { getRoleRankingsByDateRange } from '@/app/dramaafera/_actions/roleRankingActions';
 import { convertRoleToUrlSlug, getRoleIconPath } from '@/app/dramaafera/_utils/gameUtils';
 import { buildSeasonUrl } from '@/app/dramaafera/_utils/seasonHelpers';
@@ -21,7 +21,7 @@ const TEAM_LABELS: Record<string, string> = { Crewmate: 'Załoga', Impostor: 'Im
 const numberFormat = new Intl.NumberFormat('pl-PL', { maximumFractionDigits: 2 });
 
 interface RoleRankingTableProps {
-    roles: RoleRankingStats[];
+    roles: RoleRankingSummary[];
     seasonId: number;
 }
 

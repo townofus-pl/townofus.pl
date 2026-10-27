@@ -1,6 +1,6 @@
 import { DatabaseSync, type SQLInputValue } from 'node:sqlite';
 import { Prisma } from '@prisma/client';
-import { generateRoleRankingStats } from './generateRoleRankingStats';
+import { generateRoleRankingStats, generateRoleRankingSummary } from './generateRoleRankingStats';
 import { getDatabaseClient } from '../db';
 
 jest.mock('../db', () => ({ getDatabaseClient: jest.fn() }));
@@ -56,4 +56,18 @@ test('normalizes role aliases before grouping', async () => {
     const roles = await generateRoleRankingStats(4);
     expect(roles).toHaveLength(1);
     expect(roles[0]).toMatchObject({ name: 'Time Lord', gamesPlayed: 2 });
+});
+
+
+test('lightweight summary preserves aggregates without returning player breakdowns', async () => {
+    const full = await generateRoleRankingStats(4);
+    const summary = await generateRoleRankingSummary(4);
+    expect(summary).toEqual(full.map(({ players: _players, ...role }) => role));
+    expect(summary[0]).not.toHaveProperty('players');
+});
+
+test('date bounds include late games and stop at the following month', async () => {
+    db.exec("UPDATE games SET startTime='2026-10-31 23:59:59.999' WHERE id=1; UPDATE games SET startTime='2026-11-01T00:00:00Z' WHERE id=2");
+    const roles = await generateRoleRankingSummary(4, new Date('2026-10-31T00:00:00Z'), new Date('2026-10-31T23:59:59.999Z'));
+    expect(roles[0]).toMatchObject({ gamesPlayed: 1, totalPoints: 12 });
 });

@@ -1,9 +1,9 @@
 import { getRoleRankingsByDateRange } from './roleRankingActions';
-import { generateRoleRankingStats } from '@/app/dramaafera/_services';
+import { generateRoleRankingSummary } from '@/app/dramaafera/_services';
 import { CURRENT_SEASON } from '@/app/dramaafera/_constants/seasons';
 
-jest.mock('@/app/dramaafera/_services', () => ({ generateRoleRankingStats: jest.fn().mockResolvedValue([]) }));
-const generate = jest.mocked(generateRoleRankingStats);
+jest.mock('@/app/dramaafera/_services', () => ({ generateRoleRankingSummary: jest.fn().mockResolvedValue([]) }));
+const generate = jest.mocked(generateRoleRankingSummary);
 
 beforeEach(() => jest.clearAllMocks());
 
