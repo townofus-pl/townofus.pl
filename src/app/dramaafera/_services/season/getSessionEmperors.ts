@@ -34,6 +34,42 @@ export async function getSessionEmperors(seasonId = CURRENT_SEASON) {
 }
 
 export async function getLatestEmperorId(seasonId = CURRENT_SEASON): Promise<number | null> {
-  const emperors = await getSessionEmperors(seasonId);
-  return emperors.at(-1)?.playerId ?? null;
+  const prisma = await getDatabaseClient();
+  if (!prisma) return null;
+
+  // The crown needs only the latest unique winner, not every season's point sums.
+  // Read the small games table once, then aggregate sessions newest-first until
+  // a unique winner is found. Ties and sessions without active players fall back.
+  const dates = await prisma.$queryRaw<{ date: string }[]>`
+    SELECT DISTINCT SUBSTR(startTime, 1, 10) AS date FROM games
+    WHERE season = ${seasonId} AND deletedAt IS NULL
+    ORDER BY date DESC
+  `;
+  const closedDates = seasonId < CURRENT_SEASON ? dates : dates.slice(1);
+  // Bound round trips for long runs of ties; the full-history path remains the
+  // fallback when checking a few recent sessions does not resolve the crown.
+  const recentDates = closedDates.slice(0, 3);
+  for (const { date } of recentDates) {
+    const nextDay = new Date(`${date}T00:00:00Z`);
+    nextDay.setUTCDate(nextDay.getUTCDate() + 1);
+    const end = nextDay.toISOString().slice(0, 10);
+    const leaders = await prisma.$queryRaw<{ playerId: number; points: number }[]>`
+      SELECT gps.playerId, SUM(gps.totalPoints) AS points
+      FROM games g
+      JOIN game_player_statistics gps ON gps.gameId = g.id
+      WHERE g.season = ${seasonId} AND g.deletedAt IS NULL
+        AND g.startTime >= ${date} AND g.startTime < ${end}
+        AND gps.playerId NOT IN (SELECT id FROM players WHERE deletedAt IS NOT NULL)
+      GROUP BY gps.playerId
+      ORDER BY points DESC
+      LIMIT 2
+    `;
+    if (leaders.length === 1 || (leaders.length === 2 && leaders[0].points !== leaders[1].points)) {
+      return leaders[0].playerId;
+    }
+  }
+  if (closedDates.length > recentDates.length) {
+    return (await getSessionEmperors(seasonId)).at(-1)?.playerId ?? null;
+  }
+  return null;
 }

@@ -90,3 +90,44 @@ test('crown, history and profile stars agree, including the archived finale', as
     { nickname: 'One', count: 1, dates: ['2026-09-02'], isLatest: false },
   ]);
 });
+
+
+test('skips empty/deleted-player sessions and multiple consecutive ties', async () => {
+  game(1, '2026-09-02', [-3, -8], past);
+  game(2, '2026-09-09', [3, 3], past);
+  game(3, '2026-09-16', [4, 4], past);
+  game(4, '2026-09-23', [0, 0, 90], past);
+  db.exec('DELETE FROM game_player_statistics WHERE gameId=4 AND playerId<>3');
+  game(5, '2026-09-30', [], past);
+  expect(await getLatestEmperorId(past)).toBe(1);
+  expect(await getLatestEmperorId(past)).toBe((await getSessionEmperors(past)).at(-1)?.playerId);
+});
+
+test('uses whole UTC-labelled days including month boundaries and late games', async () => {
+  game(1, '2026-09-30', [3, 1], past);
+  game(2, '2026-09-30', [0, 4], past);
+  db.exec("UPDATE games SET startTime='2026-09-30T23:59:59.999+00:00' WHERE id=2");
+  game(3, '2026-10-01', [9, 9], past);
+  expect(await getLatestEmperorId(past)).toBe(2);
+});
+
+test('crown reads point values only from the latest closed session when it has a winner', async () => {
+  for (let day = 1; day <= 28; day++) game(day, `2026-09-${String(day).padStart(2, '0')}`, [1, 2]);
+  let pointsRead = 0;
+  db.function('observe_points', (points) => { pointsRead++; return points; });
+  db.exec(`ALTER TABLE game_player_statistics RENAME TO stored_stats;
+    CREATE VIEW game_player_statistics AS
+      SELECT gameId,playerId,observe_points(totalPoints) AS totalPoints FROM stored_stats`);
+  expect(await getLatestEmperorId()).toBe(2);
+  expect(pointsRead).toBe(2);
+  pointsRead = 0;
+  expect((await getSessionEmperors()).at(-1)?.playerId).toBe(2);
+  expect(pointsRead).toBe(54);
+});
+
+
+test('long tie runs fall back to the full history without losing the last unique winner', async () => {
+  game(1, '2026-09-01', [4, 1], past);
+  for (let day = 2; day <= 10; day++) game(day, `2026-09-${String(day).padStart(2, '0')}`, [2, 2], past);
+  expect(await getLatestEmperorId(past)).toBe(1);
+});
