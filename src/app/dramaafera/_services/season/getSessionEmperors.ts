@@ -1,10 +1,10 @@
 import { getDatabaseClient } from '../db';
 import { CURRENT_SEASON } from '@/app/dramaafera/_constants/seasons';
 
-/** Unique session winners, oldest first. The newest date stays open in the
- * current season; every date is closed once the season has ended. Ties award
- * no star and leave the previous emperor in place. Shared by all three views. */
-export async function getSessionEmperors(seasonId = CURRENT_SEASON) {
+/** Unique session winners, oldest first. Stars use closed dates by default;
+ * the session summary can also show the current, still-open date's winner.
+ * Archived seasons include their finale in either mode. Ties have no winner. */
+export async function getSessionEmperors(seasonId = CURRENT_SEASON, { includeOpenSession = false } = {}) {
   const prisma = await getDatabaseClient();
   if (!prisma) return [];
 
@@ -19,7 +19,7 @@ export async function getSessionEmperors(seasonId = CURRENT_SEASON) {
       JOIN game_player_statistics gps ON gps.gameId = g.id
       WHERE g.season = ${seasonId} AND g.deletedAt IS NULL
         AND gps.playerId NOT IN (SELECT id FROM players WHERE deletedAt IS NOT NULL)
-        AND (${seasonId < CURRENT_SEASON ? 1 : 0} = 1
+        AND (${includeOpenSession || seasonId < CURRENT_SEASON ? 1 : 0} = 1
           OR SUBSTR(g.startTime, 1, 10) < (SELECT date FROM latest_date))
       GROUP BY SUBSTR(g.startTime, 1, 10), gps.playerId
     ), ranked AS (

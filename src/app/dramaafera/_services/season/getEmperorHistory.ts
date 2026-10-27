@@ -14,7 +14,7 @@ export async function getEmperorHistory(seasonId?: number): Promise<EmperorEntry
   const prisma = await getDatabaseClient();
   if (!prisma) return [];
 
-  const emperors = await getSessionEmperors(seasonId);
+  const emperors = await getSessionEmperors(seasonId, { includeOpenSession: true });
   if (emperors.length === 0) return [];
 
   const playerIds = Array.from(new Set(emperors.map((entry) => entry.playerId)));

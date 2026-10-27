@@ -131,3 +131,33 @@ test('long tie runs fall back to the full history without losing the last unique
   for (let day = 2; day <= 10; day++) game(day, `2026-09-${String(day).padStart(2, '0')}`, [2, 2], past);
   expect(await getLatestEmperorId(past)).toBe(1);
 });
+
+
+test('the summary includes the open session while crown and profile stars use closed dates', async () => {
+  game(1, '2026-10-07', [5, 1]);
+  game(2, '2026-10-14', [1, 5]);
+  expect(await getEmperorHistory()).toEqual([
+    { nickname: 'One', count: 1, dates: ['2026-10-07'], isLatest: false },
+    { nickname: 'Two', count: 1, dates: ['2026-10-14'], isLatest: true },
+  ]);
+  expect(await getLatestEmperorId()).toBe(1);
+  expect(await getPlayerStars('One')).toBe(1);
+  expect(await getPlayerStars('Two')).toBe(0);
+});
+
+test('the first session appears in the summary before any stars are awarded', async () => {
+  game(1, '2026-10-07', [1, 5]);
+  expect(await getEmperorHistory()).toEqual([
+    { nickname: 'Two', count: 1, dates: ['2026-10-07'], isLatest: true },
+  ]);
+  expect(await getLatestEmperorId()).toBeNull();
+  expect(await getPlayerStars('Two')).toBe(0);
+});
+
+test('a tied open session adds no winner to the summary', async () => {
+  game(1, '2026-10-07', [5, 1]);
+  game(2, '2026-10-14', [5, 5]);
+  expect(await getEmperorHistory()).toEqual([
+    { nickname: 'One', count: 1, dates: ['2026-10-07'], isLatest: true },
+  ]);
+});
