@@ -59,7 +59,7 @@ export class PayloadRejected extends Error {
     }
 }
 
-function emptyCounters(): CounterSet {
+export function emptyCounters(): CounterSet {
     return {
         initialRolePoints: 0,
         correctKills: 0, incorrectKills: 0,
@@ -116,7 +116,7 @@ export function isDeathMarker(role: string): boolean {
  * Returns `null` for the types stored in `game_actions` for the timeline and deliberately not
  * aggregated (`death`, `vote`, `vent_use`, `ability_used`, `win`, `disconnect`, …).
  */
-function bucketFor(action: V2Action, role: string): Pair | { flat: Flat } | null {
+function bucketFor(action: Pick<V2Action, 'type' | 'isGuess'>, role: string): Pair | { flat: Flat } | null {
     switch (action.type) {
         case 'kill':
             // A guess first: Double Shot can put a guess in any role's hands, so the flag beats
@@ -162,6 +162,18 @@ function bucketFor(action: V2Action, role: string): Pair | { flat: Flat } | null
  * auto-updated, so a surprise here means a deliberate version bump moved something and this file
  * needs to follow — not that a game should be silently mis-scored.
  */
+export function addActionCounters(counters: CounterSet, action: Pick<V2Action, 'type' | 'isGuess' | 'isCorrect'>, role: string): void {
+    const bucket = bucketFor(action, role);
+    if (!bucket) return;
+    if ('flat' in bucket) {
+        counters[bucket.flat] += 1;
+    } else if (action.isCorrect === true) {
+        counters[bucket.correct] += 1;
+    } else if (action.isCorrect === false) {
+        counters[bucket.incorrect] += 1;
+    }
+}
+
 export function aggregatePayload(
     payload: V2GamePayload,
     season: number = FIRST_MIRA_SEASON,
@@ -236,19 +248,10 @@ export function aggregatePayload(
             continue;
         }
 
-        const bucket = bucketFor(action, role);
-        if (!bucket) continue;
-
-        if ('flat' in bucket) {
-            actor[bucket.flat] += 1;
-            continue;
-        }
-
         // Three-valued, and `undefined` is a fourth case that must not collapse into `null`: on
         // `swap` an absent verdict means the rule declined to score, a present null means the mod
         // could not classify. Both feed neither counter, but they are different facts (mod #67).
-        if (action.isCorrect === true) actor[bucket.correct] += 1;
-        else if (action.isCorrect === false) actor[bucket.incorrect] += 1;
+        addActionCounters(actor, action, role);
     }
 
     return [...byPlayerId.values()];

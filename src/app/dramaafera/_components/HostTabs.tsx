@@ -37,7 +37,7 @@ export default function HostTabs({ initialDates, seasonId, roles }: HostTabsProp
       case TAB_HOST:
         return <HostClient initialDates={initialDates} seasonId={seasonId} />;
       case TAB_ROLES:
-        return <RoleRankingTable roles={roles} seasonId={seasonId} />;
+        return <RoleRankingTable roles={roles} seasonId={seasonId} excludeLatestDay={false} />;
       case TAB_LIST:
         return <ListaCweliTab seasonId={seasonId} />;
       case TAB_SETTINGS:

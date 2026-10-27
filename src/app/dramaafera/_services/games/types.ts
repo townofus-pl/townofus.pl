@@ -138,6 +138,8 @@ export interface UIMeetingData {
 
 // Interface for UI game data (compatible with existing components)
 export interface UIGameData {
+  /** v2 games retain actions with the performer's role at the time. */
+  hasActionData?: boolean;
   id: string;
   date: string;
   gameNumber: number;
