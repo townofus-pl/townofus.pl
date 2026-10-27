@@ -89,3 +89,19 @@ test('handles missing targets, empty meetings and deaths before the first meetin
     expect(getDeathsDuringMeetings(meetings, [action({ target: null })]).size).toBe(0);
     expect(getDeathsDuringMeetings([{ meetingNumber: 1, deathsSinceLastMeeting: ['A (Guess)'] }], [action()]).size).toBe(0);
 });
+
+
+test('uses the first death summary when a revived victim appears again', () => {
+    const repeated = [
+        { meetingNumber: 1, deathsSinceLastMeeting: [] },
+        { meetingNumber: 2, deathsSinceLastMeeting: [' A (Guess)'] },
+        { meetingNumber: 3, deathsSinceLastMeeting: ['A (Guess)'] },
+    ];
+    expect(Array.from(getDeathsDuringMeetings(repeated, [action()]))).toEqual([[1, ['A']]]);
+});
+
+test('ignores unrelated actions without reading their details', () => {
+    const unrelated = action({ type: 'task_completed' });
+    Object.defineProperty(unrelated, 'detail', { get() { throw new Error('Unrelated detail read'); } });
+    expect(Array.from(getDeathsDuringMeetings(meetings, [unrelated, action()]))).toEqual([[1, ['A']]]);
+});
