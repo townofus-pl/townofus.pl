@@ -11,6 +11,8 @@ import {
 import { calculateWinnerFromStats } from './winCalculator';
 import { buildPlayerStats, type StatWithRolesAndModifiers } from './_buildPlayerStats';
 import { CURRENT_SEASON } from '@/app/dramaafera/_constants/seasons';
+import { Prisma } from '@prisma/client';
+import { getRoleAliases } from '@/app/dramaafera/_utils/roleAliases';
 
 // Get all games data (equivalent to getAllGamesData from converter)
 //
@@ -20,7 +22,9 @@ import { CURRENT_SEASON } from '@/app/dramaafera/_constants/seasons';
 // Cloudflare D1 caps bound parameters at 98 — a nested `include` over the full
 // season (~473 games × ~15 stats/game) blows past that limit (P2029).
 // See `chunkedInQuery` and `MAX_BIND_VALUES` comments for context.
-export async function getAllGamesData(seasonId?: number): Promise<UIGameData[]> {
+// roleName is for role-profile summaries only: each game's playersData contains
+// only participants who held that role; game-wide winner/player totals are partial.
+export async function getAllGamesData(seasonId?: number, roleName?: string): Promise<UIGameData[]> {
   const season = seasonId ?? CURRENT_SEASON;
   const prisma = await getDatabaseClient();
 
@@ -28,8 +32,20 @@ export async function getAllGamesData(seasonId?: number): Promise<UIGameData[]> 
     return [];
   }
 
+  // A role page needs only players who held that role, not every player in the season.
+  // The IN subquery uses player_roles(roleName) without binding thousands of stat ids.
+  const roleStats = roleName ? await prisma.$queryRaw<{ id: number; gameId: number }[]>`
+    SELECT s.id, s.gameId FROM game_player_statistics s
+    JOIN games g ON g.id = s.gameId AND g.deletedAt IS NULL AND g.season = ${season}
+    JOIN players p ON p.id = s.playerId AND p.deletedAt IS NULL
+    WHERE s.id IN (SELECT gamePlayerStatisticsId FROM player_roles
+                   WHERE roleName IN (${Prisma.join(getRoleAliases(roleName, season))}))
+  ` : null;
+
   // Step 1: games (no relations)
-  const games = await prisma.game.findMany({
+  const games = roleStats ? await chunkedInQuery(Array.from(new Set(roleStats.map(stat => stat.gameId))), chunk =>
+    prisma.game.findMany({ where: { ...buildSeasonGameWhere(season), id: { in: chunk } } }),
+  ) : await prisma.game.findMany({
     where: buildSeasonGameWhere(seasonId),
     orderBy: { startTime: 'desc' },
   });
@@ -41,7 +57,9 @@ export async function getAllGamesData(seasonId?: number): Promise<UIGameData[]> 
   const gameIds = games.map((g) => g.id);
 
   // Step 2: gamePlayerStatistics for those games (filtered to non-deleted players)
-  const rawStats = await chunkedInQuery(gameIds, (chunk) =>
+  const rawStats = roleStats ? await chunkedInQuery(roleStats.map(stat => stat.id), chunk =>
+    prisma.gamePlayerStatistics.findMany({ where: { id: { in: chunk }, player: withoutDeleted } }),
+  ) : await chunkedInQuery(gameIds, (chunk) =>
     prisma.gamePlayerStatistics.findMany({
       where: { gameId: { in: chunk }, player: withoutDeleted },
     }),
@@ -53,7 +71,7 @@ export async function getAllGamesData(seasonId?: number): Promise<UIGameData[]> 
   // Step 3a: players (deduped)
   const players = await chunkedInQuery(uniquePlayerIds, (chunk) =>
     prisma.player.findMany({
-      where: { id: { in: chunk } },
+      where: { id: { in: chunk }, ...withoutDeleted },
       select: { id: true, name: true },
     }),
   );
@@ -75,7 +93,7 @@ export async function getAllGamesData(seasonId?: number): Promise<UIGameData[]> 
   });
 
   // Step 3c: modifiers by stat id
-  const allModifiers = await chunkedInQuery(statIds, (chunk) =>
+  const allModifiers = roleName ? [] : await chunkedInQuery(statIds, (chunk) =>
     prisma.playerModifier.findMany({
       where: { gamePlayerStatisticsId: { in: chunk } },
       select: { gamePlayerStatisticsId: true, modifierName: true },
@@ -135,6 +153,7 @@ export async function getAllGamesData(seasonId?: number): Promise<UIGameData[]> 
     const meetings: UIMeetingData[] = [];
 
     return {
+      hasActionData: game.modVersion !== null,
       id: game.gameIdentifier || String(game.id),
       date: gameDate,
       gameNumber: 0, // computed below

@@ -1,8 +1,7 @@
 import type { Metadata } from 'next';
 import { buildSeasonUrl } from '@/app/dramaafera/_utils/seasonHelpers';
 import { parseAndValidateSeasonId } from '@/app/dramaafera/sezon/_utils/parseSeasonId';
-import { Roles } from '@/roles';
-import { convertUrlSlugToRole } from '@/app/dramaafera/_utils/gameUtils';
+import { convertUrlSlugToRole, normalizeRoleName } from '@/app/dramaafera/_utils/gameUtils';
 import { RoleDetailContent } from '@/app/dramaafera/role/[nazwa]/RoleDetailContent';
 
 interface PageProps {
@@ -16,8 +15,7 @@ export function generateStaticParams() {
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
     const { seasonId: seasonIdStr, nazwa } = await params;
     const seasonId = parseAndValidateSeasonId(seasonIdStr);
-    const allRoles = Roles.map(r => r.name);
-    const roleName = convertUrlSlugToRole(nazwa, allRoles);
+    const roleName = normalizeRoleName(convertUrlSlugToRole(nazwa, []), seasonId);
     return {
         title: `Drama Afera - ${roleName}`,
         alternates: {

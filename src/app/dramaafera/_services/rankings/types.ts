@@ -18,6 +18,8 @@ export interface RoleRankingStats {
   gamesPlayed: number;
   wins: number;
   winRate: number;
+  /** Number of appearances included in the DAP totals and average. */
+  dapGames: number;
   totalPoints: number;
   averagePoints: number;
   players: Array<{
@@ -28,3 +30,6 @@ export interface RoleRankingStats {
     averagePoints: number;
   }>;
 }
+
+/** Role table fields, without the unused per-player breakdown. */
+export type RoleRankingSummary = Omit<RoleRankingStats, 'players'>;

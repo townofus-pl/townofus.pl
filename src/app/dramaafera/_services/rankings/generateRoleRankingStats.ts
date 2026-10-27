@@ -1,114 +1,98 @@
 import { Teams } from '@/constants/teams';
-import type { RoleRankingStats } from './types';
-import type { Prisma } from '@prisma/client';
-import {
-  convertRoleNameForDisplay,
-  getRoleColor,
-  determineTeam,
-} from '@/app/dramaafera/_utils/gameUtils';
+import type { RoleRankingStats, RoleRankingSummary } from './types';
+import { Prisma } from '@prisma/client';
+import { convertRoleNameForDisplay, normalizeRoleName, getRoleColor, determineTeam } from '@/app/dramaafera/_utils/gameUtils';
 import { getDatabaseClient } from '../db';
-import { chunkedInQuery } from '@/app/api/_database';
-import { withoutDeleted } from '@/app/api/schema/common';
 import { CURRENT_SEASON } from '@/app/dramaafera/_constants/seasons';
 
-// Generate role ranking statistics
-export async function generateRoleRankingStats(seasonId?: number, dateFrom?: Date, dateTo?: Date): Promise<RoleRankingStats[]> {
+interface RoleRankingRow {
+  roleName: string;
+  playerName: string | null;
+  win: boolean | number;
+  totalPoints: number;
+  includeDap: number;
+}
+
+// One bounded statement: no full-season nested relation fetches or IN parameter lists.
+export async function generateRoleRankingStats(seasonId?: number, dateFrom?: Date, dateTo?: Date, includePlayers = true, { excludeLatestDay = false } = {}): Promise<RoleRankingStats[]> {
   const prisma = await getDatabaseClient();
   if (!prisma) return [];
-
   const season = seasonId ?? CURRENT_SEASON;
-
-  // Build the game where clause with optional date filtering
-  const gameWhereClause: Prisma.GameWhereInput = {
-    ...withoutDeleted,
-    season,
-  };
-
-  if (dateFrom || dateTo) {
-    gameWhereClause.startTime = {};
-    if (dateFrom) {
-      gameWhereClause.startTime.gte = dateFrom;
-    }
-    if (dateTo) {
-      const endOfDay = new Date(dateTo);
-      endOfDay.setHours(23, 59, 59, 999);
-      gameWhereClause.startTime.lte = endOfDay;
-    }
-  }
-
-  const whereClause: Prisma.GamePlayerStatisticsWhereInput = {
-    player: withoutDeleted,
-    game: gameWhereClause,
-  };
-
-  // Step 1: fetch stats without nested roleHistory (otherwise Prisma 7's executor
-  // emits a `WHERE gamePlayerStatisticsId IN (?,…,?N)` for the relation fetch
-  // and trips D1's 98-param cap with full-season datasets).
-  const stats = await prisma.gamePlayerStatistics.findMany({
-    where: whereClause,
-    select: {
-      id: true,
-      win: true,
-      totalPoints: true,
-      player: {
-        select: { name: true },
-      },
-    },
-  });
-
-  // Step 2: fetch roleHistory in 90-id chunks and group by stat id.
-  const statIds = stats.map((s) => s.id);
-  const allRoleHistory = await chunkedInQuery(statIds, (chunk) =>
-    prisma.playerRole.findMany({
-      where: { gamePlayerStatisticsId: { in: chunk } },
-      orderBy: { order: 'asc' },
-      select: { gamePlayerStatisticsId: true, roleName: true, order: true },
-    }),
-  );
-
-  const roleHistoryByStatId = new Map<number, { roleName: string; order: number }[]>();
-  allRoleHistory.forEach((rh) => {
-    const list = roleHistoryByStatId.get(rh.gamePlayerStatisticsId) ?? [];
-    list.push({ roleName: rh.roleName, order: rh.order });
-    roleHistoryByStatId.set(rh.gamePlayerStatisticsId, list);
-  });
+  // Compare the stored timestamp directly so a narrow date range can use startTime's index.
+  // Date-only bounds also cover both ISO T and SQLite space-separated timestamps.
+  const from = dateFrom ? Prisma.sql`AND g.startTime >= ${dateFrom.toISOString().slice(0, 10)}` : Prisma.empty;
+  const end = dateTo ? new Date(dateTo) : null;
+  end?.setUTCDate(end.getUTCDate() + 1);
+  const to = end ? Prisma.sql`AND g.startTime < ${end.toISOString().slice(0, 10)}` : Prisma.empty;
+  const playerName = includePlayers ? Prisma.sql`p.name` : Prisma.sql`NULL`;
+  // Keep the same player eligibility as the full breakdown, without returning names.
+  const activePlayers = includePlayers ? Prisma.empty : Prisma.sql`AND p.name <> ''`;
+  // Only the role table delays DAP. Existing API/host callers include every day.
+  const dapEligibility = excludeLatestDay
+    ? Prisma.sql`CASE WHEN SUBSTR(g.startTime, 1, 10) < (SELECT date FROM latest_day) THEN 1 ELSE 0 END`
+    : Prisma.sql`1`;
+  const latestDay = excludeLatestDay ? Prisma.sql`WITH latest_day AS (
+      SELECT MAX(SUBSTR(startTime, 1, 10)) AS date
+      FROM games WHERE season = ${season} AND deletedAt IS NULL
+    )` : Prisma.empty;
+  const stats = await prisma.$queryRaw<RoleRankingRow[]>`
+    ${latestDay}
+    SELECT ${playerName} AS playerName, gps.win, gps.totalPoints,
+           COALESCE((SELECT r.roleName FROM player_roles r
+                     WHERE r.gamePlayerStatisticsId = gps.id
+                     ORDER BY r."order" ASC LIMIT 1), 'Nieznana rola') AS roleName,
+           ${dapEligibility} AS includeDap
+    FROM games g
+    JOIN game_player_statistics gps ON gps.gameId = g.id
+    JOIN players p ON p.id = gps.playerId AND p.deletedAt IS NULL
+    WHERE g.season = ${season} AND g.deletedAt IS NULL ${from} ${to} ${activePlayers}
+  `;
 
   const roleStats = new Map<string, {
     gamesPlayed: number;
     wins: number;
     totalPoints: number;
-    players: Map<string, { gamesPlayed: number; wins: number; totalPoints: number }>;
+    dapGames: number;
+    players: Map<string, { gamesPlayed: number; wins: number; totalPoints: number; dapGames: number }>;
   }>();
 
   stats.forEach(stat => {
     // Primary role = first entry in ascending order
-    const roleHistory = roleHistoryByStatId.get(stat.id) ?? [];
-    const roleName = roleHistory[0]?.roleName ?? 'Nieznana rola';
-    const playerName = stat.player?.name;
-    if (!playerName) return;
+    const roleName = normalizeRoleName(stat.roleName, season);
+    const playerName = stat.playerName;
+    if (includePlayers && !playerName) return;
 
     if (!roleStats.has(roleName)) {
       roleStats.set(roleName, {
         gamesPlayed: 0,
         wins: 0,
         totalPoints: 0,
+        dapGames: 0,
         players: new Map()
       });
     }
 
     const roleData = roleStats.get(roleName)!;
     roleData.gamesPlayed += 1;
-    roleData.totalPoints += stat.totalPoints;
+    const includeDap = Boolean(stat.includeDap);
+    if (includeDap) {
+      roleData.totalPoints += stat.totalPoints;
+      roleData.dapGames += 1;
+    }
     if (stat.win) {
       roleData.wins += 1;
     }
 
+    if (!includePlayers || !playerName) return;
     if (!roleData.players.has(playerName)) {
-      roleData.players.set(playerName, { gamesPlayed: 0, wins: 0, totalPoints: 0 });
+      roleData.players.set(playerName, { gamesPlayed: 0, wins: 0, totalPoints: 0, dapGames: 0 });
     }
     const playerRoleData = roleData.players.get(playerName)!;
     playerRoleData.gamesPlayed += 1;
-    playerRoleData.totalPoints += stat.totalPoints;
+    if (includeDap) {
+      playerRoleData.totalPoints += stat.totalPoints;
+      playerRoleData.dapGames += 1;
+    }
     if (stat.win) {
       playerRoleData.wins += 1;
     }
@@ -116,7 +100,7 @@ export async function generateRoleRankingStats(seasonId?: number, dateFrom?: Dat
 
   const roleRankingStats: RoleRankingStats[] = Array.from(roleStats.entries()).map(([roleName, data]) => {
     const winRate = data.gamesPlayed > 0 ? Math.round((data.wins / data.gamesPlayed) * 100) : 0;
-    const averagePoints = data.gamesPlayed > 0 ? data.totalPoints / data.gamesPlayed : 0;
+    const averagePoints = data.dapGames > 0 ? data.totalPoints / data.dapGames : 0;
 
     const displayRoleName = convertRoleNameForDisplay(roleName);
     const roleColor = getRoleColor(displayRoleName, season);
@@ -129,7 +113,7 @@ export async function generateRoleRankingStats(seasonId?: number, dateFrom?: Dat
       gamesPlayed: playerData.gamesPlayed,
       wins: playerData.wins,
       winRate: playerData.gamesPlayed > 0 ? Math.round((playerData.wins / playerData.gamesPlayed) * 100) : 0,
-      averagePoints: playerData.gamesPlayed > 0 ? playerData.totalPoints / playerData.gamesPlayed : 0
+      averagePoints: playerData.dapGames > 0 ? playerData.totalPoints / playerData.dapGames : 0
     }));
 
     players.sort((a, b) => {
@@ -147,6 +131,7 @@ export async function generateRoleRankingStats(seasonId?: number, dateFrom?: Dat
       gamesPlayed: data.gamesPlayed,
       wins: data.wins,
       winRate,
+      dapGames: data.dapGames,
       totalPoints: data.totalPoints,
       averagePoints,
       players
@@ -155,4 +140,10 @@ export async function generateRoleRankingStats(seasonId?: number, dateFrom?: Dat
 
   roleRankingStats.sort((a, b) => b.gamesPlayed - a.gamesPlayed);
   return roleRankingStats;
+}
+
+/** Lightweight table response; per-player breakdowns remain available to existing callers. */
+export async function generateRoleRankingSummary(seasonId?: number, dateFrom?: Date, dateTo?: Date, { excludeLatestDay = true } = {}): Promise<RoleRankingSummary[]> {
+  const roles = await generateRoleRankingStats(seasonId, dateFrom, dateTo, false, { excludeLatestDay });
+  return roles.map(({ players: _players, ...role }) => role);
 }

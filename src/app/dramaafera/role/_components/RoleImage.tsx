@@ -13,7 +13,7 @@ interface RoleImageProps {
     className?: string;
 }
 
-export function RoleImage({ roleName, seasonId, width = 128, height = 128, className = "scale-[1.7]" }: RoleImageProps) {
+export function RoleImage({ roleName, seasonId, width = 128, height = 128, className }: RoleImageProps) {
     const [hasError, setHasError] = useState(false);
     
     return (
