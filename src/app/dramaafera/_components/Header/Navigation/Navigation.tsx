@@ -37,6 +37,12 @@ const navigationItemConfigs: NavigationItemConfig[] = [
         seasonDependent: true,
     },
     {
+        subPath: '/role',
+        href: "/dramaafera/role",
+        label: "Role",
+        seasonDependent: true,
+    },
+    {
         subPath: '/wyniki',
         href: "/dramaafera/wyniki",
         label: "Wyniki Dnia",
