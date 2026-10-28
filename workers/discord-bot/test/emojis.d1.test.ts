@@ -447,7 +447,8 @@ describe('poll payload with avatar emojis', () => {
         jest.spyOn(console, 'warn').mockImplementation(() => {});
 
         const outcome = await ensurePoll(
-            { db, discord, env, now: NOW, avatarEmojis: createAvatarEmojis(env, db, net.deps) },
+            // random() near 1 keeps the selected order, so the answers are easy to read here.
+            { db, discord, env, now: NOW, random: () => 0.999999, avatarEmojis: createAvatarEmojis(env, db, net.deps) },
             await loadGameDay(db, SESSION),
         );
 

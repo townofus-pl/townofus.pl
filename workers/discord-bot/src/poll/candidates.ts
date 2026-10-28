@@ -32,8 +32,9 @@ export interface GameDay {
 const comparablePoints = (points: number) => Math.round(points * 1e6);
 
 /**
- * The highest sums of the day first. Ties: more games that day, then the nickname in Polish
- * alphabetical order. Returns at most CANDIDATE_COUNT players.
+ * Selects the players for the poll. Returns at most CANDIDATE_COUNT players, best first. Ties:
+ * more games that day, then the nickname in Polish alphabetical order.
+ * This order is for the selection only. Do not post it: use `shuffleCandidates` first.
  */
 export function pickCandidates(players: PlayerDayStats[]): Candidate[] {
     return [...players]
@@ -46,6 +47,20 @@ export function pickCandidates(players: PlayerDayStats[]): Candidate[] {
         )
         .slice(0, CANDIDATE_COUNT)
         .map(({ playerId, nickname }) => ({ playerId, nickname }));
+}
+
+/**
+ * Returns the candidates in random order (Fisher-Yates). The input array does not change.
+ * `random` returns a number from 0 (included) to 1 (excluded), like `Math.random`.
+ * The answers are in random order, so the order does not show the results of the day.
+ */
+export function shuffleCandidates(candidates: Candidate[], random: () => number = Math.random): Candidate[] {
+    const result = [...candidates];
+    for (let i = result.length - 1; i > 0; i--) {
+        const j = Math.floor(random() * (i + 1));
+        [result[i], result[j]] = [result[j], result[i]];
+    }
+    return result;
 }
 
 /** The quiet rule for the cron: the day has games, and the last one came in QUIET_MS ago or more. */
