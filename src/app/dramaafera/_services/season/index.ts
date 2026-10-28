@@ -26,3 +26,5 @@ export { getHostInfo } from './getHostInfo';
 
 export type { EmperorPollCandidateRow } from './getEmperorPoll';
 export { getEmperorPoll, mapEmperorPoll, toPollDate } from './getEmperorPoll';
+
+export { getLatestEmperorId } from './getSessionEmperors';

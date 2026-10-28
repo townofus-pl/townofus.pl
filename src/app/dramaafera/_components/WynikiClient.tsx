@@ -10,6 +10,8 @@ import { getSessionResults } from "@/app/dramaafera/_actions/seasonActions";
 import { getGameSessionLists } from "@/app/dramaafera/_actions/listaCweliActions";
 import { AvatarImageFill } from "@/app/dramaafera/_components/PodsumowanieClient/AvatarImage";
 
+import { useColorblindMode } from '@/app/dramaafera/_hooks/useColorblindMode';
+
 interface GameSessionListData {
     id: number;
     date: string;
@@ -25,6 +27,8 @@ interface WynikiClientProps {
 }
 
 export default function WynikiClient({ initialDates, initialResults, seasonId, listaCweli = [] }: WynikiClientProps) {
+    const [colorblindMode, setColorblindMode] = useColorblindMode();
+
     // Merge dates and Lista Cweli into combined list
     const combinedDates = useMemo(() => {
         const getSortableDateNumber = (date: string): number => {
@@ -254,21 +258,39 @@ export default function WynikiClient({ initialDates, initialResults, seasonId, l
             {/* Nagłówek z wyborem daty — zawsze widoczny gdy są dostępne daty */}
             {combinedDates.length > 0 && (
                 <div className="max-w-7xl mx-auto mb-8">
-                    <h1 className="text-4xl font-bold text-white flex items-center justify-center gap-3 flex-wrap mb-2">
-                        Wyniki dnia
-                        <select
-                            value={selectedDate}
-                            onChange={handleDateChange}
-                            className="bg-zinc-800 border border-gray-600 rounded-lg px-4 py-2 text-white text-2xl font-bold focus:outline-none focus:ring-2 focus:ring-blue-500 font-barlow hover:bg-zinc-700 transition-colors cursor-pointer"
-                            style={{ minWidth: '200px' }}
-                        >
-                            {combinedDates.map((item) => (
-                                <option key={`${item.date}-${item.type}`} value={`${item.date}__${item.type}`} className="font-barlow text-base">
-                                    {item.displayDate} {item.type === 'lista' ? '(lista)' : ''}
-                                </option>
-                            ))}
-                        </select>
-                    </h1>
+                    <div className="grid grid-cols-[1fr_auto] items-center gap-x-2 gap-y-3 mb-2 lg:grid-cols-[1fr_auto_1fr]">
+                        <div className="contents lg:col-start-2 lg:row-start-1 lg:flex lg:items-center lg:justify-center lg:gap-3">
+                            <h1 className="col-start-1 row-start-1 text-xl min-[380px]:text-2xl sm:text-4xl font-bold text-white whitespace-nowrap">
+                                Wyniki dnia
+                            </h1>
+                            <select
+                                value={selectedDate}
+                                onChange={handleDateChange}
+                                aria-label="Wybierz datę wyników"
+                                className="col-span-2 row-start-2 justify-self-center bg-zinc-800 border border-gray-600 rounded-lg px-4 py-2 text-white text-xl sm:text-2xl font-bold focus:outline-none focus:ring-2 focus:ring-blue-500 font-barlow hover:bg-zinc-700 transition-colors cursor-pointer"
+                                style={{ minWidth: '200px' }}
+                            >
+                                {combinedDates.map((item) => (
+                                    <option key={`${item.date}-${item.type}`} value={`${item.date}__${item.type}`} className="font-barlow text-base">
+                                        {item.displayDate} {item.type === 'lista' ? '(lista)' : ''}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
+                        <label className="col-start-2 row-start-1 justify-self-end lg:col-start-3 inline-flex min-h-11 items-center gap-1.5 sm:gap-2 rounded-lg border border-zinc-700 bg-zinc-800/80 px-2 sm:px-3 py-2 text-[10px] sm:text-sm text-zinc-200 whitespace-nowrap cursor-pointer hover:bg-zinc-700/80 focus-within:ring-2 focus-within:ring-blue-400">
+                            <input
+                                type="checkbox"
+                                checked={colorblindMode}
+                                onChange={(event) => setColorblindMode(event.target.checked)}
+                                aria-describedby="colorblind-mode-description"
+                                className="h-4 w-4 accent-blue-500 cursor-pointer"
+                            />
+                            Tryb dla daltonistów
+                        </label>
+                    </div>
+                    <p id="colorblind-mode-description" className="sr-only">
+                        Dodaje oznaczenia W — wygrana i L — przegrana przy ikonach ról i awatarach graczy.
+                    </p>
 
                     {/* Wskaźnik auto-refresh dla najnowszej daty (tylko bieżący sezon) */}
                     {seasonId === CURRENT_SEASON && selectedDate === (combinedDates[0] ? `${combinedDates[0].date}__${combinedDates[0].type}` : '') && (
@@ -301,12 +323,13 @@ export default function WynikiClient({ initialDates, initialResults, seasonId, l
 
             {/* Wyświetlanie wyników gier */}
             {selectedDateType === 'games' && resultsData && !dataLoading && resultsData.players.length > 0 && (
-                <div className="max-w-7xl mx-auto bg-zinc-900/80 rounded-xl p-8">
+                <div className="max-w-7xl mx-auto bg-zinc-900/80 rounded-xl p-3 sm:p-8">
                     <PlayerTable
                         players={resultsData.players}
                         reversedGames={resultsData.games}
                         detailedGames={resultsData.detailedGames}
                         date={selectedPlainDate}
+                        colorblindMode={colorblindMode}
                         hideZeroStats={true}
                         seasonId={seasonId}
                     />
@@ -318,6 +341,7 @@ export default function WynikiClient({ initialDates, initialResults, seasonId, l
                         reversedGames={resultsData.games}
                         detailedGames={resultsData.detailedGames}
                         date={selectedPlainDate}
+                        colorblindMode={colorblindMode}
                         hideZeroStats={true}
                         seasonId={seasonId}
                     />
@@ -339,7 +363,7 @@ export default function WynikiClient({ initialDates, initialResults, seasonId, l
 
             {/* Wyświetlanie Lista Cweli */}
             {selectedDateType === 'lista' && listaCweliData && (
-                <div className="max-w-7xl mx-auto bg-zinc-900/80 rounded-xl p-8">
+                <div className="max-w-7xl mx-auto bg-zinc-900/80 rounded-xl p-3 sm:p-8">
                     <div className="space-y-6">
                         <div className="text-center">
                             <h2 className="text-3xl font-bold text-yellow-400 mb-2">Lista Cweli</h2>
