@@ -67,10 +67,6 @@ export function getDeathsDuringMeetings(meetings: Meeting[], actions: Action[]):
             }
         }
         if (!name) continue;
-        // Guess attempts (notably Doomsayer misses) can be recorded as kills
-        // without anyone dying. Require evidence before changing the roster.
-        if (action.type === 'kill' && isGuess &&
-            !firstSummaryByVictim.has(name) && !recordedDeaths.get(action.timestampMs)?.has(name)) continue;
         // Meeting deaths appear in the following meeting's death summary. The final
         // meeting has no following summary, so its guess/execution victims need actions.
         const nextIndex = firstSummaryByVictim.get(name) ?? -1;

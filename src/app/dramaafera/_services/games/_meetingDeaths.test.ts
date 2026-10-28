@@ -107,19 +107,33 @@ test('ignores unrelated actions without reading their details', () => {
 });
 
 
-test.each([false, true, null])('a Doomsayer guess without a death does not remove its living target (%s)', (isCorrect) => {
+test('a Doomsayer miss without a death does not remove its living target', () => {
     const sessions = [
         { meetingNumber: 1, deathsSinceLastMeeting: [] },
         { meetingNumber: 2, deathsSinceLastMeeting: [] },
         { meetingNumber: 3, deathsSinceLastMeeting: [] },
     ];
-    const deaths = getDeathsDuringMeetings(sessions, [action({ performerRole: 'Doomsayer', isCorrect })]);
+    const deaths = getDeathsDuringMeetings(sessions, [action({ performerRole: 'Doomsayer', isCorrect: false })]);
     expect(Array.from(deaths)).toEqual([]);
     const uiMeetings: UIMeetingData[] = sessions.map(meeting => ({
         ...meeting, votes: {}, skipVotes: [], noVotes: [], wasTie: false, wasBlessed: false,
         deathsDuringMeeting: deaths.get(meeting.meetingNumber),
     }));
     expect(getMeetingParticipants(uiMeetings, ['A', 'B']).get(3)).toEqual(['A', 'B']);
+});
+
+test.each(['Vigilante', 'Assassin'])('a final meeting %s hit needs no separate death action or summary', (performerRole) => {
+    expect(Array.from(getDeathsDuringMeetings(meetings, [action({
+        performerRole, target: { name: 'Ph4' },
+        detail: '{"isGuess":true,"guessedRole":"Sheriff"}',
+    })]))).toEqual([[2, ['Ph4']]]);
+});
+
+test.each(['guessedRole', 'guessedModifier'])('a final meeting misguess with %s kills the guesser without a separate death action', (field) => {
+    expect(Array.from(getDeathsDuringMeetings(meetings, [action({
+        performerRole: 'Vigilante', performer: { name: 'B' }, target: { name: 'Ph4' }, isCorrect: false,
+        detail: JSON.stringify({ isGuess: true, [field]: 'Some identity' }),
+    })]))).toEqual([[2, ['B']]]);
 });
 
 test('a final meeting guess is retained when a matching death confirms it', () => {
