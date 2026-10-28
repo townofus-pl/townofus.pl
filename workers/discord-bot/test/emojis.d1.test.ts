@@ -54,7 +54,7 @@ interface Call {
  * memory. `failCreate`: names whose create Discord refuses.
  */
 function fakeNet(options: {
-    images?: Record<string, { bytes: Uint8Array; type?: string }>;
+    images?: Record<string, { bytes: Uint8Array; type?: string; headers?: Record<string, string> }>;
     emojis?: { id: string; name: string }[];
     failCreate?: string[];
     failList?: boolean;
@@ -88,7 +88,7 @@ function fakeNet(options: {
         }
         const image = options.images?.[url];
         if (image) {
-            return new Response(image.bytes, { status: 200, headers: { 'Content-Type': image.type ?? 'image/png' } });
+            return new Response(image.bytes, { status: 200, headers: { 'Content-Type': image.type ?? 'image/png', ...image.headers } });
         }
         return new Response('not found', { status: 404, headers: { 'Content-Type': 'text/html' } });
     }) as typeof fetch;
@@ -493,13 +493,61 @@ describe('avatar emojis', () => {
             ]);
         });
 
-        it('logs no token and no headers', async () => {
+        it('reason size by the Content-Length header: no body read, contentLength in the log', async () => {
             const ids = await seed();
             const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
+            const length = String(MAX_EMOJI_BYTES + 1);
+            const net = fakeNet({
+                images: { [siteAvatarUrl(BASE, 'Bartek')]: { bytes: png('small'), headers: { 'Content-Length': length } } },
+            });
 
-            await createAvatarEmojis(env, db, fakeNet().deps)(candidatesOf(ids, 'Bartek'));
+            const result = await createAvatarEmojis(env, db, net.deps)(candidatesOf(ids, 'Bartek'));
 
-            expect(warn.mock.calls.map((c) => String(c[0])).join('\n')).not.toContain('token');
+            expect(result.size).toBe(0);
+            const [line] = events(warn, 'avatarImageRejected');
+            expect(line).toEqual(expect.objectContaining({ reason: 'size', contentLength: length }));
+            expect(line).not.toHaveProperty('bytes');
+        });
+
+        it('logs the cf-resized header, or null', async () => {
+            const ids = await seed();
+            const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
+            const net = fakeNet({
+                images: {
+                    [siteAvatarUrl(BASE, 'Bartek')]: {
+                        bytes: png('x'),
+                        type: 'text/html',
+                        headers: { 'cf-resized': 'err=9523' },
+                    },
+                },
+            });
+
+            await createAvatarEmojis(env, db, net.deps)(candidatesOf(ids, 'Bartek', 'Pacia'));
+
+            const lines = events(warn, 'avatarImageRejected');
+            expect(lines.map((l) => l.cfResized)).toEqual(['err=9523', null]);
+        });
+
+        it('logs no token, also when a Discord call fails', async () => {
+            const ids = await seed();
+            const secret = 'SECRET-TOKEN-7f3a9c';
+            const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
+            const name = emojiName(ids.Bartek, hash8(png('b')));
+            const net = fakeNet({
+                images: { [siteAvatarUrl(BASE, 'Bartek')]: { bytes: png('b') } },
+                failCreate: [name],
+            });
+
+            const result = await createAvatarEmojis({ ...env, DISCORD_BOT_TOKEN: secret }, db, net.deps)(
+                candidatesOf(ids, 'Bartek', 'Pacia'),
+            );
+
+            expect(result.size).toBe(0);
+            // The create did fail and was logged, and the token is in no line.
+            expect(net.creates()).toHaveLength(1);
+            expect(net.creates()[0].init!.headers).toEqual(expect.objectContaining({ Authorization: `Bot ${secret}` }));
+            expect(events(warn, 'avatarEmojiFailed')).toHaveLength(1);
+            expect(warn.mock.calls.map((c) => c.map(String).join(' ')).join('\n')).not.toContain(secret);
         });
 
         it('one avatarEmojis summary line for each run, also with zero emojis', async () => {

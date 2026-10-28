@@ -32,7 +32,9 @@ export const EMOJI_REQUEST_TIMEOUT_MS = 5_000;
 export const EMOJI_BUDGET_MS = 12_000;
 
 /** Cloudflare image transformation for the site avatar request. Not used for the Discord CDN. */
-export const SITE_IMAGE_CF = { image: { width: 128, height: 128, fit: 'cover', format: 'png' } } as const;
+export const SITE_IMAGE_CF = {
+    image: { width: 128, height: 128, fit: 'cover', format: 'png' },
+} satisfies RequestInitCfProperties;
 
 const IMAGE_TYPES = ['image/png', 'image/jpeg', 'image/gif', 'image/webp'];
 
@@ -175,12 +177,13 @@ export function createAvatarEmojis(
     async function fetchImage(
         run: Run,
         url: string,
-        init: RequestInit = {},
+        init: RequestInit<RequestInitCfProperties> = {},
     ): Promise<{ bytes: ArrayBuffer; type: string } | null> {
         try {
             return await timedFetch(run, url, init, async (response) => {
                 const type = (response.headers.get('Content-Type') ?? '').split(';')[0].trim().toLowerCase();
                 const contentLength = response.headers.get('Content-Length');
+                const cfResized = response.headers.get('cf-resized');
                 const reject = (reason: 'status' | 'type' | 'size' | 'empty', bytes?: number) => {
                     console.warn(
                         JSON.stringify({
@@ -189,6 +192,7 @@ export function createAvatarEmojis(
                             status: response.status,
                             type,
                             ...(bytes === undefined ? { contentLength } : { bytes }),
+                            cfResized,
                             reason,
                         }),
                     );
@@ -229,7 +233,7 @@ export function createAvatarEmojis(
         // under the new name.
         const site = await fetchImage(run, siteAvatarUrl(baseUrl, identity?.name ?? candidate.nickname), {
             cf: SITE_IMAGE_CF,
-        } as RequestInit);
+        });
         if (site) return site;
         if (identity?.discordUserId && identity.avatar) {
             return fetchImage(run, discordAvatarUrl(identity.discordUserId, identity.avatar));

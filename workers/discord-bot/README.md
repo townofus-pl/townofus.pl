@@ -98,13 +98,15 @@ The value is `https://townofus.pl/images/avatars` in every environment. Some fil
 
 - The bot fetches the site avatar with `cf: { image: { width: 128, height: 128, fit: "cover",
   format: "png" } }`. This needs **Images > Transformations** enabled on the `townofus.pl` zone.
-  The Discord CDN request does not use `cf.image`.
+  The Discord CDN request does not use `cf.image`. The transformation runs on the `townofus.pl`
+  zone for production, and on the `workers.dev` Worker for staging.
 - Do not use a `/cdn-cgi/image/...` URL. A Worker on the `townofus.pl` zone (production) gets a
   404 for it. The `global_fetch_strictly_public` flag does not change this.
 - The free plan includes 5000 unique transformations per month. One avatar is one transformation
   until the file changes, so the poll uses very few of them.
 - Logs (JSON, `console.warn`): `avatarImageRejected` for each image the bot does not use, with
-  `url`, `status`, `type`, `bytes` or `contentLength`, and `reason` (`status`, `type`, `size` or
+  `url`, `status`, `type`, `bytes` or `contentLength`, `cfResized` (the `cf-resized` response
+  header or `null`) and `reason` (`status`, `type`, `size` or
   `empty`). `avatarEmojis` once for each run, with `candidates`, `ready` and `ms`. `ready: 0` with
   candidates shows that the feature gave nothing.
 - To turn the feature off, set the var to `""` in that environment and deploy.
