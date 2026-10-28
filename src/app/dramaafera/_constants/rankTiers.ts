@@ -22,3 +22,22 @@ export function getRankName(rating: number): string {
     const tier = RANK_TIERS.find(t => rating >= t.minRating);
     return tier?.name ?? 'BAROX';
 }
+
+const RANK_ICONS: Readonly<Record<string, string>> = {
+    'PIERDOLONA LEGENDA': 'legenda',
+    'CELESTIAL OVERLORD': 'celestial-overlord',
+    GRANDMASTER: 'grandmaster',
+    MASTER: 'master',
+    VIRTUOSO: 'virtuoso',
+    SPECIALIST: 'specialist',
+    CAPTAIN: 'captain',
+    CREWMATE: 'crewmate',
+    CADET: 'cadet',
+    PISSLOW: 'pisslow',
+    CWEL: 'cwel',
+};
+
+export function getRankIcon(rating: number): string | undefined {
+    const icon = RANK_ICONS[getRankName(rating)];
+    return icon ? `/images/ranks/${icon}.webp` : undefined;
+}

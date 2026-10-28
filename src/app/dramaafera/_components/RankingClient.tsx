@@ -6,7 +6,7 @@ import Image from "next/image";
 import type { RankingPlayer, SeasonRankingHistory } from "@/app/dramaafera/_services";
 import { CURRENT_SEASON } from "@/app/dramaafera/_constants/seasons";
 import { getRankingAction, getSeasonRankingHistoriesAction } from "@/app/dramaafera/_actions/seasonActions";
-import { getRankName } from "@/app/dramaafera/_constants/rankTiers";
+import { getRankName, getRankIcon } from "@/app/dramaafera/_constants/rankTiers";
 import { buildSeasonUrl } from "@/app/dramaafera/_utils/seasonHelpers";
 import { convertNickToUrlSlug } from "@/app/dramaafera/_utils/gameUtils";
 import { RankingChart } from "./RankingChart";
@@ -41,10 +41,12 @@ function sortPlayers(players: RankingPlayer[], sortBy: NumericRankingKey, sortOr
 
 interface RankingClientProps {
     initialData: RankingPlayer[];
+    initialEmperorId: number | null;
     seasonId: number;
 }
 
-export default function RankingClient({ initialData, seasonId }: RankingClientProps) {
+export default function RankingClient({ initialData, initialEmperorId, seasonId }: RankingClientProps) {
+    const [emperorId, setEmperorId] = useState(initialEmperorId);
     const [playerStats, setPlayerStats] = useState<RankingPlayer[]>(initialData);
     const [sortBy, setSortBy] = useState<NumericRankingKey>("currentRating");
     const [sortOrder, setSortOrder] = useState<"asc" | "desc">("desc");
@@ -95,6 +97,7 @@ export default function RankingClient({ initialData, seasonId }: RankingClientPr
             setIsRefreshing(true);
 
             const result = await getRankingAction(seasonId);
+            setEmperorId(result.latestEmperorId);
 
             // Oblicz hash danych aby sprawdzić czy się zmieniły
             const dataHash = JSON.stringify(result.ranking.map(p => ({
@@ -150,14 +153,6 @@ export default function RankingClient({ initialData, seasonId }: RankingClientPr
         }
     }
 
-    // Wyznacz top rankingujących graczy (najwyższy ranking)
-    const topRanking = playerStats.length > 0
-        ? Math.max(...playerStats.map(p => typeof p.currentRating === "number" ? p.currentRating : -Infinity))
-        : null;
-    const topPlayerNames = topRanking !== null
-        ? playerStats.filter(p => p.currentRating === topRanking && typeof p.currentRating === "number").map(p => p.playerName)
-        : [];
-
     return (
         <div className="min-h-screen rounded-xl bg-zinc-900/50 text-white">
             <div className="container mx-auto px-4 py-8">
@@ -208,6 +203,7 @@ export default function RankingClient({ initialData, seasonId }: RankingClientPr
                                 <tr className="border-b border-gray-600">
                                     <th className="text-left py-2 px-2 text-yellow-400 font-semibold">Pozycja</th>
                                     <th className="text-left py-2 px-2 text-yellow-400 font-semibold">Gracz</th>
+                                    <th className="text-left py-2 px-2 text-yellow-400 font-semibold">Ranga</th>
                                     <th className="text-left py-2 px-2 text-yellow-400 font-semibold cursor-pointer select-none" onClick={() => handleSort("currentRating")}>Ranking {sortBy === "currentRating" && (sortOrder === "asc" ? "▲" : "▼")}</th>
                                     <th className="text-left py-2 px-2 text-yellow-400 font-semibold cursor-pointer select-none" onClick={() => handleSort("dap")} title="Suma punktów w sezonie, bez najnowszego dnia z grami">DAP {sortBy === "dap" && (sortOrder === "asc" ? "▲" : "▼")}</th>
                                     <th className="text-left py-2 px-2 text-yellow-400 font-semibold cursor-pointer select-none" onClick={() => handleSort("totalGames")}>Gry {sortBy === "totalGames" && (sortOrder === "asc" ? "▲" : "▼")}</th>
@@ -218,8 +214,8 @@ export default function RankingClient({ initialData, seasonId }: RankingClientPr
                             <tbody>
                                 {sortedStats.map((player, index) => {
                                     const hasRanking = typeof player.currentRating === "number";
-                                    // Żółty nick jeśli gracz jest jednym z top rankingujących
-                                    const isTopRank = hasRanking && topPlayerNames.includes(player.playerName);
+                                    const rankIcon = hasRanking ? getRankIcon(Math.round(player.currentRating)) : undefined;
+                                    const isEmperor = player.playerId === emperorId;
                                     return (
                                         <tr
                                             key={player.playerName}
@@ -240,16 +236,38 @@ export default function RankingClient({ initialData, seasonId }: RankingClientPr
                                                             height={40}
                                                             className="rounded-full border-2 border-gray-600"
                                                         />
-                                                        <span className={`font-semibold text-lg transition-colors ${isTopRank ? "text-yellow-400" : "text-white hover:text-gray-300"}`}>
-                                                            {player.playerName}
-                                                            {hasRanking && (
-                                                                <span className="italic font-normal text-base text-gray-400 ml-2">
-                                                                    ({getRankName(Math.round(player.currentRating))})
-                                                                </span>
+                                                        <span className={`font-semibold text-lg transition-colors ${isEmperor ? "text-yellow-400" : "text-white hover:text-gray-300"}`}>
+                                                            {isEmperor && (
+                                                                <Image
+                                                                    src="/images/ranks/emperor.webp"
+                                                                    alt="Emperor"
+                                                                    title="Emperor"
+                                                                    width={28}
+                                                                    height={28}
+                                                                    className="mr-2 inline-block h-7 w-7 align-middle object-contain"
+                                                                />
                                                             )}
+                                                            {player.playerName}
                                                         </span>
                                                     </div>
                                                 </Link>
+                                            </td>
+                                            <td className="py-2 px-2 text-gray-400">
+                                                {hasRanking ? (
+                                                    <span className="inline-flex items-center gap-2 whitespace-nowrap">
+                                                        {rankIcon && (
+                                                            <Image
+                                                                src={rankIcon}
+                                                                alt={getRankName(Math.round(player.currentRating))}
+                                                                title={getRankName(Math.round(player.currentRating))}
+                                                                width={28}
+                                                                height={28}
+                                                                className="h-7 w-7 shrink-0 object-contain"
+                                                            />
+                                                        )}
+                                                        <span className={rankIcon ? "hidden sm:inline" : undefined}>{getRankName(Math.round(player.currentRating))}</span>
+                                                    </span>
+                                                ) : '-'}
                                             </td>
                                             <td className="py-2 px-2 text-yellow-300 font-bold">{hasRanking ? Math.round(player.currentRating) : '-'}</td>
                                             <td className="py-2 px-2 text-gray-300">{player.dap.toFixed(1)}</td>
