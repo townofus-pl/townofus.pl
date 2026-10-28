@@ -226,7 +226,10 @@ describe('cron step', () => {
         const { discord, polls } = fakeDiscord(['fail']);
         const now = LAST_INGEST + 30 * MIN;
 
-        expect(await createPollTick(ctxAt(now, discord), SESSION)).toEqual({ kind: 'sendFailed', date: SESSION });
+        expect(await createPollTick({ ...ctxAt(now, discord), random: () => 0 }, SESSION)).toEqual({
+            kind: 'sendFailed',
+            date: SESSION,
+        });
         expect((await pollRows())[0].discordMessageId).toBeNull();
         const before = await candidateRows();
 
@@ -234,7 +237,8 @@ describe('cron step', () => {
         expect(await runAnkieta(db, discord, env, now + 2 * MIN)).toMatch(/właśnie wysyłana/);
         expect(polls()).toHaveLength(0);
 
-        expect(await createPollTick(ctxAt(now + 10 * MIN, discord), SESSION)).toEqual({
+        // A different random source on the second tick must not change the stored order.
+        expect(await createPollTick({ ...ctxAt(now + 10 * MIN, discord), random: () => 0.999999 }, SESSION)).toEqual({
             kind: 'created',
             date: SESSION,
             signupSent: true,
@@ -242,6 +246,7 @@ describe('cron step', () => {
         expect(polls()).toHaveLength(1);
         expect((await pollRows())[0].discordMessageId).toBe('msg-1');
         expect(await candidateRows()).toEqual(before);
+        expect(polls()[0].body.poll!.answers.map((a) => a.poll_media.text)).toEqual(before.map((c) => c.nickname));
     });
 
     it('closes a stale unsent row without sending it, so it does not block the new week', async () => {

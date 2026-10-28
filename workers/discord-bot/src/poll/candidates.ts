@@ -32,9 +32,8 @@ export interface GameDay {
 const comparablePoints = (points: number) => Math.round(points * 1e6);
 
 /**
- * Selects the players for the poll. Returns at most CANDIDATE_COUNT players, best first. Ties:
- * more games that day, then the nickname in Polish alphabetical order.
- * This order is for the selection only. Do not post it: use `shuffleCandidates` first.
+ * Selects the poll candidates: at most CANDIDATE_COUNT players. Callers shuffle the result
+ * before they store it, see `shuffleCandidates`.
  */
 export function pickCandidates(players: PlayerDayStats[]): Candidate[] {
     return [...players]
