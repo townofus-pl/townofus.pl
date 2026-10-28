@@ -16,7 +16,7 @@ import {
 import { clearPollTables, createTestD1, seedGames } from './d1';
 
 const APP = 'app-staging';
-const BASE = 'https://townofus.pl/cdn-cgi/image/width=128,height=128,fit=cover,format=png/images/avatars';
+const BASE = 'https://townofus.pl/images/avatars';
 const EMOJIS = `https://discord.com/api/v10/applications/${APP}/emojis`;
 const env = {
     DISCORD_APPLICATION_ID: APP,
@@ -46,6 +46,7 @@ interface Call {
     method: string;
     url: string;
     body?: { name: string; image: string };
+    init?: RequestInit;
 }
 
 /**
@@ -67,7 +68,7 @@ function fakeNet(options: {
         const url = String(input);
         const method = init?.method ?? 'GET';
         const body = init?.body ? (JSON.parse(String(init.body)) as Call['body']) : undefined;
-        calls.push({ method, url, body });
+        calls.push({ method, url, body, init });
         if (url === EMOJIS && method === 'GET') {
             if (options.failList) return new Response('{"message":"boom"}', { status: 500 });
             return Response.json({ items: emojis });
@@ -415,6 +416,110 @@ describe('avatar emojis', () => {
 
         expect(result.size).toBe(0);
         expect(net.creates()).toHaveLength(0);
+    });
+
+    it('sends the cf.image options on the site request only', async () => {
+        const ids = await seed();
+        await link(ids.Pacia, '555', 'abc123');
+        const net = fakeNet({ images: { [discordAvatarUrl('555', 'abc123')]: { bytes: png('d') } } });
+
+        await createAvatarEmojis(env, db, net.deps)(candidatesOf(ids, 'Pacia'));
+
+        const site = net.calls.find((c) => c.url === siteAvatarUrl(BASE, 'Pacia'))!;
+        expect((site.init as { cf?: unknown }).cf).toEqual({
+            image: { width: 128, height: 128, fit: 'cover', format: 'png' },
+        });
+        const cdn = net.calls.find((c) => c.url === discordAvatarUrl('555', 'abc123'))!;
+        expect((cdn.init as { cf?: unknown }).cf).toBeUndefined();
+        const api = net.calls.filter((c) => c.url.startsWith(EMOJIS));
+        expect(api.every((c) => (c.init as { cf?: unknown }).cf === undefined)).toBe(true);
+    });
+
+    describe('logs', () => {
+        const events = (warn: jest.SpiedFunction<typeof console.warn>, event: string) =>
+            warn.mock.calls.map((c) => JSON.parse(String(c[0])) as Record<string, unknown>).filter((l) => l.event === event);
+
+        it('reason status: a 404 logs url, status, type and reason', async () => {
+            const ids = await seed();
+            const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
+
+            await createAvatarEmojis(env, db, fakeNet().deps)(candidatesOf(ids, 'Bartek'));
+
+            expect(events(warn, 'avatarImageRejected')).toEqual([
+                expect.objectContaining({
+                    url: siteAvatarUrl(BASE, 'Bartek'),
+                    status: 404,
+                    type: 'text/html',
+                    reason: 'status',
+                }),
+            ]);
+        });
+
+        it('reason type', async () => {
+            const ids = await seed();
+            const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
+            const net = fakeNet({ images: { [siteAvatarUrl(BASE, 'Bartek')]: { bytes: png('x'), type: 'text/html' } } });
+
+            await createAvatarEmojis(env, db, net.deps)(candidatesOf(ids, 'Bartek'));
+
+            expect(events(warn, 'avatarImageRejected')).toEqual([
+                expect.objectContaining({ status: 200, type: 'text/html', reason: 'type' }),
+            ]);
+        });
+
+        it('reason size', async () => {
+            const ids = await seed();
+            const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
+            const net = fakeNet({
+                images: { [siteAvatarUrl(BASE, 'Bartek')]: { bytes: png('big', MAX_EMOJI_BYTES + 1) } },
+            });
+
+            await createAvatarEmojis(env, db, net.deps)(candidatesOf(ids, 'Bartek'));
+
+            expect(events(warn, 'avatarImageRejected')).toEqual([
+                expect.objectContaining({ status: 200, type: 'image/png', bytes: MAX_EMOJI_BYTES + 1, reason: 'size' }),
+            ]);
+        });
+
+        it('reason empty', async () => {
+            const ids = await seed();
+            const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
+            const net = fakeNet({ images: { [siteAvatarUrl(BASE, 'Bartek')]: { bytes: new Uint8Array(0) } } });
+
+            await createAvatarEmojis(env, db, net.deps)(candidatesOf(ids, 'Bartek'));
+
+            expect(events(warn, 'avatarImageRejected')).toEqual([
+                expect.objectContaining({ status: 200, bytes: 0, reason: 'empty' }),
+            ]);
+        });
+
+        it('logs no token and no headers', async () => {
+            const ids = await seed();
+            const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
+
+            await createAvatarEmojis(env, db, fakeNet().deps)(candidatesOf(ids, 'Bartek'));
+
+            expect(warn.mock.calls.map((c) => String(c[0])).join('\n')).not.toContain('token');
+        });
+
+        it('one avatarEmojis summary line for each run, also with zero emojis', async () => {
+            const ids = await seed();
+            const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
+
+            await createAvatarEmojis(env, db, fakeNet().deps)(candidatesOf(ids, 'Bartek', 'Pacia'));
+
+            expect(events(warn, 'avatarEmojis')).toEqual([{ event: 'avatarEmojis', candidates: 2, ready: 0, ms: expect.any(Number) }]);
+        });
+
+        it('the summary counts the ready emojis', async () => {
+            const ids = await seed();
+            const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
+            const net = fakeNet({ images: { [siteAvatarUrl(BASE, 'Bartek')]: { bytes: png('b') } } });
+
+            await createAvatarEmojis(env, db, net.deps)(candidatesOf(ids, 'Bartek', 'Pacia'));
+
+            expect(events(warn, 'avatarEmojis')).toEqual([expect.objectContaining({ candidates: 2, ready: 1 })]);
+        });
     });
 
     it('is off when AVATAR_EMOJI_BASE_URL is empty: no request at all', async () => {
