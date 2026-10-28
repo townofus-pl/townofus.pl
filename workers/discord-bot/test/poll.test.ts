@@ -1,7 +1,7 @@
 import { describe, expect, it } from '@jest/globals';
 import { InteractionResponseType, InteractionType, MessageFlags, type Interaction } from '../src/discord';
 import type { BotEnv } from '../src/env';
-import { isDayQuiet, pickCandidates, type GameDay, type PlayerDayStats } from '../src/poll/candidates';
+import { isDayQuiet, pickCandidates, shuffleCandidates, type GameDay, type PlayerDayStats } from '../src/poll/candidates';
 import { createAnkietaHandler, NOT_HOST_REPLY } from '../src/poll/command';
 import { createDiscordRest, type DiscordRest } from '../src/poll/discordApi';
 import {
@@ -52,6 +52,32 @@ describe('pickCandidates', () => {
             { playerId: 2, nickname: 'b' },
             { playerId: 1, nickname: 'a' },
         ]);
+    });
+});
+
+describe('shuffleCandidates', () => {
+    const candidates = Array.from({ length: 10 }, (_, i) => ({ playerId: i + 1, nickname: `P${i + 1}` }));
+
+    it('keeps the same players and does not change the input', () => {
+        const copy = [...candidates];
+        let n = 0;
+        const shuffled = shuffleCandidates(candidates, () => ((n += 0.37) % 1));
+        expect(candidates).toEqual(copy);
+        expect(shuffled).toHaveLength(10);
+        expect([...shuffled].sort((a, b) => a.playerId - b.playerId)).toEqual(candidates);
+    });
+
+    it('is deterministic for a given random source', () => {
+        const always0 = shuffleCandidates(candidates, () => 0);
+        // random() = 0 swaps each position with index 0, from the end: a rotation.
+        expect(always0.map((c) => c.playerId)).toEqual([2, 3, 4, 5, 6, 7, 8, 9, 10, 1]);
+        const nearOne = shuffleCandidates(candidates, () => 0.999999);
+        expect(nearOne).toEqual(candidates);
+    });
+
+    it('handles empty and one-item lists', () => {
+        expect(shuffleCandidates([], () => 0.5)).toEqual([]);
+        expect(shuffleCandidates(candidates.slice(0, 1), () => 0.5)).toEqual(candidates.slice(0, 1));
     });
 });
 

@@ -447,7 +447,8 @@ describe('poll payload with avatar emojis', () => {
         jest.spyOn(console, 'warn').mockImplementation(() => {});
 
         const outcome = await ensurePoll(
-            { db, discord, env, now: NOW, avatarEmojis: createAvatarEmojis(env, db, net.deps) },
+            // random() near 1 keeps the selected order, so the answers are easy to read here.
+            { db, discord, env, now: NOW, random: () => 0.999999, avatarEmojis: createAvatarEmojis(env, db, net.deps) },
             await loadGameDay(db, SESSION),
         );
 
@@ -492,13 +493,13 @@ describe('poll payload with avatar emojis', () => {
             const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
 
             const outcome = await ensurePoll(
-                { db, discord, env, now: NOW, avatarEmojis: emojiFor(ids) },
+                { db, discord, env, now: NOW, random: () => 0.999999, avatarEmojis: emojiFor(ids) },
                 await loadGameDay(db, SESSION),
             );
 
             expect(outcome).toMatchObject({ kind: 'created' });
             expect(sent).toHaveLength(2);
-            expect(sent[0].poll.answers[0].poll_media.emoji).toEqual({ id: '111' });
+            expect(sent[0].poll.answers.find((a) => a.poll_media.text === 'Bartek')?.poll_media.emoji).toEqual({ id: '111' });
             expect(sent[1].poll.answers.every((a) => a.poll_media.emoji === undefined)).toBe(true);
             expect(sent[1].nonce).toBe(sent[0].nonce);
             expect(warn.mock.calls.some(([line]) => String(line).includes('pollEmojisRejected'))).toBe(true);

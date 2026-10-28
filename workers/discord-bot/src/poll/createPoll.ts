@@ -17,7 +17,7 @@ import { getSeasonForDate } from '../../../../src/app/dramaafera/_constants/seas
 import type { BotEnv } from '../env';
 import { findSignupMessages } from '../signup/close';
 import { renderSignupMessage } from '../signup/message';
-import { type Candidate, type GameDay, isDayQuiet, loadGameDay, pickCandidates } from './candidates';
+import { type Candidate, type GameDay, isDayQuiet, loadGameDay, pickCandidates, shuffleCandidates } from './candidates';
 import { createDiscordRest, DiscordApiError, type DiscordRest } from './discordApi';
 import type { AvatarEmojiResolver } from './emojis';
 import { pollMessage } from './messages';
@@ -60,6 +60,8 @@ export interface PollContext {
     now: number;
     /** Avatar emojis for the answers. Absent: no emojis. A failure here never stops the send. */
     avatarEmojis?: AvatarEmojiResolver;
+    /** Random source for the order of the answers. Default `Math.random`. Tests set it. */
+    random?: () => number;
 }
 
 interface PollRow {
@@ -79,7 +81,9 @@ const POLL_COLUMNS = `"id", "date", "question", "closesAt", "discordChannelId", 
 export async function ensurePoll(ctx: PollContext, day: GameDay): Promise<PollOutcome> {
     const { db, env, now } = ctx;
     const date = day.date;
-    const candidates = pickCandidates(day.players);
+    // Shuffle once, before the insert. The insert order (`id`) is the order of the answers, so a
+    // repair send uses the same order.
+    const candidates = shuffleCandidates(pickCandidates(day.players), ctx.random);
     if (candidates.length === 0) return { kind: 'noGames', date };
 
     // A stale unsent row would block the open-poll check below forever.
