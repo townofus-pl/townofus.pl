@@ -2,8 +2,9 @@
 // avatar, so the answer shows the face next to the nick.
 //
 // Image, in this order:
-//   1. The site avatar, resized by Cloudflare image transformations: AVATAR_EMOJI_BASE_URL +
-//      "/<current player name>.png". A 404 or a non-image goes to the next source.
+//   1. The site avatar: AVATAR_EMOJI_BASE_URL + "/<current player name>.png", resized by the
+//      `cf.image` fetch options (SITE_IMAGE_CF). Do not use a /cdn-cgi/image/ URL: a Worker on
+//      the townofus.pl zone gets a 404 for it. A 404 or a non-image goes to the next source.
 //   2. The avatar of the Discord account linked in `discord_accounts`.
 //   3. No emoji.
 //
@@ -29,6 +30,11 @@ export const EMOJI_REQUEST_TIMEOUT_MS = 5_000;
  * deferred reply, and the poll and the signup message must still go out after this.
  */
 export const EMOJI_BUDGET_MS = 12_000;
+
+/** Cloudflare image transformation for the site avatar request. Not used for the Discord CDN. */
+export const SITE_IMAGE_CF = {
+    image: { width: 128, height: 128, fit: 'cover', format: 'png' },
+} satisfies RequestInitCfProperties;
 
 const IMAGE_TYPES = ['image/png', 'image/jpeg', 'image/gif', 'image/webp'];
 
@@ -164,17 +170,41 @@ export function createAvatarEmojis(
         }
     }
 
-    /** The image bytes and type, or null for a 404, a non-image or an image over the limit. */
-    async function fetchImage(run: Run, url: string): Promise<{ bytes: ArrayBuffer; type: string } | null> {
+    /**
+     * The image bytes and type, or null. Each null logs one `avatarImageRejected` line with the
+     * reason. `cf` is set only for the site avatar request.
+     */
+    async function fetchImage(
+        run: Run,
+        url: string,
+        init: RequestInit<RequestInitCfProperties> = {},
+    ): Promise<{ bytes: ArrayBuffer; type: string } | null> {
         try {
-            return await timedFetch(run, url, {}, async (response) => {
-                if (!response.ok) return null;
+            return await timedFetch(run, url, init, async (response) => {
                 const type = (response.headers.get('Content-Type') ?? '').split(';')[0].trim().toLowerCase();
-                if (!IMAGE_TYPES.includes(type)) return null;
-                const length = Number(response.headers.get('Content-Length'));
-                if (Number.isFinite(length) && length > MAX_EMOJI_BYTES) return null;
+                const contentLength = response.headers.get('Content-Length');
+                const cfResized = response.headers.get('cf-resized');
+                const reject = (reason: 'status' | 'type' | 'size' | 'empty', bytes?: number) => {
+                    console.warn(
+                        JSON.stringify({
+                            event: 'avatarImageRejected',
+                            url,
+                            status: response.status,
+                            type,
+                            ...(bytes === undefined ? { contentLength } : { bytes }),
+                            cfResized,
+                            reason,
+                        }),
+                    );
+                    return null;
+                };
+                if (!response.ok) return reject('status');
+                if (!IMAGE_TYPES.includes(type)) return reject('type');
+                const length = Number(contentLength);
+                if (contentLength !== null && Number.isFinite(length) && length > MAX_EMOJI_BYTES) return reject('size');
                 const bytes = await response.arrayBuffer();
-                if (bytes.byteLength === 0 || bytes.byteLength > MAX_EMOJI_BYTES) return null;
+                if (bytes.byteLength === 0) return reject('empty', 0);
+                if (bytes.byteLength > MAX_EMOJI_BYTES) return reject('size', bytes.byteLength);
                 return { bytes, type };
             });
         } catch (error) {
@@ -201,7 +231,9 @@ export function createAvatarEmojis(
     async function imageFor(run: Run, candidate: Candidate, identity: Identity | undefined) {
         // The current name: a player renamed after the poll row was written has the avatar file
         // under the new name.
-        const site = await fetchImage(run, siteAvatarUrl(baseUrl, identity?.name ?? candidate.nickname));
+        const site = await fetchImage(run, siteAvatarUrl(baseUrl, identity?.name ?? candidate.nickname), {
+            cf: SITE_IMAGE_CF,
+        });
         if (site) return site;
         if (identity?.discordUserId && identity.avatar) {
             return fetchImage(run, discordAvatarUrl(identity.discordUserId, identity.avatar));
@@ -217,6 +249,7 @@ export function createAvatarEmojis(
     return async (candidates) => {
         const emojis: AvatarEmojis = new Map();
         if (candidates.length === 0) return emojis;
+        const startedAt = clock();
         const run: Run = { stopped: false, controllers: new Set() };
         let timer: ReturnType<typeof setTimeout> | undefined;
         const cutoff = new Promise<'cutoff'>((resolve) => {
@@ -236,6 +269,15 @@ export function createAvatarEmojis(
             clearTimeout(timer);
             run.stopped = true;
             for (const controller of run.controllers) controller.abort(new EmojiError('emoji budget spent'));
+            // One summary line for each run. `ready: 0` with candidates shows a silent failure.
+            console.warn(
+                JSON.stringify({
+                    event: 'avatarEmojis',
+                    candidates: candidates.length,
+                    ready: emojis.size,
+                    ms: clock() - startedAt,
+                }),
+            );
         }
         // A copy: work cut by the budget can still settle later, and must not change the poll.
         return new Map(emojis);
