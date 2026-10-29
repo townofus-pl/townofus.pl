@@ -31,3 +31,16 @@ export async function getRoleRankingsByDateRange(
 
   return generateRoleRankingSummary(seasonId, dateFrom, dateTo, { excludeLatestDay: z.boolean().parse(excludeLatestDay) });
 }
+
+export async function getRoleRankingsByAppearanceCount(
+  seasonId: number,
+  count: number,
+  excludeLatestDay = true
+): Promise<RoleRankingSummary[]> {
+  if (!getSeasonById(seasonId)) throw new Error('Nieprawidłowy sezon.');
+  const lastGamesPerRole = z.number().int().min(1).max(10000).parse(count);
+  return generateRoleRankingSummary(seasonId, undefined, undefined, {
+    excludeLatestDay: z.boolean().parse(excludeLatestDay),
+    lastGamesPerRole,
+  });
+}

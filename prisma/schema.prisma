@@ -537,3 +537,42 @@ model DramaAferaSettings {
   @@index([deletedAt])
   @@map("drama_afera_settings")
 }
+
+model RoleBalanceCycle {
+  id        Int      @id @default(autoincrement())
+  season    Int
+  roleName  String
+  afterTime String
+  afterGameId Int
+  revision  Int      @default(0)
+  startedBy String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+
+  @@unique([season, roleName], where: { deletedAt: null })
+  @@map("role_balance_cycles")
+}
+
+model RoleBalanceReview {
+  id        Int      @id @default(autoincrement())
+  season    Int
+  roleName  String
+  revision  Int
+  fromTime  String
+  fromGameId Int
+  throughTime String
+  throughGameId Int
+  decision  String
+  note      String
+  author    String
+  snapshot  String
+  formulaVersion String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  deletedAt DateTime?
+
+  @@unique([season, roleName, revision])
+  @@index([season, roleName, deletedAt])
+  @@map("role_balance_reviews")
+}

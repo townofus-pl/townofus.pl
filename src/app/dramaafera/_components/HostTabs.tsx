@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import HostClient from './HostClient';
 import RoleRankingTable from './RoleRankingTable';
+import RoleBalanceReviews from './RoleBalanceReviews';
 import ListaCweliTab from './ListaCweliTab';
 import { SettingsTab } from './SettingsTab';
 import type { GameDateEntry } from '@/app/dramaafera/_services';
@@ -30,6 +31,7 @@ interface HostTabsProps {
 }
 
 export default function HostTabs({ initialDates, seasonId, roles }: HostTabsProps) {
+  const [roleView, setRoleView] = useState<'reviews' | 'stats'>('reviews');
   const [activeTab, setActiveTab] = useState<HostTabId>(TAB_HOST);
 
   const getTabContent = () => {
@@ -37,7 +39,13 @@ export default function HostTabs({ initialDates, seasonId, roles }: HostTabsProp
       case TAB_HOST:
         return <HostClient initialDates={initialDates} seasonId={seasonId} />;
       case TAB_ROLES:
-        return <RoleRankingTable roles={roles} seasonId={seasonId} excludeLatestDay={false} />;
+        return <div>
+          <div className="mb-4 flex gap-3" aria-label="Widok ról">
+            <button type="button" aria-pressed={roleView === 'reviews'} onClick={() => setRoleView('reviews')} className={roleView === 'reviews' ? 'rounded-lg bg-blue-600 px-4 py-2 text-white' : 'rounded-lg bg-zinc-800 px-4 py-2 text-gray-300'}>Przeglądy balansu</button>
+            <button type="button" aria-pressed={roleView === 'stats'} onClick={() => setRoleView('stats')} className={roleView === 'stats' ? 'rounded-lg bg-blue-600 px-4 py-2 text-white' : 'rounded-lg bg-zinc-800 px-4 py-2 text-gray-300'}>Statystyki ról</button>
+          </div>
+          {roleView === 'reviews' ? <RoleBalanceReviews seasonId={seasonId} /> : <RoleRankingTable roles={roles} seasonId={seasonId} excludeLatestDay={false} showBalance />}
+        </div>;
       case TAB_LIST:
         return <ListaCweliTab seasonId={seasonId} />;
       case TAB_SETTINGS:
