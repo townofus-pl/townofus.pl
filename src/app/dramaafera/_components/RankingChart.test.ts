@@ -2,6 +2,26 @@ import { createElement } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
 import { RankingChart } from './RankingChart';
 
+test('pads the visible rating range by 50 on both ends and keeps clipped rank labels in the expanded chart', () => {
+  const markup = renderToStaticMarkup(createElement(RankingChart, {
+    data: [{ date: new Date('2026-10-10'), score: 2000 }],
+    comparison: { playerName: 'Drugi gracz', data: [{ date: new Date('2026-10-10'), score: 1600 }] },
+    includeStartingPoint: false,
+    expanded: true,
+    seasonId: 4,
+  }));
+  const scaleY = (score: number) => 1680 - ((score - 1550) / (2050 - 1550)) * 1680;
+  expect(markup).toContain(`cy="${scaleY(1600)}"`);
+  expect(markup).toContain(`cy="${scaleY(2000)}"`);
+  expect(markup).toContain(`y="${scaleY((2025 + 2050) / 2) + 8}"`);
+  expect(markup).toContain('>CAPTAIN</text>');
+  expect(markup).toContain(`y="${scaleY((1550 + 1767) / 2) + 8}"`);
+  expect(markup).toContain('>BAROX</text>');
+  expect(markup).toContain('>CWEL</text>');
+  expect(markup).toContain('>1767</text>');
+  expect(markup).not.toContain('>0</text>');
+});
+
 test('aligns comparison on the shared timeline when players have different numbers of ranking entries', () => {
   const markup = renderToStaticMarkup(createElement(RankingChart, {
     playerName: 'Malkiz',
@@ -19,7 +39,7 @@ test('aligns comparison on the shared timeline when players have different numbe
     includeStartingPoint: false,
     seasonId: 4,
   }));
-  expect(markup).toContain('d="M 140 65 L 280 0"');
+  expect(markup).toContain('d="M 140 65 L 280 21.666666666666657"');
   expect(markup).toContain('stroke="rgb(34, 211, 238)"');
   expect(markup.match(/<image /g)).toHaveLength(2);
   expect(markup).toContain('>Malkiz (2200)</text>');
@@ -38,8 +58,8 @@ test('spaces games evenly across weekly sessions and aligns both players on the 
     includeStartingPoint: false,
     seasonId: 4,
   }));
-  expect(markup).toContain('d="M 0 130 L 140 65 L 280 0"');
-  expect(markup).toContain('d="M 140 65 L 280 0"');
+  expect(markup).toContain('d="M 0 108.33333333333334 L 140 65 L 280 21.666666666666657"');
+  expect(markup).toContain('d="M 140 65 L 280 21.666666666666657"');
   expect(markup.match(/>10\.10<\/text>/g)).toHaveLength(1);
 });
 
