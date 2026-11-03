@@ -3,6 +3,8 @@
 import { useState } from 'react';
 import HostClient from './HostClient';
 import RoleRankingTable from './RoleRankingTable';
+import RoleProbabilities from './RoleProbabilities';
+import type { RoleProbabilityData } from '../_utils/roleProbabilities';
 import ListaCweliTab from './ListaCweliTab';
 import { SettingsTab } from './SettingsTab';
 import type { GameDateEntry } from '@/app/dramaafera/_services';
@@ -27,9 +29,11 @@ interface HostTabsProps {
   initialDates: GameDateEntry[];
   seasonId: number;
   roles: RoleRankingStats[];
+  probabilities: RoleProbabilityData;
 }
 
-export default function HostTabs({ initialDates, seasonId, roles }: HostTabsProps) {
+export default function HostTabs({ initialDates, seasonId, roles, probabilities }: HostTabsProps) {
+  const [roleView, setRoleView] = useState<'stats' | 'probabilities'>('stats');
   const [activeTab, setActiveTab] = useState<HostTabId>(TAB_HOST);
 
   const getTabContent = () => {
@@ -37,7 +41,13 @@ export default function HostTabs({ initialDates, seasonId, roles }: HostTabsProp
       case TAB_HOST:
         return <HostClient initialDates={initialDates} seasonId={seasonId} />;
       case TAB_ROLES:
-        return <RoleRankingTable roles={roles} seasonId={seasonId} excludeLatestDay={false} />;
+        return <div>
+          <div className="mb-4 flex flex-wrap gap-3" aria-label="Widok ról">
+            <button type="button" aria-pressed={roleView === 'stats'} onClick={() => setRoleView('stats')} className={roleView === 'stats' ? 'rounded-lg bg-blue-600 px-4 py-2 text-white' : 'rounded-lg bg-zinc-800 px-4 py-2 text-gray-300'}>Statystyki ról</button>
+            <button type="button" aria-pressed={roleView === 'probabilities'} onClick={() => setRoleView('probabilities')} className={roleView === 'probabilities' ? 'rounded-lg bg-blue-600 px-4 py-2 text-white' : 'rounded-lg bg-zinc-800 px-4 py-2 text-gray-300'}>Prawdopodobieństwo wystąpień</button>
+          </div>
+          {roleView === 'probabilities' ? <RoleProbabilities data={probabilities} seasonId={seasonId} /> : <RoleRankingTable roles={roles} seasonId={seasonId} excludeLatestDay={false} />}
+        </div>;
       case TAB_LIST:
         return <ListaCweliTab seasonId={seasonId} />;
       case TAB_SETTINGS:
