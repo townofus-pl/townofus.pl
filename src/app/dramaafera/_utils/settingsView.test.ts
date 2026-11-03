@@ -55,6 +55,44 @@ describe('populateLegacy', () => {
 });
 
 describe('populateMira', () => {
+    it('reads modifier options from the upload instead of registry defaults', () => {
+        const { modifiers } = populateMira(MIRA_CFG);
+        const bait = modifiers.find((modifier) => modifier.name === 'Bait')!;
+        expect(bait.settings['Max Delay'].value).toBe(3);
+        const overclocker = modifiers.find((modifier) => modifier.name === 'Overclocker')!;
+        expect(overclocker.settings['Allow Overclock In First Round'].value).toBe(true);
+    });
+
+    it('does not overwrite normal modifier odds with Hide and Seek odds', () => {
+        const cfg = `[Roles]
+[TownOfUs.Options.Modifiers.CrewmateModifierOptions]
+FrostyChance = 50
+FrostyAmount = 2
+[TownOfUs.Options.Modifiers.Crewmate.FrostyOptions]
+ChillDuration = 8
+ChillStartSpeed = 0.25
+[TownOfUs.Options.Modifiers.HnsCrewmateModifierOptions]
+FrostyChance = 0
+FrostyAmount = 0
+`;
+        const frosty = populateMira(cfg).modifiers.find((modifier) => modifier.name === 'Frosty')!;
+        expect(frosty.settings['Probability Of Appearing'].value).toBe(50);
+        expect(frosty.settings.Maximum.value).toBe(2);
+        expect(Object.values(frosty.settings).map((setting) => setting.value)).toContain(0.25);
+    });
+
+    it('does not use modifier sections to populate a role with the same name', () => {
+        const cfg = `[Roles]
+Chance TownOfUs.Roles.Crewmate.SpyRole = 50
+[TownOfUs.Options.Roles.Crewmate.SpyOptions]
+MoveWithMenu = false
+[TownOfUs.Options.Modifiers.Crewmate.SpyOptions]
+MoveWithMenu = true
+`;
+        const spy = populateMira(cfg).roles.find((role) => role.name === 'Spy')!;
+        expect(spy.settings['Move While Using Portable Admin'].value).toBe(false);
+    });
+
     it('resolves against the Mira registry, not the legacy one', () => {
         const { roles } = populateMira(MIRA_CFG);
         const miraOnly = MiraRoles.map((r) => r.name).filter(

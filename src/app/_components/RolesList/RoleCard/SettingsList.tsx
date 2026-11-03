@@ -1,22 +1,15 @@
 import {Setting, SettingTypes} from "@/constants/settings";
 
 export const getValue = (setting: Setting) => {
-    // Najpierw sprawdź czy istnieje opis dla wartości
-    if (setting.description) {
-        let valueToCheck: number | null = null;
-        
-        if (typeof setting.value === 'number') {
-            valueToCheck = setting.value;
-        } else if (typeof setting.value === 'string') {
-            const parsed = parseInt(setting.value);
-            if (!isNaN(parsed)) {
-                valueToCheck = parsed;
-            }
-        }
-        
-        if (valueToCheck !== null && setting.description[valueToCheck]) {
-            return setting.description[valueToCheck];
-        }
+    // Opis wartości ma pierwszeństwo dla każdego ustawienia, niezależnie od roli i jednostki.
+    const numericValue = typeof setting.value === 'number'
+        ? setting.value
+        : typeof setting.value === 'string' && setting.value.trim() !== ''
+            ? Number(setting.value.replace(/,/g, '.'))
+            : NaN;
+    const description = Number.isFinite(numericValue) ? setting.description?.[numericValue] : undefined;
+    if (description !== undefined) {
+        return description;
     }
 
     // Jeśli nie ma opisu lub wartość nie pasuje, użyj standardowego formatowania
