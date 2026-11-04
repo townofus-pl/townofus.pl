@@ -5,7 +5,7 @@ import { findForbiddenFields } from '@/app/dramaafera/_services/games/_forbidden
 const doc = buildOpenApiDocument();
 
 const EXPECTED = [
-  '/api/v2/seasons', '/api/v2/sessions', '/api/v2/sessions/{date}', '/api/v2/games', '/api/v2/games/{id}',
+  '/api/v2/seasons', '/api/v2/sessions', '/api/v2/sessions/{date}', '/api/v2/games', '/api/v2/games/{id}', '/api/v2/games/{id}/events',
   '/api/v2/ranking', '/api/v2/players/{nick}', '/api/v2/roles', '/api/v2/roles/{name}',
   '/api/v2/settings', '/api/v2/downloads/aunlocker',
 ];
@@ -29,7 +29,7 @@ test('data routes accept season', () => {
 
 test('there is no route that filters events across games', () => {
   expect(doc.paths?.['/api/v2/actions']).toBeUndefined();
-  expect(Object.keys(doc.paths ?? {})).toHaveLength(11);
+  expect(Object.keys(doc.paths ?? {})).toHaveLength(12);
 });
 
 test('the definition has no point field except the delayed DAP fields', () => {
@@ -38,6 +38,7 @@ test('the definition has no point field except the delayed DAP fields', () => {
 
 const schemas = (path: string) => JSON.stringify(doc.paths?.[path]);
 const game = (doc.paths?.['/api/v2/games/{id}']?.get?.responses as any)['200'].content['application/json'].schema;
+const eventsDoc = (doc.paths?.['/api/v2/games/{id}/events']?.get?.responses as any)['200'].content['application/json'].schema;
 const counters = game.properties.players.items.properties.counters;
 
 test('player counters use the site grouping with types', () => {
@@ -58,21 +59,34 @@ test('completedTasks and survivedRounds are on the player, not in counters', () 
   expect(JSON.stringify(counters)).not.toMatch(/completedTasks|survivedRounds/);
 });
 
+test('GET /api/v2/games/{id} has no events and links to the events route', () => {
+  expect(game.properties.events).toBeUndefined();
+  expect(game.properties.hasTimeline).toBeDefined();
+  expect(doc.paths?.['/api/v2/games/{id}']?.get?.description).toContain('/api/v2/games/{id}/events');
+});
+
+test('the events route has the game id, hasTimeline, 404 and the season rule', () => {
+  const get = doc.paths?.['/api/v2/games/{id}/events']?.get as any;
+  expect(Object.keys(eventsDoc.properties)).toEqual(['id', 'hasTimeline', 'events']);
+  expect(Object.keys(get.responses)).toContain('404');
+  expect(get.parameters.map((p: { name: string }) => p.name)).toEqual(expect.arrayContaining(['id', 'season']));
+});
+
 test('game events have the optional kill detail fields and the hidden-filter text', () => {
-  const event = game.properties.events.items;
+  const event = eventsDoc.properties.events.items;
   for (const field of ['causeOfDeath', 'isGuess', 'guessedRole', 'guessedModifier']) {
     expect(event.properties[field]).toBeDefined();
     expect(event.required ?? []).not.toContain(field);
     expect(event.properties[field].description).toMatch(/Starsze gry możliwe, że nie mają/);
   }
   expect(event.properties.causeOfDeath.description).toMatch(/Surowy klucz/);
-  expect(game.properties.events.description).toMatch(/osobno dla każdej gry/);
-  expect(game.properties.events.description).toMatch(/filtr ukrytych akcji/);
+  expect(eventsDoc.properties.events.description).toMatch(/osobno dla każdej gry/);
+  expect(eventsDoc.properties.events.description).toMatch(/filtr ukrytych akcji/);
 });
 
 test('the game has maxTasks and the timeline has the fields that the page shows', () => {
   expect(game.properties.maxTasks).toBeDefined();
-  const event = game.properties.events.items.properties;
+  const event = eventsDoc.properties.events.items.properties;
   for (const field of ['ability', 'killAbility', 'survivors', 'actionLabel']) expect(event[field]).toBeDefined();
 });
 

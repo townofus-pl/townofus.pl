@@ -177,6 +177,11 @@ export const GameResponseSchema = z.object({
     'Gracze w kolejności ze strony gry. Gra z ostatniego dnia z grami w sezonie: alfabetycznie. Starsza gra: kolejność „Standardowo”.',
   ),
   meetings: z.array(MeetingSchema),
+  hasTimeline: z.boolean().describe('Czy gra ma oś czasu. Zdarzenia są pod /api/v2/games/{id}/events.'),
+});
+
+export const GameEventsResponseSchema = z.object({
+  id: gameId,
   hasTimeline: z.boolean(),
   events: z.array(GameEventSchema).describe(
     'Zdarzenia tej gry. Są czytane osobno dla każdej gry i mają ten sam filtr ukrytych akcji co oś czasu na stronie gry.',

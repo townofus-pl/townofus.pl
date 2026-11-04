@@ -11,6 +11,7 @@ import {
   RolesResponseSchema,
   RoleResponseSchema,
   SettingsResponseSchema,
+  GameEventsResponseSchema,
   ErrorResponseSchema,
 } from './schemas';
 
@@ -71,12 +72,22 @@ registry.registerPath({
 
 registry.registerPath({
   method: 'get', path: '/api/v2/games/{id}', tags: ['Gry'], summary: 'Szczegóły gry',
-  description: 'Źródło: strona gry. Zawiera liczniki graczy, spotkania i oś czasu. Zdarzenia osi czasu są czytane osobno dla każdej gry i mają ten sam filtr ukrytych akcji co strona gry. Z parametrem season trasa sprawdza, czy gra należy do tego sezonu.',
+  description: 'Źródło: strona gry. Zawiera liczniki graczy i spotkania. Zdarzenia osi czasu są pod GET /api/v2/games/{id}/events. Z parametrem season trasa sprawdza, czy gra należy do tego sezonu.',
   request: {
     params: z.object({ id: z.string().openapi({ param: { name: 'id', in: 'path' }, description: 'Identyfikator gry.', example: '20261021_1106' }) }),
     query: z.object({ season }),
   },
   responses: { ...ok(GameResponseSchema, 'Gra'), ...notFound, ...errors },
+});
+
+registry.registerPath({
+  method: 'get', path: '/api/v2/games/{id}/events', tags: ['Gry'], summary: 'Zdarzenia gry',
+  description: 'Źródło: oś czasu na stronie gry. Zdarzenia są czytane osobno dla każdej gry i mają ten sam filtr ukrytych akcji co strona gry. Zabójstwa i śmierci mogą mieć pola causeOfDeath, isGuess, guessedRole i guessedModifier. Z parametrem season trasa sprawdza, czy gra należy do tego sezonu.',
+  request: {
+    params: z.object({ id: z.string().openapi({ param: { name: 'id', in: 'path' }, description: 'Identyfikator gry.', example: '20261021_1106' }) }),
+    query: z.object({ season }),
+  },
+  responses: { ...ok(GameEventsResponseSchema, 'Zdarzenia gry'), ...notFound, ...errors },
 });
 
 registry.registerPath({
