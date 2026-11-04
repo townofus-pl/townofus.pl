@@ -35,7 +35,9 @@ test('the latest day is the newest day with a live game in the season', async ()
     expect(await getLatestGameDay(9)).toBeNull();
 });
 
-test('best games of a player leave out the games of the latest day', async () => {
+test('best games of a player include the latest day', async () => {
     await getPlayerTopGames('Gracz', 3, 4);
-    expect(findMany.mock.calls[0][0].where).toMatchObject({ playerId: 1, gameId: { notIn: [2, 3] } });
+    const where = findMany.mock.calls[0][0].where;
+    expect(where).toMatchObject({ playerId: 1 });
+    expect(where).not.toHaveProperty('gameId');
 });
