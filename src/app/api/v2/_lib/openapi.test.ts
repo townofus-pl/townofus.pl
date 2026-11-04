@@ -6,7 +6,7 @@ const doc = buildOpenApiDocument();
 
 const EXPECTED = [
   '/api/v2/seasons', '/api/v2/sessions', '/api/v2/sessions/{date}', '/api/v2/games', '/api/v2/games/{id}',
-  '/api/v2/actions', '/api/v2/ranking', '/api/v2/players/{nick}', '/api/v2/roles', '/api/v2/roles/{name}',
+  '/api/v2/ranking', '/api/v2/players/{nick}', '/api/v2/roles', '/api/v2/roles/{name}',
   '/api/v2/settings', '/api/v2/downloads/aunlocker',
 ];
 
@@ -27,11 +27,9 @@ test('data routes accept season', () => {
   }
 });
 
-test('actions accepts the required filters', () => {
-  const params = (doc.paths?.['/api/v2/actions']?.get?.parameters ?? []) as { name: string }[];
-  expect(params.map((p) => p.name)).toEqual(expect.arrayContaining(['type', 'date', 'season', 'player', 'role', 'cause', 'isGuess']));
-  const schemas = JSON.stringify(doc.paths?.['/api/v2/actions']);
-  for (const field of ['causeOfDeath', 'isGuess', 'guessedRole', 'guessedModifier']) expect(schemas).toContain(field);
+test('there is no route that filters events across games', () => {
+  expect(doc.paths?.['/api/v2/actions']).toBeUndefined();
+  expect(Object.keys(doc.paths ?? {})).toHaveLength(11);
 });
 
 test('the definition has no point field except the delayed DAP fields', () => {
@@ -58,6 +56,18 @@ test('completedTasks and survivedRounds are on the player, not in counters', () 
   expect(player.completedTasks).toBeDefined();
   expect(player.survivedRounds).toBeDefined();
   expect(JSON.stringify(counters)).not.toMatch(/completedTasks|survivedRounds/);
+});
+
+test('game events have the optional kill detail fields and the hidden-filter text', () => {
+  const event = game.properties.events.items;
+  for (const field of ['causeOfDeath', 'isGuess', 'guessedRole', 'guessedModifier']) {
+    expect(event.properties[field]).toBeDefined();
+    expect(event.required ?? []).not.toContain(field);
+    expect(event.properties[field].description).toMatch(/Starsze gry możliwe, że nie mają/);
+  }
+  expect(event.properties.causeOfDeath.description).toMatch(/Surowy klucz/);
+  expect(game.properties.events.description).toMatch(/osobno dla każdej gry/);
+  expect(game.properties.events.description).toMatch(/filtr ukrytych akcji/);
 });
 
 test('the game has maxTasks and the timeline has the fields that the page shows', () => {

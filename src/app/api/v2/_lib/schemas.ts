@@ -149,6 +149,12 @@ const GameEventSchema = z.object({
   description: z.string(),
   isCorrect: z.boolean().nullable().optional(),
   actionLabel: z.string().optional(),
+  causeOfDeath: z.string().optional().describe(
+    'Przyczyna śmierci. Surowy klucz z gry, niezależny od języka. Starsze gry możliwe, że nie mają tego pola.',
+  ),
+  isGuess: z.boolean().optional().describe('Czy zabójstwo było zgadywaniem roli. Starsze gry możliwe, że nie mają tego pola.'),
+  guessedRole: z.string().optional().describe('Rola nazwana przy zgadywaniu. Starsze gry możliwe, że nie mają tego pola.'),
+  guessedModifier: z.string().optional().describe('Modyfikator nazwany przy zgadywaniu. Starsze gry możliwe, że nie mają tego pola.'),
   ability: z.object({ name: z.string(), icon: z.string() }).optional().describe('Zdolność użyta w akcji'),
   killAbility: z.object({ name: z.string(), icon: z.string() }).optional().describe('Zdolność użyta do zabójstwa'),
   survivors: z.array(z.object({ name: z.string(), role: z.string().optional(), color: z.string().optional() })).optional()
@@ -172,31 +178,9 @@ export const GameResponseSchema = z.object({
   ),
   meetings: z.array(MeetingSchema),
   hasTimeline: z.boolean(),
-  events: z.array(GameEventSchema),
-});
-
-export const ActionSchema = z.object({
-  gameId,
-  date,
-  season: z.number().int(),
-  timestamp: z.string(),
-  timestampMs: z.number().int(),
-  type: z.enum(['kill', 'death']),
-  performer: z.string(),
-  performerRole: z.string(),
-  target: z.string().nullable(),
-  targetRole: z.string().nullable(),
-  isCorrect: z.boolean().nullable(),
-  causeOfDeath: z.string().nullable(),
-  isGuess: z.boolean().nullable(),
-  guessedRole: z.string().nullable(),
-  guessedModifier: z.string().nullable(),
-});
-export const ActionsResponseSchema = z.object({
-  total: z.number().int(),
-  limit: z.number().int(),
-  offset: z.number().int(),
-  actions: z.array(ActionSchema),
+  events: z.array(GameEventSchema).describe(
+    'Zdarzenia tej gry. Są czytane osobno dla każdej gry i mają ten sam filtr ukrytych akcji co oś czasu na stronie gry.',
+  ),
 });
 
 export const RankingPlayerSchema = z.object({

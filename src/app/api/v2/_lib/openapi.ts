@@ -6,7 +6,6 @@ import {
   SessionResponseSchema,
   GamesResponseSchema,
   GameResponseSchema,
-  ActionsResponseSchema,
   RankingResponseSchema,
   PlayerResponseSchema,
   RolesResponseSchema,
@@ -72,30 +71,12 @@ registry.registerPath({
 
 registry.registerPath({
   method: 'get', path: '/api/v2/games/{id}', tags: ['Gry'], summary: 'Szczegóły gry',
-  description: 'Źródło: strona gry. Zawiera liczniki graczy, spotkania i oś czasu. Z parametrem season trasa sprawdza, czy gra należy do tego sezonu.',
+  description: 'Źródło: strona gry. Zawiera liczniki graczy, spotkania i oś czasu. Zdarzenia osi czasu są czytane osobno dla każdej gry i mają ten sam filtr ukrytych akcji co strona gry. Z parametrem season trasa sprawdza, czy gra należy do tego sezonu.',
   request: {
     params: z.object({ id: z.string().openapi({ param: { name: 'id', in: 'path' }, description: 'Identyfikator gry.', example: '20261021_1106' }) }),
     query: z.object({ season }),
   },
   responses: { ...ok(GameResponseSchema, 'Gra'), ...notFound, ...errors },
-});
-
-registry.registerPath({
-  method: 'get', path: '/api/v2/actions', tags: ['Akcje'], summary: 'Zabójstwa i śmierci',
-  description: 'Tylko akcje kill i death, po tym samym filtrze ukrytych akcji co oś czasu gry. Starsze gry mogą mieć null w polach causeOfDeath, isGuess, guessedRole i guessedModifier.',
-  request: {
-    query: z.object({
-      season,
-      type: z.enum(['kill', 'death']).optional().openapi({ param: { name: 'type', in: 'query' }, description: 'Typ akcji.' }),
-      date: z.string().optional().openapi({ param: { name: 'date', in: 'query' }, description: 'Data sesji (YYYYMMDD).' }),
-      player: z.string().optional().openapi({ param: { name: 'player', in: 'query' }, description: 'Nick wykonawcy albo celu.' }),
-      role: z.string().optional().openapi({ param: { name: 'role', in: 'query' }, description: 'Rola wykonawcy albo celu.' }),
-      cause: z.string().optional().openapi({ param: { name: 'cause', in: 'query' }, description: 'Przyczyna śmierci (causeOfDeath).' }),
-      isGuess: z.enum(['true', 'false']).optional().openapi({ param: { name: 'isGuess', in: 'query' }, description: 'Tylko zabójstwa przez zgadywanie (true) albo bez niego (false).' }),
-      limit: limit(200, 1000), offset,
-    }),
-  },
-  responses: { ...ok(ActionsResponseSchema, 'Akcje w kolejności gier'), ...errors },
 });
 
 registry.registerPath({
