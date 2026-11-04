@@ -2,7 +2,7 @@ import { z } from 'zod';
 
 // Lista dozwolonych pól publicznego API. Każda odpowiedź przechodzi przez
 // `Schema.parse(...)`, więc pole spoza schematu nigdy nie trafia do klienta,
-// nawet gdy serwis zacznie je zwracać. Te same schematy opisują `/api/v2/openapi.json`.
+// nawet gdy serwis zacznie je zwracać. Te same schematy opisują `/api/schema`.
 
 const date = z.string().describe('Data sesji w formacie YYYYMMDD');
 const gameId = z.string().describe('Identyfikator gry, np. 20261021_1106');
