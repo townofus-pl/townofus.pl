@@ -31,6 +31,7 @@ interface HostTabsProps {
 
 export default function HostTabs({ initialDates, seasonId, roles }: HostTabsProps) {
   const [activeTab, setActiveTab] = useState<HostTabId>(TAB_HOST);
+  const [settingsVisited, setSettingsVisited] = useState(false);
 
   const getTabContent = () => {
     switch (activeTab) {
@@ -56,7 +57,10 @@ export default function HostTabs({ initialDates, seasonId, roles }: HostTabsProp
         {TABS.map((tab) => (
           <button
             key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
+            onClick={() => {
+              setActiveTab(tab.id);
+              if (tab.id === TAB_SETTINGS) setSettingsVisited(true);
+            }}
             className={`px-6 py-3 font-semibold text-lg transition-all whitespace-nowrap ${
               activeTab === tab.id
                 ? 'text-yellow-400 border-b-2 border-yellow-400'
@@ -69,7 +73,9 @@ export default function HostTabs({ initialDates, seasonId, roles }: HostTabsProp
       </div>
 
       {/* Zawartość kart */}
-      <div>{getTabContent()}</div>
+      <div>{activeTab !== TAB_SETTINGS && getTabContent()}</div>
+      {/* Keep an in-progress preset when the host switches to another panel tab. */}
+      <div hidden={activeTab !== TAB_SETTINGS}>{settingsVisited && <SettingsTab />}</div>
     </div>
   );
 }
