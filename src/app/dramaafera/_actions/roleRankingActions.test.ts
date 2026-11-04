@@ -1,7 +1,9 @@
-import { getRoleRankingsByDateRange } from './roleRankingActions';
+import { getRoleRankingsByDateRange, getHostRoleRankingsByDateRange } from './roleRankingActions';
+import { requireHostAuth } from './_requireHostAuth';
 import { generateRoleRankingSummary } from '@/app/dramaafera/_services';
 import { CURRENT_SEASON } from '@/app/dramaafera/_constants/seasons';
 
+jest.mock('./_requireHostAuth', () => ({ requireHostAuth: jest.fn().mockResolvedValue(undefined) }));
 jest.mock('@/app/dramaafera/_services', () => ({ generateRoleRankingSummary: jest.fn().mockResolvedValue([]) }));
 const generate = jest.mocked(generateRoleRankingSummary);
 
@@ -32,9 +34,21 @@ test('rejects an unknown season before querying', async () => {
 });
 
 
+test('the public action has no way to include the latest day', async () => {
+    await (getRoleRankingsByDateRange as (...args: unknown[]) => Promise<unknown>)(CURRENT_SEASON, undefined, undefined, false);
+    expect(generate).toHaveBeenLastCalledWith(CURRENT_SEASON, undefined, undefined, { excludeLatestDay: true });
+    expect(requireHostAuth).not.toHaveBeenCalled();
+});
+
 test('host date changes and reset retain all-day DAP', async () => {
-    await getRoleRankingsByDateRange(CURRENT_SEASON, '2026-10-25', '2026-10-25', false);
+    await getHostRoleRankingsByDateRange(CURRENT_SEASON, '2026-10-25', '2026-10-25');
     expect(generate).toHaveBeenLastCalledWith(CURRENT_SEASON, new Date('2026-10-25T00:00:00Z'), new Date('2026-10-25T23:59:59.999Z'), { excludeLatestDay: false });
-    await getRoleRankingsByDateRange(CURRENT_SEASON, undefined, undefined, false);
+    await getHostRoleRankingsByDateRange(CURRENT_SEASON);
     expect(generate).toHaveBeenLastCalledWith(CURRENT_SEASON, undefined, undefined, { excludeLatestDay: false });
+});
+
+test('the host action refuses a caller without a login', async () => {
+    jest.mocked(requireHostAuth).mockRejectedValueOnce(new Error('Brak autoryzacji'));
+    await expect(getHostRoleRankingsByDateRange(CURRENT_SEASON)).rejects.toThrow('Brak autoryzacji');
+    expect(generate).not.toHaveBeenCalled();
 });

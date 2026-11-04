@@ -1,11 +1,11 @@
 // Player stats display formatting utilities.
 // Safe to import from client components — no server-only dependencies.
 
-import type { UIPlayerData } from '../_services/games/types';
+import type { PublicPlayerData } from '../_services/games/types';
 import { FIRST_MIRA_SEASON } from '../_constants/seasons';
 import { categorize, otherParts } from './statsBreakdown';
 
-export function formatPlayerStatsWithColors(player: UIPlayerData, seasonId: number, maxTasks?: number): Array<{ text: string; color?: string }> {
+export function formatPlayerStatsWithColors(player: PublicPlayerData, seasonId: number, maxTasks?: number): Array<{ text: string; color?: string }> {
   const statParts: Array<{ text: string; color?: string }> = [];
 
   // "label" jest po angielsku umyślnie!

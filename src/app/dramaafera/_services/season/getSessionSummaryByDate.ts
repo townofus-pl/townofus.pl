@@ -2,6 +2,8 @@ import { getGamesListByDate } from '../games/getGamesList';
 import { getGameData } from '../games/getGameData';
 import { normalizeRoleName, getRoleColor, determineTeam, formatDisplayDate } from '@/app/dramaafera/_utils/gameUtils';
 import { CURRENT_SEASON } from '@/app/dramaafera/_constants/seasons';
+import { toPublicGameData } from '../games/_toPublic';
+import type { PublicGameData } from '../games/types';
 
 export interface SessionPlayer {
   name: string;
@@ -35,6 +37,29 @@ export interface SessionSummary {
   crewmateWins: number;
   impostorWins: number;
   neutralWins: number;
+}
+
+/** Podsumowanie sesji bez pól punktowych. Używają go strony publiczne i `/api/v2`. */
+export type PublicSessionSummary = Omit<SessionSummary, 'detailedGames'> & {
+  detailedGames: Array<PublicGameData | null>;
+};
+
+export async function getPublicSessionSummaryByDate(
+  date: string,
+  seasonId?: number,
+): Promise<PublicSessionSummary> {
+  const summary = await getSessionSummaryByDate(date, seasonId);
+  return {
+    date: summary.date,
+    displayDate: summary.displayDate,
+    players: summary.players,
+    roles: summary.roles,
+    games: summary.games,
+    detailedGames: summary.detailedGames.map((game) => (game ? toPublicGameData(game) : null)),
+    crewmateWins: summary.crewmateWins,
+    impostorWins: summary.impostorWins,
+    neutralWins: summary.neutralWins,
+  };
 }
 
 export async function getSessionSummaryByDate(

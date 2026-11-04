@@ -4,7 +4,7 @@ import { useState, useEffect, useCallback, useRef, useMemo } from "react";
 
 import PlayerTable from "@/app/_components/PlayerTable";
 import RoleTable from "@/app/_components/RoleTable";
-import type { GameDateEntry, SessionSummary } from "@/app/dramaafera/_services";
+import type { GameDateEntry, PublicSessionSummary } from "@/app/dramaafera/_services";
 import { CURRENT_SEASON } from "@/app/dramaafera/_constants/seasons";
 import { getSessionResults } from "@/app/dramaafera/_actions/seasonActions";
 import { getGameSessionLists } from "@/app/dramaafera/_actions/listaCweliActions";
@@ -21,7 +21,7 @@ interface GameSessionListData {
 
 interface WynikiClientProps {
     initialDates: GameDateEntry[];
-    initialResults: SessionSummary | null;
+    initialResults: PublicSessionSummary | null;
     seasonId: number;
     listaCweli?: GameSessionListData[];
 }
@@ -73,7 +73,7 @@ export default function WynikiClient({ initialDates, initialResults, seasonId, l
         combinedDates[0] ? `${combinedDates[0].date}__${combinedDates[0].type}` : ""
     );
     const selectedPlainDate = selectedDate ? selectedDate.split('__')[0] : '';
-    const [resultsData, setResultsData] = useState<SessionSummary | null>(
+    const [resultsData, setResultsData] = useState<PublicSessionSummary | null>(
         combinedDates[0]?.type === 'games' ? initialResults : null
     );
     const [listaCweliData, setListaCweliData] = useState<GameSessionListData | null>(

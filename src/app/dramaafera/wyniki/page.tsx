@@ -1,4 +1,4 @@
-import { getGameDatesLightweight, getSessionSummaryByDate } from "@/app/dramaafera/_services";
+import { getGameDatesLightweight, getPublicSessionSummaryByDate } from "@/app/dramaafera/_services";
 import { CURRENT_SEASON } from "@/app/dramaafera/_constants/seasons";
 import WynikiClient from "@/app/dramaafera/_components/WynikiClient";
 import { getListaCweliForDisplay } from "@/app/dramaafera/_services/gameSessionList";
@@ -12,7 +12,7 @@ export default async function WynikiPage() {
     // Pobierz wyniki dla najnowszej daty (jeśli dostępna)
     const latestDate = dates.length > 0 ? dates[0].date : null;
     const initialResults = latestDate
-        ? await getSessionSummaryByDate(latestDate, seasonId)
+        ? await getPublicSessionSummaryByDate(latestDate, seasonId)
         : null;
 
     return (

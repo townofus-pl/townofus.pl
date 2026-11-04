@@ -31,3 +31,9 @@ test('normalizes names and resolves tied points deterministically', () => {
 test('has no performances for a role absent from the season', () => {
     expect(getRoleTopPerformances([game('a', [player('A', 'Sheriff', 5)])], 'Medic', name => name)).toEqual([]);
 });
+
+test('keeps the order but sends no point field to the browser', () => {
+    const result = getRoleTopPerformances([game('a', [player('A', 'Sheriff', 5), player('B', 'Sheriff', 12)])], 'Sheriff', name => name);
+    expect(result.map(row => row.playerName)).toEqual(['B', 'A']);
+    expect(JSON.stringify(result)).not.toContain('totalPoints');
+});

@@ -166,3 +166,22 @@ export interface UIGameData {
 
 // Type alias for backward compatibility
 export type DetailedGameData = UIGameData;
+
+// --- Typy publiczne ---------------------------------------------------------
+// Strony publiczne i `/api/v2` dostają wyłącznie te typy. Pola punktowe
+// (`totalPoints`, `initialRolePoints`) zostają w typach wewnętrznych powyżej,
+// dla kodu działającego tylko po stronie serwera.
+
+type PointFields = 'totalPoints' | 'initialRolePoints';
+
+export type PublicOriginalStats = Omit<UIPlayerData['originalStats'], PointFields>;
+
+export type PublicPlayerData = Omit<UIPlayerData, 'totalPoints' | 'originalStats'> & {
+  originalStats: PublicOriginalStats;
+};
+
+export type PublicGameData = Omit<UIGameData, 'detailedStats'> & {
+  detailedStats: Omit<UIGameData['detailedStats'], 'playersData'> & {
+    playersData: PublicPlayerData[];
+  };
+};

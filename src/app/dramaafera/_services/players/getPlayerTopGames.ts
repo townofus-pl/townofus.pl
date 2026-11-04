@@ -51,6 +51,7 @@ export async function getPlayerTopGames(playerName: string, limit: number = 3, s
         take: 1
       }
     },
+    // Kolejność po wartości punktowej zostaje na serwerze, a pole nie idzie do wyniku.
     orderBy: [{ totalPoints: 'desc' }, { id: 'asc' }],
     skip: offset,
     take: limit + 1
@@ -71,7 +72,6 @@ export async function getPlayerTopGames(playerName: string, limit: number = 3, s
       roleColor,
       team,
       win: stat.win,
-      totalPoints: stat.totalPoints
     };
   };
 

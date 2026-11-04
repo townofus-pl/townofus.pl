@@ -1,11 +1,11 @@
 import Image from 'next/image';
 import Link from 'next/link';
-import type { UIMeetingData, UIPlayerData } from '@/app/dramaafera/_services/games/types';
+import type { UIMeetingData, PublicPlayerData } from '@/app/dramaafera/_services/games/types';
 import { convertNickToUrlSlug, getPlayerAvatarPath, getRoleIconPath, getRoleColor, convertRoleNameForDisplay } from '@/app/dramaafera/_utils/gameUtils';
 import { buildSeasonUrl } from '@/app/dramaafera/_utils/seasonHelpers';
 import { getMeetingParticipants } from '@/app/dramaafera/_utils/meetingParticipants';
 
-function Player({ name, seasonId, count = 1, player, compact = false, avatarOnly = false, blackmailed = false, jailed = false, suppressBlackmailOverlay = false }: { name: string; seasonId: number; count?: number; player?: UIPlayerData; compact?: boolean; avatarOnly?: boolean; blackmailed?: boolean; jailed?: boolean; suppressBlackmailOverlay?: boolean }) {
+function Player({ name, seasonId, count = 1, player, compact = false, avatarOnly = false, blackmailed = false, jailed = false, suppressBlackmailOverlay = false }: { name: string; seasonId: number; count?: number; player?: PublicPlayerData; compact?: boolean; avatarOnly?: boolean; blackmailed?: boolean; jailed?: boolean; suppressBlackmailOverlay?: boolean }) {
     const roles = player?.roleHistory?.length ? player.roleHistory : player ? [player.role] : [];
     return (
         <Link href={buildSeasonUrl(`/user/${convertNickToUrlSlug(name)}`, seasonId)}
@@ -35,7 +35,7 @@ function Player({ name, seasonId, count = 1, player, compact = false, avatarOnly
     );
 }
 
-export function MeetingsSection({ meetings, seasonId, playersData }: { meetings: UIMeetingData[]; seasonId: number; playersData: UIPlayerData[] }) {
+export function MeetingsSection({ meetings, seasonId, playersData }: { meetings: UIMeetingData[]; seasonId: number; playersData: PublicPlayerData[] }) {
     const playersByName = new Map(playersData.map(player => [player.nickname, player]));
     const participantsByMeeting = getMeetingParticipants(meetings, playersData.map(player => player.nickname));
     return (

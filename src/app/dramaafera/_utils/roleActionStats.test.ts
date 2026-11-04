@@ -4,7 +4,7 @@ import { emptyCounters } from '@/app/api/v2/games/_utils/aggregate';
 type RoleStatsPlayer = RoleStatsGame['detailedStats']['playersData'][number];
 const player = (name: string, history: string[], kills = 99): RoleStatsPlayer => ({
     nickname: name, role: history[0], roleHistory: history, win: true,
-    originalStats: { ...emptyCounters(), correctKills: kills, playerName: name, roleHistory: history, modifiers: [], win: true, totalPoints: 0 },
+    originalStats: { ...emptyCounters(), correctKills: kills, playerName: name, roleHistory: history, modifiers: [], win: true },
 });
 const game = (players: RoleStatsPlayer[], hasActionData = true): RoleStatsGame => ({
     id: 'game', hasActionData, maxTasks: 10, detailedStats: { playersData: players },

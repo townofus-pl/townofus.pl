@@ -4,12 +4,13 @@ import { generateRoleRankingSummary } from '@/app/dramaafera/_services';
 import type { RoleRankingSummary } from '@/app/dramaafera/_services';
 import { z } from 'zod';
 import { getSeasonById } from '@/app/dramaafera/_constants/seasons';
+import { requireHostAuth } from './_requireHostAuth';
 
-export async function getRoleRankingsByDateRange(
+async function loadRoleRankings(
   seasonId: number,
-  dateFromStr?: string,
-  dateToStr?: string,
-  excludeLatestDay = true
+  dateFromStr: string | undefined,
+  dateToStr: string | undefined,
+  excludeLatestDay: boolean,
 ): Promise<RoleRankingSummary[]> {
   if (!getSeasonById(seasonId)) throw new Error('Nieprawidłowy sezon.');
   const dateSchema = z.iso.date();
@@ -29,5 +30,25 @@ export async function getRoleRankingsByDateRange(
     dateTo = new Date(`${dateToStr}T23:59:59.999Z`);
   }
 
-  return generateRoleRankingSummary(seasonId, dateFrom, dateTo, { excludeLatestDay: z.boolean().parse(excludeLatestDay) });
+  return generateRoleRankingSummary(seasonId, dateFrom, dateTo, { excludeLatestDay });
+}
+
+// Akcja publiczna. Zawsze pomija ostatni dzień z grami. Klient nie ma tu żadnego
+// parametru, który by to zmieniał.
+export async function getRoleRankingsByDateRange(
+  seasonId: number,
+  dateFromStr?: string,
+  dateToStr?: string,
+): Promise<RoleRankingSummary[]> {
+  return loadRoleRankings(seasonId, dateFromStr, dateToStr, true);
+}
+
+// Akcja hosta. Obejmuje ostatni dzień, więc wymaga logowania.
+export async function getHostRoleRankingsByDateRange(
+  seasonId: number,
+  dateFromStr?: string,
+  dateToStr?: string,
+): Promise<RoleRankingSummary[]> {
+  await requireHostAuth();
+  return loadRoleRankings(seasonId, dateFromStr, dateToStr, false);
 }

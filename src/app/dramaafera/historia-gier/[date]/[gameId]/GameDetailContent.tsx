@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { getGameData } from "../../../_services";
+import { getGameData, toPublicGameData } from "../../../_services";
 import { formatDisplayDate, getPlayerAvatarPath } from "@/app/dramaafera/_utils/gameUtils";
 import { buildSeasonUrl } from "@/app/dramaafera/_utils/seasonHelpers";
 import { TeamColors } from "@/constants/teams";
@@ -16,11 +16,14 @@ interface GameDetailContentProps {
 }
 
 export async function GameDetailContent({ date, gameId, seasonId }: GameDetailContentProps) {
-    const gameData = await getGameData(gameId);
+    const fullGameData = await getGameData(gameId);
 
-    if (!gameData) {
+    if (!fullGameData) {
         notFound();
     }
+
+    // Kolejność „Standardowo” ustalamy tutaj, a do przeglądarki idą dane publiczne.
+    const gameData = toPublicGameData(fullGameData, { standardOrder: true });
 
     const displayDate = formatDisplayDate(date);
 

@@ -1,6 +1,6 @@
 import { addActionCounters, emptyCounters, type CounterSet } from '@/app/api/v2/games/_utils/aggregate';
 import type { V2ActionType } from '@/app/api/schema/gamesV2';
-import type { UIGameData, UIPlayerData } from '@/app/dramaafera/_services/games/types';
+import type { PublicGameData, PublicPlayerData } from '@/app/dramaafera/_services/games/types';
 import { addGame, type RoleBreakdown } from '@/app/dramaafera/_utils/statsBreakdown';
 import { normalizeRoleName } from '@/app/dramaafera/_utils/gameUtils';
 
@@ -14,8 +14,8 @@ export interface RoleStatAction {
 }
 
 type Counters = CounterSet & { correctVotes?: number; incorrectVotes?: number };
-export type RoleStatsGame = Pick<UIGameData, 'id' | 'hasActionData' | 'maxTasks'> & {
-    detailedStats: { playersData: Pick<UIPlayerData, 'nickname' | 'role' | 'roleHistory' | 'originalStats' | 'win'>[] };
+export type RoleStatsGame = Pick<PublicGameData, 'id' | 'hasActionData' | 'maxTasks'> & {
+    detailedStats: { playersData: Pick<PublicPlayerData, 'nickname' | 'role' | 'roleHistory' | 'originalStats' | 'win'>[] };
 };
 
 /** Action-time attribution; v1 counters are safe only if the role never changed. */
@@ -58,7 +58,7 @@ export function buildRoleActionStats(games: RoleStatsGame[], actions: RoleStatAc
                 counters = actionCounters ?? { ...emptyCounters() };
             } else {
                 if (!history.every(matches)) { skipped = true; continue; }
-                counters = { ...player.originalStats, survivedRounds: player.originalStats.survivedRounds ?? 0 };
+                counters = { ...emptyCounters(), ...player.originalStats, survivedRounds: player.originalStats.survivedRounds ?? 0 };
             }
             addGame(byPlayer, player.nickname, counters, seasonId, false, target);
             for (const key of Object.keys(totals) as (keyof typeof totals)[]) {
