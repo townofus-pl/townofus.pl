@@ -1,4 +1,4 @@
-import { toPublicGameData, sortPlayersStandard } from './_toPublic';
+import { toPublicGameData, sortPlayersStandard, getPlayerOrderMode } from './_toPublic';
 import { findForbiddenFields } from './_forbiddenFields';
 import type { UIGameData, UIPlayerData } from './types';
 
@@ -47,7 +47,7 @@ describe('toPublicGameData', () => {
   });
 
   test('standard order is applied on the server and keeps the input order for ties', () => {
-    const tied = game([player('A', 5), player('B', 12), player('C', 5)]);
+    const tied = { ...game([player('A', 5), player('B', 12), player('C', 5)]), isLatestDay: false };
     expect(sortPlayersStandard(tied.detailedStats.playersData).map(p => p.nickname)).toEqual(['B', 'A', 'C']);
     expect(toPublicGameData(tied, { displayOrder: true }).detailedStats.playersData.map(p => p.nickname)).toEqual(['B', 'A', 'C']);
     expect(toPublicGameData(tied).detailedStats.playersData.map(p => p.nickname)).toEqual(['A', 'B', 'C']);
@@ -71,4 +71,23 @@ describe('findForbiddenFields', () => {
     expect(findForbiddenFields(body)).toEqual(['$.a[0].b.pointsChange', '$.a[0].b.dap']);
     expect(findForbiddenFields(body, ['dap'])).toEqual(['$.a[0].b.pointsChange']);
   });
+});
+
+describe('getPlayerOrderMode', () => {
+  test('only an explicit older game gets the standard order and the sort buttons', () => {
+    expect(getPlayerOrderMode({ isLatestDay: false })).toEqual({ alphabetical: false, showSortButtons: true });
+    expect(getPlayerOrderMode({ isLatestDay: true })).toEqual({ alphabetical: true, showSortButtons: false });
+  });
+
+  test('a missing flag takes the safe order and shows no buttons', () => {
+    expect(getPlayerOrderMode({})).toEqual({ alphabetical: true, showSortButtons: false });
+    const unknown = game([player('Zed', 50), player('Ala', 1)]);
+    expect(toPublicGameData(unknown, { displayOrder: true }).detailedStats.playersData.map(p => p.nickname)).toEqual(['Ala', 'Zed']);
+  });
+});
+
+test('the public game is built from an explicit list, so an extra field is dropped', () => {
+  const extra = { ...game([player('A', 1)]), leaked: 1, detailedStats: { ...game([player('A', 1)]).detailedStats, leakedToo: 2 } };
+  const json = JSON.stringify(toPublicGameData(extra as UIGameData));
+  expect(json).not.toContain('leaked');
 });
