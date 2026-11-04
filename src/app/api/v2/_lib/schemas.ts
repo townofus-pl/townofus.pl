@@ -87,30 +87,28 @@ export const SessionResponseSchema = z.object({
     .describe('Lista graczy sesji, jeśli ją opublikowano'),
 });
 
+const PairSchema = z.object({ correct: z.number(), incorrect: z.number() });
+const pairs = <K extends string>(keys: readonly K[]) =>
+  z.object(Object.fromEntries(keys.map((key) => [key, PairSchema])) as Record<K, typeof PairSchema>);
+
+// Grupy jak na stronie (funkcja `categorize()` w `statsBreakdown.ts`), więc sumy w API
+// zgadzają się z liczbami na stronie. `types` rozkłada grupę na rodzaje akcji.
 const CountersSchema = z.object({
-  correctKills: z.number(),
-  incorrectKills: z.number(),
-  correctProsecutes: z.number(),
-  incorrectProsecutes: z.number(),
-  correctGuesses: z.number(),
-  incorrectGuesses: z.number(),
-  correctDeputyShoots: z.number(),
-  incorrectDeputyShoots: z.number(),
-  correctJailorExecutes: z.number(),
-  incorrectJailorExecutes: z.number(),
-  correctProtects: z.number(),
-  incorrectProtects: z.number(),
-  correctWardenFortifies: z.number(),
-  incorrectWardenFortifies: z.number(),
-  janitorCleans: z.number(),
-  completedTasks: z.number(),
-  survivedRounds: z.number().default(0),
-  correctAltruistRevives: z.number(),
-  incorrectAltruistRevives: z.number(),
-  correctSwaps: z.number(),
-  incorrectSwaps: z.number(),
-  correctVotes: z.number().optional(),
-  incorrectVotes: z.number().optional(),
+  kills: PairSchema.extend({
+    types: pairs(['kills', 'jailorExecutes', 'deputyShoots'] as const),
+  }).describe('Zabójstwa, egzekucje Jailora i strzały Deputy.'),
+  guesses: PairSchema.describe('Zgadywanie ról.'),
+  protects: PairSchema.extend({
+    types: pairs(['protects', 'wardenFortifies'] as const),
+  }).describe(
+    'Ochrony. Od sezonu 4 wzmocnienia Wardena (wardenFortifies) są tutaj. W sezonach 1-3 są w grupie other. Ochrony Monarcha są pokazane jako knights w grupie other, nie tutaj.',
+  ),
+  other: PairSchema.extend({
+    types: pairs(['prosecutes', 'altruistRevives', 'swaps', 'janitorCleans', 'knights', 'wardenFortifies'] as const),
+  }).describe(
+    'Pozostałe akcje. knights to pasowanie rycerzy przez Monarcha. wardenFortifies jest tu w sezonach 1-3. Czyszczenie ciał Janitora (janitorCleans) liczy się jako correct.',
+  ),
+  votes: PairSchema.describe('Głosy. Tylko gry z danymi akcji.'),
 });
 
 export const GamePlayerSchema = z.object({
@@ -121,6 +119,8 @@ export const GamePlayerSchema = z.object({
   team: z.string(),
   win: z.boolean(),
   survived: z.boolean(),
+  completedTasks: z.number(),
+  survivedRounds: z.number().default(0),
   counters: CountersSchema,
 });
 
@@ -148,6 +148,11 @@ const GameEventSchema = z.object({
   targetRole: z.string().optional(),
   description: z.string(),
   isCorrect: z.boolean().nullable().optional(),
+  actionLabel: z.string().optional(),
+  ability: z.object({ name: z.string(), icon: z.string() }).optional().describe('Zdolność użyta w akcji'),
+  killAbility: z.object({ name: z.string(), icon: z.string() }).optional().describe('Zdolność użyta do zabójstwa'),
+  survivors: z.array(z.object({ name: z.string(), role: z.string().optional(), color: z.string().optional() })).optional()
+    .describe('Gracze, którzy przetrwali rundę (zdarzenie round_survived)'),
 });
 
 export const GameResponseSchema = z.object({
@@ -161,6 +166,7 @@ export const GameResponseSchema = z.object({
   winner: z.string(),
   winCondition: z.string(),
   winnerNames: z.array(z.string()),
+  maxTasks: z.number().int().nullable().describe('Liczba zadań w grze, jeśli znana'),
   players: z.array(GamePlayerSchema).describe(
     'Gracze w kolejności ze strony gry. Gra z ostatniego dnia z grami w sezonie: alfabetycznie. Starsza gra: kolejność „Standardowo”.',
   ),
@@ -209,11 +215,9 @@ export const RankingResponseSchema = z.object({
   season: z.number().int(),
   limit: z.number().int(),
   offset: z.number().int(),
-  emperor: z.string().nullable().describe('Nick Cesarza z ostatniej zamkniętej sesji'),
+  emperor: z.string().nullable().describe('Cesarz pokazany na stronie rankingu'),
   players: z.array(RankingPlayerSchema),
 });
-
-const PairSchema = z.object({ correct: z.number(), incorrect: z.number() });
 
 export const PlayerResponseSchema = z.object({
   season: z.number().int(),
@@ -316,7 +320,7 @@ export const RoleResponseSchema = z.object({
     duration: z.string(),
     playerName: z.string(),
     win: z.boolean(),
-  })).describe('Najlepsze występy w kolejności ze strony roli'),
+  })).describe('Najlepsze występy w kolejności ze strony roli, bez gier z ostatniego dnia z grami w sezonie'),
 });
 
 export const ErrorResponseSchema = z.object({ error: z.string() });
