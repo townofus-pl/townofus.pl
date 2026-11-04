@@ -38,11 +38,10 @@ test('keeps the order but sends no point field to the browser', () => {
     expect(JSON.stringify(result)).not.toContain('totalPoints');
 });
 
-test('leaves out games from the latest day', () => {
+test('includes games from the latest day and sends no point field', () => {
     const old = { ...game('old', [player('A', 'Sheriff', 1)]), startTime: '2026-10-07T20:00:00Z' };
     const latest = { ...game('new', [player('B', 'Sheriff', 99)]), startTime: '2026-10-21T20:00:00Z' };
-    const result = getRoleTopPerformances([old, latest], 'Sheriff', name => name, '2026-10-21');
-    expect(result.map(row => row.gameId)).toEqual(['old']);
+    const result = getRoleTopPerformances([old, latest], 'Sheriff', name => name);
+    expect(result.map(row => row.gameId)).toEqual(['new', 'old']);
     expect(JSON.stringify(result)).not.toContain('totalPoints');
-    expect(getRoleTopPerformances([old, latest], 'Sheriff', name => name)).toHaveLength(2);
 });

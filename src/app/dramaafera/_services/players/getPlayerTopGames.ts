@@ -2,7 +2,6 @@ import { getDatabaseClient } from '../db';
 import { withoutDeleted } from '@/app/api/schema/common';
 import { CURRENT_SEASON } from '@/app/dramaafera/_constants/seasons';
 import type { PlayerTopGame } from './types';
-import { getLatestGameDay } from '../games/getLatestGameDay';
 import {
   formatDuration,
   convertRoleNameForDisplay,
@@ -30,13 +29,9 @@ export async function getPlayerTopGames(playerName: string, limit: number = 3, s
     return { best: [], hasMore: false };
   }
 
-  // Gry z ostatniego dnia z grami w sezonie nie wchodzą na tę listę (ta sama granica co opóźnione DAP).
-  const latestDay = await getLatestGameDay(season);
-
   const playerGames = await prisma.gamePlayerStatistics.findMany({
     where: {
       playerId: player.id,
-      ...(latestDay && latestDay.gameIds.length > 0 ? { gameId: { notIn: latestDay.gameIds } } : {}),
       game: {
         ...withoutDeleted,
         season: seasonId ?? CURRENT_SEASON

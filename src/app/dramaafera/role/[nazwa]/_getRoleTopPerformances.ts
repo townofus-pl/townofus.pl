@@ -14,14 +14,10 @@ export interface RolePerformance {
     win: boolean;
 }
 
-/**
- * `latestDay` (YYYY-MM-DD) to ostatni dzień z grami w sezonie, ta sama granica co opóźnione DAP.
- * Gry z tego dnia nie wchodzą na listę.
- */
-export function getRoleTopPerformances(games: PerformanceGame[], roleName: string, displayName: (name: string) => string, latestDay?: string | null): RolePerformance[] {
+export function getRoleTopPerformances(games: PerformanceGame[], roleName: string, displayName: (name: string) => string): RolePerformance[] {
     // Kolejność ustalamy po stronie serwera. Do przeglądarki idzie sama lista
     // w tej kolejności, bez pola punktowego.
-    return games.filter(game => !latestDay || game.startTime.slice(0, 10) !== latestDay).flatMap(game => game.detailedStats.playersData
+    return games.flatMap(game => game.detailedStats.playersData
         .filter(player => displayName(player.roleHistory?.[0] ?? player.role) === roleName)
         .map(player => ({
             gameId: game.id,
