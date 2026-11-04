@@ -8,17 +8,20 @@ export interface TimelineAction {
   performer: { name: string }; target: { name: string } | null;
 }
 
-export function buildGameTimeline(actions: TimelineAction[], season: number) {
+/** Typy akcji, których oś czasu nie pokazuje w ogóle. `role_assigned` ma osobną regułę: ukryte jest tylko pierwsze przypisanie roli gracza. */
+export const TIMELINE_HIDDEN_TYPES = ['modifier_gained', 'modifier_lost', 'win'] as const;
+
+/** Akcje, które oś czasu pokazuje. Publiczne API używa tej samej funkcji. */
+export function filterVisibleActions<T extends Pick<TimelineAction, 'type' | 'detail'> & { performer: { name: string } }>(actions: T[]): T[] {
   const assigned = new Set<string>();
-  const events: UIGameEvent[] = actions
+  return actions
       .filter(action => {
         if (action.type !== 'role_assigned') return true;
         const seen = assigned.has(action.performer.name);
         assigned.add(action.performer.name);
         return seen;
       })
-      .filter(action => action.type !== 'modifier_gained' && action.type !== 'modifier_lost')
-      .filter(action => action.type !== 'win')
+      .filter(action => !(TIMELINE_HIDDEN_TYPES as readonly string[]).includes(action.type))
       .filter(action => {
         if (action.type !== 'ability_used' || !action.detail) return true;
         try {
@@ -27,7 +30,11 @@ export function buildGameTimeline(actions: TimelineAction[], season: number) {
         } catch {
           return true;
         }
-      })
+      });
+}
+
+export function buildGameTimeline(actions: TimelineAction[], season: number) {
+  const events: UIGameEvent[] = filterVisibleActions(actions)
       .map(action => ({
       timestamp: formatActionTimestamp(action.timestampMs),
       type: actionTypeToEventType(action.type),

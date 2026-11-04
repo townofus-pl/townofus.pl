@@ -99,7 +99,7 @@ registry.registerPath({
 
 registry.registerPath({
   method: 'get', path: '/api/v2/players/{nick}', tags: ['Gracze'], summary: 'Profil gracza',
-  description: 'Źródło: strona gracza. Zawiera historię ratingu, gwiazdki, statystyki i głosowania. Najlepsze gry pomijają ostatni dzień z grami w sezonie. Parametry limit i offset dzielą listę najlepszych gier na strony, a hasMoreBestGames mówi, czy jest następna strona.',
+  description: 'Źródło: strona gracza. Zawiera historię ratingu, gwiazdki, statystyki i głosowania. Najlepsze gry są w kolejności ze strony gracza. Parametry limit i offset dzielą listę najlepszych gier na strony, a hasMoreBestGames mówi, czy jest następna strona.',
   request: {
     params: z.object({ nick: z.string().openapi({ param: { name: 'nick', in: 'path' }, description: 'Nick albo slug nicka.', example: 'Malkiz' }) }),
     query: z.object({ season, limit: limit(10, 50), offset }),
@@ -116,7 +116,7 @@ registry.registerPath({
 
 registry.registerPath({
   method: 'get', path: '/api/v2/roles/{name}', tags: ['Role'], summary: 'Szczegóły roli',
-  description: 'Źródło: strona roli. Najlepsze występy są w kolejności ze strony roli i pomijają gry z ostatniego dnia z grami w sezonie.',
+  description: 'Źródło: strona roli. Najlepsze występy są w kolejności ze strony roli. Pole role.winRate jest zaokrąglone do całości, jak w tabeli ról, a winRateOneDecimal ma jedno miejsce po przecinku.',
   request: {
     params: z.object({ name: z.string().openapi({ param: { name: 'name', in: 'path' }, description: 'Nazwa roli albo slug.', example: 'sheriff' }) }),
     query: z.object({ season, limit: limit(50, 500) }),
