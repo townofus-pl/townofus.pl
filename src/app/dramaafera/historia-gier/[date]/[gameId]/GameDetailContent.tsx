@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { getGameData, toPublicGameData } from "../../../_services";
+import { getGameData, toPublicGameData, getPlayerOrderMode } from "../../../_services";
 import { formatDisplayDate, getPlayerAvatarPath } from "@/app/dramaafera/_utils/gameUtils";
 import { buildSeasonUrl } from "@/app/dramaafera/_utils/seasonHelpers";
 import { TeamColors } from "@/constants/teams";
@@ -131,7 +131,7 @@ export async function GameDetailContent({ date, gameId, seasonId }: GameDetailCo
                     playersData={gameData.detailedStats.playersData} 
                     maxTasks={gameData.maxTasks || 0}
                     seasonId={seasonId}
-                    showSortButtons={!gameData.isLatestDay}
+                    showSortButtons={getPlayerOrderMode(gameData).showSortButtons}
                 />
 
                 {gameData.detailedStats.hasTimeline && <GameTimeline events={gameData.detailedStats.events} endTimestamp={gameData.detailedStats.endTimestamp} />}

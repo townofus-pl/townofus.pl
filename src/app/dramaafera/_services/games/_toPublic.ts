@@ -97,20 +97,51 @@ export function sortPlayersAlphabetically<T extends Pick<UIPlayerData, 'nickname
 }
 
 /**
+ * Tryb kolejności graczy na stronie gry. Bezpieczny wariant jest domyślny:
+ * tylko jawne `isLatestDay === false` daje „Standardowo” i przyciski sortowania.
+ * Brak pola (np. gra z `getAllGamesData`) traktujemy jak grę z ostatniego dnia.
+ */
+export function getPlayerOrderMode(game: Pick<UIGameData, 'isLatestDay'>): { alphabetical: boolean; showSortButtons: boolean } {
+  const older = game.isLatestDay === false;
+  return { alphabetical: !older, showSortButtons: older };
+}
+
+/**
  * `displayOrder: true` ustawia graczy tak, jak pokazuje ich strona gry:
  * gra z ostatniego dnia alfabetycznie, starsza gra w kolejności „Standardowo”.
  */
 export function toPublicGameData(game: UIGameData, opts: { displayOrder?: boolean } = {}): PublicGameData {
+  const { alphabetical } = getPlayerOrderMode(game);
   const players = !opts.displayOrder
     ? game.detailedStats.playersData
-    : game.isLatestDay
+    : alphabetical
       ? sortPlayersAlphabetically(game.detailedStats.playersData)
       : sortPlayersStandard(game.detailedStats.playersData);
+  const stats = game.detailedStats;
   return {
-    ...game,
+    hasActionData: game.hasActionData,
+    isLatestDay: game.isLatestDay,
+    id: game.id,
+    date: game.date,
+    gameNumber: game.gameNumber,
+    startTime: game.startTime,
+    endTime: game.endTime,
+    duration: game.duration,
+    map: game.map,
+    winner: game.winner,
+    winnerColor: game.winnerColor,
+    winCondition: game.winCondition,
+    winnerNames: game.winnerNames,
+    winnerColors: game.winnerColors,
+    players: game.players,
+    maxTasks: game.maxTasks,
     detailedStats: {
-      ...game.detailedStats,
       playersData: players.map(toPublicPlayerData),
+      events: stats.events,
+      hasTimeline: stats.hasTimeline,
+      endTimestamp: stats.endTimestamp,
+      meetings: stats.meetings,
+      gameSettings: stats.gameSettings,
     },
   };
 }
