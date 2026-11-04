@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import type { EditorField } from '../_utils/editorFields';
 import { formatNumericValue, stepNumericValue } from '../_utils/numericControl';
-import { cfgValueKind } from '../_utils/cfgDocument';
+import { cfgValueKind, getCfgMinimum } from '../_utils/cfgDocument';
 import { useFittedControlText } from './useFittedControlText';
 
 const buttonClass = 'flex h-10 w-10 shrink-0 items-center justify-center rounded-lg bg-white text-3xl font-bold leading-none text-zinc-950 hover:bg-yellow-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-yellow-400 disabled:cursor-not-allowed disabled:opacity-40';
@@ -30,7 +30,7 @@ export default function NumericSettingControl({ id, field, value, error, onChang
                     if (next !== null) onChange(next);
                 }}
                 aria-valuenow={value.trim() && Number.isFinite(numeric) ? numeric : undefined}
-                aria-valuemin={field.minimum} aria-valuemax={field.maximum}
+                aria-valuemin={getCfgMinimum(field)} aria-valuemax={field.maximum}
                 aria-valuetext={formatNumericValue(field, value)} aria-invalid={!!error}
                 aria-describedby={`${id}-key${error ? ` ${id}-error` : ''}`} spellCheck={false}
                 className="h-12 w-full min-w-0 rounded-md border-[3px] border-zinc-100 bg-[#141414] px-1 text-center font-barlow text-2xl font-extrabold tabular-nums text-white focus:border-yellow-300 focus:outline-none focus:ring-1 focus:ring-yellow-300" />

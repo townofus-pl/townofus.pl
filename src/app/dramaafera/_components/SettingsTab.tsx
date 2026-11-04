@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, useId } from 'react';
 import dynamic from 'next/dynamic';
-import { uploadSettingsAction } from '@/app/dramaafera/_actions/uploadSettingsAction';
+import { uploadSettingsAction, uploadDraftSettingsAction } from '@/app/dramaafera/_actions/uploadSettingsAction';
 import { MAX_SETTINGS_FILE_SIZE_BYTES } from '@/app/api/dramaafera/settings/utils';
 
 const SettingsBuilder = dynamic(() => import('../host/_components/SettingsBuilder'), {
@@ -81,6 +81,23 @@ export function SettingsTab() {
       if (mountedRef.current) {
         setUploading(false);
       }
+    }
+  };
+
+  const handleDraftUpload = async (mode: 'normal' | 'advanced') => {
+    if (uploading) return;
+    setUploading(true);
+    setMessage(null);
+    try {
+      const result = await uploadDraftSettingsAction(mode, mode === 'advanced' ? targetVersion : undefined);
+      if (!mountedRef.current) return;
+      setMessage(result.success
+        ? { type: 'success', text: result.message || 'Draft wgrany pomyślnie' }
+        : { type: 'error', text: result.error || 'Błąd podczas wgrywania draftu' });
+    } catch {
+      if (mountedRef.current) setMessage({ type: 'error', text: 'Błąd podczas wgrywania draftu' });
+    } finally {
+      if (mountedRef.current) setUploading(false);
     }
   };
 
@@ -170,6 +187,11 @@ export function SettingsTab() {
           >
             {uploading ? 'Wgrywanie...' : 'Wgraj plik ustawień'}
           </button>
+          <button type="button" onClick={() => void handleDraftUpload('normal')} disabled={uploading}
+            className="w-full border border-yellow-600 hover:bg-yellow-900/30 disabled:opacity-50 text-yellow-300 font-bold py-2 px-4 rounded-lg transition">
+            Wgraj draft
+          </button>
+          <p className="text-sm text-gray-400">Wgrywa ostatni draft zapisany w bazie. Poczekaj na zakończenie zapisu zmian w kreatorze.</p>
         </div>
       </form>
 
@@ -260,6 +282,11 @@ export function SettingsTab() {
             >
               {uploading ? 'Wgrywanie...' : 'Wgraj (bez rotacji)'}
             </button>
+            <button type="button" onClick={() => void handleDraftUpload('advanced')} disabled={uploading}
+              className="w-full border border-blue-600 hover:bg-blue-900/30 disabled:opacity-50 text-blue-300 font-bold py-2 px-4 rounded-lg transition">
+              Wgraj draft
+            </button>
+            <p className="text-sm text-gray-400">Wgrywa ostatni zapisany draft do wybranego wariantu, bez rotacji.</p>
           </form>
         )}
       </div>

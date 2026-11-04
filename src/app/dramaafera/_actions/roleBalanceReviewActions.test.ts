@@ -3,6 +3,7 @@ import { authenticateHeaders } from '@/app/api/_middlewares/auth';
 import { getRoleBalanceOverview, initializeRoleBalanceCycles, saveRoleBalanceReview } from '@/app/dramaafera/_services/rankings/roleBalanceReviews';
 import { getRoleBalanceOverviewAction, initializeRoleBalanceAction, saveRoleBalanceReviewAction } from './roleBalanceReviewActions';
 import { CURRENT_SEASON } from '@/app/dramaafera/_constants/seasons';
+jest.mock('../_services/settings/settingsDraft', () => ({ getSettingsDraft: jest.fn() }));
 jest.mock('next/headers', () => ({ headers: jest.fn() }));
 jest.mock('@/app/api/_middlewares/auth', () => ({ authenticateHeaders: jest.fn() }));
 jest.mock('@/app/dramaafera/_services/rankings/roleBalanceReviews', () => ({ getRoleBalanceOverview: jest.fn(), initializeRoleBalanceCycles: jest.fn(), saveRoleBalanceReview: jest.fn() }));

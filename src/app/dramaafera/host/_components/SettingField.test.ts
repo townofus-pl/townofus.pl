@@ -43,14 +43,15 @@ test('RoleOptions retains its group name and renders Role Assignment Type descri
     expect(markup).toContain('aria-label="Następna opcja: Role Assignment Type"');
 });
 
-test('a numeric setting with even a single description uses a labeled dropdown', () => {
+test('a numeric setting with Off uses a numeric control and displays Off only for its sentinel', () => {
     const document = parseCfgDocument(prefix + '[TownOfUs.Options.Roles.Crewmate.SentryOptions]\n# Setting type: Single\nBlindspotsCount = 0\n');
     const field = resolveEditorField(document.fields.at(-1)!);
     expect(field.description).toEqual({ 0: 'Off' });
     const markup = renderToStaticMarkup(createElement(SettingField, { field, value: '0', onChange: () => {} }));
-    expect(markup).not.toContain('<input');
-    expect(markup).toContain('<select');
-    expect(markup).toMatch(/<option value="0"[^>]*selected="">Off<\/option>/);
+    expect(markup).toContain('role="spinbutton"');
+    expect(markup).not.toContain('<select');
+    expect(markup).toContain('value="Off"');
+    expect(renderToStaticMarkup(createElement(SettingField, { field, value: '3', onChange: () => {} }))).toContain('value="3"');
 });
 
 test('a textual CFG enum submits its actual game token rather than a description index', () => {

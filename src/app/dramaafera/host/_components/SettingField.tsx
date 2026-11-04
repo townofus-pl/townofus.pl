@@ -1,10 +1,11 @@
 'use client';
 
 import { useId } from 'react';
-import { cfgValueKind, validateCfgValue } from '../_utils/cfgDocument';
+import { allowsNegativeOne, cfgValueKind, validateCfgValue } from '../_utils/cfgDocument';
 import type { EditorField } from '../_utils/editorFields';
 import NumericSettingControl from './NumericSettingControl';
 import ChoiceSettingControl from './ChoiceSettingControl';
+import { hasInfinityValue, hasOffValue } from '../_utils/numericControl';
 
 const inputClass = 'w-full rounded-lg border border-zinc-600 bg-zinc-950 px-3 py-2 text-white focus:border-yellow-400 focus:outline-none focus:ring-1 focus:ring-yellow-400';
 
@@ -16,7 +17,7 @@ export default function SettingField({ field, value, onChange }: {
     const id = useId();
     const error = validateCfgValue(field, value);
     const kind = cfgValueKind(field);
-    const numericEnum = (kind === 'integer' || kind === 'number') && field.description
+    const numericEnum = (kind === 'integer' || kind === 'number') && field.description && !hasInfinityValue(field) && !hasOffValue(field) && !allowsNegativeOne(field)
         ? field.description : undefined;
     const options = field.options?.map(option => ({ value: option, label: option })) ??
         (numericEnum ? Object.entries(numericEnum).map(([key, label]) => ({ value: key, label })) : undefined);
@@ -62,7 +63,7 @@ export default function SettingField({ field, value, onChange }: {
                         onChange={event => onChange(event.target.value)} className={inputClass} spellCheck={false}
                         aria-invalid={!!error} aria-describedby={`${id}-key${error ? ` ${id}-error` : ''}`} />
                 )}
-                {!choices && field.description?.[Number(value)] && <p className="mt-1 text-xs text-gray-400">{field.description[Number(value)]}</p>}
+                {!choices && field.description?.[Number(value)] && !['∞', 'off'].includes(field.description[Number(value)].trim().toLowerCase()) && <p className="mt-1 text-xs text-gray-400">{field.description[Number(value)]}</p>}
                 {error && <p id={`${id}-error`} className="mt-1 text-sm text-red-300">{error}</p>}
                 </div>
             </div>

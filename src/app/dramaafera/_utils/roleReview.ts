@@ -2,10 +2,10 @@ export interface RoleReviewBoundary { time: string; gameId: number }
 export interface RoleReviewWindow { after: RoleReviewBoundary; through?: RoleReviewBoundary }
 export const ROLE_REVIEW_THRESHOLD = 10;
 export const ROLE_REVIEW_FORMULA_VERSION = 'role-strength-k3-v1';
-export const ROLE_REVIEW_DECISIONS = ['nerf', 'buff', 'unchanged', 'settings_changed'] as const;
+export const ROLE_REVIEW_DECISIONS = ['buff', 'nerf', 'adjustment', 'emperor_decree', 'unchanged', 'settings_changed'] as const;
 export type RoleReviewDecision = typeof ROLE_REVIEW_DECISIONS[number];
 export const ROLE_REVIEW_DECISION_LABELS: Record<RoleReviewDecision, string> = {
-    nerf: 'Nerf', buff: 'Buff', unchanged: 'Bez zmian', settings_changed: 'Zmiana ustawień — nowa próba',
+    nerf: 'Nerf', buff: 'Buff', adjustment: 'Adjustment', emperor_decree: 'DEKRET EMPERORA', unchanged: 'Bez zmian', settings_changed: 'Zmiana ustawień — nowa próba',
 };
 export function toReviewTime(value: string | number | Date): string {
     if (value instanceof Date) return value.toISOString();

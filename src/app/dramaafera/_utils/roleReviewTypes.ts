@@ -1,5 +1,7 @@
 import type { RoleRankingSummary } from '@/app/dramaafera/_services/rankings/types';
 import type { RoleReviewBoundary, RoleReviewDecision } from '@/app/dramaafera/_utils/roleReview';
+import type { RoleSettingChange } from '../host/_utils/roleSettings';
+export interface RoleSettingsEdit { token: string; changes: Record<string, string> }
 export interface RoleReviewSession {
     key: string; firstGameId: number; lastGameId: number;
 }
@@ -8,6 +10,7 @@ export interface RoleReviewHistory {
     id: number; decision: RoleReviewDecision; note: string; author: string;
     createdAt: string; from: RoleReviewBoundary; through: RoleReviewBoundary;
     stats: RoleRankingSummary | null; assessment: { label: string; className: string }; formulaVersion: string;
+    settingsChanges?: RoleSettingChange[];
 }
 export interface RoleReviewRow {
     roleName: string; displayName: string; color: string;

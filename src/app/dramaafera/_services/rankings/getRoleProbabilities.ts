@@ -16,19 +16,28 @@ interface AppearanceRow {
 
 export async function getRoleProbabilities(season = CURRENT_SEASON): Promise<RoleProbabilityData> {
   const prisma = await getDatabaseClient();
-  // One season-scoped read, no ID lists or per-role database calls. Role histories
-  // resolve through the selective gamePlayerStatisticsId index, never order alone.
+  // Initial roles still span the season: a rare role's last 20 games may be old.
+  // Final roles and modifiers are only needed for the latest 20 faction results.
   const rows = prisma ? await prisma.$queryRaw<AppearanceRow[]>`
+    WITH recent_games AS MATERIALIZED (
+      SELECT g.id FROM games g WHERE g.season = ${season} AND g.deletedAt IS NULL
+        AND EXISTS (SELECT 1 FROM game_player_statistics gps JOIN players p ON p.id = gps.playerId
+                    WHERE gps.gameId = g.id AND p.deletedAt IS NULL)
+      ORDER BY g.startTime DESC, g.id DESC LIMIT 20
+    )
     SELECT g.id AS gameId, gps.win,
       (SELECT r.roleName FROM player_roles r WHERE r.gamePlayerStatisticsId = gps.id
        ORDER BY r."order" ASC LIMIT 1) AS initialRole,
-      (SELECT r.roleName FROM player_roles r WHERE r.gamePlayerStatisticsId = gps.id
-       ORDER BY r."order" DESC LIMIT 1) AS finalRole,
-      EXISTS(SELECT 1 FROM player_modifiers m WHERE m.gamePlayerStatisticsId = gps.id
-             AND LOWER(m.modifierName) = 'lover') AS lover
+      CASE WHEN recent.id IS NOT NULL THEN
+        (SELECT r.roleName FROM player_roles r WHERE r.gamePlayerStatisticsId = gps.id
+         ORDER BY r."order" DESC LIMIT 1) ELSE NULL END AS finalRole,
+      CASE WHEN recent.id IS NOT NULL THEN
+        EXISTS(SELECT 1 FROM player_modifiers m WHERE m.gamePlayerStatisticsId = gps.id
+               AND LOWER(m.modifierName) = 'lover') ELSE 0 END AS lover
     FROM games g
     JOIN game_player_statistics gps ON gps.gameId = g.id
     JOIN players p ON p.id = gps.playerId
+    LEFT JOIN recent_games recent ON recent.id = g.id
     WHERE g.season = ${season} AND g.deletedAt IS NULL AND p.deletedAt IS NULL
     ORDER BY g.startTime DESC, g.id DESC, gps.id ASC
   ` : [];

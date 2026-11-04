@@ -29,3 +29,14 @@ test('steps whole counts and fractional multipliers while respecting bounds and 
     expect(stepNumericValue(numeric, '', 1)).toBeNull();
     expect(formatNumericValue(numeric, 'invalid')).toBe('invalid');
 });
+
+test('Off and infinity remain numeric sentinels and can be incremented to ordinary values', () => {
+    const numeric = resolveEditorField(parseCfgDocument(content).fields[1]);
+    const off = { ...numeric, description: { 0: 'Off' } };
+    const infinity = { ...numeric, description: { 0: '∞' } };
+    expect(formatNumericValue(off, '0')).toBe('Off');
+    expect(formatNumericValue(off, '3')).toBe('3');
+    expect(formatNumericValue(infinity, '0')).toBe('∞');
+    expect(stepNumericValue(off, '0', 1)).toBe('1');
+    expect(stepNumericValue(off, '0', -1)).toBeNull();
+});

@@ -5,6 +5,7 @@ import { getCloudflareContext } from '@opennextjs/cloudflare';
 import { getDatabaseClient } from '../db';
 import { getRoleBalanceOverview, initializeRoleBalanceCycles, saveRoleBalanceReview, type SaveRoleBalanceReview } from './roleBalanceReviews';
 
+jest.mock('server-only', () => ({}), { virtual: true });
 jest.mock('../db', () => ({ getDatabaseClient: jest.fn() }));
 jest.mock('@opennextjs/cloudflare', () => ({ getCloudflareContext: jest.fn() }));
 let db: DatabaseSync;
@@ -24,7 +25,13 @@ const query = jest.fn(async (strings: TemplateStringsArray, ...values: unknown[]
 });
 interface Statement { sql: string; values: SQLInputValue[] }
 const binding = {
-    prepare: (sql: string) => ({ bind: (...values: SQLInputValue[]): Statement => ({ sql, values }) }),
+    prepare: (sql: string) => {
+        const statement = { sql, values: [] as SQLInputValue[],
+            bind: (...values: SQLInputValue[]) => { statement.values = values; return statement; },
+            first: async () => db.prepare(sql).get(...statement.values) ?? null,
+        };
+        return statement;
+    },
     batch: async (statements: Statement[]) => {
         const hook = beforeBatch; beforeBatch = null; hook?.();
         db.exec('BEGIN');
@@ -62,6 +69,10 @@ beforeEach(() => {
         INSERT INTO player_rankings (playerId,season,score,reason) VALUES (1,4,2000,'season_reset'),(2,4,2000,'season_reset');
     `);
     db.exec(readFileSync('prisma/migrations/0014_role_balance_reviews.sql', 'utf8'));
+    db.exec(`CREATE TABLE drama_afera_settings (id INTEGER PRIMARY KEY AUTOINCREMENT, versionType TEXT NOT NULL,
+        content TEXT NOT NULL, revision INTEGER NOT NULL DEFAULT 0, uploadedAt TEXT DEFAULT CURRENT_TIMESTAMP,
+        createdAt TEXT DEFAULT CURRENT_TIMESTAMP, updatedAt TEXT NOT NULL, deletedAt TEXT);
+        CREATE UNIQUE INDEX idx_drama_afera_settings_version_type ON drama_afera_settings(versionType) WHERE deletedAt IS NULL;`);
     for (let id = 1; id <= 13; id++) addGame(id, id <= 4 ? '24' : id <= 7 ? '25' : '26');
     jest.mocked(getDatabaseClient).mockResolvedValue({ $queryRaw: query } as unknown as NonNullable<Awaited<ReturnType<typeof getDatabaseClient>>>);
     (getCloudflareContext as jest.Mock).mockReturnValue({ env: { DB: binding } });
@@ -89,7 +100,16 @@ test('threshold 9/10 uses occurrences and full-session sample can exceed ten', a
     expect((await getRoleBalanceOverview(4, 10)).rows.find(r => r.roleName === 'Sheriff')!.stats!.gamesPlayed).toBe(10);
     expect((await getRoleBalanceOverview(4)).rows.find(r => r.roleName === 'Sheriff')!.stats!.gamesPlayed).toBe(13);
     db.exec("UPDATE games SET deletedAt='deleted' WHERE id > 7");
-    await expect(saveRoleBalanceReview(await payload(7), 'host')).rejects.toThrow('co najmniej 10');
+    await expect(saveRoleBalanceReview(await payload(7), 'host')).resolves.toBeUndefined();
+});
+
+test.each(['buff', 'nerf', 'adjustment', 'emperor_decree', 'unchanged'] as const)('%s can close a sample while it is still collecting data', async decision => {
+    await initializeRoleBalanceCycles(4, 1, 'host');
+    db.exec("UPDATE games SET deletedAt='deleted' WHERE id > 3");
+    await saveRoleBalanceReview(await payload(3, decision), 'host');
+    const row = (await getRoleBalanceOverview(4)).rows.find(r => r.roleName === 'Sheriff')!;
+    expect(row.revision).toBe(1);
+    expect(row.history[0]).toMatchObject({ decision, stats: { gamesPlayed: 3 } });
 });
 
 test('refresh and crossing the threshold never reset a cycle', async () => {
@@ -164,6 +184,14 @@ test('initialization cannot overwrite an active cycle', async () => {
     expect((await getRoleBalanceOverview(4)).rows.find(r => r.roleName === 'Sheriff')!.stats!.gamesPlayed).toBe(13);
 });
 
+test('validating a review write does not read the full historical snapshots', async () => {
+    await initializeRoleBalanceCycles(4, 1, 'host');
+    const input = await payload();
+    query.mockClear();
+    await saveRoleBalanceReview(input, 'host');
+    expect(query.mock.calls.some(([strings, ...values]) => Prisma.sql(strings, ...values).sql.includes('FROM role_balance_reviews'))).toBe(false);
+});
+
 
 test('Prisma Date values in cycle TEXT time fields do not filter out the whole window', async () => {
     await initializeRoleBalanceCycles(4, 5, 'host');
@@ -205,4 +233,66 @@ test('an open cycle start decoded by Prisma as Invalid Date still includes all a
     await saveRoleBalanceReview(await payload(), 'host');
     const history = (await getRoleBalanceOverview(4)).rows.find(r => r.roleName === 'Sheriff')!.history;
     expect(history[0].from).toEqual({ time: '', gameId: 0 });
+});
+
+const rolePreset = '[Roles]\nNum TownOfUs.Roles.Crewmate.SheriffRole = 1\nChance TownOfUs.Roles.Crewmate.SheriffRole = 50\n[Other]\nCooldown = 20\n';
+const chanceId = JSON.stringify(['Roles', 'Chance TownOfUs.Roles.Crewmate.SheriffRole']);
+async function settingsPayload() {
+    db.prepare("INSERT INTO drama_afera_settings (versionType,content,updatedAt) VALUES ('current',?,CURRENT_TIMESTAMP)").run(rolePreset);
+    const id = db.prepare("SELECT id FROM drama_afera_settings WHERE versionType='current'").get()!.id;
+    return { ...await payload(13, 'nerf'), settingsEdit: { token: `current:${id}:0`, changes: { [chanceId]: '35' } } };
+}
+
+test('review, full draft and immutable before/after history are saved together', async () => {
+    await initializeRoleBalanceCycles(4, 1, 'host');
+    const input = await settingsPayload();
+    await saveRoleBalanceReview(input, 'host');
+    expect(db.prepare("SELECT content FROM drama_afera_settings WHERE versionType='draft'").get()!.content).toBe(rolePreset.replace('Role = 50', 'Role = 35'));
+    expect(db.prepare("SELECT content FROM drama_afera_settings WHERE versionType='current'").get()!.content).toBe(rolePreset);
+    const history = (await getRoleBalanceOverview(4)).rows.find(r => r.roleName === 'Sheriff')!.history[0];
+    expect(history.settingsChanges).toEqual([expect.objectContaining({ key: 'Chance TownOfUs.Roles.Crewmate.SheriffRole', before: '50', after: '35' })]);
+    db.exec("UPDATE drama_afera_settings SET content='later edit' WHERE versionType='draft'");
+    expect((await getRoleBalanceOverview(4)).rows.find(r => r.roleName === 'Sheriff')!.history[0].settingsChanges).toEqual(history.settingsChanges);
+});
+
+test('a racing draft creation prevents both history and cycle writes', async () => {
+    await initializeRoleBalanceCycles(4, 1, 'host');
+    const input = await settingsPayload();
+    beforeBatch = () => db.prepare("INSERT INTO drama_afera_settings (versionType,content,updatedAt) VALUES ('draft',?,CURRENT_TIMESTAMP)").run(rolePreset);
+    await expect(saveRoleBalanceReview(input, 'host')).rejects.toThrow('zmieniły się');
+    expect(db.prepare('SELECT COUNT(*) AS n FROM role_balance_reviews').get()!.n).toBe(0);
+    expect(db.prepare("SELECT revision FROM role_balance_cycles WHERE roleName='Sheriff'").get()!.revision).toBe(0);
+    expect(db.prepare("SELECT content FROM drama_afera_settings WHERE versionType='draft'").get()!.content).toBe(rolePreset);
+});
+
+test('failure rolls back the draft, history and cycle as one batch', async () => {
+    await initializeRoleBalanceCycles(4, 1, 'host');
+    const input = await settingsPayload();
+    failUpdate = true;
+    await expect(saveRoleBalanceReview(input, 'host')).rejects.toThrow('simulated');
+    expect(db.prepare("SELECT COUNT(*) AS n FROM drama_afera_settings WHERE versionType='draft'").get()!.n).toBe(0);
+    expect(db.prepare('SELECT COUNT(*) AS n FROM role_balance_reviews').get()!.n).toBe(0);
+});
+
+test('rejects edits to other roles and an unchanged decision with actual settings edits', async () => {
+    await initializeRoleBalanceCycles(4, 1, 'host');
+    const input = await settingsPayload();
+    await expect(saveRoleBalanceReview({ ...input, decision: 'unchanged' }, 'host')).rejects.toThrow('Bez zmian');
+    await expect(saveRoleBalanceReview({ ...input, settingsEdit: { ...input.settingsEdit, changes: { unrelated: '1' } } }, 'host')).rejects.toThrow('Nieprawidłowe ustawienie');
+    expect(db.prepare('SELECT COUNT(*) AS n FROM role_balance_reviews').get()!.n).toBe(0);
+});
+
+test('updates an existing draft and rejects a revision change during the atomic write', async () => {
+    await initializeRoleBalanceCycles(4, 1, 'host');
+    const input = await settingsPayload();
+    db.exec("UPDATE drama_afera_settings SET versionType='draft', revision=2");
+    input.settingsEdit.token = input.settingsEdit.token.replace('current:', 'draft:').replace(':0', ':2');
+    beforeBatch = () => db.exec("UPDATE drama_afera_settings SET revision=3 WHERE versionType='draft'");
+    await expect(saveRoleBalanceReview(input, 'host')).rejects.toThrow('zmieniły się');
+    expect(db.prepare('SELECT COUNT(*) AS n FROM role_balance_reviews').get()!.n).toBe(0);
+    input.settingsEdit.token = input.settingsEdit.token.replace(':2', ':3');
+    await saveRoleBalanceReview(input, 'host');
+    const draft = db.prepare("SELECT revision, content FROM drama_afera_settings WHERE versionType='draft'").get()!;
+    expect(draft.revision).toBe(4);
+    expect(draft.content).toBe(rolePreset.replace('Role = 50', 'Role = 35'));
 });

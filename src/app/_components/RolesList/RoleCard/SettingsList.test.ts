@@ -8,7 +8,7 @@ describe('setting descriptions', () => {
         SettingTypes.Percentage,
         SettingTypes.Time,
         SettingTypes.Multiplier,
-    ])('prefers descriptions over numeric formatting for %s', (type) => {
+    ] as const)('prefers descriptions over numeric formatting for %s', (type) => {
         expect(getValue({ type, value: 2, description: { 2: 'Opis wartości' } })).toBe('Opis wartości');
     });
 

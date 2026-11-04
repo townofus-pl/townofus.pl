@@ -66,7 +66,7 @@ export default function RoleProbabilities({ data, seasonId }: RoleProbabilitiesP
                     {data.games < 20 ? `Zebrano ${data.games}/20 gier. Do zebrania pełnej próby wagi pozostają na poziomie 50%.` : `Nie ustalono zwycięzcy w ${data.unknownWins} grach. Wagi pozostają na poziomie 50%.`}
                 </p>}
 
-                <RoleProbabilityConfig roles={data.roles} />
+                <RoleProbabilityConfig roles={data.roles} seasonId={seasonId} />
 
                 <div className="mb-4 flex flex-wrap items-end gap-4">
                     <label className="min-w-48 flex-1 text-sm text-gray-300">Szukaj roli

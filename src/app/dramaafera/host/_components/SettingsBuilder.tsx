@@ -3,7 +3,7 @@
 import { useEffect, useId, useMemo, useRef, useState } from 'react';
 import Image from 'next/image';
 import { MAX_SETTINGS_FILE_SIZE_BYTES } from '@/app/api/dramaafera/settings/utils';
-import { GetDramaAferaSettingsResponseSchema } from '@/app/api/dramaafera/settings/schema';
+import { getSettingsDraftAction, saveSettingsDraftAction } from '../../_actions/settingsDraftActions';
 import { normalizeLookupKey } from '../../_utils/miraConfig';
 import { exportCfgDocument, parseCfgDocument, validateCfgValue, type CfgDocument } from '../_utils/cfgDocument';
 import { isHnsField, resolveEditorField, safeCfgFileName, sortRoleGroups, type EditorCategory, type EditorField } from '../_utils/editorFields';
@@ -53,6 +53,12 @@ export default function SettingsBuilder() {
     const [onlyChanged, setOnlyChanged] = useState(false);
     const [confirmReset, setConfirmReset] = useState(false);
     const request = useRef(0);
+    const draftToken = useRef('');
+    const savedContent = useRef('');
+    const saving = useRef(false);
+    const [saveStatus, setSaveStatus] = useState('');
+    const [saveError, setSaveError] = useState('');
+    const [saveTick, setSaveTick] = useState(0);
     const uploadId = useId();
     const searchId = useId();
     const nameId = useId();
@@ -74,12 +80,18 @@ export default function SettingsBuilder() {
         return sortRoleGroups([...matching.values()], fields, changes);
     }, [fields, category, query, onlyChanged, changes]);
 
+    const content = useMemo(() => {
+        if (!source || invalid.length) return null;
+        return exportCfgDocument(source.document, changes);
+    }, [source, changes, invalid.length]);
+    const unsaved = !!source && (content === null || content !== savedContent.current);
+
     useEffect(() => {
-        if (!changedCount) return;
+        if (!unsaved) return;
         const warn = (event: BeforeUnloadEvent) => { event.preventDefault(); event.returnValue = ''; };
         window.addEventListener('beforeunload', warn);
         return () => window.removeEventListener('beforeunload', warn);
-    }, [changedCount]);
+    }, [unsaved]);
 
     const applySource = (next: Source) => {
         setSource(next); setChanges({}); setPendingSource(null); setConfirmReset(false);
@@ -87,38 +99,56 @@ export default function SettingsBuilder() {
         setFileName(safeCfgFileName(next.name.replace(/\.cfg$/i, '') + '-wlasne'));
     };
     const acceptSource = (next: Source) => {
-        if (changedCount) setPendingSource(next);
-        else applySource(next);
+        setPendingSource(next);
     };
 
     const loadCurrent = async () => {
+        if (saving.current) return;
+        if (source && unsaved && !window.confirm('Wczytanie draftu usunie niezapisane zmiany w tym edytorze. Kontynuować?')) return;
         const token = ++request.current;
         setLoading(true); setError(''); setMessage('');
         try {
-            let content: string;
-            let name = 'aktualne-ustawienia.cfg';
-            try {
-                const response = await fetch('/api/dramaafera/settings');
-                if (!response.ok) throw new Error('Nie udało się pobrać ustawień.');
-                const result = GetDramaAferaSettingsResponseSchema.parse(await response.json());
-                if (!result.success || !result.data.current) throw new Error('Brak aktualnego zestawu.');
-                content = result.data.current;
-                // Reject a legacy or damaged current preset before attempting the snapshot fallback.
-                parseCfgDocument(content);
-            } catch {
-                const response = await fetch('/settings/mira.cfg');
-                if (!response.ok) throw new Error('Nie udało się pobrać ustawień. Zaimportuj własny plik .cfg.');
-                content = await response.text();
-                name = 'przykladowe-ustawienia.cfg';
-            }
-            const document = parseCfgDocument(content);
+            const result = await getSettingsDraftAction();
+            if (!result.success) throw new Error(result.error);
+            const document = parseCfgDocument(result.data.content);
             if (token !== request.current) return;
-            acceptSource({ document, name });
-            setMessage(name === 'przykladowe-ustawienia.cfg' ? 'Aktualny zestaw jest niedostępny. Wczytano przykładowy preset strony.' : 'Wczytano aktualny zestaw ustawień.');
+            draftToken.current = result.data.token;
+            savedContent.current = result.data.content;
+            applySource({ document, name: result.data.exists ? 'draft-ustawien.cfg' : 'aktualne-ustawienia.cfg' });
+            setSaveError('');
+            setSaveStatus(result.data.exists ? 'Wczytano wspólny draft.' : 'Pierwsza zmiana utworzy wspólny draft aktualnych ustawień.');
         } catch (cause) {
             if (token === request.current) setError(cause instanceof Error ? cause.message : 'Nie udało się wczytać pliku.');
         } finally { if (token === request.current) setLoading(false); }
     };
+
+    useEffect(() => { void loadCurrent(); }, []); // Initial shared snapshot; subsequent reloads are explicit.
+
+    useEffect(() => {
+        if (!content || !draftToken.current || content === savedContent.current || saving.current || saveError || loading || pendingSource) return;
+        const timer = window.setTimeout(async () => {
+            saving.current = true;
+            setSaveStatus('Zapisywanie draftu…');
+            try {
+                const result = await saveSettingsDraftAction(content, draftToken.current);
+                if (!result.success) {
+                    setSaveError(result.error);
+                    setSaveStatus('Zmiany nie zostały zapisane.');
+                    return;
+                }
+                draftToken.current = result.data.token;
+                savedContent.current = result.data.content;
+                setSaveStatus('Draft zapisany w bazie.');
+            } catch {
+                setSaveError('Nie udało się zapisać draftu. Sprawdź połączenie i spróbuj ponownie.');
+                setSaveStatus('Zmiany nie zostały zapisane.');
+            } finally {
+                saving.current = false;
+                setSaveTick(tick => tick + 1);
+            }
+        }, 1200);
+        return () => window.clearTimeout(timer);
+    }, [content, saveTick, saveError, loading, pendingSource]);
 
     const importFile = async (file: File) => {
         const token = ++request.current;
@@ -164,25 +194,27 @@ export default function SettingsBuilder() {
         <section aria-label="Kreator ustawień" className="space-y-5 font-barlow">
             <div>
                 <h3 className="font-brook text-3xl text-yellow-400">Kreator ustawień</h3>
-                <p className="mt-2 text-gray-300">Wczytaj aktualny zestaw lub własny plik, zmień opcje i pobierz preset do gry. Nazwy opcji są takie same jak na stronie ustawień i w grze.</p>
+                <p className="mt-2 text-gray-300">Edytujesz wspólny draft ustawień. Poprawne zmiany zapisują się automatycznie w bazie i są dostępne dla wszystkich hostów. Aktualny zestaw do gry zmienia się dopiero po wgraniu pliku.</p>
             </div>
             <div className="flex flex-wrap items-center gap-3">
-                <button type="button" onClick={() => void loadCurrent()} disabled={loading || !!pendingSource} className={buttonClass}>{loading ? 'Wczytywanie…' : 'Wczytaj aktualne ustawienia'}</button>
+                <button type="button" onClick={() => void loadCurrent()} disabled={loading || !!pendingSource || saving.current} className={buttonClass}>{loading ? 'Wczytywanie…' : 'Wczytaj draft ponownie'}</button>
                 <label htmlFor={uploadId} className="text-sm text-gray-300">Importuj .cfg</label>
-                <input id={uploadId} type="file" accept=".cfg" disabled={loading || !!pendingSource} className="max-w-full text-sm text-gray-300 file:mr-3 file:rounded-lg file:border-0 file:bg-zinc-700 file:px-3 file:py-2 file:text-white"
+                <input id={uploadId} type="file" accept=".cfg" disabled={loading || !!pendingSource || !draftToken.current || saving.current} className="max-w-full text-sm text-gray-300 file:mr-3 file:rounded-lg file:border-0 file:bg-zinc-700 file:px-3 file:py-2 file:text-white"
                     onChange={event => { const file = event.target.files?.[0]; event.target.value = ''; if (file) void importFile(file); }} />
             </div>
+            <p role="status" aria-live="polite" className="text-sm text-gray-300">{saving.current ? 'Zapisywanie draftu…' : unsaved && !saveError ? 'Oczekujące zmiany w drafcie…' : saveStatus}</p>
+            {saveError && <div role="alert" className="space-y-3 rounded-lg border border-red-800 bg-red-950/40 p-3 text-red-200"><p>{saveError}</p><button type="button" className={buttonClass} onClick={() => { setSaveError(''); setSaveTick(tick => tick + 1); }}>Ponów zapis</button></div>}
             {message && <p role="status" className="rounded-lg border border-zinc-600 bg-zinc-800 p-3 text-sm text-gray-200">{message}</p>}
             {error && <p role="alert" className="rounded-lg border border-red-800 bg-red-950/40 p-3 text-red-200">{error}</p>}
             {pendingSource && <div className="space-y-3 rounded-lg border border-yellow-600 bg-yellow-900/20 p-4" role="alert">
-                <p>Wczytanie „{pendingSource.name}” usunie bieżące zmiany ({changedCount}).</p>
+                <p>Wczytanie „{pendingSource.name}” zastąpi wspólny draft i zapisze go w bazie. Bieżące zmiany w tym edytorze: {changedCount}.</p>
                 <div className="flex gap-3"><button type="button" className={buttonClass} onClick={() => applySource(pendingSource)}>Zastąp zestaw</button><button type="button" className={buttonClass} onClick={() => { setPendingSource(null); setMessage('Zachowano bieżący zestaw.'); }}>Zachowaj zmiany</button></div>
             </div>}
             {!source && <p className="rounded-xl border border-dashed border-zinc-600 p-6 text-gray-400">Zacznij od wczytania ustawień. Możesz importować własny preset, np. MIRA7.cfg.</p>}
             {source && <>
                 <div className="rounded-xl border border-zinc-700 bg-zinc-950/50 p-4">
                     <p className="break-all text-sm text-gray-300">Baza: <strong>{source.name}</strong> · {fields.length} opcji · Zmieniono: {changedCount}</p>
-                    <p className="mt-1 text-xs text-gray-500">Zmiany pozostają w otwartym panelu do odświeżenia strony. Pobierz plik, aby je zachować.</p>
+                    <p className="mt-1 text-xs text-gray-500">Draft jest wspólny dla wszystkich hostów. Import pliku zastępuje jego zawartość po potwierdzeniu. Pobierz .cfg, aby użyć draftu w grze.</p>
                     <div className="mt-4 flex flex-wrap items-end gap-3">
                         <div className="min-w-0 flex-1"><label htmlFor={nameId} className="mb-1 block text-sm text-gray-300">Nazwa pliku</label><input id={nameId} value={fileName} maxLength={110} onChange={event => setFileName(event.target.value)} className="w-full rounded-lg border border-zinc-600 bg-zinc-900 px-3 py-2" /></div>
                         <button type="button" onClick={download} disabled={!!invalid.length || loading || !!pendingSource} className="rounded-lg bg-yellow-500 px-5 py-2 font-semibold text-zinc-950 hover:bg-yellow-400 disabled:opacity-50">Pobierz .cfg</button>

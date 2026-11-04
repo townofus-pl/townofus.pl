@@ -97,6 +97,15 @@ export function cfgValueKind(field: CfgField): 'boolean' | 'integer' | 'number' 
     return 'text';
 }
 
+export function allowsNegativeOne(field: CfgField): boolean {
+    return (field.section === 'TownOfUs.Options.Roles.Crewmate.EngineerOptions' && field.key === 'MaxVents') ||
+        (field.section === 'TownOfUs.Options.Roles.Crewmate.HunterOptions' && (field.key === 'StalkPerTasks' || field.key === 'StalkUses'));
+}
+
+export function getCfgMinimum(field: CfgField): number {
+    return allowsNegativeOne(field) ? -1 : Math.max(0, field.minimum ?? 0);
+}
+
 export function validateCfgValue(field: CfgField, value: string): string | null {
     if (/[\r\n\0\uFFFD]/.test(value)) return 'Wartość nie może zawierać nowych wierszy ani znaków binarnych.';
     if (field.options?.length) {
@@ -110,12 +119,14 @@ export function validateCfgValue(field: CfgField, value: string): string | null 
             return 'Podaj poprawną liczbę.';
         }
         const numeric = Number(normalized);
+        const specialNegativeOne = allowsNegativeOne(field) && numeric === -1;
+        if (numeric < 0 && !specialNegativeOne) return 'Minimalna wartość: 0. Tylko wybrane ustawienia dopuszczają -1.';
         if (kind === 'integer' && !Number.isSafeInteger(numeric)) return 'Podaj liczbę całkowitą.';
         if (field.valueType === 'Int32' && (numeric < -2147483648 || numeric > 2147483647)) return 'Liczba jest poza zakresem Int32.';
         if (field.valueType === 'UInt32' && (numeric < 0 || numeric > 4294967295)) return 'Liczba jest poza zakresem UInt32.';
         if (field.valueType === 'Byte' && (numeric < 0 || numeric > 255)) return 'Podaj liczbę od 0 do 255.';
         if (field.valueType === 'Single' && Math.abs(numeric) > 3.4028234663852886e38) return 'Liczba jest poza zakresem Single.';
-        if (field.minimum !== undefined && numeric < field.minimum) return `Minimalna wartość: ${field.minimum}.`;
+        if (!specialNegativeOne && numeric < Math.max(0, field.minimum ?? 0)) return `Minimalna wartość: ${Math.max(0, field.minimum ?? 0)}.`;
         if (field.maximum !== undefined && numeric > field.maximum) return `Maksymalna wartość: ${field.maximum}.`;
     }
     return null;

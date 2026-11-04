@@ -1,7 +1,8 @@
 "use client";
 
-import { useMemo } from "react";
-import Image from "next/image";
+import { useMemo, useState } from "react";
+import { SettingsChangesCard } from "../../_components/SettingsChangesCard";
+import { formatValue, normalizeSettingValue } from "../../_utils/formatSettingValue";
 import { MiraModifiers, MiraRoles, MiraSettings } from "@/mira";
 import { RoleOrModifierTypes } from "@/constants/rolesAndModifiers";
 import { SettingTypes, type Setting } from "@/constants/settings";
@@ -112,66 +113,6 @@ function getEntityFromToken(token: string): MiraEntity | undefined {
     }
 
     return entityLookup.get(normalizeLookupKey(token));
-}
-
-function normalizeSettingValue(value: string, type: SettingTypes): string | number | boolean {
-    switch (type) {
-        case SettingTypes.Boolean:
-            return value.toLowerCase() === "true";
-        case SettingTypes.Number:
-        case SettingTypes.Percentage:
-        case SettingTypes.Time:
-        case SettingTypes.Multiplier: {
-            const parsed = Number(value.replace(/,/g, "."));
-            if (Number.isNaN(parsed)) {
-                return value;
-            }
-
-            return Number.isInteger(parsed) ? parsed : Number(parsed.toFixed(2));
-        }
-        case SettingTypes.Text:
-        default:
-            return value;
-    }
-}
-
-function formatValue(value: string | number | boolean, type: SettingTypes, description?: Record<number, string>): string {
-    if (description) {
-        let valueToCheck: number | null = null;
-
-        if (typeof value === "number") {
-            valueToCheck = value;
-        } else if (typeof value === "string") {
-            const parsed = Number(value);
-            if (!Number.isNaN(parsed)) {
-                valueToCheck = parsed;
-            }
-        }
-
-        if (valueToCheck !== null && description[valueToCheck]) {
-            return description[valueToCheck];
-        }
-    }
-
-    switch (type) {
-        case SettingTypes.Percentage:
-            if (typeof value === "number" && value < 0) {
-                return "x%";
-            }
-
-            return `${value}%`;
-        case SettingTypes.Time:
-            return `${value}s`;
-        case SettingTypes.Boolean:
-            return value ? "✓" : "✗";
-        case SettingTypes.Number:
-            return value.toString();
-        case SettingTypes.Multiplier:
-            return `${value}x`;
-        case SettingTypes.Text:
-        default:
-            return value.toString();
-    }
 }
 
 function getSectionLabel(sectionName: string): string {
@@ -471,6 +412,7 @@ function inferTypeFromValue(value: string): SettingTypes {
  * source of truth for "which changelog", and no second round trip from the browser.
  */
 export function MiraChangelog({ current, old }: { current: string; old: string }) {
+    const [showProbabilities, setShowProbabilities] = useState(false);
     const changes = useMemo<Change[]>(() => {
         const currentData = parseConfigFile(current);
         const oldData = parseConfigFile(old);
@@ -504,6 +446,7 @@ export function MiraChangelog({ current, old }: { current: string; old: string }
 
     const groupedChanges = useMemo(() => {
         const grouped = changes.reduce((accumulator, change) => {
+            if (!showProbabilities && change.settingName === "Probability Of Appearing") return accumulator;
             if (!accumulator[change.groupName]) {
                 accumulator[change.groupName] = [];
             }
@@ -562,11 +505,17 @@ export function MiraChangelog({ current, old }: { current: string; old: string }
 
             return left.groupName.localeCompare(right.groupName, "pl");
         });
-    }, [changes]);
+    }, [changes, showProbabilities]);
 
     return (
         <div className="container mx-auto">
-            {changes.length === 0 ? (
+            <label className="mb-6 flex w-fit cursor-pointer items-center gap-3 font-barlow text-white">
+                <input type="checkbox" role="switch" checked={showProbabilities} onChange={event => setShowProbabilities(event.target.checked)}
+                    className="peer sr-only" />
+                <span aria-hidden="true" className="relative h-6 w-11 rounded-full bg-zinc-700 transition-colors after:absolute after:left-1 after:top-1 after:h-4 after:w-4 after:rounded-full after:bg-white after:transition-transform peer-checked:bg-blue-600 peer-checked:after:translate-x-5 peer-focus-visible:ring-2 peer-focus-visible:ring-yellow-400" />
+                Show Probabilities of Appearing
+            </label>
+            {groupedChanges.length === 0 ? (
                 <div className="text-center text-2xl text-gray-600">
                     Brak zmian do wyświetlenia
                 </div>
@@ -576,41 +525,8 @@ export function MiraChangelog({ current, old }: { current: string; old: string }
                         const groupInfo = groupChanges[0];
 
                         return (
-                            <div key={groupName} className="bg-zinc-900/50 rounded-xl text-white p-6">
-                                <div className="flex items-center gap-6">
-                                    <div className="flex-shrink-0 w-[80px] h-[80px] flex items-center justify-center">
-                                        {groupInfo.groupIcon ? (
-                                            <Image
-                                                src={groupInfo.groupIcon}
-                                                alt={groupName}
-                                                width={80}
-                                                height={80}
-                                                quality={100}
-                                                unoptimized={true}
-                                                className="rounded-lg flex-shrink-0 scale-[1.3]"
-                                                style={{ width: "80px", height: "80px" }}
-                                            />
-                                        ) : (
-                                            <span className="text-6xl">⚙️</span>
-                                        )}
-                                    </div>
-                                    <div className="flex-1">
-                                        <h2 className="font-brook text-4xl mb-4" style={{ color: groupInfo.groupColor }}>
-                                            {groupName}
-                                        </h2>
-                                        <ul className="space-y-2">
-                                            {groupChanges.map((change, index) => (
-                                                <li key={`${change.settingName}-${index}`} className="text-xl">
-                                                    <span className="font-semibold">{change.settingName}:</span>{" "}
-                                                    <span className="text-red-600">{change.oldValue}</span>{" "}
-                                                    →{" "}
-                                                    <span className="text-green-600">{change.newValue}</span>
-                                                </li>
-                                            ))}
-                                        </ul>
-                                    </div>
-                                </div>
-                            </div>
+                            <SettingsChangesCard key={groupName} name={groupName} color={groupInfo.groupColor} icon={groupInfo.groupIcon}
+                                changes={groupChanges.map(change => ({ name: change.settingName, before: change.oldValue, after: change.newValue }))} />
                         );
                     })}
                 </div>

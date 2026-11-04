@@ -6,6 +6,10 @@ import { convertRoleNameForDisplay, getRoleColor } from '@/app/dramaafera/_utils
 import { compareReviewBoundary, toReviewTime, ROLE_REVIEW_THRESHOLD, ROLE_REVIEW_FORMULA_VERSION, type RoleReviewBoundary, type RoleReviewDecision } from '@/app/dramaafera/_utils/roleReview';
 import type { RoleRankingSummary } from './types';
 import type { RoleReviewOverview, RoleReviewGame } from '@/app/dramaafera/_utils/roleReviewTypes';
+import type { RoleSettingsEdit } from '../../_utils/roleReviewTypes';
+import { getSettingsDraft, prepareSettingsDraftWrite } from '../settings/settingsDraft';
+import { updateRoleSettings, type RoleSettingChange } from '../../host/_utils/roleSettings';
+import { CURRENT_SEASON } from '../../_constants/seasons';
 
 interface CycleRow { openStart: number; id: number; roleName: string; afterTime: string | Date; afterGameId: number; revision: number }
 interface GameRow { id: number; gameIdentifier: string; startTime: string | Date }
@@ -15,8 +19,8 @@ interface HistoryRow {
     createdAt: string | Date; fromTime: string | Date; fromGameId: number;
     throughTime: string | Date; throughGameId: number; snapshot: string; formulaVersion: string;
 }
-function readSnapshot(value: string): { stats: RoleRankingSummary | null; assessment: { label: string; className: string } } {
-    const saved = JSON.parse(value) as { stats: RoleRankingSummary | null; assessment: { label: string; className: string } } | RoleRankingSummary | null;
+function readSnapshot(value: string): { stats: RoleRankingSummary | null; assessment: { label: string; className: string }; settingsChanges?: RoleSettingChange[] } {
+    const saved = JSON.parse(value) as { stats: RoleRankingSummary | null; assessment: { label: string; className: string }; settingsChanges?: RoleSettingChange[] } | RoleRankingSummary | null;
     if (saved && 'stats' in saved) return saved;
     return { stats: saved, assessment: getRoleAssessment(saved?.strength ?? null, saved?.strengthGames ?? 0) };
 }
@@ -28,13 +32,13 @@ async function sampleToken(stats: RoleRankingSummary | null, after: RoleReviewBo
     return Array.from(new Uint8Array(hash), n => n.toString(16).padStart(2, '0')).join('');
 }
 
-export async function getRoleBalanceOverview(season: number, throughGameId?: number): Promise<RoleReviewOverview> {
+export async function getRoleBalanceOverview(season: number, throughGameId?: number, { includeHistory = true }: { includeHistory?: boolean } = {}): Promise<RoleReviewOverview> {
     const prisma = await getDatabaseClient();
     if (!prisma) return { rows: [], games: [], sessions: [], through: null };
     const [rawCycles, rawGames, histories] = await Promise.all([
         prisma.$queryRaw<CycleRow[]>`SELECT id, roleName, afterTime, afterGameId, revision, CASE WHEN afterTime = '' THEN 1 ELSE 0 END AS openStart FROM role_balance_cycles WHERE season = ${season} AND deletedAt IS NULL`,
         prisma.$queryRaw<GameRow[]>`SELECT id, gameIdentifier, startTime FROM games WHERE season = ${season} AND deletedAt IS NULL`,
-        prisma.$queryRaw<HistoryRow[]>`SELECT id, roleName, decision, note, author, createdAt, fromTime, fromGameId, throughTime, throughGameId, snapshot, formulaVersion, CASE WHEN fromTime = '' THEN 1 ELSE 0 END AS openStart FROM role_balance_reviews WHERE season = ${season} AND deletedAt IS NULL ORDER BY id DESC`,
+        includeHistory ? prisma.$queryRaw<HistoryRow[]>`SELECT id, roleName, decision, note, author, createdAt, fromTime, fromGameId, throughTime, throughGameId, snapshot, formulaVersion, CASE WHEN fromTime = '' THEN 1 ELSE 0 END AS openStart FROM role_balance_reviews WHERE season = ${season} AND deletedAt IS NULL ORDER BY id DESC` : [],
     ]);
     // Prisma raw queries can decode time-named fields into Date objects, including TEXT columns.
     const cycles = rawCycles.map(c => ({ ...c, afterTime: c.openStart ? '' : toReviewTime(c.afterTime) }));
@@ -77,7 +81,7 @@ export async function getRoleBalanceOverview(season: number, throughGameId?: num
 }
 
 export async function initializeRoleBalanceCycles(season: number, firstGameId: number, author: string, roleName?: string): Promise<void> {
-    const overview = await getRoleBalanceOverview(season);
+    const overview = await getRoleBalanceOverview(season, undefined, { includeHistory: false });
     const index = overview.games.findIndex(g => g.gameId === firstGameId);
     if (index < 0 || !overview.sessions.some(s => s.firstGameId === firstGameId)) throw new Error('Wybierz początek sesji z tego sezonu.');
     const after = overview.games[index - 1] ?? EMPTY_BOUNDARY;
@@ -93,29 +97,49 @@ export async function initializeRoleBalanceCycles(season: number, firstGameId: n
 export interface SaveRoleBalanceReview {
     season: number; roleName: string; revision: number; throughGameId: number;
     decision: RoleReviewDecision; note: string; sampleToken: string;
+    settingsEdit?: RoleSettingsEdit;
 }
 
 export async function saveRoleBalanceReview(input: SaveRoleBalanceReview, author: string): Promise<void> {
-    const overview = await getRoleBalanceOverview(input.season);
+    const overview = await getRoleBalanceOverview(input.season, undefined, { includeHistory: false });
     if (overview.through && overview.through.gameId !== input.throughGameId) throw new Error('Pojawiła się nowsza gra. Odśwież ocenę przed zatwierdzeniem.');
     const row = overview.rows.find(r => r.roleName === input.roleName);
     if (!row || row.revision === null || !row.after || !overview.through) throw new Error('Najpierw rozpocznij próbę tej roli.');
     if (row.revision !== input.revision || row.sampleToken !== input.sampleToken) throw new Error('Dane przeglądu zmieniły się. Odśwież i sprawdź ocenę ponownie.');
     if (compareReviewBoundary(overview.through, row.after) <= 0) throw new Error('Granica nowej próby musi być późniejsza od poprzedniej.');
-    if (input.decision !== 'settings_changed' && (row.stats?.gamesPlayed ?? 0) < ROLE_REVIEW_THRESHOLD) throw new Error('Przegląd wymaga co najmniej 10 występów.');
     const { env } = await getCloudflareContext();
     const through = overview.through;
+    let settingsChanges: RoleSettingChange[] = [];
+    let draftStatement: D1PreparedStatement | undefined;
+    let draftGuard = '';
+    const draftBindings: (string | number)[] = [];
+    if (input.settingsEdit) {
+        if (input.season !== CURRENT_SEASON) throw new Error('Nieprawidłowy sezon do edycji ustawień.');
+        const draft = await getSettingsDraft();
+        if (draft.token !== input.settingsEdit.token) throw new Error('Draft zmienił się. Wczytaj ponownie ustawienia roli i sprawdź zmiany.');
+        const updated = updateRoleSettings(draft.content, input.roleName, input.settingsEdit.changes);
+        settingsChanges = updated.changes;
+        if (input.decision === 'unchanged' && settingsChanges.length) throw new Error('Bez zmian nie może zawierać zmian ustawień. Wybierz inną decyzję.');
+        if (settingsChanges.length) {
+            draftStatement = prepareSettingsDraftWrite(env.DB, updated.content, draft.token, true);
+            const [type, id, revision] = draft.token.split(':');
+            draftGuard = ` AND EXISTS (SELECT 1 FROM drama_afera_settings WHERE id = ? AND revision = ? AND versionType = ? AND deletedAt IS NULL)
+                AND (? = 'draft' OR NOT EXISTS (SELECT 1 FROM drama_afera_settings WHERE versionType = 'draft' AND deletedAt IS NULL))`;
+            draftBindings.push(Number(id), Number(revision), type, type);
+        }
+    }
     const results = await env.DB.batch([
         env.DB.prepare(`INSERT INTO role_balance_reviews
             (season, roleName, revision, fromTime, fromGameId, throughTime, throughGameId, decision, note, author, snapshot, formulaVersion, createdAt, updatedAt)
             SELECT season, roleName, revision, afterTime, afterGameId, ?, ?, ?, ?, ?, ?, ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
             FROM role_balance_cycles WHERE season = ? AND roleName = ? AND revision = ? AND deletedAt IS NULL
             AND NOT EXISTS (SELECT 1 FROM games WHERE season = ? AND deletedAt IS NULL
-                AND (julianday(startTime) > julianday(?) OR (julianday(startTime) = julianday(?) AND id > ?)))`)
-            .bind(through.time, through.gameId, input.decision, input.note.trim(), author, JSON.stringify({ stats: row.stats, assessment: getRoleAssessment(row.stats?.strength ?? null, row.stats?.strengthGames ?? 0) }), ROLE_REVIEW_FORMULA_VERSION, input.season, input.roleName, input.revision, input.season, through.time, through.time, through.gameId),
+                AND (julianday(startTime) > julianday(?) OR (julianday(startTime) = julianday(?) AND id > ?)))${draftGuard}`)
+            .bind(through.time, through.gameId, input.decision, input.note.trim(), author, JSON.stringify({ stats: row.stats, assessment: getRoleAssessment(row.stats?.strength ?? null, row.stats?.strengthGames ?? 0), settingsChanges }), ROLE_REVIEW_FORMULA_VERSION, input.season, input.roleName, input.revision, input.season, through.time, through.time, through.gameId, ...draftBindings),
         env.DB.prepare(`UPDATE role_balance_cycles SET afterTime = ?, afterGameId = ?, revision = revision + 1, updatedAt = CURRENT_TIMESTAMP
             WHERE season = ? AND roleName = ? AND revision = ? AND deletedAt IS NULL AND changes() = 1`)
             .bind(through.time, through.gameId, input.season, input.roleName, input.revision),
+        ...(draftStatement ? [draftStatement] : []),
     ]);
     if (results[0].meta.changes !== 1 || results[1].meta.changes !== 1) throw new Error('Dane przeglądu zmieniły się. Odśwież i sprawdź ocenę ponownie.');
 }

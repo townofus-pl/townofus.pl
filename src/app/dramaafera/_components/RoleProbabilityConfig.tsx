@@ -3,6 +3,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { MAX_ROLE_CONFIG_BYTES, MIRA_PRESET_PATH, updateRoleProbabilityConfig, type UpdatedRoleConfig } from '../_utils/roleProbabilityConfig';
 import type { RoleProbabilityData } from '../_utils/roleProbabilities';
+import { applyRoleWeightsToDraftAction } from '../_actions/applyRoleWeightsToDraftAction';
 
 interface PickerWindow extends Window {
     showOpenFilePicker?: (options: {
@@ -35,7 +36,7 @@ async function readConfig(file: File): Promise<string> {
     }
 }
 
-export default function RoleProbabilityConfig({ roles }: { roles: RoleProbabilityData['roles'] }) {
+export default function RoleProbabilityConfig({ roles, seasonId }: { roles: RoleProbabilityData['roles']; seasonId: number }) {
     const [loaded, setLoaded] = useState<LoadedConfig | null>(null);
     const [supportsPicker, setSupportsPicker] = useState(false);
     const [busy, setBusy] = useState(false);
@@ -43,6 +44,18 @@ export default function RoleProbabilityConfig({ roles }: { roles: RoleProbabilit
     const [message, setMessage] = useState('');
     const inputRef = useRef<HTMLInputElement>(null);
     useEffect(() => { setSupportsPicker(typeof (window as PickerWindow).showOpenFilePicker === 'function'); }, []);
+
+    async function applyToDraft() {
+        if (busy) return;
+        setBusy(true); setError(''); setMessage('');
+        try {
+            const result = await applyRoleWeightsToDraftAction(seasonId);
+            if (!result.success) { setError(result.error); return; }
+            setMessage(`Zapisano wagi we wspólnym drafcie ustawień. Zmienione wagi: ${result.updated}. Wyłączone role pominięte: ${result.disabled}.${result.unmatched.length ? ` Bez dopasowania — pozostawiono oryginalne wartości: ${result.unmatched.join(', ')}.` : ''} Wczytaj draft ponownie w kreatorze, aby zobaczyć zmiany.`);
+        } catch {
+            setError('Nie udało się zastosować wag w drafcie. Spróbuj ponownie.');
+        } finally { setBusy(false); }
+    }
 
     async function load(file: File, handle?: FileSystemFileHandle) {
         const original = await readConfig(file);
@@ -111,7 +124,14 @@ export default function RoleProbabilityConfig({ roles }: { roles: RoleProbabilit
     }
 
     return <section className="mb-6 rounded-lg border border-zinc-700 bg-zinc-800/80 p-4">
-        <h2 className="font-brook text-xl font-bold text-yellow-400">Zastosuj wagi w pliku ustawień</h2>
+        <div className="mb-5 border-b border-zinc-700 pb-5">
+            <h2 className="font-brook text-xl font-bold text-yellow-400">Zastosuj w drafcie ustawień</h2>
+            <p className="mt-2 text-sm text-gray-400">Zapisz wyliczone wagi we wspólnym drafcie. Jeśli draft jeszcze nie istnieje, powstanie z aktualnych ustawień. Zmienią się tylko szanse ról, zaokrąglone do pełnego 1%. Role z Num = 0 pozostaną wyłączone.</p>
+            <button type="button" className={`${buttonClass} mt-4`} disabled={busy} onClick={() => void applyToDraft()}>Zastosuj w drafcie ustawień</button>
+        </div>
+        <details>
+        <summary className="cursor-pointer font-brook text-xl font-bold text-yellow-400">Awaryjnie: plik ustawień</summary>
+        <h2 className="mt-4 font-brook text-xl font-bold text-yellow-400">Zastosuj wagi w pliku ustawień</h2>
         <p className="mt-2 text-sm text-gray-400">Wybierz plik .cfg. Podmienimy tylko szanse ról, zaokrąglone do pełnego 1%. Role z Num = 0 pozostają wyłączone. Plik jest przetwarzany w przeglądarce.</p>
         <label className="mt-4 block text-sm text-gray-300">Folder presetu — skopiuj ścieżkę do okna wyboru pliku
             <input readOnly value={MIRA_PRESET_PATH} onFocus={event => event.target.select()} className="mt-2 w-full rounded-lg border border-gray-600 bg-zinc-900 px-3 py-2 text-sm text-white" />
@@ -132,7 +152,8 @@ export default function RoleProbabilityConfig({ roles }: { roles: RoleProbabilit
             </div>
             <p className="text-sm text-gray-400">Przy pobieraniu przeglądarka wybiera miejsce zapisu. Aby zastąpić plik w jego obecnej lokalizacji, użyj opcji „Otwórz .cfg do zapisu” i zapisz zmiany albo wskaż folder presetu podczas pobierania.</p>
         </div>}
-        {busy && <p className="mt-3 text-sm text-gray-400" role="status">Przetwarzanie pliku…</p>}
+        </details>
+        {busy && <p className="mt-3 text-sm text-gray-400" role="status">Przetwarzanie ustawień…</p>}
         {error && <p className="mt-3 text-sm text-red-300" role="alert">{error}</p>}
         {message && <p className="mt-3 text-sm text-green-400" role="status">{message}</p>}
     </section>;

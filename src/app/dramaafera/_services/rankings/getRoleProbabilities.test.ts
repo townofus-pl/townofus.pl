@@ -5,6 +5,39 @@ import { getDatabaseClient } from '../db';
 
 jest.mock('../db', () => ({ getDatabaseClient: jest.fn() }));
 
+test('SQL keeps old rare-role samples but only resolves final roles for the latest 20 nonempty games', async () => {
+  const db = new DatabaseSync(':memory:');
+  try {
+    db.exec(`CREATE TABLE games (id INTEGER PRIMARY KEY, season INTEGER, startTime TEXT, deletedAt TEXT);
+      CREATE TABLE players (id INTEGER PRIMARY KEY, deletedAt TEXT);
+      CREATE TABLE game_player_statistics (id INTEGER PRIMARY KEY, gameId INTEGER, playerId INTEGER, win INTEGER);
+      CREATE TABLE player_roles (gamePlayerStatisticsId INTEGER, roleName TEXT, "order" INTEGER);
+      CREATE TABLE player_modifiers (gamePlayerStatisticsId INTEGER, modifierName TEXT);
+      INSERT INTO players VALUES (1,NULL),(2,'deleted');`);
+    for (let id = 1; id <= 32; id++) {
+      db.prepare('INSERT INTO games VALUES (?,4,?,NULL)').run(id, `2026-10-${String(id).padStart(2,'0')}T20:00:00`);
+      if (id === 31) continue; // Empty games must not consume the 20-game faction window.
+      db.prepare('INSERT INTO game_player_statistics VALUES (?,?,?,1)').run(id,id,id === 32 ? 2 : 1);
+      db.prepare('INSERT INTO player_roles VALUES (?,?,0)').run(id,id === 1 ? 'Medic' : 'Sheriff');
+      db.prepare("INSERT INTO player_roles VALUES (?,'Sheriff',1)").run(id);
+    }
+    let raw: Array<{ gameId: number; finalRole: string | null }> = [];
+    const query = jest.fn(async (strings: TemplateStringsArray, ...values: unknown[]) => {
+      const sql = Prisma.sql(strings,...values);
+      const rows = db.prepare(sql.sql).all(...sql.values as SQLInputValue[]);
+      raw = rows as unknown as typeof raw;
+      return rows;
+    });
+    jest.mocked(getDatabaseClient).mockResolvedValue({ $queryRaw: query } as unknown as NonNullable<Awaited<ReturnType<typeof getDatabaseClient>>>);
+    const result = await getRoleProbabilities(4);
+    expect(result.games).toBe(20);
+    expect(result.unknownWins).toBe(0);
+    expect(result.roles.find(role => role.name === 'Medic')).toMatchObject({ games: 1, wins: 1 });
+    expect(raw.filter(row => row.finalRole !== null)).toHaveLength(20);
+    expect(raw.find(row => row.gameId === 1)?.finalRole).toBeNull();
+  } finally { db.close(); }
+});
+
 test('faction and role last 20 matches are independent; duplicates and transformations do not add appearances', () => {
   const rows = Array.from({ length: 35 }, (_, index) => ({
     gameId: 35 - index,

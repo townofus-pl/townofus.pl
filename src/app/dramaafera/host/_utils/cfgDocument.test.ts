@@ -1,8 +1,25 @@
 import { readFileSync } from 'node:fs';
-import { cfgValueKind, exportCfgDocument, parseCfgDocument, validateCfgValue } from './cfgDocument';
+import { cfgValueKind, exportCfgDocument, getCfgMinimum, parseCfgDocument, validateCfgValue } from './cfgDocument';
 
 const prefix = '[Roles]\n# Setting type: Int32\nNum TownOfUs.Roles.Crewmate.SheriffRole = 1\n# Setting type: Int32\nChance TownOfUs.Roles.Crewmate.SheriffRole = 51\n';
 const reference = readFileSync('public/settings/mira.cfg', 'utf8');
+
+test('numeric settings default to zero minimum; only explicit options accept the -1 sentinel', () => {
+    const fields = parseCfgDocument(reference).fields;
+    const ordinary = fields.find(field => field.key === 'HunterStalkCooldown')!;
+    expect(getCfgMinimum(ordinary)).toBe(0);
+    expect(validateCfgValue(ordinary, '-1')).not.toBeNull();
+    expect(validateCfgValue(ordinary, '0')).toBeNull();
+    for (const key of ['MaxVents', 'StalkPerTasks', 'StalkUses']) {
+        const field = fields.find(field => field.key === key)!;
+        expect(getCfgMinimum(field)).toBe(-1);
+        expect(validateCfgValue(field, '-1')).toBeNull();
+        expect(validateCfgValue(field, '-0.5')).not.toBeNull();
+        expect(validateCfgValue(field, '-2')).not.toBeNull();
+        expect(validateCfgValue(field, '0')).toBeNull();
+        expect(exportCfgDocument(parseCfgDocument(reference), { [field.id]: '-1' })).toContain(`${key} = -1`);
+    }
+});
 
 describe('CFG import/export', () => {
     it('treats Doomsayer guesses to win as Int32 even when the preset declares Single', () => {
