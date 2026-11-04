@@ -1,6 +1,8 @@
 'use client';
 
 import { useCallback, useEffect, useRef, useState } from 'react';
+import Image from 'next/image';
+import { getRoleIconPath } from '@/app/dramaafera/_utils/gameUtils';
 import { getRoleBalanceOverviewAction, initializeRoleBalanceAction, saveRoleBalanceReviewAction } from '@/app/dramaafera/_actions/roleBalanceReviewActions';
 import { ROLE_REVIEW_THRESHOLD, ROLE_REVIEW_DECISION_LABELS, compareReviewBoundary, type RoleReviewDecision } from '@/app/dramaafera/_utils/roleReview';
 import type { RoleReviewOverview, RoleReviewRow } from '@/app/dramaafera/_utils/roleReviewTypes';
@@ -70,15 +72,19 @@ export default function RoleBalanceReviews({ seasonId }: { seasonId: number }) {
                 <button type="button" className={button} disabled={busy || !firstGameId} onClick={() => void initialize()}>Rozpocznij dla nieaktywnych ról</button>
                 <p className="w-full text-sm text-gray-400">Istniejące próby pozostają aktywne. Nowe role możesz uruchamiać pojedynczo poniżej.</p>
             </div>}
-            <div className="space-y-3">
+            <div className="space-y-3 overflow-x-auto">
                 {rows.map(row => {
                     const count = row.stats?.gamesPlayed ?? 0;
                     const assessment = getRoleAssessment(row.stats?.strength ?? null, row.stats?.strengthGames ?? 0);
-                    return <details key={row.roleName} className="rounded-lg border border-zinc-700 bg-zinc-800/60 p-4">
-                        <summary className="cursor-pointer">
-                            <span className="flex flex-wrap items-center gap-x-6 gap-y-2">
-                                <strong className="min-w-36" style={{ color: row.color }}>{row.displayName}</strong>
+                    return <details key={row.roleName} className="min-w-[1120px] rounded-lg border border-zinc-700 bg-zinc-800/60 p-4">
+                        <summary className="list-none cursor-pointer [&::-webkit-details-marker]:hidden">
+                            <span className="grid grid-cols-[minmax(150px,1fr)_190px_145px_110px_145px_185px_90px] items-center gap-x-3 whitespace-nowrap">
+                                <span className="flex min-w-0 items-center gap-2">
+                                    <Image src={getRoleIconPath(row.roleName, seasonId)} alt="" width={32} height={32} className="h-8 w-8 shrink-0 object-contain" />
+                                    <strong style={{ color: row.color }}>{row.displayName}</strong>
+                                </span>
                                 <span className={count >= ROLE_REVIEW_THRESHOLD ? 'font-semibold text-yellow-300' : 'text-gray-300'}>{row.revision === null ? 'Nie rozpoczęto' : count + '/10 · ' + (count >= ROLE_REVIEW_THRESHOLD ? 'Do przeglądu' : 'Zbieranie danych')}</span>
+                                <span>Avg. DAP: {row.stats?.dapGames ? number.format(row.stats.averagePoints) : '—'}</span>
                                 <span>Siła: {row.stats?.strength != null ? number.format(row.stats.strength) : '—'}</span>
                                 <span className={assessment.className}>{assessment.label}</span>
                                 <span className="text-sm text-gray-400">Ostatni przegląd: {row.history[0] ? new Date(row.history[0].createdAt).toLocaleDateString('pl-PL') : '—'}</span>
@@ -116,8 +122,17 @@ function ReviewEditor({ row, data, seasonId, busy, setBusy, onError, onNotice, r
     const [confirmed, setConfirmed] = useState(false);
     useEffect(() => { setConfirmed(false); }, [data.through?.gameId, row.sampleToken]);
     const count = row.stats?.gamesPlayed ?? 0;
+    const ready = count >= ROLE_REVIEW_THRESHOLD;
+    const choices: RoleReviewDecision[] = ready ? ['buff', 'nerf', 'unchanged'] : ['settings_changed'];
+    useEffect(() => { setDecision(''); setConfirmed(false); }, [ready]);
+    const decisionColors: Record<RoleReviewDecision, string> = {
+        buff: 'bg-green-700 hover:bg-green-600',
+        nerf: 'bg-red-700 hover:bg-red-600',
+        unchanged: 'bg-blue-600 hover:bg-blue-500',
+        settings_changed: 'bg-blue-600 hover:bg-blue-500',
+    };
     const canSubmit = row.revision !== null && data.through && row.after && compareReviewBoundary(data.through, row.after) > 0 &&
-        confirmed && decision && (decision === 'settings_changed' ? Boolean(note.trim()) : count >= ROLE_REVIEW_THRESHOLD);
+        confirmed && decision && choices.includes(decision) && (decision === 'settings_changed' || count >= ROLE_REVIEW_THRESHOLD);
     async function submit(event: React.FormEvent) {
         event.preventDefault();
         if (!canSubmit || !data.through || row.revision === null || !decision) return;
@@ -131,20 +146,20 @@ function ReviewEditor({ row, data, seasonId, busy, setBusy, onError, onNotice, r
         } catch (error) { onError(message(error)); setBusy(false); }
     }
     return <form onSubmit={event => void submit(event)} className="mt-4 space-y-4">
-        <p className="text-sm text-gray-300">Próba po grze {row.after?.gameId || 'początkowej granicy sezonu'} do {data.through?.identifier ?? '—'}. Występy: {count}; uwzględnione w sile: {row.stats?.strengthGames ?? 0}; średnia DAP: {row.stats?.dapGames ? number.format(row.stats.averagePoints) : '—'}.</p>
-        <label className="flex max-w-sm flex-col gap-2">Decyzja
-            <select required value={decision} disabled={busy} className={field} onChange={e => {
-                const next = e.target.value as RoleReviewDecision | '';
-                setDecision(next); setConfirmed(false);
-
-            }}>
-                <option value="">Wybierz decyzję</option>
-                {Object.entries(ROLE_REVIEW_DECISION_LABELS).map(([value, label]) => <option key={value} value={value}>{label}</option>)}
-            </select>
-        </label>
+        <p className="text-sm text-gray-300">Próba po grze {row.after?.gameId || 'początkowej granicy sezonu'} do {data.through?.identifier ?? '—'}.</p>
+        <fieldset disabled={busy}>
+            <legend className="mb-2">Decyzja</legend>
+            <div className="flex flex-wrap gap-3">
+                {choices.map(value => <button key={value} type="button" aria-pressed={decision === value}
+                    onClick={() => { setDecision(value); setConfirmed(false); }}
+                    className={'rounded-lg px-4 py-2 text-white disabled:opacity-50 ' + decisionColors[value] + (decision === value ? ' ring-2 ring-white ring-offset-2 ring-offset-zinc-800' : '')}>
+                    {value === 'settings_changed' ? 'Zmiana ustawień' : ROLE_REVIEW_DECISION_LABELS[value]}
+                </button>)}
+            </div>
+        </fieldset>
         {decision === 'settings_changed' && <p className="text-sm text-gray-400">Nowa próba rozpocznie się po najnowszej grze. Możesz przerwać próbę przed 10 występami.</p>}
-        <label className="flex flex-col gap-2">Notatka {decision === 'settings_changed' ? '(wymagana)' : '(opcjonalna)'}
-            <textarea className={field} rows={2} maxLength={2000} required={decision === 'settings_changed'} disabled={busy} value={note} onChange={e => setNote(e.target.value)} placeholder="Co zmieniono lub dlaczego pozostawiono rolę bez zmian?" />
+        <label className="flex flex-col gap-2">Notatka (opcjonalna)
+            <textarea className={field} rows={2} maxLength={2000} disabled={busy} value={note} onChange={e => setNote(e.target.value)} placeholder="Co zmieniono lub dlaczego pozostawiono rolę bez zmian?" />
         </label>
         <label className="flex items-start gap-2 text-sm"><input type="checkbox" checked={confirmed} disabled={busy} onChange={e => setConfirmed(e.target.checked)} className="mt-1" />
             {decision === 'settings_changed' ? 'Potwierdzam, że nowe ustawienia obowiązują po najnowszej grze.' : 'Potwierdzam przegląd danych do najnowszej gry.'}

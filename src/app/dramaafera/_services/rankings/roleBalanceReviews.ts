@@ -103,7 +103,6 @@ export async function saveRoleBalanceReview(input: SaveRoleBalanceReview, author
     if (row.revision !== input.revision || row.sampleToken !== input.sampleToken) throw new Error('Dane przeglądu zmieniły się. Odśwież i sprawdź ocenę ponownie.');
     if (compareReviewBoundary(overview.through, row.after) <= 0) throw new Error('Granica nowej próby musi być późniejsza od poprzedniej.');
     if (input.decision !== 'settings_changed' && (row.stats?.gamesPlayed ?? 0) < ROLE_REVIEW_THRESHOLD) throw new Error('Przegląd wymaga co najmniej 10 występów.');
-    if (input.decision === 'settings_changed' && !input.note.trim()) throw new Error('Opisz zmianę ustawień.');
     const { env } = await getCloudflareContext();
     const through = overview.through;
     const results = await env.DB.batch([

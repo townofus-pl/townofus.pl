@@ -8,7 +8,7 @@ Wejście: panel hosta → Role → Przeglądy balansu. Statystyki ról pozostaj�
 4. Sprawdź dane, wybierz Nerf/Buff/Bez zmian, opcjonalnie dodaj notatkę i potwierdź przegląd danych do najnowszej gry.
 5. Zatwierdzenie atomowo zapisuje snapshot historii i rozpoczyna kolejną próbę po ostatniej ocenionej grze. Jeśli dojdzie nowa gra przed zatwierdzeniem, przegląd wymaga odświeżenia; atomowy zapis sprawdza aktualność końcowej granicy.
 
-Zmiana ustawień przed progiem: wybierz decyzję „Zmiana ustawień — nowa próba”, opisz zmianę obowiązującą po najnowszej grze. Następne gry trafią do nowej próby. System nie modyfikuje ustawień moda; sam upload cfg nie resetuje cykli.
+Zmiana ustawień przed progiem: wybierz decyzję „Zmiana ustawień”, opcjonalnie opisz zmianę obowiązującą po najnowszej grze. Następne gry trafią do nowej próby. System nie modyfikuje ustawień moda; sam upload cfg nie resetuje cykli.
 
 Próg dotyczy wszystkich występów. Do siły wchodzą tylko występy z pełną historią rankingową lobby; szczegóły pokazują obie liczby. Wzór siły pozostaje ten sam (k=3).
 

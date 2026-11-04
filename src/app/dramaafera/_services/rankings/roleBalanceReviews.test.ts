@@ -118,11 +118,11 @@ test('a new game requires a refreshed review; unchanged then starts a new cycle 
 test('a settings change can close three appearances when the third game is the latest', async () => {
     await initializeRoleBalanceCycles(4, 1, 'host');
     db.exec("UPDATE games SET deletedAt='deleted' WHERE id > 3");
-    await saveRoleBalanceReview(await payload(3, 'settings_changed'), 'host');
+    await saveRoleBalanceReview({ ...await payload(3, 'settings_changed'), note: '' }, 'host');
     db.exec('UPDATE games SET deletedAt=NULL WHERE id > 3');
     const row = (await getRoleBalanceOverview(4)).rows.find(r => r.roleName === 'Sheriff')!;
     expect(row.after!.gameId).toBe(3); expect(row.stats!.gamesPlayed).toBe(10);
-    expect(row.history[0]).toMatchObject({ decision: 'settings_changed', stats: { gamesPlayed: 3 } });
+    expect(row.history[0]).toMatchObject({ decision: 'settings_changed', note: '', stats: { gamesPlayed: 3 } });
 });
 
 test('stale preview after a correction requires a fresh decision', async () => {
