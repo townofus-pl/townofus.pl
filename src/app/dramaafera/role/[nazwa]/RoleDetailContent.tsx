@@ -2,7 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { RoleImage } from "../_components/RoleImage";
-import { getAllGamesData, getDramaAferaSettings, toPublicOriginalStats } from "../../_services";
+import { getAllGamesData, getDramaAferaSettings, getLatestGameDay, toPublicOriginalStats } from "../../_services";
 import { FIRST_MIRA_SEASON, getRoleColor, convertUrlSlugToRole, convertNickToUrlSlug, getPlayerAvatarPath } from "@/app/dramaafera/_utils/gameUtils";
 import { buildSeasonUrl } from "@/app/dramaafera/_utils/seasonHelpers";
 import { findFullRole } from "@/app/dramaafera/_utils/roleRegistry";
@@ -27,11 +27,11 @@ interface RoleDetailContentProps {
 export async function RoleDetailContent({ nazwa, seasonId }: RoleDetailContentProps) {
     const roleName = normalizeRoleName(convertUrlSlugToRole(nazwa, []), seasonId);
     if (!isKnownRole(roleName, seasonId)) notFound();
-    const games = await getAllGamesData(seasonId, roleName);
+    const [games, latestDay] = await Promise.all([getAllGamesData(seasonId, roleName), getLatestGameDay(seasonId)]);
 
     // Wygeneruj statystyki dla roli
     const roleStats = generateRoleStats(games, roleName, seasonId);
-    const topPerformances = getRoleTopPerformances(games, roleName, role => normalizeRoleName(role, seasonId));
+    const topPerformances = getRoleTopPerformances(games, roleName, role => normalizeRoleName(role, seasonId), latestDay?.date);
 
     // A role nobody has played this season is not a missing page — same distinction #310 drew
     // for user profiles. A role that exists in neither registry for this era still 404s, which
