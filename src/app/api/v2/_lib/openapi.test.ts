@@ -79,3 +79,23 @@ test('the Emperor text states no selection rule and the definition has no scorin
   expect(schemas('/api/v2/ranking')).toContain('Cesarz pokazany na stronie rankingu');
   expect(JSON.stringify(doc)).not.toMatch(/punkt|scoring|zamkni/i);
 });
+
+function flatCounterNames(value: unknown, path = '$'): string[] {
+  if (Array.isArray(value)) return value.flatMap((item, i) => flatCounterNames(item, `${path}[${i}]`));
+  if (value && typeof value === 'object') {
+    return Object.entries(value).flatMap(([key, child]) => [
+      ...(/^(correct|incorrect)[A-Z]/.test(key) ? [`${path}.${key}`] : []),
+      ...flatCounterNames(child, `${path}.${key}`),
+    ]);
+  }
+  return [];
+}
+
+test('the whole definition has no flat counter names', () => {
+  expect(flatCounterNames(doc)).toEqual([]);
+});
+
+test('the player route reuses the grouped counters of the game route', () => {
+  const player = (doc.paths?.['/api/v2/players/{nick}']?.get?.responses as any)['200'].content['application/json'].schema;
+  expect(player.properties.stats.properties.counters).toEqual(counters);
+});

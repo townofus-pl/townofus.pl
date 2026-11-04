@@ -235,17 +235,7 @@ export const PlayerResponseSchema = z.object({
     maxTasks: z.number(),
     survivedRounds: z.number(),
     totalRounds: z.number(),
-  }).extend({
-    correctKills: z.number(), incorrectKills: z.number(),
-    correctGuesses: z.number(), incorrectGuesses: z.number(),
-    correctProsecutes: z.number(), incorrectProsecutes: z.number(),
-    correctDeputyShoots: z.number(), incorrectDeputyShoots: z.number(),
-    correctJailorExecutes: z.number(), incorrectJailorExecutes: z.number(),
-    correctProtects: z.number(), incorrectProtects: z.number(),
-    correctWardenFortifies: z.number(), incorrectWardenFortifies: z.number(),
-    janitorCleans: z.number(),
-    correctAltruistRevives: z.number(), incorrectAltruistRevives: z.number(),
-    correctSwaps: z.number(), incorrectSwaps: z.number(),
+    counters: CountersSchema,
   }),
   roleBreakdown: z.record(z.string(), z.object({
     games: z.number().int(),
