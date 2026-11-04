@@ -73,10 +73,10 @@ preview_urls = false
 [env.staging.secrets]
 required = ["DISCORD_BOT_TOKEN"]
 
-# UTC. Covers 17:00, 18:00 and 22:00-23:59 Europe/Warsaw in summer and winter time. The code
-# picks the step from the local time (src/schedule.ts).
+# Cron wyłączony: staging dostaje kopię bazy z produkcji, a bot działa na serwerze ligi.
+# Pusta lista usuwa cron przy deployu. Samo usunięcie tego bloku zostawiłoby stary cron.
 [env.staging.triggers]
-crons = ["*/10 15-20 * * WED"]
+crons = []
 
 [env.staging.observability]
 enabled = true
@@ -121,6 +121,8 @@ route = { pattern = "dramaafera-bot.townofus.pl", custom_domain = true }
 [env.production.secrets]
 required = ["DISCORD_BOT_TOKEN"]
 
+# UTC. Covers 17:00, 18:00 and 22:00-23:59 Europe/Warsaw in summer and winter time. The code
+# picks the step from the local time (src/schedule.ts).
 [env.production.triggers]
 crons = ["*/10 15-20 * * WED"]
 

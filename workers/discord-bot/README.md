@@ -121,6 +121,8 @@ The value is `https://townofus.pl/images/avatars` in every environment. Some fil
 | `staging` | staging | production server, test channel | `townofus_pl_preview` |
 | `production` | prod | production server, production channel | `townofus-pl` |
 
+The staging bot has no cron (`crons = []`). The staging D1 holds a copy of production data and the bot runs on the league server. To test a cron step, use `dev`.
+
 Each environment declares its own vars. Named environments do not inherit them.
 
 | Var | Value |
