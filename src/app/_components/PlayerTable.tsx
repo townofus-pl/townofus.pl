@@ -1,6 +1,6 @@
 'use client';
 
-import { Fragment, useState } from 'react';
+import { Fragment, useMemo, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import type { UIGameData, UIPlayerData } from '@/app/dramaafera/_services/games/types';
@@ -11,6 +11,15 @@ import { getWinRatioColor } from '@/app/dramaafera/_utils/winRatioColor';
 import { Teams } from '@/constants/teams';
 import PlayerStatsBreakdown from './PlayerStatsBreakdown';
 import { addGame, type RoleBreakdown } from '@/app/dramaafera/_utils/statsBreakdown';
+import { DEFAULT_PLAYER_SORT, nextPlayerSort, sortPlayers, type PlayerSortKey } from '@/app/dramaafera/_utils/sortPlayers';
+
+const SORTABLE_COLUMNS: { key: PlayerSortKey; label: string; width?: string }[] = [
+  { key: 'name', label: 'GRACZ', width: '10rem' },
+  { key: 'games', label: 'GRY' },
+  { key: 'wins', label: 'WIN' },
+  { key: 'loses', label: 'LOSE' },
+  { key: 'winRatio', label: 'W/R' },
+];
 
 interface PlayerDayStats {
   name: string;
@@ -34,6 +43,8 @@ interface PlayerTableProps {
 
 export default function PlayerTable({ players, reversedGames, detailedGames, date, hideZeroStats = false, seasonId, colorblindMode = false }: PlayerTableProps) {
   const [expandedPlayers, setExpandedPlayers] = useState<Set<string>>(new Set());
+  const [sort, setSort] = useState(DEFAULT_PLAYER_SORT);
+  const sortedPlayers = useMemo(() => sortPlayers(players, sort), [players, sort]);
 
   const togglePlayerExpansion = (playerName: string) => {
     const newExpanded = new Set(expandedPlayers);
@@ -163,7 +174,7 @@ export default function PlayerTable({ players, reversedGames, detailedGames, dat
 
   return (
     <div className="overflow-x-auto">
-      <table className="w-full border border-zinc-700 bg-zinc-800/80 rounded-lg table-fixed" style={{ minWidth: `${26 + reversedGames.length * 2.5}rem` }}>
+      <table className="w-full border border-zinc-700 bg-zinc-800/80 rounded-lg table-fixed" style={{ minWidth: `${28 + reversedGames.length * 2.5}rem` }}>
         <thead>
           <tr className="bg-zinc-900/80">
             <th
@@ -172,11 +183,24 @@ export default function PlayerTable({ players, reversedGames, detailedGames, dat
             >
               #
             </th>
-            <th className="px-2 py-2 text-yellow-400 font-bold" style={{ width: '10rem' }}>GRACZ</th>
-            <th className="px-2 py-2 text-yellow-400 font-bold">GRY</th>
-            <th className="px-2 py-2 text-yellow-400 font-bold">WIN</th>
-            <th className="px-2 py-2 text-yellow-400 font-bold">LOSE</th>
-            <th className="px-2 py-2 text-yellow-400 font-bold">W/R</th>
+            {SORTABLE_COLUMNS.map((column) => (
+              <th
+                key={column.key}
+                scope="col"
+                className="p-0 text-yellow-400 font-bold"
+                style={column.width ? { width: column.width } : undefined}
+                aria-sort={sort.key === column.key ? (sort.ascending ? 'ascending' : 'descending') : 'none'}
+              >
+                <button
+                  type="button"
+                  onClick={() => setSort((current) => nextPlayerSort(current, column.key))}
+                  className="w-full px-1 py-2 font-bold whitespace-nowrap hover:text-yellow-200 transition-colors"
+                >
+                  {column.label}
+                  {sort.key === column.key && <span aria-hidden="true" className="ml-1 text-xs">{sort.ascending ? '▲' : '▼'}</span>}
+                </button>
+              </th>
+            ))}
             {reversedGames.map((g, idx: number) => (
               <th
                 key={idx}
@@ -195,7 +219,7 @@ export default function PlayerTable({ players, reversedGames, detailedGames, dat
           </tr>
         </thead>
         <tbody>
-          {players.map((player, idx: number) => {
+          {sortedPlayers.map((player, idx: number) => {
             const isExpanded = expandedPlayers.has(player.name);
             const playerStats = getPlayerAggregatedStats(player.name);
             
