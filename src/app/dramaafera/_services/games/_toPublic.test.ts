@@ -49,8 +49,19 @@ describe('toPublicGameData', () => {
   test('standard order is applied on the server and keeps the input order for ties', () => {
     const tied = game([player('A', 5), player('B', 12), player('C', 5)]);
     expect(sortPlayersStandard(tied.detailedStats.playersData).map(p => p.nickname)).toEqual(['B', 'A', 'C']);
-    expect(toPublicGameData(tied, { standardOrder: true }).detailedStats.playersData.map(p => p.nickname)).toEqual(['B', 'A', 'C']);
+    expect(toPublicGameData(tied, { displayOrder: true }).detailedStats.playersData.map(p => p.nickname)).toEqual(['B', 'A', 'C']);
     expect(toPublicGameData(tied).detailedStats.playersData.map(p => p.nickname)).toEqual(['A', 'B', 'C']);
+  });
+
+  test('a game from the latest day is sent alphabetically, whatever the stored values', () => {
+    const latest = { ...game([player('Zed', 50), player('Ala', 1), player('Bob', 20)]), isLatestDay: true };
+    const names = toPublicGameData(latest, { displayOrder: true }).detailedStats.playersData.map(p => p.nickname);
+    expect(names).toEqual(['Ala', 'Bob', 'Zed']);
+  });
+
+  test('an older game keeps the standard order', () => {
+    const older = { ...game([player('Zed', 50), player('Ala', 1), player('Bob', 20)]), isLatestDay: false };
+    expect(toPublicGameData(older, { displayOrder: true }).detailedStats.playersData.map(p => p.nickname)).toEqual(['Zed', 'Bob', 'Ala']);
   });
 });
 

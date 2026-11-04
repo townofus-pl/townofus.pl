@@ -22,8 +22,8 @@ export async function GameDetailContent({ date, gameId, seasonId }: GameDetailCo
         notFound();
     }
 
-    // Kolejność „Standardowo” ustalamy tutaj, a do przeglądarki idą dane publiczne.
-    const gameData = toPublicGameData(fullGameData, { standardOrder: true });
+    // Kolejność graczy ustalamy tutaj (ostatni dzień: alfabetycznie), a do przeglądarki idą dane publiczne.
+    const gameData = toPublicGameData(fullGameData, { displayOrder: true });
 
     const displayDate = formatDisplayDate(date);
 
@@ -131,6 +131,7 @@ export async function GameDetailContent({ date, gameId, seasonId }: GameDetailCo
                     playersData={gameData.detailedStats.playersData} 
                     maxTasks={gameData.maxTasks || 0}
                     seasonId={seasonId}
+                    showSortButtons={!gameData.isLatestDay}
                 />
 
                 {gameData.detailedStats.hasTimeline && <GameTimeline events={gameData.detailedStats.events} endTimestamp={gameData.detailedStats.endTimestamp} />}

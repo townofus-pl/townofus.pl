@@ -63,11 +63,13 @@ interface PlayerStatsSectionProps {
     playersData: PublicPlayerData[];
     maxTasks: number;
     seasonId: number;
+    /** False dla gry z ostatniego dnia: serwer wysyła graczy alfabetycznie i nie ma przycisków. */
+    showSortButtons?: boolean;
 }
 
 type SortType = 'points' | 'alphabetical';
 
-export function PlayerStatsSection({ playersData, maxTasks, seasonId }: PlayerStatsSectionProps) {
+export function PlayerStatsSection({ playersData, maxTasks, seasonId, showSortButtons = true }: PlayerStatsSectionProps) {
     const [sortType, setSortType] = useState<SortType>('points');
 
     // `playersData` przychodzi z serwera już w kolejności „Standardowo”.
@@ -79,6 +81,7 @@ export function PlayerStatsSection({ playersData, maxTasks, seasonId }: PlayerSt
         <div className="mb-8">
             <div className="flex items-center justify-between mb-4">
                 <h2 className="text-3xl font-bold">📊 Statystyki Graczy</h2>
+                {showSortButtons && (
                 <div className="flex gap-2">
                     <button
                         onClick={() => setSortType('points')}
@@ -101,6 +104,7 @@ export function PlayerStatsSection({ playersData, maxTasks, seasonId }: PlayerSt
                         Alfabetycznie
                     </button>
                 </div>
+                )}
             </div>
             <div className="space-y-4">
                 {sortedPlayers.map((player, index) => (

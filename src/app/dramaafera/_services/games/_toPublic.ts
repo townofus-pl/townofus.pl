@@ -92,9 +92,20 @@ export function sortPlayersStandard<T extends UIPlayerData>(players: T[]): T[] {
   return [...players].sort((a, b) => b.totalPoints - a.totalPoints);
 }
 
-/** `standardOrder: true` ustawia graczy w kolejności „Standardowo”. */
-export function toPublicGameData(game: UIGameData, opts: { standardOrder?: boolean } = {}): PublicGameData {
-  const players = opts.standardOrder ? sortPlayersStandard(game.detailedStats.playersData) : game.detailedStats.playersData;
+export function sortPlayersAlphabetically<T extends Pick<UIPlayerData, 'nickname'>>(players: T[]): T[] {
+  return [...players].sort((a, b) => a.nickname.localeCompare(b.nickname));
+}
+
+/**
+ * `displayOrder: true` ustawia graczy tak, jak pokazuje ich strona gry:
+ * gra z ostatniego dnia alfabetycznie, starsza gra w kolejności „Standardowo”.
+ */
+export function toPublicGameData(game: UIGameData, opts: { displayOrder?: boolean } = {}): PublicGameData {
+  const players = !opts.displayOrder
+    ? game.detailedStats.playersData
+    : game.isLatestDay
+      ? sortPlayersAlphabetically(game.detailedStats.playersData)
+      : sortPlayersStandard(game.detailedStats.playersData);
   return {
     ...game,
     detailedStats: {

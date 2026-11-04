@@ -140,6 +140,8 @@ export interface UIMeetingData {
 export interface UIGameData {
   /** v2 games retain actions with the performer's role at the time. */
   hasActionData?: boolean;
+  /** Gra z ostatniego dnia z grami w sezonie. Ustawia ją `getGameData`. */
+  isLatestDay?: boolean;
   id: string;
   date: string;
   gameNumber: number;

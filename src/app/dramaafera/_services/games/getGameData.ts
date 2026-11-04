@@ -12,6 +12,7 @@ import { buildPlayerStats } from './_buildPlayerStats';
 import { countVotes } from './_countVotes';
 import { buildGameTimeline } from './_buildGameTimeline';
 import { getDeathsDuringMeetings } from './_meetingDeaths';
+import { getLatestGameDay } from './getLatestGameDay';
 
 // Fetch detailed game data
 // Player relations are selected down to `name` on purpose. Identity columns
@@ -100,6 +101,9 @@ export async function getGameData(gameId: string): Promise<UIGameData | null> {
     return null;
   }
 
+  const latestDay = await getLatestGameDay(game.season);
+  const isLatestDay = !!latestDay && latestDay.gameIds.includes(game.id);
+
   const winners = game.gamePlayerStatistics.filter(stat => stat.win);
   const winnerNames = winners.map(winner => winner.player.name);
   const winnerColors: Record<string, string> = {};
@@ -162,6 +166,7 @@ export async function getGameData(gameId: string): Promise<UIGameData | null> {
   const winnerInfo = calculateWinnerFromStats(game.gamePlayerStatistics, game.season);
 
   return {
+    isLatestDay,
     id: game.gameIdentifier,
     date: extractDateFromGameId(game.gameIdentifier),
     gameNumber: 1,
