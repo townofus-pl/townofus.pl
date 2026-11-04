@@ -1,8 +1,13 @@
 'use client';
 
 import { useEffect, useRef, useState, useId } from 'react';
+import dynamic from 'next/dynamic';
 import { uploadSettingsAction } from '@/app/dramaafera/_actions/uploadSettingsAction';
 import { MAX_SETTINGS_FILE_SIZE_BYTES } from '@/app/api/dramaafera/settings/utils';
+
+const SettingsBuilder = dynamic(() => import('../host/_components/SettingsBuilder'), {
+  loading: () => <p className="p-4 text-gray-400">Ładowanie kreatora…</p>,
+});
 
 function validateClientFile(file: File): string | null {
   if (!file.name.endsWith('.cfg')) return 'Plik musi być w formacie .cfg';
@@ -16,6 +21,7 @@ function parseTargetVersion(value: string): 'current' | 'old' | null {
 }
 
 export function SettingsTab() {
+  const [builderOpened, setBuilderOpened] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [expandedAdvanced, setExpandedAdvanced] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -121,6 +127,11 @@ export function SettingsTab() {
 
   return (
     <div className="space-y-8">
+      <details className="rounded-xl border border-yellow-600/40 bg-zinc-900/70"
+        onToggle={(event) => { if (event.currentTarget.open) setBuilderOpened(true); }}>
+        <summary className="cursor-pointer p-6 font-brook text-3xl text-yellow-400">Utwórz własne ustawienia</summary>
+        <div className="px-6 pb-6">{builderOpened && <SettingsBuilder />}</div>
+      </details>
       {/* Zwykły upload */}
       <form onSubmit={handleNormalUpload} className="bg-zinc-800 rounded-lg p-6">
         <h3 className="text-xl font-bold text-white mb-4">Wgraj Plik Ustawień</h3>

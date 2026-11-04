@@ -55,9 +55,10 @@ TEXT_SIGNUP_JOIN = "HUJ"
 TEXT_SIGNUP_LEAVE = "wypisz mnie"
 TEXT_SIGNUP_CLOSED = "Zapisy zamknięte"
 TEXT_SIGNUP_CLOSED_REPLY = "Zapisy zamknięte, napisz do hosta"
-# Resized site avatars for the poll answer emojis (Cloudflare image transformations on the
-# townofus.pl zone, the only zone with them, so every env uses it). Empty: no avatar emojis.
-AVATAR_EMOJI_BASE_URL = "https://townofus.pl/cdn-cgi/image/width=128,height=128,fit=cover,format=png/images/avatars"
+# Base URL of the original site avatars for the poll answer emojis. The bot resizes them with
+# `cf.image` fetch options (not a /cdn-cgi/image/ URL: that URL returns 404 for a Worker on the
+# townofus.pl zone). Empty: no avatar emojis.
+AVATAR_EMOJI_BASE_URL = "https://townofus.pl/images/avatars"
 
 # --------------------------------------------------------------------------------------------
 # staging — staging Discord application, production server, test channel
@@ -101,9 +102,10 @@ TEXT_SIGNUP_JOIN = "HUJ"
 TEXT_SIGNUP_LEAVE = "wypisz mnie"
 TEXT_SIGNUP_CLOSED = "Zapisy zamknięte"
 TEXT_SIGNUP_CLOSED_REPLY = "Zapisy zamknięte, napisz do hosta"
-# Resized site avatars for the poll answer emojis (Cloudflare image transformations on the
-# townofus.pl zone, the only zone with them, so every env uses it). Empty: no avatar emojis.
-AVATAR_EMOJI_BASE_URL = "https://townofus.pl/cdn-cgi/image/width=128,height=128,fit=cover,format=png/images/avatars"
+# Base URL of the original site avatars for the poll answer emojis. The bot resizes them with
+# `cf.image` fetch options (not a /cdn-cgi/image/ URL: that URL returns 404 for a Worker on the
+# townofus.pl zone). Empty: no avatar emojis.
+AVATAR_EMOJI_BASE_URL = "https://townofus.pl/images/avatars"
 
 # --------------------------------------------------------------------------------------------
 # production — prod Discord application, production server, production channel
@@ -146,6 +148,7 @@ TEXT_SIGNUP_JOIN = "HUJ"
 TEXT_SIGNUP_LEAVE = "wypisz mnie"
 TEXT_SIGNUP_CLOSED = "Zapisy zamknięte"
 TEXT_SIGNUP_CLOSED_REPLY = "Zapisy zamknięte, napisz do hosta"
-# Resized site avatars for the poll answer emojis (Cloudflare image transformations on the
-# townofus.pl zone, the only zone with them, so every env uses it). Empty: no avatar emojis.
-AVATAR_EMOJI_BASE_URL = "https://townofus.pl/cdn-cgi/image/width=128,height=128,fit=cover,format=png/images/avatars"
+# Base URL of the original site avatars for the poll answer emojis. The bot resizes them with
+# `cf.image` fetch options (not a /cdn-cgi/image/ URL: that URL returns 404 for a Worker on the
+# townofus.pl zone). Empty: no avatar emojis.
+AVATAR_EMOJI_BASE_URL = "https://townofus.pl/images/avatars"

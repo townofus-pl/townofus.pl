@@ -5,7 +5,7 @@ import type { RankingHistoryPoint } from "../_services";
 import { buildSeasonUrl } from "../_utils/seasonHelpers";
 import { getPlayerAvatarPath } from '../_utils/gameUtils';
 import { getRankingComparisonColor } from '../_utils/rankingComparisonColors';
-import { RANK_TIERS } from '../_constants/rankTiers';
+import { getRankIcon, RANK_TIERS } from '../_constants/rankTiers';
 
 // Typy krzywych dostępne w wykresie
 type CurveType = 'linear' | 'smooth' | 'step' | 'cardinal' | 'monotone';
@@ -58,31 +58,24 @@ export function RankingChart({
         ...comparisons.map((line, index) => ({ name: line.playerName, color: getRankingComparisonColor(index), data: prepareData(line.data) })),
     ];
     const allData = series.flatMap(line => line.data.map(point => ({ ...point, playerName: line.name, color: line.color })));
-    const rankLabelWidth = expanded ? Math.max(...RANK_TIERS.map(tier => `${tier.name} ${tier.minRating}`.length * 5 * sizeScale + 20 * sizeScale)) : 0;
+    const rankIconSize = 16 * sizeScale;
+    const rankLabelWidth = expanded ? Math.max(...RANK_TIERS.map(tier => `${tier.name} ${tier.minRating}`.length * 6 * sizeScale + 20 * sizeScale)) + rankIconSize + 4 * sizeScale : 0;
     const labelWidth = Math.max(rankLabelWidth, ...series.map(line => line.name ? line.name.length * 5 * sizeScale + 20 * sizeScale : 0));
     
     const minScore = Math.min(...allData.map(d => d.score));
     const maxScore = Math.max(...allData.map(d => d.score));
-    const sortedRankThresholds = RANK_TIERS.map(tier => tier.minRating).sort((a, b) => a - b);
-    const rankDomainMin = expanded
-        ? [...sortedRankThresholds].reverse().find(threshold => threshold <= minScore) ?? minScore
-        : minScore;
-    const rankDomainMax = expanded
-        ? sortedRankThresholds.find(threshold => threshold >= maxScore) ?? maxScore
-        : maxScore;
-    const rankPadding = expanded ? Math.max((rankDomainMax - rankDomainMin) * 0.05, 20) : 0;
-    const flatScore = minScore === maxScore;
-    const domainMin = expanded ? rankDomainMin - rankPadding : flatScore ? minScore - 50 : minScore;
-    const domainMax = expanded ? rankDomainMax + rankPadding : flatScore ? maxScore + 50 : maxScore;
+    const domainMin = minScore - 50;
+    const domainMax = maxScore + 50;
     const scoreRange = domainMax - domainMin || 1;
     const rankTicks = expanded
-        ? RANK_TIERS.filter(tier => tier.minRating >= rankDomainMin && tier.minRating <= rankDomainMax)
+        ? RANK_TIERS.filter(tier => tier.minRating >= domainMin && tier.minRating <= domainMax)
             .sort((a, b) => a.minRating - b.minRating)
         : [];
-    const rankBands = rankTicks.slice(0, -1).map((lower, index) => ({
-        name: lower.name,
-        midpoint: (lower.minRating + rankTicks[index + 1].minRating) / 2,
-    }));
+    const rankBands = expanded ? [...RANK_TIERS].reverse().flatMap((tier, index, tiers) => {
+        const lower = Math.max(domainMin, tier.minRating);
+        const upper = Math.min(domainMax, tiers[index + 1]?.minRating ?? domainMax);
+        return upper > lower ? [{ name: tier.name, icon: getRankIcon(tier.minRating), midpoint: (lower + upper) / 2 }] : [];
+    }) : [];
 
     // Funkcje skalowania - X bazuje na równomiernym rozmieszczeniu punktów
     // Both players share one slot per game. Real-time spacing squeezes an entire
@@ -277,16 +270,26 @@ export function RankingChart({
                     ))}
 
                     {rankBands.map(band => (
-                        <text
-                            key={band.name}
-                            x={-7}
-                            y={scaleY(band.midpoint) + 4 * sizeScale}
-                            fill="rgb(161, 161, 170)"
-                            fontSize={9 * sizeScale}
-                            textAnchor="end"
-                        >
-                            {band.name}
-                        </text>
+                        <g key={band.name}>
+                            {band.icon && <image
+                                href={band.icon}
+                                x={-7 - band.name.length * 5.5 * sizeScale - 3 * sizeScale - rankIconSize}
+                                y={scaleY(band.midpoint) - rankIconSize / 2}
+                                width={rankIconSize}
+                                height={rankIconSize}
+                                preserveAspectRatio="xMidYMid meet"
+                                aria-hidden="true"
+                            />}
+                            <text
+                                x={-7}
+                                y={scaleY(band.midpoint) + 4 * sizeScale}
+                                fill="rgb(161, 161, 170)"
+                                fontSize={9 * sizeScale}
+                                textAnchor="end"
+                            >
+                                {band.name}
+                            </text>
+                        </g>
                     ))}
 
                     {/* Oś X */}

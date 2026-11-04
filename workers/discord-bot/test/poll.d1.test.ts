@@ -153,7 +153,9 @@ describe('cron step', () => {
         expect(sent).toHaveLength(0);
 
         const now = LAST_INGEST + 30 * MIN;
-        expect(await createPollTick(ctxAt(now, discord), SESSION)).toEqual({ kind: 'created', date: SESSION, signupSent: true });
+        // random() = 0 turns the shuffle into a known rotation of the selected players.
+        const ctx = { ...ctxAt(now, discord), random: () => 0 };
+        expect(await createPollTick(ctx, SESSION)).toEqual({ kind: 'created', date: SESSION, signupSent: true });
 
         const [poll, signup] = sent;
         expect(poll.channelId).toBe(CHANNEL);
@@ -183,8 +185,12 @@ describe('cron step', () => {
         expect(candidates).toHaveLength(10);
         expect(candidates.every((c) => c.voteCount === 0)).toBe(true);
         // 10th place is a tie between Gracz10 (one game) and Gracz12 (two games). More games wins.
-        expect(candidates.map((c) => c.nickname)).toEqual([
+        // The same 10 players are selected. They are posted in the shuffled order, not the day order.
+        expect(candidates.map((c) => c.nickname).sort()).toEqual([
             'Gracz01', 'Gracz02', 'Gracz03', 'Gracz04', 'Gracz05', 'Gracz06', 'Gracz07', 'Gracz08', 'Gracz09', 'Gracz12',
+        ]);
+        expect(candidates.map((c) => c.nickname)).toEqual([
+            'Gracz02', 'Gracz03', 'Gracz04', 'Gracz05', 'Gracz06', 'Gracz07', 'Gracz08', 'Gracz09', 'Gracz12', 'Gracz01',
         ]);
         expect(poll.body.poll!.answers.map((a) => a.poll_media.text)).toEqual(candidates.map((c) => c.nickname));
 
@@ -220,7 +226,10 @@ describe('cron step', () => {
         const { discord, polls } = fakeDiscord(['fail']);
         const now = LAST_INGEST + 30 * MIN;
 
-        expect(await createPollTick(ctxAt(now, discord), SESSION)).toEqual({ kind: 'sendFailed', date: SESSION });
+        expect(await createPollTick({ ...ctxAt(now, discord), random: () => 0 }, SESSION)).toEqual({
+            kind: 'sendFailed',
+            date: SESSION,
+        });
         expect((await pollRows())[0].discordMessageId).toBeNull();
         const before = await candidateRows();
 
@@ -228,7 +237,8 @@ describe('cron step', () => {
         expect(await runAnkieta(db, discord, env, now + 2 * MIN)).toMatch(/właśnie wysyłana/);
         expect(polls()).toHaveLength(0);
 
-        expect(await createPollTick(ctxAt(now + 10 * MIN, discord), SESSION)).toEqual({
+        // A different random source on the second tick must not change the stored order.
+        expect(await createPollTick({ ...ctxAt(now + 10 * MIN, discord), random: () => 0.999999 }, SESSION)).toEqual({
             kind: 'created',
             date: SESSION,
             signupSent: true,
@@ -236,6 +246,7 @@ describe('cron step', () => {
         expect(polls()).toHaveLength(1);
         expect((await pollRows())[0].discordMessageId).toBe('msg-1');
         expect(await candidateRows()).toEqual(before);
+        expect(polls()[0].body.poll!.answers.map((a) => a.poll_media.text)).toEqual(before.map((c) => c.nickname));
     });
 
     it('closes a stale unsent row without sending it, so it does not block the new week', async () => {

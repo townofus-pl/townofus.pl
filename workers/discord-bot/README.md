@@ -77,7 +77,8 @@ Each answer of the Emperor poll can show the avatar of the player as an applicat
 
 1. The bot reads the application's emojis once (`GET /applications/{id}/emojis`).
 2. For each candidate, the bot gets one image, in this order:
-   - the site avatar: `AVATAR_EMOJI_BASE_URL` + `/<current player name>.png`;
+   - the site avatar: `AVATAR_EMOJI_BASE_URL` + `/<current player name>.png`, resized to 128x128 PNG with the
+     `cf.image` fetch options;
    - the avatar of the Discord account that `discord_accounts` links to the player;
    - no image: the answer has no emoji.
 3. The emoji name is `av_<playerId>_<first 8 hex of SHA-256 of the image>`. An emoji with that
@@ -92,14 +93,22 @@ the `waitUntil` time. If Discord refuses the poll with a 4xx (not 429) and the p
 bot sends it once more without emojis, with the same nonce. The poll is always sent.
 An application can have 2000 emojis.
 
-The value is `https://townofus.pl/cdn-cgi/image/width=128,height=128,fit=cover,format=png/images/avatars`
-in every environment. Some files in `public/images/avatars/` are over 2 MB, more than the Discord
-limit, so the bot needs the resized 128x128 PNG.
+The value is `https://townofus.pl/images/avatars` in every environment. Some files in
+`public/images/avatars/` are over 2 MB, more than the Discord limit, so the bot resizes them.
 
-- This URL needs **Images > Transformations** enabled on the `townofus.pl` zone in the Cloudflare
-  dashboard. Only that zone has it, so staging and dev use the production URL too.
+- The bot fetches the site avatar with `cf: { image: { width: 128, height: 128, fit: "cover",
+  format: "png" } }`. This needs **Images > Transformations** enabled on the `townofus.pl` zone.
+  The Discord CDN request does not use `cf.image`. The transformation runs on the `townofus.pl`
+  zone for production, and on the `workers.dev` Worker for staging.
+- Do not use a `/cdn-cgi/image/...` URL. A Worker on the `townofus.pl` zone (production) gets a
+  404 for it. The `global_fetch_strictly_public` flag does not change this.
 - The free plan includes 5000 unique transformations per month. One avatar is one transformation
   until the file changes, so the poll uses very few of them.
+- Logs (JSON, `console.warn`): `avatarImageRejected` for each image the bot does not use, with
+  `url`, `status`, `type`, `bytes` or `contentLength`, `cfResized` (the `cf-resized` response
+  header or `null`) and `reason` (`status`, `type`, `size` or
+  `empty`). `avatarEmojis` once for each run, with `candidates`, `ready` and `ms`. `ready: 0` with
+  candidates shows that the feature gave nothing.
 - To turn the feature off, set the var to `""` in that environment and deploy.
 
 ## Configuration
@@ -129,7 +138,7 @@ Each environment declares its own vars. Named environments do not inherit them.
 | `TEXT_SIGNUP_LEAVE` | Label of the leave button |
 | `TEXT_SIGNUP_CLOSED` | Text added to the signup message at 18:00 |
 | `TEXT_SIGNUP_CLOSED_REPLY` | Reply to a click after 18:00 |
-| `AVATAR_EMOJI_BASE_URL` | Base URL of the resized site avatars for the poll answer emojis. See [Avatar emojis](#avatar-emojis). Empty: no avatar emojis. |
+| `AVATAR_EMOJI_BASE_URL` | Base URL of the original site avatars (`https://townofus.pl/images/avatars`) for the poll answer emojis. See [Avatar emojis](#avatar-emojis). Empty: no avatar emojis. |
 
 The IDs are not secret. The values marked `TODO(#361)` stay empty until the deployment ticket
 fills them in.
