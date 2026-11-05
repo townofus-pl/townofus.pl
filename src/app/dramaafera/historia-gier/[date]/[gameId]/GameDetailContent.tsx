@@ -1,6 +1,6 @@
 import Link from "next/link";
 import Image from "next/image";
-import { getGameData, toPublicGameData, getPlayerOrderMode } from "../../../_services";
+import { getGameData, getGamePageData } from "../../../_services";
 import { formatDisplayDate, getPlayerAvatarPath } from "@/app/dramaafera/_utils/gameUtils";
 import { buildSeasonUrl } from "@/app/dramaafera/_utils/seasonHelpers";
 import { TeamColors } from "@/constants/teams";
@@ -22,8 +22,8 @@ export async function GameDetailContent({ date, gameId, seasonId }: GameDetailCo
         notFound();
     }
 
-    // Kolejność graczy ustalamy tutaj (ostatni dzień: alfabetycznie), a do przeglądarki idą dane publiczne.
-    const gameData = toPublicGameData(fullGameData, { displayOrder: true });
+    // Kolejność graczy i przyciski sortowania ustala `getGamePageData` (ostatni dzień: alfabetycznie, bez przycisków).
+    const { game: gameData, showSortButtons } = getGamePageData(fullGameData);
 
     const displayDate = formatDisplayDate(date);
 
@@ -131,7 +131,7 @@ export async function GameDetailContent({ date, gameId, seasonId }: GameDetailCo
                     playersData={gameData.detailedStats.playersData} 
                     maxTasks={gameData.maxTasks || 0}
                     seasonId={seasonId}
-                    showSortButtons={getPlayerOrderMode(gameData).showSortButtons}
+                    showSortButtons={showSortButtons}
                 />
 
                 {gameData.detailedStats.hasTimeline && <GameTimeline events={gameData.detailedStats.events} endTimestamp={gameData.detailedStats.endTimestamp} />}

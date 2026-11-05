@@ -4,4 +4,4 @@ export { getGamesList, getGamesListByDate, getGameDatesList } from './getGamesLi
 export { getLatestGameDay } from './getLatestGameDay';
 export { getGameData } from './getGameData';
 export { getAllGamesData } from './getAllGamesData';
-export { toPublicGameData, toPublicPlayerData, toPublicOriginalStats, getPlayerOrderMode, sortPlayersStandard, sortPlayersAlphabetically } from './_toPublic';
+export { toPublicGameData, getGamePageData, toPublicPlayerData, toPublicOriginalStats, getPlayerOrderMode, sortPlayersStandard, sortPlayersAlphabetically } from './_toPublic';

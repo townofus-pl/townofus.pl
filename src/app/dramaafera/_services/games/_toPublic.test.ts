@@ -1,4 +1,4 @@
-import { toPublicGameData, sortPlayersStandard, getPlayerOrderMode } from './_toPublic';
+import { toPublicGameData, sortPlayersStandard, getPlayerOrderMode, getGamePageData } from './_toPublic';
 import { findForbiddenFields } from './_forbiddenFields';
 import type { UIGameData, UIPlayerData } from './types';
 
@@ -90,4 +90,31 @@ test('the public game is built from an explicit list, so an extra field is dropp
   const extra = { ...game([player('A', 1)]), leaked: 1, detailedStats: { ...game([player('A', 1)]).detailedStats, leakedToo: 2 } };
   const json = JSON.stringify(toPublicGameData(extra as UIGameData));
   expect(json).not.toContain('leaked');
+});
+
+describe('getGamePageData: the data and the prop that the game page passes', () => {
+  const players = () => [player('Zed', 50), player('Ala', 1), player('Bob', 20)];
+  const names = (page: ReturnType<typeof getGamePageData>) => page.game.detailedStats.playersData.map(p => p.nickname);
+
+  test('a game from the latest day: alphabetical order and no sort buttons', () => {
+    const page = getGamePageData({ ...game(players()), isLatestDay: true });
+    expect(names(page)).toEqual(['Ala', 'Bob', 'Zed']);
+    expect(page.showSortButtons).toBe(false);
+  });
+
+  test('an older game: the standard order and both sort buttons', () => {
+    const page = getGamePageData({ ...game(players()), isLatestDay: false });
+    expect(names(page)).toEqual(['Zed', 'Bob', 'Ala']);
+    expect(page.showSortButtons).toBe(true);
+  });
+
+  test('a game with no flag takes the safe values', () => {
+    const page = getGamePageData(game(players()));
+    expect(names(page)).toEqual(['Ala', 'Bob', 'Zed']);
+    expect(page.showSortButtons).toBe(false);
+  });
+
+  test('the page data has no point field', () => {
+    expect(JSON.stringify(getGamePageData({ ...game(players()), isLatestDay: false }))).not.toMatch(/totalPoints|initialRolePoints/);
+  });
 });
