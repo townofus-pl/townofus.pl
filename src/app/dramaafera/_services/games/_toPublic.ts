@@ -146,3 +146,14 @@ export function toPublicGameData(game: UIGameData, opts: { displayOrder?: boolea
     },
   };
 }
+
+/**
+ * Dane strony gry: gra w kolejności graczy dla strony i wartość `showSortButtons`, którą strona
+ * przekazuje do `PlayerStatsSection`. Strona nie liczy tych dwóch rzeczy sama.
+ */
+export function getGamePageData(game: UIGameData): { game: PublicGameData; showSortButtons: boolean } {
+  return {
+    game: toPublicGameData(game, { displayOrder: true }),
+    showSortButtons: getPlayerOrderMode(game).showSortButtons,
+  };
+}
