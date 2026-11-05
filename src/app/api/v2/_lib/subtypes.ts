@@ -1,8 +1,8 @@
 import { V2_ACTION_TYPES } from '@/app/api/schema/gamesV2';
 import { TIMELINE_HIDDEN_TYPES } from '@/app/dramaafera/_services/games/_buildGameTimeline';
 
-// Listy podtypów dla opisów w `/api/docs`. Źródła każdej listy są w
-// `~/Projects/.scratch/dramaafera/report-api-v2-subtypes.md`.
+// Listy podtypów dla opisów w `/api/docs`. Źródła: kod modu, locale TOU-Mira (klucze `DiedTo*`),
+// rejestr ról strony i `aggregate.ts`.
 
 /** Typy zdarzeń na osi czasu: typy akcji z modu bez tych, które oś czasu ukrywa. Lista zamknięta. */
 export const EVENT_TYPES = V2_ACTION_TYPES.filter(

@@ -175,6 +175,82 @@ export async function getGamesList(seasonId?: number): Promise<GameSummary[]> {
   return games;
 }
 
+/**
+ * Jedna strona gier sezonu. Filtr daty, liczba gier i stronicowanie idą w SQL, a statystyki
+ * graczy są czytane tylko dla gier z tej strony. Numer gry w dniu liczymy z samych identyfikatorów
+ * gier sezonu, więc zgadza się z `getGamesList` także wtedy, gdy strona przecina dzień.
+ */
+export async function getGamesPage(
+  seasonId: number | undefined,
+  { date, limit, offset }: { date?: string; limit: number; offset: number },
+): Promise<{ total: number; games: GameSummary[] }> {
+  const prisma = await getDatabaseClient();
+  if (!prisma) return { total: 0, games: [] };
+
+  const where = { ...buildSeasonGameWhere(seasonId), ...(date ? { gameIdentifier: { startsWith: date } } : {}) };
+  const [total, dbGames, identifiers] = await Promise.all([
+    prisma.game.count({ where }),
+    prisma.game.findMany({
+      where,
+      select: { id: true, gameIdentifier: true, startTime: true, endTime: true, map: true, season: true },
+      orderBy: { startTime: 'desc' },
+      skip: offset,
+      take: limit,
+    }),
+    prisma.game.findMany({ where: buildSeasonGameWhere(seasonId), select: { gameIdentifier: true } }),
+  ]);
+  if (dbGames.length === 0) return { total, games: [] };
+
+  const statsByGameId = await fetchStatsByGameIds(prisma, dbGames.map((g) => g.id));
+  const games = dbGames.map((game) => buildGameSummary(game, statsByGameId.get(game.id) ?? []));
+
+  const idsByDate = new Map<string, string[]>();
+  for (const { gameIdentifier } of identifiers) {
+    const day = extractDateFromGameId(gameIdentifier);
+    idsByDate.set(day, [...(idsByDate.get(day) ?? []), gameIdentifier]);
+  }
+  for (const game of games) {
+    const sorted = [...(idsByDate.get(game.date) ?? [])].sort((a, b) => a.localeCompare(b));
+    game.gameNumber = sorted.indexOf(game.id) + 1;
+  }
+  return { total, games };
+}
+
+export interface SessionGameStats {
+  summary: GameSummary;
+  /** Gracze gry: nick, wynik i historia ról. Bez liczników i bez akcji. */
+  players: Array<{ name: string; win: boolean; roleHistory: string[] }>;
+}
+
+/**
+ * Gry jednej sesji z wynikami graczy, czytane razem: jedno zapytanie o gry i po jednym (porcjowanym)
+ * o statystyki, graczy, role i modyfikatory, bez względu na liczbę gier. Zastępuje pętlę po `getGameData`.
+ */
+export async function getSessionGameStats(date: string, seasonId?: number): Promise<SessionGameStats[]> {
+  const prisma = await getDatabaseClient();
+  if (!prisma) return [];
+  const dbGames = await prisma.game.findMany({
+    where: { ...buildSeasonGameWhere(seasonId), gameIdentifier: { startsWith: date } },
+    select: { id: true, gameIdentifier: true, startTime: true, endTime: true, map: true, season: true },
+    orderBy: { gameIdentifier: 'desc' },
+  });
+  if (dbGames.length === 0) return [];
+
+  const statsByGameId = await fetchStatsByGameIds(prisma, dbGames.map((g) => g.id));
+  const summaries = dbGames.map((game) => buildGameSummary(game, statsByGameId.get(game.id) ?? []));
+  const sorted = [...summaries].sort((a, b) => a.id.localeCompare(b.id));
+  sorted.forEach((game, index) => { game.gameNumber = index + 1; });
+
+  return dbGames.map((game, index) => ({
+    summary: summaries[index],
+    players: (statsByGameId.get(game.id) ?? []).map((stat) => ({
+      name: stat.playerName,
+      win: stat.win,
+      roleHistory: [...stat.roleHistory].sort((a, b) => a.order - b.order).map((r) => r.roleName),
+    })),
+  }));
+}
+
 // Fetch games by specific date — direct DB query to avoid loading all games
 // Wrapped in React `cache()` so it runs once per request, not once per caller. The podsumowanie
 // page calls it three times in one render — from getTopSigmas, getRankingAfterSession and

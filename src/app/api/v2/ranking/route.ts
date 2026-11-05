@@ -5,7 +5,7 @@ import { publicGet, preflight, seasonParam, intParam } from '../_lib/http';
 
 export const OPTIONS = preflight;
 
-// Ranking jak na stronie `ranking`: `dap` bez ostatniego dnia z grami, Cesarz tylko z zamkniętej sesji.
+// Ranking jak na stronie `ranking`: `dap` bez ostatniego dnia z grami, Cesarz jak na stronie.
 export const GET = publicGet(RankingResponseSchema, async (request) => {
   const season = seasonParam(request);
   const limit = intParam(request, 'limit', 50, { min: 1, max: 200 });

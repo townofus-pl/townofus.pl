@@ -16,7 +16,7 @@ export default function RemainingPlayersSlide({ isFullscreen, weeklyStats, step 
         setScreenHeight(window.innerHeight);
     }, []);
 
-    // Sortuj według punktów DAP (malejąco) - tak samo jak w hostinfo
+    // Kolejność jak w hostinfo
     const sortedStats = [...weeklyStats].sort((a, b) => b.totalPoints - a.totalPoints);
     
     // Sprawdź czy jest remis na 3. miejscu

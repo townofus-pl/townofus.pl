@@ -2,8 +2,8 @@
  * Recomputes the ELO-like ranking from seeded real data and diffs it against the
  * answer already stored in the database.
  *
- * Why this exists: `player_rankings` is the only oracle v2 has. Before any scoring
- * change can be argued about, we need to show we can reproduce today's standings
+ * Why this exists: `player_rankings` is the only oracle v2 has. Before any change to how
+ * DAP feeds the rating can be argued about, we need to show we can reproduce today's standings
  * from today's `totalPoints`. Once that holds, re-running after a change turns
  * "this feels harsh" into a number.
  *
@@ -150,15 +150,13 @@ function main(): void {
         const gameStart = Date.parse(game.startTime);
         const stats = statsByGame.get(game.id) ?? [];
 
-        // `--disconnected` rewrites what a leaver scored, so the two candidate rules can be
-        // measured against the standings they would actually have produced:
+        // `--disconnected` rewrites the total a leaver enters the rating with, so the candidate
+        // rules can be measured against the standings they would actually have produced:
         //   as-is  what the database holds (v1 zeroed every leaver)
-        //   floor  the mod's v2 clamp — min(own, lowest total among those who stayed)
+        //   floor  the lowest total among those who stayed
         //   zero   v1's rule, applied explicitly
         //   exclude  a leaver is not "present" at all — they fall into the absent branch, so the
         //            game costs them the flat absence penalty instead of W * (0 - expected)
-        // `own` is unrecoverable from v1 rows (they were already zeroed), so `floor` uses the
-        // floor itself, which is the clamp's upper bound and therefore its most generous case.
         const stayedFloor = stats.some((s) => s.disconnected)
             ? Math.min(...stats.filter((s) => !s.disconnected).map((s) => s.totalPoints ?? 0))
             : 0;

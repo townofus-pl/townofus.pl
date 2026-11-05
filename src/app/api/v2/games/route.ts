@@ -1,5 +1,5 @@
 import { withAuth, withCors } from '@/app/api/_middlewares';
-import { getGamesList } from '@/app/dramaafera/_services';
+import { getGamesPage } from '@/app/dramaafera/_services';
 import { GamesResponseSchema } from '../_lib/schemas';
 import { publicGet, preflight, seasonParam, intParam, normalizeDate } from '../_lib/http';
 import { POST as postHandler } from './post';
@@ -18,8 +18,8 @@ export const GET = publicGet(GamesResponseSchema, async (request) => {
   const rawDate = new URL(request.url).searchParams.get('date');
   const date = rawDate ? normalizeDate(rawDate) : null;
 
-  const all = await getGamesList(season);
-  const filtered = date ? all.filter((game) => game.date === date) : all;
+  // Filtr daty, liczba gier i stronicowanie idą w SQL.
+  const { total, games } = await getGamesPage(season, { date: date ?? undefined, limit, offset });
 
-  return { season, total: filtered.length, limit, offset, games: filtered.slice(offset, offset + limit) };
+  return { season, total, limit, offset, games };
 });

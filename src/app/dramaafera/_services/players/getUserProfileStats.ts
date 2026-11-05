@@ -183,8 +183,9 @@ export async function getUserProfileStats(playerName: string, seasonId?: number)
       const withVotes = { ...stat, correctVotes: votes?.correct ?? 0, incorrectVotes: votes?.incorrect ?? 0 };
       addGame(roleBreakdown, roleKey, withVotes, season);
       const label = roleLabel(roleKey, season);
-      const row = (roleColumns[label] ??= { gamesPlayed: 0, columns: {} });
+      const row = (roleColumns[label] ??= { gamesPlayed: 0, gameIds: [], columns: {} });
       row.gamesPlayed += 1;
+      row.gameIds.push(stat.gameId);
       for (const [column, value] of Object.entries(withVotes)) {
         if (typeof value === 'number' && column !== 'id' && column !== 'gameId') {
           row.columns[column] = (row.columns[column] ?? 0) + value;

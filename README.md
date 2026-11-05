@@ -122,7 +122,10 @@ the site. Only `POST /api/v2/games` (the mod), `GET /api/mod/host/[name]` and
 locally and wrangler secrets per environment).
 
 `npx tsx scripts/check-api-v2.ts http://localhost:3000` checks the real responses of a running
-local server against the response schemas.
+local server against the response schemas, the rules (no point fields, delayed `dap`, latest-day
+order, `null` for missing action data, 404 for `season=1`) and the data of the local D1 copy.
+CI does not run it, because it needs a running server and a seeded local D1. Route tests in
+`src/app/api/v2/routes.test.ts` run in CI (response schema, blocked-field scan, 401 and 200).
 
 ## Documentation
 

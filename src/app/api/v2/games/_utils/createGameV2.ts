@@ -232,7 +232,7 @@ export async function createGameV2(
 ): Promise<CreateGameV2Result> {
     if (payload.abnormalEnd) {
         throw new IngestRejected(
-            'Payload is marked abnormalEnd — the match had no normal end, so its scoring is not trustworthy.',
+            'Payload is marked abnormalEnd — the match had no normal end, so its data is not trustworthy.',
             422,
         );
     }

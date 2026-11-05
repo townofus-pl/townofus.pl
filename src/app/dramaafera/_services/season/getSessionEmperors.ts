@@ -1,9 +1,7 @@
 import { getDatabaseClient } from '../db';
 import { CURRENT_SEASON } from '@/app/dramaafera/_constants/seasons';
 
-/** Unique session winners, oldest first. Stars use closed dates by default;
- * the session summary can also show the current, still-open date's winner.
- * Archived seasons include their finale in either mode. Ties have no winner. */
+/** Session winners, oldest first. Stars use closed dates by default. */
 export async function getSessionEmperors(seasonId = CURRENT_SEASON, { includeOpenSession = false } = {}) {
   const prisma = await getDatabaseClient();
   if (!prisma) return [];
@@ -37,9 +35,8 @@ export async function getLatestEmperorId(seasonId = CURRENT_SEASON): Promise<num
   const prisma = await getDatabaseClient();
   if (!prisma) return null;
 
-  // The crown needs only the latest unique winner, not every season's point sums.
-  // Read the small games table once, then aggregate sessions newest-first until
-  // a unique winner is found. Ties and sessions without active players fall back.
+  // The crown needs only the latest winner. Read the small games table once, then look at
+  // sessions newest-first.
   const dates = await prisma.$queryRaw<{ date: string }[]>`
     SELECT DISTINCT SUBSTR(startTime, 1, 10) AS date FROM games
     WHERE season = ${seasonId} AND deletedAt IS NULL

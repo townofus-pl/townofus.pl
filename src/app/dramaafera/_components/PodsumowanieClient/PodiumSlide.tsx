@@ -24,7 +24,7 @@ export default function PodiumSlide({
     currentStep,
     seasonId,
 }: PodiumSlideProps) {
-    // Sortuj według punktów DAP (malejąco) żeby mieć prawidłową TOP 3
+    // TOP 3 tygodnia
     const sortedStats = [...weeklyStats].sort((a, b) => b.totalPoints - a.totalPoints);
     
     // Sprawdź czy jest remis na 3. miejscu

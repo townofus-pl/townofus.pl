@@ -46,7 +46,7 @@ On `swap` the field may be **absent**, which means the rule declined to classify
 | `janitor_clean` | `janitorCleans` (flat +1) | Janitor |
 | `task_completed` | `completedTasks` (flat +1) | any role that started Crewmate-aligned |
 | `round_survived` | `survivedRounds` (flat +1) | any living, still-connected player |
-| `role_assigned` | `initialRolePoints` | every player, once |
+| `role_assigned` | stored once per player | every player, once |
 
 ### Types that map to no counter
 
@@ -57,8 +57,8 @@ Stored in `game_actions`, used for the timeline, and deliberately not aggregated
 `vent_use` · `sabotage_started` · `sabotage_fixed` · `win` · `disconnect`
 
 `win` and `disconnect` are read from `players[*].win` and `players[*].disconnected`, not from the
-presence of their actions — the mod omits a `disconnect` action when the clamp delta is below its
-epsilon, so absence does not mean the player stayed.
+presence of their actions — the mod can omit a `disconnect` action, so absence does not mean the
+player stayed.
 
 ### Traps
 

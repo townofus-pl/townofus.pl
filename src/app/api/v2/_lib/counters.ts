@@ -97,3 +97,37 @@ export function buildGroupedCounters(c: CounterColumns, opts: GroupOptions): Gro
     votes: opts.votes === undefined ? null : opts.votes,
   };
 }
+
+const addPair = (a: Pair, b: Pair): Pair => ({ correct: a.correct + b.correct, incorrect: a.incorrect + b.incorrect });
+const sumNullable = <T>(items: Array<T | null>, add: (a: T, b: T) => T): T | null =>
+  items.some((item) => item === null) || items.length === 0 ? null : items.reduce((a, b) => add(a as T, b as T)) as T;
+
+/**
+ * Suma liczników z kilku grup (np. ról gracza). Każda grupa jest policzona z własną rolą,
+ * więc ochrony Monarcha zostają w `knights`, a `types` sumują się do sumy grupy.
+ * `null` zostaje `null`, gdy którakolwiek składowa go ma.
+ */
+export function sumGroupedCounters(list: GroupedCounters[]): GroupedCounters {
+  const sumPairs = (pick: (c: GroupedCounters) => Pair) => list.map(pick).reduce(addPair, emptyPair());
+  const sumTypes = <K extends string>(keys: readonly K[], pick: (c: GroupedCounters) => Record<K, Pair>) =>
+    Object.fromEntries(keys.map((key) => [key, list.map((c) => pick(c)[key]).reduce(addPair, emptyPair())])) as Record<K, Pair>;
+  return {
+    kills: { ...sumPairs((c) => c.kills), types: sumTypes(['standard', 'jailorExecutes', 'deputyShoots'] as const, (c) => c.kills.types) },
+    guesses: {
+      ...sumPairs((c) => c.guesses),
+      types: sumNullable(list.map((c) => c.guesses.types), (a, b) => ({ roles: addPair(a.roles, b.roles), modifiers: addPair(a.modifiers, b.modifiers) })),
+    },
+    protects: { ...sumPairs((c) => c.protects), types: sumTypes(['medic', 'mirrorcaster', 'oracle', 'warden'] as const, (c) => c.protects.types) },
+    other: {
+      ...sumPairs((c) => c.other),
+      types: {
+        prosecutes: sumPairs((c) => c.other.types.prosecutes),
+        altruistRevives: sumPairs((c) => c.other.types.altruistRevives),
+        swaps: sumPairs((c) => c.other.types.swaps),
+        janitorCleans: list.reduce((total, c) => total + c.other.types.janitorCleans, 0),
+        knights: sumPairs((c) => c.other.types.knights),
+      },
+    },
+    votes: sumNullable(list.map((c) => c.votes), addPair),
+  };
+}

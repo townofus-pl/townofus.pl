@@ -96,7 +96,7 @@ export interface UIPlayerData {
     incorrectAltruistRevives: number;
     correctSwaps: number;
     incorrectSwaps: number;
-    /** v2 only, from `game_actions` type `vote`; each decision counted with its weight (Mayor, Knight). */
+    /** v2 only, from `game_actions` type `vote`; each decision counted with its weight. */
     correctVotes?: number;
     incorrectVotes?: number;
     totalPoints: number;

@@ -75,8 +75,7 @@ function findRole(roleName: string, season: number): SlimRole | undefined {
   // Neutral (Town of Polus), and Spectator (struck from the roster, mod #48). They cannot reach a
   // payload — the mod returns early at match-state creation unless
   // `CustomGameModeManager.IsClassic()`, so no MatchState exists, no capture is written and
-  // nothing is submitted (mod #18). Adding registry entries for them would be inventing roles our
-  // scoring has no rules for.
+  // nothing is submitted (mod #18). Adding registry entries for them would be inventing roles.
   const collapse = (value: string) => value.toLowerCase().replace(/[^a-z0-9]/g, '');
   const collapsedRole = collapse(roleName);
 

@@ -1,4 +1,4 @@
-import { buildGroupedCounters, type CounterColumns } from './counters';
+import { buildGroupedCounters, sumGroupedCounters, type CounterColumns } from './counters';
 import { categorize } from '@/app/dramaafera/_utils/statsBreakdown';
 
 const columns: CounterColumns = {
@@ -56,4 +56,37 @@ test('missing data gives null and a Monarch in season 2 is a plain role', () => 
 test('action subtypes replace the role fallback', () => {
   const types = { medic: { correct: 1, incorrect: 0 }, mirrorcaster: { correct: 2, incorrect: 1 }, oracle: { correct: 0, incorrect: 0 }, warden: { correct: 0, incorrect: 0 } };
   expect(buildGroupedCounters(columns, { season: 4, role: 'Medic', protectTypes: types }).protects.types).toEqual(types);
+});
+
+describe('player total is the sum of the groups of each role', () => {
+  const medicGames: CounterColumns = { correctProtects: 5, incorrectProtects: 2, correctKills: 1 };
+  const monarchGames: CounterColumns = { correctProtects: 4, incorrectProtects: 1, correctWardenFortifies: 2 };
+  const medicTypes = { medic: { correct: 5, incorrect: 2 }, mirrorcaster: { correct: 0, incorrect: 0 }, oracle: { correct: 0, incorrect: 0 }, warden: { correct: 0, incorrect: 0 } };
+  const none = { medic: { correct: 0, incorrect: 0 }, mirrorcaster: { correct: 0, incorrect: 0 }, oracle: { correct: 0, incorrect: 0 }, warden: { correct: 0, incorrect: 0 } };
+
+  const medic = buildGroupedCounters(medicGames, { season: 4, role: 'Medic', protectTypes: medicTypes });
+  const monarch = buildGroupedCounters(monarchGames, { season: 4, role: 'Monarch', protectTypes: none });
+  const total = sumGroupedCounters([medic, monarch]);
+
+  test('Monarch knightings stay in knights, not in protects', () => {
+    expect(total.other.types.knights).toEqual({ correct: 6, incorrect: 1 });
+    expect(total.protects.correct).toBe(5);
+    expect(total.protects.incorrect).toBe(2);
+  });
+
+  test('the protects types sum to the group total', () => {
+    const sumTypes = Object.values(total.protects.types).reduce((a, b) => ({ correct: a.correct + b.correct, incorrect: a.incorrect + b.incorrect }));
+    expect(sumTypes).toEqual({ correct: total.protects.correct, incorrect: total.protects.incorrect });
+  });
+
+  test('the total equals categorize() summed over the same roles', () => {
+    const site = [categorize(medicGames, 4, 'Medic'), categorize(monarchGames, 4, 'Monarch')];
+    expect(total.protects.correct).toBe(site[0].protects.correct + site[1].protects.correct);
+    expect(total.other.correct).toBe(site[0].other.correct + site[1].other.correct);
+    expect(total.kills.correct).toBe(site[0].kills.correct + site[1].kills.correct);
+  });
+
+  test('a null part makes the sum null', () => {
+    expect(sumGroupedCounters([medic, buildGroupedCounters({}, { season: 4 })]).votes).toBeNull();
+  });
 });

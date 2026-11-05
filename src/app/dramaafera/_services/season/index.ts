@@ -7,7 +7,7 @@ export type { GameDateGameEntry, GameDateEntry, GameDatesResult } from './getGam
 export { getGameDatesLightweight } from './getGameDatesLightweight';
 
 export type { SessionPlayer, SessionRole, SessionSummary, PublicSessionSummary } from './getSessionSummaryByDate';
-export { getSessionSummaryByDate, getPublicSessionSummaryByDate } from './getSessionSummaryByDate';
+export { getSessionSummaryByDate, getPublicSessionSummaryByDate, getSessionOverview } from './getSessionSummaryByDate';
 
 export type { WeeklyPlayerStats, WeeklyStatsResult } from './getWeeklyStats';
 export { getWeeklyStats } from './getWeeklyStats';

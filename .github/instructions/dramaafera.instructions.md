@@ -82,7 +82,7 @@ Zod schema in `_lib/schemas.ts`. Do not wrap these routes in `withAuth`. The def
 
 ## Ranking system
 
-ELO-like rating. The constants are in rankingCalculator.ts (`RANKING_CONSTANTS`).
+ELO-like: START_RATING=2000, W=9 (game influence), PEN=5 (absence penalty)
 Calculator: src/app/api/_utils/rankingCalculator.ts → calculateRankingForGame(prisma, gameId)
 PlayerRanking.reason: typed as PlayerRankingReason (src/app/api/_constants/rankingTypes.ts)
   base_value | initial_value | game_result | absence_penalty | absence_no_penalty |
@@ -115,8 +115,7 @@ for historical context.
 - Indexes: `@@index([season])`, `@@index([season, deletedAt])`, `@@index([season, winnerTeam])`
   on Game; `@@index([season])`, `@@index([playerId, season, createdAt])` on PlayerRanking
 - `rankingCalculator.ts` — selects `game.season`, passes it to `playerRanking.create()`
-- `createGame.ts` — sets `season: getSeasonForDate(startTime)` on game creation
-- `players/post.ts` — sets `season: CURRENT_SEASON` on initial ranking row
+- `createGameV2.ts` — sets `season: getSeasonForDate(startTime)` on game creation
 
 ### Season reset
 Explicit admin endpoint: `POST /api/season/reset` (protected: `withCors(withAuth(...))`).

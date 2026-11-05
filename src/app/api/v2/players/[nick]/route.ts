@@ -10,8 +10,8 @@ import { FIRST_MIRA_SEASON } from '@/app/dramaafera/_constants/seasons';
 import { convertNickToUrlSlug } from '@/app/dramaafera/_utils/gameUtils';
 import { PlayerResponseSchema } from '../../_lib/schemas';
 import { ApiError, publicGet, preflight, seasonParam, intParam } from '../../_lib/http';
-import { buildGroupedCounters, type CounterColumns } from '../../_lib/counters';
-import { getPlayerActionSubtypes } from '../../_lib/gameActions';
+import { buildGroupedCounters, sumGroupedCounters, type CounterColumns } from '../../_lib/counters';
+import { getPlayerActionRows, playerSubtypes } from '../../_lib/gameActions';
 
 export const OPTIONS = preflight;
 
@@ -33,24 +33,35 @@ export const GET = publicGet(
     if (!stats) throw new ApiError(404, 'Gracz nie ma gier w tym sezonie');
 
     const hasActions = season >= FIRST_MIRA_SEASON;
-    const [history, best, voting, stars, actionSubtypes] = await Promise.all([
+    const roleRows = Object.entries(stats.roleColumns ?? {});
+    const [history, best, voting, stars, actionRows] = await Promise.all([
       getPlayerRankingHistory(name, season),
       getPlayerTopGames(name, limit, season, offset),
       getPlayerVotingStats(name, season),
       getPlayerStars(name, season),
-      hasActions ? getPlayerActionSubtypes(name, season) : null,
+      // Tylko akcje tego gracza w jego grach, jedno zapytanie na porcję gier.
+      hasActions ? getPlayerActionRows(name, roleRows.flatMap(([, row]) => row.gameIds)) : [],
     ]);
 
-    const roleRows = Object.entries(stats.roleColumns ?? {});
-    const votes = hasActions
-      ? roleRows.reduce(
-          (total, [, row]) => ({
-            correct: total.correct + (row.columns.correctVotes ?? 0),
-            incorrect: total.incorrect + (row.columns.incorrectVotes ?? 0),
-          }),
-          { correct: 0, incorrect: 0 },
-        )
-      : null;
+    // Sezon 4+: każda rola jest liczona osobno, z własną rolą gry (ochrony Monarcha to `knights`).
+    // Suma ról daje liczniki gracza, więc `types` sumują się do sumy grupy.
+    const perRole = roleRows.map(([role, row]) => {
+      const subtypes = playerSubtypes(actionRows, new Set(row.gameIds), season);
+      return {
+        role,
+        gamesPlayed: row.gamesPlayed,
+        counters: buildGroupedCounters(row.columns as CounterColumns, {
+          season,
+          role,
+          protectTypes: subtypes.protectTypes,
+          guessTypes: subtypes.guessTypes,
+          votes: { correct: row.columns.correctVotes ?? 0, incorrect: row.columns.incorrectVotes ?? 0 },
+        }),
+      };
+    });
+    const totalCounters = hasActions
+      ? sumGroupedCounters(perRole.map((row) => row.counters))
+      : buildGroupedCounters(stats as CounterColumns, { season });
 
     return {
       season,
@@ -68,27 +79,10 @@ export const GET = publicGet(
         maxTasks: stats.maxTasks,
         survivedRounds: stats.survivedRounds,
         totalRounds: stats.totalRounds,
-        counters: buildGroupedCounters(stats as CounterColumns, {
-          season,
-          protectTypes: actionSubtypes?.protectTypes ?? null,
-          guessTypes: actionSubtypes?.guessTypes ?? null,
-          votes,
-        }),
+        counters: totalCounters,
       },
       roleBreakdown: hasActions
-        ? Object.fromEntries(
-            roleRows.map(([role, row]) => [
-              role,
-              {
-                gamesPlayed: row.gamesPlayed,
-                counters: buildGroupedCounters(row.columns as CounterColumns, {
-                  season,
-                  role,
-                  votes: { correct: row.columns.correctVotes ?? 0, incorrect: row.columns.incorrectVotes ?? 0 },
-                }),
-              },
-            ]),
-          )
+        ? Object.fromEntries(perRole.map((row) => [row.role, { gamesPlayed: row.gamesPlayed, counters: row.counters }]))
         : undefined,
       ratingHistory: history.map((point) => ({
         date: point.date.toISOString(),

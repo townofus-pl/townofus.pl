@@ -1,3 +1,4 @@
+import { chunkedInQuery } from '@/app/api/_database';
 import { getDatabaseClient } from '@/app/dramaafera/_services/db';
 import { withoutDeleted } from '@/app/api/schema/common';
 import { ACTION_COUNT_KEYS } from './subtypes';
@@ -89,20 +90,34 @@ export function emptyPlayerActionStats(): PlayerActionStats {
   return { protectTypes: emptyProtectTypes(), guessTypes: { roles: emptyPair(), modifiers: emptyPair() }, actions: emptyActions() };
 }
 
-/** Ochrony i zgadnięcia gracza w sezonie, jednym zapytaniem na akcje `protect` i `kill`. Dla profilu gracza (sezon 4+). */
-export async function getPlayerActionSubtypes(playerName: string, season: number): Promise<{ protectTypes: ProtectTypes; guessTypes: GuessTypes }> {
-  const stats = emptyPlayerActionStats();
+export interface PlayerActionRow extends ActionRow {
+  /** Id gry w bazie, do przypisania akcji do roli gracza w tej grze. */
+  gameId: number;
+}
+
+/**
+ * Akcje `protect` i `kill` jednego gracza w podanych grach (sezon 4+). Zapytanie jest ograniczone do
+ * jego akcji (`performerId`) i do jego gier (`gameId`, porcjami), więc nie czyta akcji innych graczy.
+ */
+export async function getPlayerActionRows(playerName: string, gameIds: number[]): Promise<PlayerActionRow[]> {
+  if (gameIds.length === 0) return [];
   const prisma = await getDatabaseClient();
-  if (!prisma) return stats;
-  const rows = await prisma.gameAction.findMany({
-    where: {
-      ...withoutDeleted,
-      type: { in: ['protect', 'kill'] },
-      performer: { name: playerName, ...withoutDeleted },
-      game: { season, ...withoutDeleted },
-    },
-    select: { type: true, performerRole: true, isCorrect: true, detail: true, performer: { select: { name: true } } },
-  });
-  const built = buildPlayerActionStats(rows, season).get(playerName);
-  return built ? { protectTypes: built.protectTypes, guessTypes: built.guessTypes } : stats;
+  if (!prisma) return [];
+  const player = await prisma.player.findFirst({ where: { name: playerName, ...withoutDeleted }, select: { id: true } });
+  if (!player) return [];
+  return chunkedInQuery(gameIds, (chunk) =>
+    prisma.gameAction.findMany({
+      where: { gameId: { in: chunk }, type: { in: ['protect', 'kill'] }, performerId: player.id, ...withoutDeleted },
+      select: { gameId: true, type: true, performerRole: true, isCorrect: true, detail: true, performer: { select: { name: true } } },
+    }),
+  );
+}
+
+/** Podtypy ochron i zgadnięć z akcji jednego gracza, dla podanych gier. */
+export function playerSubtypes(rows: PlayerActionRow[], gameIds: ReadonlySet<number> | null, season: number): { protectTypes: ProtectTypes; guessTypes: GuessTypes } {
+  const own = gameIds ? rows.filter((row) => gameIds.has(row.gameId)) : rows;
+  const grouped = new Map<string, ActionRow[]>();
+  for (const row of own) grouped.set('player', [...(grouped.get('player') ?? []), { ...row, performer: { name: 'player' } }]);
+  const stats = buildPlayerActionStats(grouped.get('player') ?? [], season).get('player');
+  return stats ? { protectTypes: stats.protectTypes, guessTypes: stats.guessTypes } : emptyPlayerActionStats();
 }

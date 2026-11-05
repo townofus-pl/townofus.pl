@@ -304,7 +304,7 @@ Type: { type, name, id, color, team: Teams, icon, description: ReactNode, settin
 
 ## Ranking System
 
-ELO-like rating. The constants are in rankingCalculator.ts (`RANKING_CONSTANTS`).
+ELO-like: START_RATING=2000, W=9 (game influence), PEN=5 (absence penalty)
 Calculator: src/app/api/_utils/rankingCalculator.ts → calculateRankingForGame(prisma, gameId)
 PlayerRanking.reason values defined in src/app/api/_constants/rankingTypes.ts as PlayerRankingReason:
   `const` object + derived type (same identifier — valid TS value/type namespace split):
@@ -314,7 +314,6 @@ PlayerRanking.reason values defined in src/app/api/_constants/rankingTypes.ts as
 
 Every PlayerRanking write MUST include an explicit season:
   rankingCalculator.ts  — reads game.season and passes it to playerRanking.create()
-  players/post.ts       — uses CURRENT_SEASON for the initial ranking row on player creation
 
 ### Database gotchas
 

@@ -47,7 +47,7 @@ const V2TargetSchema = z
 
 /**
  * Locked on mod #22. `kill` vs `death` is load-bearing, not cosmetic: counters bucket on this
- * field, so an unscored mechanical death emitted as `kill` would inflate a kill count.
+ * field, so a mechanical death emitted as `kill` would inflate a kill count.
  */
 export const V2_ACTION_TYPES = [
     'role_assigned', 'kill', 'death', 'protect', 'revive', 'swap', 'janitor_clean',
@@ -80,7 +80,7 @@ export const V2ActionSchema = z
         // set, `target` is the guessed player (alive), not the guesser who died (mod 1.1.0).
         guessedRole: z.string().optional(),
         guessedModifier: z.string().optional(),
-        weight: z.number().int().min(1).optional(), // vote only: Mayor/Knight weight, already in pointsChange
+        weight: z.number().int().min(1).optional(), // vote only: Mayor/Knight weight
         modifier: z.string().optional(), // modifier_gained / modifier_lost
         system: z.string().optional(), // sabotage_started / sabotage_fixed; SystemTypes enum name
         entryVent: z.number().int().optional(), // vent_use; ids are per-map, resolve against mapName
@@ -140,8 +140,7 @@ export const V2GamePayloadSchema = z
         // 3.0.0 added `recorderFriendCode`. The endpoint stays /api/v2/games, because the endpoint
         // and the payload shape have separate versions. A 2.0.0 payload is refused.
         schemaVersion: z.literal('3.0.0'),
-        // The build that scored this match, e.g. "1.0.0+910decf…". Carries the git commit, so it
-        // names the exact points table — scoring lives in the mod (#285).
+        // The mod build that recorded this match, e.g. "1.0.0+910decf…". Carries the git commit.
         modVersion: z.string().min(1),
         // The friend code of the machine that recorded the match (the Recorder). The Recorder is
         // not always the lobby host. The host can change during a match, and an observer can send

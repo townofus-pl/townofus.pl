@@ -1,4 +1,3 @@
-import { cache } from 'react';
 import { getDatabaseClient } from '../db';
 
 export interface LatestGameDay {
@@ -11,8 +10,9 @@ export interface LatestGameDay {
  * Ostatni dzień z grami w sezonie. Reguła jest ta sama co w `getRanking`
  * i w tabeli ról: `MAX(SUBSTR(startTime, 1, 10))` z gier sezonu bez usuniętych.
  */
-// `cache()`: jedno zapytanie na sezon w jednym żądaniu, nawet gdy sesja ma 12 gier.
-export const getLatestGameDay = cache(async function getLatestGameDay(season: number): Promise<LatestGameDay | null> {
+// Dwa zapytania na wywołanie. Wywołujący czyta ostatni dzień raz i przekazuje go dalej
+// (np. `getSessionSummaryByDate` dla wszystkich gier sesji).
+export async function getLatestGameDay(season: number): Promise<LatestGameDay | null> {
   const prisma = await getDatabaseClient();
   if (!prisma) return null;
 
@@ -27,4 +27,4 @@ export const getLatestGameDay = cache(async function getLatestGameDay(season: nu
     WHERE season = ${season} AND deletedAt IS NULL AND SUBSTR(startTime, 1, 10) = ${row.date}
   `;
   return { date: row.date, gameIds: games.map((game) => Number(game.id)) };
-});
+}

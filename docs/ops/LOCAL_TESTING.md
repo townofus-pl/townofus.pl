@@ -82,9 +82,12 @@ document (including this one).
 
 ### `npm run ranking:oracle`
 
-Recomputes the ELO-like ranking from the seeded games and diffs it against the rows already in
-`player_rankings`. `PASS` means the replay reproduces the stored standings exactly. Dump standings
-with `--json out.json` to diff two runs.
+Recomputes the ELO-like ranking from seeded `totalPoints` and diffs it against the rows already in
+`player_rankings`. `PASS` means the replay reproduces the stored standings exactly.
+
+This is the measuring instrument for any change to how DAP feeds the rating. Once v2 ingest writes
+different `totalPoints`, re-run and the delta is the answer — no guessing. Dump standings with
+`--json out.json` to diff two runs.
 
 - `--season 3` (default) reproduces exactly. Season 3 opens from `season_reset` rows, so its
   starting point is inside the dataset.

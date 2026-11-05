@@ -1,4 +1,4 @@
-import { getPublicSessionSummaryByDate } from '@/app/dramaafera/_services';
+import { getSessionOverview } from '@/app/dramaafera/_services';
 import { getListaCweliForDisplay } from '@/app/dramaafera/_services/gameSessionList';
 import { SessionResponseSchema } from '../../_lib/schemas';
 import { ApiError, publicGet, preflight, seasonParam, normalizeDate } from '../../_lib/http';
@@ -13,7 +13,7 @@ export const GET = publicGet(
     const season = seasonParam(request);
 
     const [summary, lists] = await Promise.all([
-      getPublicSessionSummaryByDate(date, season),
+      getSessionOverview(date, season),
       getListaCweliForDisplay(season),
     ]);
     const list = lists.find((entry) => entry.date.replace(/-/g, '') === date);

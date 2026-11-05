@@ -261,7 +261,7 @@ export const PlayerResponseSchema = z.object({
     role: z.string(),
     team: z.string(),
     win: z.boolean(),
-  })).describe('Najlepsze gry gracza w kolejności ze strony gracza, '),
+  })).describe('Najlepsze gry gracza w kolejności ze strony gracza. Parametry limit i offset dzielą listę na strony.'),
   hasMoreBestGames: z.boolean(),
   voting: z.object({
     totalVotesCast: z.number(),
