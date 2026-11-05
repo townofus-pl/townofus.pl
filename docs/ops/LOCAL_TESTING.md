@@ -85,8 +85,8 @@ document (including this one).
 Recomputes the ELO-like ranking from seeded `totalPoints` and diffs it against the rows already in
 `player_rankings`. `PASS` means the replay reproduces the stored standings exactly.
 
-This is the measuring instrument for any scoring change. Once v2 ingest writes different
-`totalPoints`, re-run and the delta is the answer — no guessing. Dump standings with
+This is the measuring instrument for any change to how DAP feeds the rating. Once v2 ingest writes
+different `totalPoints`, re-run and the delta is the answer — no guessing. Dump standings with
 `--json out.json` to diff two runs.
 
 - `--season 3` (default) reproduces exactly. Season 3 opens from `season_reset` rows, so its
@@ -106,8 +106,7 @@ rejected with `409` having written nothing.
 
 Auth comes from `API_USERNAME`/`API_PASSWORD` in `.dev.vars` (ingest is HTTP Basic).
 
-Default URL is `/api/v2/games`, which is live. `--url .../api/games` still posts at v1 if you
-need to compare the two.
+Default URL is `/api/v2/games`, which is live.
 
 ## Staging
 
@@ -166,7 +165,6 @@ enough for everything in this document.
 | `db:import:local` fails with `Authentication error [code: 10000]` | It tried to export from production and your wrangler is not authorised | Add `--no-export` |
 | `npm run replay` → `Request failed` | No server running | `npm run dev` (:3000) or `npm run preview` (:8787) |
 | `npm run replay` → `404` on `/api/v2/games` | Your local build predates v2, or you pointed `--url` at the wrong host | Pull `main`; the endpoint is live |
-| `npm run replay` → `400 Invalid game data` posting a mod capture at `/api/games` | A v2 payload does not satisfy v1's `GameDataSchema` | You want `/api/v2/games`. v1 only accepts the old aggregated shape |
 | Ingest returns `422` naming a role | The role is not in the registry for that game's season | Add it under `src/mira/roles/` (season ≥ `FIRST_MIRA_SEASON`) or `src/roles/`, then `npm run db:generate` |
 | Ingest returns `422` about a name collision | An existing player has that display name but a different `hashedProductUserId` | Deliberate. Two different people must not be merged — resolve by hand |
 | Ingest returns `409 Game with identifier … already exists` | `gameIdentifier` (`YYYYMMDD_HHMM`) is taken. The lookup **ignores `deletedAt`**, so a soft-deleted game still blocks re-upload | Re-seed, or change the payload's `startTime` |

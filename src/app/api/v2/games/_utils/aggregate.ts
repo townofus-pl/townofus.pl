@@ -4,10 +4,7 @@
  * `docs/v2-role-counter-mapping.md` is the spec; this file is that table as code. Pure — no
  * database, no Prisma, no `getCloudflareContext`. #305 does the writing.
  *
- * Ground rule, from #285: **the mod scores, the server sums.** `totalPoints` is the plain sum of
- * every action's `pointsChange`. No win bonus is added (the `win` action already carries it) and
- * the disconnect clamp arrives already applied. The counters are for display only — the ranking
- * reads `totalPoints` alone.
+ * The counters are for display.
  */
 import { isKnownRole, normalizeRoleName, FIRST_MIRA_SEASON } from '@/app/dramaafera/_utils/gameUtils';
 import type { V2Action, V2GamePayload } from '@/app/api/schema/gamesV2';
@@ -120,7 +117,7 @@ function bucketFor(action: Pick<V2Action, 'type' | 'isGuess'>, role: string): Pa
     switch (action.type) {
         case 'kill':
             // A guess first: Double Shot can put a guess in any role's hands, so the flag beats
-            // the role. A self-targeting misguess is still the guesser's kill, scored as incorrect.
+            // the role. A self-targeting misguess is still the guesser's kill, counted as incorrect.
             if (action.isGuess) return { correct: 'correctGuesses', incorrect: 'incorrectGuesses' };
             if (role === 'Deputy') return { correct: 'correctDeputyShoots', incorrect: 'incorrectDeputyShoots' };
             if (role === 'Jailor') return { correct: 'correctJailorExecutes', incorrect: 'incorrectJailorExecutes' };
@@ -160,7 +157,7 @@ function bucketFor(action: Pick<V2Action, 'type' | 'isGuess'>, role: string): Pa
  * @throws {PayloadRejected} on an unknown role, a role that cannot perform the action, or an
  * action whose performer is not in `players`. Rejecting is the point: TOU-Mira is never
  * auto-updated, so a surprise here means a deliberate version bump moved something and this file
- * needs to follow — not that a game should be silently mis-scored.
+ * needs to follow — not that a game should be silently mis-counted.
  */
 export function addActionCounters(counters: CounterSet, action: Pick<V2Action, 'type' | 'isGuess' | 'isCorrect'>, role: string): void {
     const bucket = bucketFor(action, role);
@@ -238,11 +235,9 @@ export function aggregatePayload(
             );
         }
 
-        // The mod scores; we only add up. Every action contributes, including the ones that feed
-        // no counter — `win` carries the bonus and `disconnect` carries the clamp.
         actor.totalPoints += action.pointsChange;
 
-        // Exactly once per player, and it carries its own points rather than a count.
+        // Exactly once per player.
         if (action.type === 'role_assigned') {
             actor.initialRolePoints = action.pointsChange;
             continue;

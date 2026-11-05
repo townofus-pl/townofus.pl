@@ -32,7 +32,7 @@ export default function SigmasSlide({
 }: SigmasSlideProps) {
     if (topSigmas.length < 3) return null;
 
-    // Sortuj według punktów DAP żeby mieć TOP 3 (do sprawdzenia czy sigma była w top 3)
+    // TOP 3 tygodnia (do sprawdzenia czy sigma była w top 3)
     const sortedStats = [...weeklyStats].sort((a, b) => b.totalPoints - a.totalPoints);
     const top3Nicknames = sortedStats.slice(0, 3).map(p => p.nickname);
 

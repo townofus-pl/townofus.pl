@@ -126,8 +126,7 @@ export default function HostClient({ initialDates, seasonId }: HostClientProps) 
             // The manual re-submit path. The mod writes game_data.json to disk on every match and
             // has no retry queue, so this page is how a failed submission gets in — which means it
             // has to speak exactly the same protocol the mod does. Sending the file's text at
-            // /api/v2/games rather than multipart at /api/games/upload keeps one ingest path
-            // instead of two that can drift.
+            // /api/v2/games keeps one ingest path, the one the mod uses.
             const payload = await selectedFile.text();
 
             const auth = btoa(`${credentials.username}:${credentials.password}`);

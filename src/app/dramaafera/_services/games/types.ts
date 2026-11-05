@@ -96,7 +96,7 @@ export interface UIPlayerData {
     incorrectAltruistRevives: number;
     correctSwaps: number;
     incorrectSwaps: number;
-    /** v2 only, from `game_actions` type `vote`; each decision counted with its weight (Mayor, Knight). */
+    /** v2 only, from `game_actions` type `vote`; each decision counted with its weight. */
     correctVotes?: number;
     incorrectVotes?: number;
     totalPoints: number;
@@ -108,6 +108,11 @@ export interface UIGameEvent {
   survivors?: { name: string; role?: string; color?: string }[];
   killAbility?: { name: string; icon: string };
   actionType?: string;
+  /** Pola zabójstwa i śmierci z `detail`. Brak w starszych grach. */
+  causeOfDeath?: string;
+  isGuess?: boolean;
+  guessedRole?: string;
+  guessedModifier?: string;
   ability?: { name: string; icon: string };
   playerRole?: string;
   playerRoleColor?: string;
@@ -140,6 +145,10 @@ export interface UIMeetingData {
 export interface UIGameData {
   /** v2 games retain actions with the performer's role at the time. */
   hasActionData?: boolean;
+  /** Gra z ostatniego dnia z grami w sezonie. Ustawia ją `getGameData`. */
+  isLatestDay?: boolean;
+  /** Sezon gry. Ustawia go `getGameData`; `getAllGamesData` go nie ustawia. */
+  season?: number;
   id: string;
   date: string;
   gameNumber: number;
@@ -166,3 +175,22 @@ export interface UIGameData {
 
 // Type alias for backward compatibility
 export type DetailedGameData = UIGameData;
+
+// --- Typy publiczne ---------------------------------------------------------
+// Strony publiczne i `/api/v2` dostają wyłącznie te typy. Pola punktowe
+// (`totalPoints`, `initialRolePoints`) zostają w typach wewnętrznych powyżej,
+// dla kodu działającego tylko po stronie serwera.
+
+type PointFields = 'totalPoints' | 'initialRolePoints';
+
+export type PublicOriginalStats = Omit<UIPlayerData['originalStats'], PointFields>;
+
+export type PublicPlayerData = Omit<UIPlayerData, 'totalPoints' | 'originalStats'> & {
+  originalStats: PublicOriginalStats;
+};
+
+export type PublicGameData = Omit<UIGameData, 'detailedStats'> & {
+  detailedStats: Omit<UIGameData['detailedStats'], 'playersData'> & {
+    playersData: PublicPlayerData[];
+  };
+};

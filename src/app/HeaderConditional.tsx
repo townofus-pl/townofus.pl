@@ -4,6 +4,7 @@ import {usePathname} from "next/navigation";
 
 export function HeaderConditional() {
     const pathname = usePathname();
-    if (pathname.includes("dramaafera")) return null;
+    // Strony DramaAfera i dokumentacja API mają własny nagłówek DramaAfera.
+    if (pathname.includes("dramaafera") || pathname.startsWith("/api/docs")) return null;
     return <Header />;
 }

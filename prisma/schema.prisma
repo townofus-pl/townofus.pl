@@ -38,7 +38,7 @@ model Game {
   season       Int
 
   // v2 ingest (#302). Null on every v1 game — the v1 payload carried neither.
-  modVersion     String? // mod build that scored the match, e.g. "1.0.0+910decf"
+  modVersion     String? // mod build that recorded the match, e.g. "1.0.0+910decf"
   winningFaction String? // TOU-Mira's authoritative end-game result, colour markup stripped
 
   // The Recorder: the machine that recorded the match (payload 3.0.0). Null on older games. D1
@@ -251,7 +251,7 @@ model GameAction {
   targetId      Int?
   targetRole    String?
   // Three-valued: true -> correct* counter, false -> incorrect*, null -> neither (the mod could
-  // not classify, which scores nothing and is not the actor's failure).
+  // not classify, which is not the actor's failure).
   isCorrect     Boolean?
   // JSON bag for the 12 sparse type-specific fields (ability, system, entryVent/exitVent,
   // taskType, room, causeOfDeath, isGuess, platter, target2, imitatedRole, modifier). Twelve

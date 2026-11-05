@@ -232,7 +232,7 @@ export async function createGameV2(
 ): Promise<CreateGameV2Result> {
     if (payload.abnormalEnd) {
         throw new IngestRejected(
-            'Payload is marked abnormalEnd — the match had no normal end, so its scoring is not trustworthy.',
+            'Payload is marked abnormalEnd — the match had no normal end, so its data is not trustworthy.',
             422,
         );
     }
@@ -474,8 +474,9 @@ export async function createGameV2(
         select: { id: true },
     });
 
-    // Ranking is a derived read of totalPoints and can be recomputed; a failure here must not
-    // undo an ingested game. Same contract as v1.
+    // Ranking is derived from the ingested games. A failure here must not undo an ingested game,
+    // and the error goes into the response. No route recalculates it by hand: the repair is a
+    // database restore and a new upload of the game.
     let rankingCalculated = false;
     let rankingError: string | undefined;
     try {

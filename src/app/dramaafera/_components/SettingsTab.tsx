@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState, useId } from 'react';
 import { uploadSettingsAction } from '@/app/dramaafera/_actions/uploadSettingsAction';
-import { MAX_SETTINGS_FILE_SIZE_BYTES } from '@/app/api/dramaafera/settings/utils';
+import { MAX_SETTINGS_FILE_SIZE_BYTES } from '@/app/dramaafera/_utils/settingsUpload';
 
 function validateClientFile(file: File): string | null {
   if (!file.name.endsWith('.cfg')) return 'Plik musi być w formacie .cfg';

@@ -66,10 +66,9 @@ export default function FinalRankingSlide({ isFullscreen, currentStep, rankingAf
         tierGroups.get(tierKey)!.push(player);
     });
 
-    // Emperor - gracz z największą liczbą DAP w tym tygodniu
+    // Emperor tej sesji
     let emperor: PlayerRankingAfterSession | undefined;
     if (weeklyStats.length > 0) {
-        // Znajdź gracza z największym totalPoints
         const topDapPlayer = [...weeklyStats].sort((a, b) => b.totalPoints - a.totalPoints)[0];
         // Znajdź jego dane w rankingAfterSession
         emperor = allPlayers.find(p => p.nickname === topDapPlayer.nickname);

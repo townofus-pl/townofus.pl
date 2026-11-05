@@ -1,29 +1,6 @@
 import { CURRENT_SEASON } from '../_constants/seasons';
 
-/**
- * What the league scores.
- *
- * One two-column list, because that is all this is. Earlier drafts pulled the correctness rules
- * into their own section and called them exceptions — they are not: "a kill counts when the
- * target is not on your side" is the rule, not a footnote to it. Folding each condition into the
- * bullet it belongs to removes a whole section and says the same thing.
- *
- * Rules come from the mod, which owns them — `CorrectnessCore.cs` for the decision table,
- * `Collectors/CorrectnessChecker.cs` for which role takes which. Two things are summarised rather
- * than spelled out, on purpose:
- *
- *   - **Per-role kill reach.** Deputy, Hunter, Jailor, Mirrorcaster and Veteran may shoot any
- *     non-Crewmate, while everyone else is limited to Impostors and neutral killers. There is no
- *     safe blanket sentence, because the Sheriff is *narrower* than the default when a lobby
- *     turns its `ShootNeutral…` toggles off. So the page points at the role page instead, which
- *     carries that role's live settings (#317).
- *   - **Crewpostor and Egotist**, who are crew in name only. Real, but niche enough that naming
- *     them costs more attention than it returns.
- *
- * No weights, and nothing a player cannot influence — the role is dealt, not chosen. The role is
- * **Fairy**, not Guardian Angel: the latter is legacy-only and does not exist in TOU-Mira, which
- * is what the previous version of this page still named. See #316.
- */
+/** Strona informacyjna: reguły ligi dla graczy. */
 
 type Rule = { label: string; detail?: string };
 

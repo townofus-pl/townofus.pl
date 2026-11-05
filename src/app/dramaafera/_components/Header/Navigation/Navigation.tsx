@@ -78,6 +78,8 @@ export const Navigation = () => {
     const currentPath = usePathname();
     const seasonId = useSeason();
     const currentSubPath = extractDramaAferaSubPath(currentPath);
+    // Poza /dramaafera (np. /api/docs) żadna pozycja menu nie jest aktywna.
+    const isDramaAferaPath = currentPath.startsWith('/dramaafera');
 
     // Wyznaczamy aktywną stronę porównując sub-ścieżki (prefiks) zamiast pełnych URLi.
     // Dzięki temu /historia-gier jest aktywne również na /historia-gier/2026-03-12 itd.
@@ -135,8 +137,8 @@ export const Navigation = () => {
             >
                 <Menu className="w-7 h-7 p-1 border-2 border-foreground rounded-2xl"/>
                 <NavigationLabel
-                    label={currentPage.label}
-                    image={currentPage.image}
+                    label={isDramaAferaPath ? currentPage.label : 'Dokumentacja API'}
+                    image={isDramaAferaPath ? currentPage.image : undefined}
                     selected={true}
                 />
             </div>
@@ -148,7 +150,7 @@ export const Navigation = () => {
                         label={item.label}
                         image={item.image}
                         external={item.external}
-                        selected={item.subPath === currentPage.subPath}
+                        selected={isDramaAferaPath && item.subPath === currentPage.subPath}
                     />
                 ))}
             </ul>

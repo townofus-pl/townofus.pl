@@ -3,8 +3,8 @@ applyTo: "**/api/**"
 ---
 # API Route Patterns
 
-Two ingest endpoints exist and both are live: `POST /api/games` (v1, aggregated, serves the
-pre-cutover games) and `POST /api/v2/games` (v2, event-based, what the mod sends today). v2 splits
+The ingest endpoint is `POST /api/v2/games` (event-based, what the mod sends today). The v1
+endpoint `POST /api/games` was removed; the pre-cutover games stay in the database. v2 splits
 into `_utils/aggregate.ts` — pure, payload → counters — and `_utils/createGameV2.ts`, one atomic
 D1 `batch()`. Keep that split: the pure half is the only testable one.
 
@@ -42,23 +42,14 @@ Dynamic route with params:
 
   import { withAuth, withCors } from '@/app/api/_middlewares';
 
-  export const GET = withCors(withAuth(getHandler));   // Protected (/api/* except /api/dramaafera/*)
-  export const GET = withCors(publicHandler);          // Public (/api/dramaafera/* only)
+  export const POST = withCors(withAuth(postHandler)); // Protected (writes, mod host files)
+  export const GET = publicGet(ResponseSchema, build); // Public (/api/v2/* reads, see _lib/http.ts)
 
-## OpenAPI registration (in route.ts)
+## OpenAPI definition
 
-  import { extendZodWithOpenApi } from '@asteasolutions/zod-to-openapi';
-  import { openApiRegistry } from '@/app/api/schema/registry';
-  extendZodWithOpenApi(z); // Call once per route.ts module
-
-  openApiRegistry.registerPath({
-    method: 'get',
-    path: '/api/resource',
-    tags: ['ResourceName'],
-    security: [{ basicAuth: [] }],   // Omit for /api/dramaafera/* routes
-    request: { query: QuerySchema },
-    responses: { 200: { content: { 'application/json': { schema: ResponseSchema } } } },
-  });
+`/api/schema` serves one public definition, built in `src/app/api/v2/_lib/openapi.ts` from the
+schemas in `_lib/schemas.ts`. Add a `registerPath` entry there for every new public `/api/v2` read.
+Protected routes (writes, mod host files, season reset) are not in the definition.
 
 ## Response helpers
 

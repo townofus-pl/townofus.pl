@@ -21,7 +21,7 @@ interface CweleSlideProps {
 export default function CweleSlide({ isFullscreen, currentStep, isTransitioning, topCwele, weeklyStats, cwelRankingHistory, topPlayerGames, playerRankingChanges, date, seasonId }: CweleSlideProps) {
     if (topCwele.length < 3) return null;
 
-    // Sortuj według punktów DAP żeby mieć TOP 3 (do sprawdzenia czy cwel był w top 3)
+    // TOP 3 tygodnia (do sprawdzenia czy cwel był w top 3)
     const sortedStats = [...weeklyStats].sort((a, b) => b.totalPoints - a.totalPoints);
     const top3Nicknames = sortedStats.slice(0, 3).map(p => p.nickname);
 

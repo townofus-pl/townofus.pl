@@ -40,7 +40,7 @@ const EXTRA_PLUGINS = [
     },
     {
         name: 'AUnlocker',
-        href: '/api/dramaafera/downloads/aunlocker',
+        href: '/api/v2/downloads/aunlocker',
         source: 'https://github.com/astra1dev/AUnlocker/releases/latest',
         note: 'AUnlocker.dll',
         warning: 'Masz starszy plik AUnlocker_v….dll? Usuń go z BepInEx/plugins, bo inaczej gra wczyta oba.',

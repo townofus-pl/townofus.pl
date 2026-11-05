@@ -3,7 +3,7 @@
 import { Fragment, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import type { UIGameData, UIPlayerData } from '@/app/dramaafera/_services/games/types';
+import type { PublicGameData, PublicPlayerData } from '@/app/dramaafera/_services/games/types';
 import { buildSeasonUrl } from '@/app/dramaafera/_utils/seasonHelpers';
 import { convertRoleToUrlSlug, FIRST_MIRA_SEASON } from '@/app/dramaafera/_utils/gameUtils';
 import { getRoleIconPath, getPlayerAvatarPath } from '@/app/dramaafera/_utils/gameUtils';
@@ -27,7 +27,7 @@ interface RoleDayStats {
 interface RoleTableProps {
   roles: RoleDayStats[];
   reversedGames: { id: string }[];
-  detailedGames: (UIGameData | null)[];
+  detailedGames: (PublicGameData | null)[];
   date: string;
   hideZeroStats?: boolean; // Nowy prop do kontrolowania wyświetlania statystyk równych 0
   seasonId: number;
@@ -90,7 +90,6 @@ export default function RoleTable({ roles, reversedGames, detailedGames, date, h
       crewmatesKilled: 0,
       impostorsKilled: 0,
       neutralsKilled: 0,
-      totalPoints: 0,
       gamesPlayed: 0,
       byPlayer: {} as RoleBreakdown,
       playersWithRole: [] as string[]
@@ -99,7 +98,7 @@ export default function RoleTable({ roles, reversedGames, detailedGames, date, h
     detailedGames.forEach((game) => {
       if (!game?.detailedStats?.playersData) return;
       
-      const playersWithRole = game.detailedStats.playersData.filter((p: UIPlayerData) => {
+      const playersWithRole = game.detailedStats.playersData.filter((p: PublicPlayerData) => {
         const playerRole = p.roleHistory && p.roleHistory.length > 0 
           ? p.roleHistory[p.roleHistory.length - 1] 
           : p.role || 'Unknown';
@@ -112,13 +111,13 @@ export default function RoleTable({ roles, reversedGames, detailedGames, date, h
 
       // Znajdź maksimum dla tej konkretnej gry
       let maxRoundsInThisGame = 0;
-      game.detailedStats.playersData.forEach((p: UIPlayerData) => {
+      game.detailedStats.playersData.forEach((p: PublicPlayerData) => {
         if (p.originalStats?.survivedRounds) {
           maxRoundsInThisGame = Math.max(maxRoundsInThisGame, p.originalStats.survivedRounds);
         }
       });
 
-      playersWithRole.forEach((playerData: UIPlayerData) => {
+      playersWithRole.forEach((playerData: PublicPlayerData) => {
         if (!aggregatedStats.playersWithRole.includes(playerData.nickname)) {
           aggregatedStats.playersWithRole.push(playerData.nickname);
         }

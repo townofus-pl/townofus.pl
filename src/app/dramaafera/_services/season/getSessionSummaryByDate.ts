@@ -1,7 +1,11 @@
-import { getGamesListByDate } from '../games/getGamesList';
+import { getGamesListByDate, getSessionGameStats } from '../games/getGamesList';
 import { getGameData } from '../games/getGameData';
-import { normalizeRoleName, getRoleColor, determineTeam, formatDisplayDate } from '@/app/dramaafera/_utils/gameUtils';
+import { getLatestGameDay } from '../games/getLatestGameDay';
+import { formatDisplayDate } from '@/app/dramaafera/_utils/gameUtils';
+import { summarizeSession } from './summarizeSession';
 import { CURRENT_SEASON } from '@/app/dramaafera/_constants/seasons';
+import { toPublicGameData } from '../games/_toPublic';
+import type { PublicGameData } from '../games/types';
 
 export interface SessionPlayer {
   name: string;
@@ -37,6 +41,29 @@ export interface SessionSummary {
   neutralWins: number;
 }
 
+/** Podsumowanie sesji bez pól punktowych. Używają go strony publiczne i `/api/v2`. */
+export type PublicSessionSummary = Omit<SessionSummary, 'detailedGames'> & {
+  detailedGames: Array<PublicGameData | null>;
+};
+
+export async function getPublicSessionSummaryByDate(
+  date: string,
+  seasonId?: number,
+): Promise<PublicSessionSummary> {
+  const summary = await getSessionSummaryByDate(date, seasonId);
+  return {
+    date: summary.date,
+    displayDate: summary.displayDate,
+    players: summary.players,
+    roles: summary.roles,
+    games: summary.games,
+    detailedGames: summary.detailedGames.map((game) => (game ? toPublicGameData(game) : null)),
+    crewmateWins: summary.crewmateWins,
+    impostorWins: summary.impostorWins,
+    neutralWins: summary.neutralWins,
+  };
+}
+
 export async function getSessionSummaryByDate(
   date: string,
   seasonId?: number,
@@ -58,111 +85,25 @@ export async function getSessionSummaryByDate(
   if (!games || games.length === 0) return empty;
 
   const displayDate = formatDisplayDate(date);
+  // Wszystkie gry sesji są z jednego sezonu, więc ostatni dzień czytamy raz.
+  const latestDay = await getLatestGameDay(season);
   const reversedGames = [...games].reverse();
   const detailedGames = await Promise.all(
-    reversedGames.map((game) => getGameData(game.id)),
+    reversedGames.map((game) => getGameData(game.id, { latestDay })),
   );
 
-  // Player stats
-  const playerMap = new Map<string, SessionPlayer>();
-  detailedGames.forEach((game, gameIdx) => {
-    if (!game?.detailedStats?.playersData) return;
-    game.detailedStats.playersData.forEach((player) => {
-      if (!playerMap.has(player.nickname)) {
-        playerMap.set(player.nickname, {
-          name: player.nickname,
-          avatar: `/images/avatars/${player.nickname}.png`,
-          games: 0,
-          wins: 0,
-          loses: 0,
-          winRatio: 0,
-          results: Array(games.length).fill(null) as Array<'W' | 'L' | null>,
-        });
-      }
-      const stats = playerMap.get(player.nickname)!;
-      stats.games++;
-      if (player.win) {
-        stats.wins++;
-        stats.results[gameIdx] = 'W';
-      } else {
-        stats.loses++;
-        stats.results[gameIdx] = 'L';
-      }
-    });
-  });
-
-  const players: SessionPlayer[] = Array.from(playerMap.values())
-    .map((p) => ({
-      ...p,
-      winRatio: p.games > 0 ? Math.round((p.wins / p.games) * 10000) / 100 : 0,
-    }))
-    .sort((a, b) => {
-      if (b.winRatio !== a.winRatio) return b.winRatio - a.winRatio;
-      if (b.wins !== a.wins) return b.wins - a.wins;
-      return a.name.localeCompare(b.name);
-    });
-
-  // Role stats
-  const roleMap = new Map<string, SessionRole>();
-  detailedGames.forEach((game, gameIdx) => {
-    if (!game?.detailedStats?.playersData) return;
-    game.detailedStats.playersData.forEach((player) => {
-      // Use the initial role (index 0) for per-role session stats.
-      // Intentional: we track what role a player *started* as, not their final role
-      // after a potential transformation (e.g. Plaguebearer → Pestilence).
-      // Consistent with generateRoleRankingStats which uses player.role (also initial/primary).
-      const roleName =
-        player.roleHistory && player.roleHistory.length > 0
-          ? player.roleHistory[0]
-          : player.role || 'Unknown';
-
-      if (!roleMap.has(roleName)) {
-        roleMap.set(roleName, {
-          name: roleName,
-          displayName: normalizeRoleName(roleName, season),
-          color: getRoleColor(roleName, season),
-          team: determineTeam([roleName], season),
-          games: 0,
-          wins: 0,
-          loses: 0,
-          winRatio: 0,
-          results: Array(games.length).fill(null) as Array<'W' | 'L' | null>,
-        });
-      }
-      const stats = roleMap.get(roleName)!;
-      stats.games++;
-      if (player.win) {
-        stats.wins++;
-        stats.results[gameIdx] = 'W';
-      } else {
-        stats.loses++;
-        stats.results[gameIdx] = 'L';
-      }
-    });
-  });
-
-  const roles: SessionRole[] = Array.from(roleMap.values())
-    .map((r) => ({
-      ...r,
-      winRatio:
-        r.games > 0 ? Math.round((r.wins / r.games) * 10000) / 100 : 0,
-    }))
-    .sort((a, b) => {
-      if (b.winRatio !== a.winRatio) return b.winRatio - a.winRatio;
-      if (b.wins !== a.wins) return b.wins - a.wins;
-      return a.displayName.localeCompare(b.displayName);
-    });
-
-  // Win counts
-  let crewmateWins = 0;
-  let impostorWins = 0;
-  let neutralWins = 0;
-  detailedGames.forEach((game) => {
-    if (!game) return;
-    if (game.winner === 'Crewmate') crewmateWins++;
-    else if (game.winner === 'Impostor') impostorWins++;
-    else neutralWins++;
-  });
+  const { players, roles, crewmateWins, impostorWins, neutralWins } = summarizeSession(
+    detailedGames.map((game) => game?.detailedStats?.playersData ? {
+      winner: game.winner,
+      players: game.detailedStats.playersData.map((player) => ({
+        name: player.nickname,
+        win: player.win,
+        initialRole: player.roleHistory && player.roleHistory.length > 0 ? player.roleHistory[0] : player.role,
+      })),
+    } : null),
+    games.length,
+    season,
+  );
 
   return {
     date,
@@ -171,6 +112,35 @@ export async function getSessionSummaryByDate(
     roles,
     games: reversedGames,
     detailedGames,
+    crewmateWins,
+    impostorWins,
+    neutralWins,
+  };
+}
+
+/**
+ * Podsumowanie sesji dla `/api/v2/sessions/{date}`. Gry sesji są czytane razem
+ * (`getSessionGameStats`), bez `getGameData` dla każdej gry. Liczby są takie same jak w
+ * `getSessionSummaryByDate`, bo oba używają `summarizeSession`.
+ */
+export async function getSessionOverview(date: string, seasonId?: number) {
+  const season = seasonId ?? CURRENT_SEASON;
+  const rows = await getSessionGameStats(date, seasonId);
+  // `rows` jest od najnowszej gry, a wyniki liczymy od najstarszej.
+  const oldestFirst = [...rows].reverse();
+  const { players, roles, crewmateWins, impostorWins, neutralWins } = summarizeSession(
+    oldestFirst.map((row) => ({
+      winner: row.summary.winner,
+      players: row.players.map((player) => ({ name: player.name, win: player.win, initialRole: player.roleHistory[0] ?? 'Nieznana rola' })),
+    })),
+    rows.length,
+    season,
+  );
+  return {
+    displayDate: formatDisplayDate(date),
+    games: oldestFirst.map((row) => row.summary),
+    players: players.map(({ avatar: _avatar, ...player }) => player),
+    roles,
     crewmateWins,
     impostorWins,
     neutralWins,

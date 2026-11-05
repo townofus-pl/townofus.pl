@@ -6,8 +6,8 @@ export { getSeasonRankingHistories } from './getSeasonRankingHistories';
 export type { GameDateGameEntry, GameDateEntry, GameDatesResult } from './getGameDatesLightweight';
 export { getGameDatesLightweight } from './getGameDatesLightweight';
 
-export type { SessionPlayer, SessionRole, SessionSummary } from './getSessionSummaryByDate';
-export { getSessionSummaryByDate } from './getSessionSummaryByDate';
+export type { SessionPlayer, SessionRole, SessionSummary, PublicSessionSummary } from './getSessionSummaryByDate';
+export { getSessionSummaryByDate, getPublicSessionSummaryByDate, getSessionOverview } from './getSessionSummaryByDate';
 
 export type { WeeklyPlayerStats, WeeklyStatsResult } from './getWeeklyStats';
 export { getWeeklyStats } from './getWeeklyStats';

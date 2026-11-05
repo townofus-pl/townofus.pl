@@ -1,0 +1,247 @@
+/*
+ * Motyw Swagger UI w kolorach stron DramaAfera (zinc-800/900, żółte nagłówki).
+ * Cały CSS jest pod klasą .api-docs-theme, więc nie zmienia innych stron.
+ */
+.api-docs-theme {
+  --docs-panel: rgb(39 39 42 / 0.8);        /* zinc-800/80 */
+  --docs-panel-solid: #27272a;              /* zinc-800 */
+  --docs-deep: rgb(24 24 27 / 0.9);         /* zinc-900 */
+  --docs-border: #3f3f46;                   /* zinc-700 */
+  --docs-border-strong: #52525b;            /* zinc-600 */
+  --docs-text: #ffffff;
+  --docs-muted: #d1d5db;                    /* gray-300 */
+  --docs-dim: #9ca3af;                      /* gray-400 */
+  --docs-accent: #facc15;                   /* yellow-400 */
+  --docs-link: #60a5fa;                     /* blue-400 */
+  color: var(--docs-text);
+}
+
+.api-docs-theme .swagger-ui,
+.api-docs-theme .swagger-ui .info .title,
+.api-docs-theme .swagger-ui .info p,
+.api-docs-theme .swagger-ui .info li,
+.api-docs-theme .swagger-ui .info table,
+.api-docs-theme .swagger-ui .markdown p,
+.api-docs-theme .swagger-ui .markdown li,
+.api-docs-theme .swagger-ui .renderedMarkdown p,
+.api-docs-theme .swagger-ui .opblock-description-wrapper p,
+.api-docs-theme .swagger-ui .opblock-external-docs-wrapper p,
+.api-docs-theme .swagger-ui .opblock-title_normal p,
+.api-docs-theme .swagger-ui .response-col_description,
+.api-docs-theme .swagger-ui .response-col_status,
+.api-docs-theme .swagger-ui .response-col_links,
+.api-docs-theme .swagger-ui .parameter__name,
+.api-docs-theme .swagger-ui .parameter__type,
+.api-docs-theme .swagger-ui .parameter__in,
+.api-docs-theme .swagger-ui .parameter__extension,
+.api-docs-theme .swagger-ui table thead tr td,
+.api-docs-theme .swagger-ui table thead tr th,
+.api-docs-theme .swagger-ui .tab li,
+.api-docs-theme .swagger-ui label,
+.api-docs-theme .swagger-ui .responses-inner h4,
+.api-docs-theme .swagger-ui .responses-inner h5,
+.api-docs-theme .swagger-ui .opblock .opblock-section-header h4,
+.api-docs-theme .swagger-ui .opblock .opblock-section-header label,
+.api-docs-theme .swagger-ui .model,
+.api-docs-theme .swagger-ui .model-title,
+.api-docs-theme .swagger-ui .model .property,
+.api-docs-theme .swagger-ui section.models h4,
+.api-docs-theme .swagger-ui .prop-type,
+.api-docs-theme .swagger-ui .prop-format,
+.api-docs-theme .swagger-ui .servers > label,
+.api-docs-theme .swagger-ui .scheme-container label {
+  color: var(--docs-muted);
+  font-family: inherit;
+}
+
+/* Nagłówki */
+.api-docs-theme .swagger-ui .info .title,
+.api-docs-theme .swagger-ui .info h1,
+.api-docs-theme .swagger-ui .info h2,
+.api-docs-theme .swagger-ui .info h3,
+.api-docs-theme .swagger-ui .opblock-tag,
+.api-docs-theme .swagger-ui .opblock-tag small,
+.api-docs-theme .swagger-ui section.models h4,
+.api-docs-theme .swagger-ui .responses-inner h4,
+.api-docs-theme .swagger-ui .opblock .opblock-section-header h4 {
+  color: var(--docs-accent);
+  font-weight: 600;
+}
+.api-docs-theme .swagger-ui .info .title small,
+.api-docs-theme .swagger-ui .info .title small pre {
+  background: var(--docs-border-strong);
+  color: var(--docs-text);
+}
+.api-docs-theme .swagger-ui .opblock-tag { border-bottom-color: var(--docs-border); }
+.api-docs-theme .swagger-ui .opblock-tag:hover { background: rgb(63 63 70 / 0.35); }
+.api-docs-theme .swagger-ui .opblock-tag small { color: var(--docs-dim); font-weight: 400; }
+
+/* Linki i kod */
+.api-docs-theme .swagger-ui a,
+.api-docs-theme .swagger-ui .info a { color: var(--docs-link); }
+.api-docs-theme .swagger-ui .markdown code,
+.api-docs-theme .swagger-ui .renderedMarkdown code {
+  background: #18181b;
+  color: var(--docs-accent);
+  border-radius: 4px;
+  padding: 1px 5px;
+}
+
+/* Pasek serwera i filtr */
+.api-docs-theme .swagger-ui .scheme-container {
+  background: var(--docs-panel);
+  border: 1px solid var(--docs-border);
+  border-radius: 12px;
+  box-shadow: none;
+}
+
+/* Wiersze operacji (zwinięte i rozwinięte) */
+.api-docs-theme .swagger-ui .opblock {
+  background: var(--docs-panel);
+  border: 1px solid var(--docs-border);
+  border-radius: 10px;
+  box-shadow: none;
+}
+.api-docs-theme .swagger-ui .opblock.opblock-get { background: var(--docs-panel); border-color: #2563eb; }
+.api-docs-theme .swagger-ui .opblock .opblock-summary { border-bottom: 0; }
+.api-docs-theme .swagger-ui .opblock.is-open .opblock-summary { border-bottom: 1px solid var(--docs-border); }
+.api-docs-theme .swagger-ui .opblock .opblock-summary-path,
+.api-docs-theme .swagger-ui .opblock .opblock-summary-path__deprecated {
+  color: var(--docs-text);
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+.api-docs-theme .swagger-ui .opblock .opblock-summary-description { color: var(--docs-muted); }
+.api-docs-theme .swagger-ui .opblock .opblock-section-header {
+  background: var(--docs-deep);
+  box-shadow: none;
+  border-bottom: 1px solid var(--docs-border);
+}
+.api-docs-theme .swagger-ui .opblock-body,
+.api-docs-theme .swagger-ui .opblock-description-wrapper,
+.api-docs-theme .swagger-ui .opblock-external-docs-wrapper,
+.api-docs-theme .swagger-ui .opblock-title_normal { color: var(--docs-muted); }
+
+/* Etykiety metod */
+.api-docs-theme .swagger-ui .opblock .opblock-summary-method {
+  background: #2563eb;
+  color: #ffffff;
+  border-radius: 6px;
+  font-weight: 700;
+  text-shadow: none;
+}
+.api-docs-theme .swagger-ui .opblock.opblock-post .opblock-summary-method { background: #16a34a; }
+
+/* Tabele parametrów i odpowiedzi */
+.api-docs-theme .swagger-ui table { color: var(--docs-muted); }
+.api-docs-theme .swagger-ui table tbody tr td { border-bottom: 1px solid var(--docs-border); color: var(--docs-muted); }
+.api-docs-theme .swagger-ui .table-container,
+.api-docs-theme .swagger-ui .parameters-container { background: transparent; }
+.api-docs-theme .swagger-ui .parameter__name { color: var(--docs-text); font-weight: 600; }
+.api-docs-theme .swagger-ui .parameter__name.required span,
+.api-docs-theme .swagger-ui .parameter__name.required::after { color: #f87171; }
+.api-docs-theme .swagger-ui .parameter__type,
+.api-docs-theme .swagger-ui .parameter__in { color: var(--docs-dim); }
+.api-docs-theme .swagger-ui .response-col_status { color: var(--docs-text); }
+.api-docs-theme .swagger-ui .responses-table .response-col_description__inner p { color: var(--docs-muted); }
+.api-docs-theme .swagger-ui .tab li button.tablinks { color: var(--docs-muted); background: transparent; }
+.api-docs-theme .swagger-ui .tab li.active button.tablinks,
+.api-docs-theme .swagger-ui .tab li button.tablinks:hover { color: var(--docs-accent); }
+
+/* Widoki schematów i modele */
+.api-docs-theme .swagger-ui section.models {
+  background: var(--docs-panel);
+  border: 1px solid var(--docs-border);
+  border-radius: 12px;
+}
+.api-docs-theme .swagger-ui section.models.is-open h4 { border-bottom: 1px solid var(--docs-border); }
+.api-docs-theme .swagger-ui section.models .model-container { background: var(--docs-deep); border-radius: 8px; }
+.api-docs-theme .swagger-ui .model-box { background: transparent; }
+.api-docs-theme .swagger-ui .model-toggle::after { filter: invert(1); }
+.api-docs-theme .swagger-ui .model .property.primitive,
+.api-docs-theme .swagger-ui .prop-type { color: #86efac; }
+.api-docs-theme .swagger-ui .model-title,
+.api-docs-theme .swagger-ui .model .property { color: var(--docs-muted); }
+.api-docs-theme .swagger-ui .model-hint { background: var(--docs-panel-solid); color: var(--docs-text); }
+.api-docs-theme .swagger-ui span.model-toggle,
+.api-docs-theme .swagger-ui .model-jump-to-path { color: var(--docs-muted); }
+
+/* Bloki kodu i przykłady */
+.api-docs-theme .swagger-ui .highlight-code > .microlight,
+.api-docs-theme .swagger-ui .microlight,
+.api-docs-theme .swagger-ui .example,
+.api-docs-theme .swagger-ui .body-param__example {
+  background: #18181b !important;
+  color: var(--docs-muted) !important;
+  border-radius: 8px;
+}
+.api-docs-theme .swagger-ui .copy-to-clipboard { background: var(--docs-border-strong); }
+
+/* Pola formularzy */
+.api-docs-theme .swagger-ui input[type="text"],
+.api-docs-theme .swagger-ui input[type="search"],
+.api-docs-theme .swagger-ui input[type="number"],
+.api-docs-theme .swagger-ui textarea,
+.api-docs-theme .swagger-ui select {
+  background: var(--docs-panel-solid);
+  color: var(--docs-text);
+  border: 1px solid var(--docs-border-strong);
+  border-radius: 8px;
+}
+.api-docs-theme .swagger-ui input::placeholder,
+.api-docs-theme .swagger-ui textarea::placeholder { color: var(--docs-dim); }
+.api-docs-theme .swagger-ui input:focus,
+.api-docs-theme .swagger-ui textarea:focus,
+.api-docs-theme .swagger-ui select:focus { outline: 2px solid var(--docs-accent); outline-offset: 1px; }
+
+/* Przyciski */
+.api-docs-theme .swagger-ui .btn {
+  background: var(--docs-panel-solid);
+  color: var(--docs-text);
+  border: 1px solid var(--docs-border-strong);
+  border-radius: 8px;
+  box-shadow: none;
+}
+.api-docs-theme .swagger-ui .btn:hover { background: #3f3f46; }
+.api-docs-theme .swagger-ui .btn.execute { background: #2563eb; border-color: #2563eb; color: #fff; }
+.api-docs-theme .swagger-ui .btn.cancel { background: transparent; border-color: #f87171; color: #f87171; }
+.api-docs-theme .swagger-ui .btn.try-out__btn { border-color: var(--docs-accent); color: var(--docs-accent); background: transparent; }
+
+/* Strzałki rozwijania w jasnym SVG na ciemnym tle */
+.api-docs-theme .swagger-ui svg:not(:root) { fill: var(--docs-muted); }
+.api-docs-theme .swagger-ui .opblock-summary-control svg,
+.api-docs-theme .swagger-ui .expand-methods svg,
+.api-docs-theme .swagger-ui .expand-operation svg { fill: var(--docs-muted); }
+
+/* Ładowanie i błędy */
+.api-docs-theme .swagger-ui .loading-container .loading::after { color: var(--docs-muted); }
+.api-docs-theme .swagger-ui .errors-wrapper { background: rgb(127 29 29 / 0.4); border: 1px solid #f87171; }
+.api-docs-theme .swagger-ui .errors-wrapper .errors h4,
+.api-docs-theme .swagger-ui .errors-wrapper .errors small { color: #fecaca; }
+
+/* Nazwy grup (tagów) są linkami, więc muszą wygrać z kolorem linków. */
+.api-docs-theme .swagger-ui .opblock-tag a,
+.api-docs-theme .swagger-ui h3.opblock-tag a,
+.api-docs-theme .swagger-ui h4.opblock-tag a { color: var(--docs-accent); }
+.api-docs-theme .swagger-ui .opblock-tag small a { color: var(--docs-dim); }
+
+/* Wąskie ekrany: tytuł nie nachodzi na etykiety, a listy mediów mieszczą tekst. */
+.api-docs-theme .swagger-ui .info .title { line-height: 1.25; }
+.api-docs-theme .swagger-ui .info hgroup.main { margin: 0 0 12px; }
+.api-docs-theme .swagger-ui select { max-width: 100%; min-width: 9rem; }
+@media (max-width: 640px) {
+  .api-docs-theme .swagger-ui .wrapper { padding: 0 4px; }
+  .api-docs-theme .swagger-ui .opblock .opblock-summary-path { word-break: break-all; }
+}
+
+/* Pola wyłączone (przed „Try it out”) wyglądają na wyłączone: ciemniejsze tło i szary tekst. */
+.api-docs-theme .swagger-ui input:disabled,
+.api-docs-theme .swagger-ui textarea:disabled,
+.api-docs-theme .swagger-ui select:disabled {
+  background: #18181b;
+  color: #71717a;
+  border-color: var(--docs-border);
+  cursor: not-allowed;
+  opacity: 1;
+}
+.api-docs-theme .swagger-ui input:disabled::placeholder,
+.api-docs-theme .swagger-ui textarea:disabled::placeholder { color: #52525b; }

@@ -27,7 +27,7 @@ export async function generateRoleRankingStats(seasonId?: number, dateFrom?: Dat
   const playerName = includePlayers ? Prisma.sql`p.name` : Prisma.sql`NULL`;
   // Keep the same player eligibility as the full breakdown, without returning names.
   const activePlayers = includePlayers ? Prisma.empty : Prisma.sql`AND p.name <> ''`;
-  // Only the role table delays DAP. Existing API/host callers include every day.
+  // Only the public role table delays DAP. The host panel includes every day.
   const dapEligibility = excludeLatestDay
     ? Prisma.sql`CASE WHEN SUBSTR(g.startTime, 1, 10) < (SELECT date FROM latest_day) THEN 1 ELSE 0 END`
     : Prisma.sql`1`;

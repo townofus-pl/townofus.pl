@@ -1,5 +1,5 @@
 import type { Metadata } from 'next';
-import { getGameDatesLightweight, getSessionSummaryByDate } from '@/app/dramaafera/_services';
+import { getGameDatesLightweight, getPublicSessionSummaryByDate } from '@/app/dramaafera/_services';
 import { buildSeasonUrl } from '@/app/dramaafera/_utils/seasonHelpers';
 import { parseAndValidateSeasonId } from '@/app/dramaafera/sezon/_utils/parseSeasonId';
 import WynikiClient from '@/app/dramaafera/_components/WynikiClient';
@@ -29,7 +29,7 @@ export default async function SeasonWynikiPage({ params }: PageProps) {
 
     const latestDate = dates.length > 0 ? dates[0].date : null;
     const initialResults = latestDate
-        ? await getSessionSummaryByDate(latestDate, seasonId)
+        ? await getPublicSessionSummaryByDate(latestDate, seasonId)
         : null;
 
     return (

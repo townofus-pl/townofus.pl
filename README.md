@@ -53,24 +53,17 @@ Commit messages and code are English; everything a player sees is Polish.
 The league's stats are **not** entered by hand. The mod's host uploads a JSON payload at the end
 of every match:
 
-| | endpoint | payload |
-|---|---|---|
-| v1 | `POST /api/games` | aggregated — 24 pre-computed counters per player |
-| v2 | `POST /api/v2/games` | event-based — a flat `actions[]` the server aggregates itself |
+`POST /api/v2/games` takes an event-based payload — a flat `actions[]` the server aggregates itself.
+The old aggregated endpoint (`POST /api/games`) was removed. The 735 games played before the
+cutover stay in the database, and their rows are never rewritten.
 
-**v2 is what the mod sends today.** Both are live: v1 still serves the 735 games played before
-the cutover, and its rows are never rewritten.
+Two rules govern ingest, and breaking either corrupts data silently:
 
-Three rules govern ingest, and breaking any of them corrupts data silently:
-
-1. **The mod scores, the server sums.** `totalPoints` is the sum of every action's `pointsChange`
-   and nothing else. No bonus is added server-side, and the disconnect clamp arrives already
-   applied. The 24 counters exist for display; the ranking reads `totalPoints` alone.
-2. **The era comes from the data, never from the request.** A game's season is derived from its
+1. **The era comes from the data, never from the request.** A game's season is derived from its
    own timestamp, and which role registry applies follows from that — never from "what season is
    it now".
-3. **Ingest must be chronological.** The ranking calculator refuses a game older than one already
-   scored, because a ranking row's `previousRating` is only meaningful in order.
+2. **Ingest must be chronological.** The ranking calculator refuses a game older than one already
+   processed, because a ranking row's `previousRating` is only meaningful in order.
 
 `POST /api/v2/games` is idempotent on `gameIdentifier`: a re-submit returns 409 and writes
 nothing, across all five tables.
@@ -119,12 +112,20 @@ output, never from a document.
 
 ## API
 
-Interactive docs at `/api/docs`, health at `/api/status`, OpenAPI JSON at `/api/schema`.
+Interactive docs at `/api/docs` (production: https://townofus.pl/api/docs). The OpenAPI JSON is at
+`/api/schema`. Both are public.
 
-Endpoints are protected with HTTP Basic Auth (`API_USERNAME` / `API_PASSWORD`, from `.dev.vars`
-locally and wrangler secrets per environment) — **except** `GET /api/dramaafera/*`, which is
-public so client components and embeddable widgets can read it. Destructive methods under that
-same prefix are still authenticated.
+The public data API is `GET /api/v2/*`: seasons, sessions, games, game events, ranking, players,
+roles, settings and the AUnlocker download. It needs no login and gives what a visitor sees on
+the site. Only `POST /api/v2/games` (the mod), `GET /api/mod/host/[name]` and
+`POST /api/season/reset` use HTTP Basic Auth (`API_USERNAME` / `API_PASSWORD`, from `.dev.vars`
+locally and wrangler secrets per environment).
+
+`npx tsx scripts/check-api-v2.ts http://localhost:3000` checks the real responses of a running
+local server against the response schemas, the rules (no point fields, delayed `dap`, latest-day
+order, `null` for missing action data, 404 for `season=1`) and the data of the local D1 copy.
+CI does not run it, because it needs a running server and a seeded local D1. Route tests in
+`src/app/api/v2/routes.test.ts` run in CI (response schema, blocked-field scan, 401 and 200).
 
 ## Documentation
 
@@ -134,8 +135,7 @@ same prefix are still authenticated.
 - `docs/agents/` — issue tracker, triage labels, domain docs
 - `.agents/skills/` — reusable agent workflows, symlinked into `.claude/skills/`
 
-Issues live on GitHub. The scoring **weights** the mod applies are deliberately not published
-here or on the site: the site names which actions score, not what each is worth.
+Issues live on GitHub.
 
 ## License
 

@@ -1,10 +1,11 @@
 import SwaggerUIComponent from './swagger-ui';
 
 export const metadata = {
-  title: 'API Documentation | TownOfUs.pl',
-  description: 'REST API documentation for the Polish Among Us community website',
+  title: 'API | TownOfUs.pl',
+  description: 'Publiczne API danych Drama Afera',
 };
 
+// Publiczna dokumentacja pod `/api/docs`. Strona nie wymaga logowania.
 export default function DocsPage() {
   return <SwaggerUIComponent />;
 }

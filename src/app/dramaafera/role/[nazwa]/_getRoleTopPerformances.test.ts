@@ -31,3 +31,17 @@ test('normalizes names and resolves tied points deterministically', () => {
 test('has no performances for a role absent from the season', () => {
     expect(getRoleTopPerformances([game('a', [player('A', 'Sheriff', 5)])], 'Medic', name => name)).toEqual([]);
 });
+
+test('keeps the order but sends no point field to the browser', () => {
+    const result = getRoleTopPerformances([game('a', [player('A', 'Sheriff', 5), player('B', 'Sheriff', 12)])], 'Sheriff', name => name);
+    expect(result.map(row => row.playerName)).toEqual(['B', 'A']);
+    expect(JSON.stringify(result)).not.toContain('totalPoints');
+});
+
+test('includes games from the latest day and sends no point field', () => {
+    const old = { ...game('old', [player('A', 'Sheriff', 1)]), startTime: '2026-10-07T20:00:00Z' };
+    const latest = { ...game('new', [player('B', 'Sheriff', 99)]), startTime: '2026-10-21T20:00:00Z' };
+    const result = getRoleTopPerformances([old, latest], 'Sheriff', name => name);
+    expect(result.map(row => row.gameId)).toEqual(['new', 'old']);
+    expect(JSON.stringify(result)).not.toContain('totalPoints');
+});

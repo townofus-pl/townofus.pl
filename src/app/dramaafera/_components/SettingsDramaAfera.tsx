@@ -6,7 +6,7 @@ import { CURRENT_SEASON } from "../_constants/seasons";
 import { resolveSettingsView } from "../_utils/settingsView";
 import { SlotsDisplay } from "./SlotsDisplay";
 import { SpecialSettingsAccordion } from "./SpecialSettingsAccordion";
-import { GetDramaAferaSettingsResponseSchema } from "@/app/api/dramaafera/settings/schema";
+import { SettingsBaseSchema as SettingsResponseSchema } from "@/app/api/v2/_lib/settingsSchema";
 
 /**
  * The settings landing page. Fetch, then render whatever `resolveSettingsView` makes of the file —
@@ -21,12 +21,11 @@ export function SettingsDramaAfera() {
     useEffect(() => {
         const controller = new AbortController();
 
-        fetch("/api/dramaafera/settings", { signal: controller.signal })
+        fetch("/api/v2/settings", { signal: controller.signal })
             .then(async (response) => {
                 if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                const parsed = GetDramaAferaSettingsResponseSchema.parse(await response.json());
-                if (!parsed.success) throw new Error(parsed.error ?? 'API error');
-                setFileContent(parsed.data.current);
+                const parsed = SettingsResponseSchema.parse(await response.json());
+                setFileContent(parsed.current);
             })
             .catch((err) => {
                 if (err instanceof DOMException && err.name === 'AbortError') return;
