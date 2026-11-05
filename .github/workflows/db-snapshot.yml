@@ -3,12 +3,14 @@ name: DB snapshot
 # Raz w tygodniu robi kopię produkcyjnej bazy D1 i wysyła ją do prywatnego bucketu R2.
 # Z kopii korzystają potem Preview dla PR-ów (jedyne miejsce, które czyta produkcyjne D1).
 #
-# Eksport blokuje bazę na kilka sekund, więc biegnie w nocy: czwartek 04:xx czasu warszawskiego.
+# Eksport blokuje bazę na kilka sekund, więc biegnie w nocy: czwartek 04:20 czasu warszawskiego.
 # Cron GitHuba jest w UTC: 02:20 to 04:20 latem (CEST), 03:20 to 04:20 zimą (CET).
-# Bramka w .github/scripts/snapshot-gate.sh przepuszcza tylko ten wpis, który trafia na 04:xx.
+# Bramka w .github/scripts/snapshot-gate.sh wybiera wpis po stringu cron i po przesunięciu
+# Warszawy względem UTC, więc w każdy czwartek biegnie dokładnie jeden, także po opóźnieniu.
 on:
   schedule:
-    - cron: '20 2,3 * * 4'
+    - cron: '20 2 * * 4'
+    - cron: '20 3 * * 4'
   workflow_dispatch:
 
 permissions:
@@ -47,10 +49,13 @@ jobs:
 
       - name: Time gate (Warsaw 04:xx on Thursday, or manual run)
         id: gate
+        shell: bash
         env:
           EVENT_NAME: ${{ github.event_name }}
+          EVENT_SCHEDULE: ${{ github.event.schedule }}
+        # Bez potoku: błąd bramki (kod wyjścia inny niż 0) musi wywalić krok, a nie dać zielony bieg bez eksportu.
         run: |
-          .github/scripts/snapshot-gate.sh | tee -a "$GITHUB_OUTPUT"
+          .github/scripts/snapshot-gate.sh >> "$GITHUB_OUTPUT"
 
       - uses: actions/setup-node@v4
         if: steps.gate.outputs.go == 'true'
@@ -59,21 +64,33 @@ jobs:
 
       # Eksport trafia do katalogu tymczasowego runnera. Nie jest to artefakt GitHuba: repo jest
       # publiczne, a zrzut zawiera dane produkcyjne. Nic nie wypisuje zawartości pliku.
+      #
+      # `wrangler d1 export` wypisuje podpisany adres do pobrania zrzutu (ważny godzinę). W publicznym
+      # logu to wyciek produkcji, a `::add-mask::` nie pomoże, bo nie znamy adresu z góry. Dlatego całe
+      # wyjście idzie do pliku poza repo. Przy błędzie drukujemy je dopiero po usunięciu adresów.
       - name: Export production D1
         if: steps.gate.outputs.go == 'true'
+        shell: bash
         run: |
-          set -euo pipefail
           date_stamp="$(date -u +%Y%m%d-%H%M)"
           dump="$RUNNER_TEMP/snapshot.sql"
+          log="$RUNNER_TEMP/export.log"
           echo "DUMP=$dump" >> "$GITHUB_ENV"
           echo "DATE_STAMP=$date_stamp" >> "$GITHUB_ENV"
-          npx --yes "wrangler@$WRANGLER_VERSION" d1 export townofus-pl --remote --env production --output "$dump"
+          if ! npx --yes "wrangler@$WRANGLER_VERSION" d1 export townofus-pl --remote --env production --output "$dump" > "$log" 2>&1; then
+            echo "::error::The export failed. Output below, with URLs removed."
+            .github/scripts/redact-urls.sh < "$log"
+            rm -f "$log"
+            exit 1
+          fi
+          rm -f "$log"
+          echo "Export finished."
 
       # Pusty albo ucięty plik nie może nadpisać dobrego latest.sql.
       - name: Check the dump
         if: steps.gate.outputs.go == 'true'
+        shell: bash
         run: |
-          set -euo pipefail
           size="$(stat -c %s "$DUMP")"
           echo "Dump size: $size bytes"
           if [ "$size" -lt 1000000 ]; then
@@ -85,13 +102,13 @@ jobs:
             exit 1
           }
 
-      # Token A ma zapis do bucketu, ale nie ma odczytu. Dlatego dwa osobne wysłania,
-      # bez kopiowania po stronie serwera. Najpierw plik z datą, potem latest.sql:
-      # jeśli drugie wysłanie padnie, latest.sql zostaje poprzedni.
+      # Dwa osobne wysłania, bez kopiowania po stronie serwera. Najpierw plik z datą, potem
+      # latest.sql: jeśli pierwsze wysłanie padnie, latest.sql zostaje poprzedni.
+      # Wyjście aws przechodzi przez filtr adresów, tak jak eksport.
       - name: Upload to R2
         if: steps.gate.outputs.go == 'true'
+        shell: bash
         run: |
-          set -euo pipefail
           secret="$(printf '%s' "$CLOUDFLARE_API_TOKEN" | sha256sum | cut -d' ' -f1)"
           echo "::add-mask::$secret"
           export AWS_ACCESS_KEY_ID="$R2_ACCESS_KEY_ID"
@@ -102,9 +119,10 @@ jobs:
           export AWS_RESPONSE_CHECKSUM_VALIDATION=when_required
           endpoint="https://${CLOUDFLARE_ACCOUNT_ID}.r2.cloudflarestorage.com"
 
-          aws s3 cp "$DUMP" "s3://${R2_BUCKET}/prod-${DATE_STAMP}.sql" --endpoint-url "$endpoint" --no-progress
-          aws s3 cp "$DUMP" "s3://${R2_BUCKET}/latest.sql" --endpoint-url "$endpoint" --no-progress
+          aws s3 cp "$DUMP" "s3://${R2_BUCKET}/prod-${DATE_STAMP}.sql" --endpoint-url "$endpoint" --no-progress 2>&1 | .github/scripts/redact-urls.sh
+          aws s3 cp "$DUMP" "s3://${R2_BUCKET}/latest.sql" --endpoint-url "$endpoint" --no-progress 2>&1 | .github/scripts/redact-urls.sh
 
       - name: Remove the dump
         if: always()
-        run: rm -f "$RUNNER_TEMP/snapshot.sql"
+        shell: bash
+        run: rm -f "$RUNNER_TEMP/snapshot.sql" "$RUNNER_TEMP/export.log"
