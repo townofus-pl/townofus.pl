@@ -12,14 +12,19 @@ import { buildPlayerStats } from './_buildPlayerStats';
 import { countVotes } from './_countVotes';
 import { buildGameTimeline } from './_buildGameTimeline';
 import { getDeathsDuringMeetings } from './_meetingDeaths';
-import { getLatestGameDay } from './getLatestGameDay';
+import { getLatestGameDay, type LatestGameDay } from './getLatestGameDay';
 
 // Fetch detailed game data
 // Player relations are selected down to `name` on purpose. Identity columns
 // (`friendCode`, `hashedProductUserId`) must never reach a response body — see #287 — and a
 // bare `player: true` would pull them in silently the moment they are added. Only
 // `.player.name` is read anywhere downstream.
-export async function getGameData(gameId: string): Promise<UIGameData | null> {
+export async function getGameData(
+  gameId: string,
+  // Wywołujący, który czyta wiele gier jednego sezonu, czyta ostatni dzień raz i podaje go tutaj.
+  // Brak klucza `latestDay` oznacza, że ta funkcja czyta go sama.
+  opts: { latestDay?: LatestGameDay | null } = {},
+): Promise<UIGameData | null> {
   const prisma = await getDatabaseClient();
 
   if (!prisma) {
@@ -101,7 +106,7 @@ export async function getGameData(gameId: string): Promise<UIGameData | null> {
     return null;
   }
 
-  const latestDay = await getLatestGameDay(game.season);
+  const latestDay = 'latestDay' in opts ? (opts.latestDay ?? null) : await getLatestGameDay(game.season);
   const isLatestDay = !!latestDay && latestDay.gameIds.includes(game.id);
 
   const winners = game.gamePlayerStatistics.filter(stat => stat.win);

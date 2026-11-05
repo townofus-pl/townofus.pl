@@ -1,5 +1,6 @@
 import { getGamesListByDate } from '../games/getGamesList';
 import { getGameData } from '../games/getGameData';
+import { getLatestGameDay } from '../games/getLatestGameDay';
 import { normalizeRoleName, getRoleColor, determineTeam, formatDisplayDate } from '@/app/dramaafera/_utils/gameUtils';
 import { CURRENT_SEASON } from '@/app/dramaafera/_constants/seasons';
 import { toPublicGameData } from '../games/_toPublic';
@@ -83,9 +84,11 @@ export async function getSessionSummaryByDate(
   if (!games || games.length === 0) return empty;
 
   const displayDate = formatDisplayDate(date);
+  // Wszystkie gry sesji są z jednego sezonu, więc ostatni dzień czytamy raz.
+  const latestDay = await getLatestGameDay(season);
   const reversedGames = [...games].reverse();
   const detailedGames = await Promise.all(
-    reversedGames.map((game) => getGameData(game.id)),
+    reversedGames.map((game) => getGameData(game.id, { latestDay })),
   );
 
   // Player stats

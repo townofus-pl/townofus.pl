@@ -41,3 +41,13 @@ test('best games of a player include the latest day', async () => {
     expect(where).toMatchObject({ playerId: 1 });
     expect(where).not.toHaveProperty('gameId');
 });
+
+test('getGameData uses the latest day that the caller passes and does not read it again', async () => {
+    const { getGameData } = await import('./getGameData');
+    const raw = jest.fn();
+    const row = { id: 7, gameIdentifier: '20261021_1900', startTime: new Date('2026-10-21T19:00:00Z'), endTime: new Date('2026-10-21T19:15:00Z'), map: 'Polus', maxTasks: 9, winCondition: '', season: 4, gamePlayerStatistics: [], meetings: [], gameActions: [] };
+    jest.mocked(getDatabaseClient).mockResolvedValue({ game: { findFirst: jest.fn().mockResolvedValue(row) }, $queryRaw: raw } as unknown as NonNullable<Awaited<ReturnType<typeof getDatabaseClient>>>);
+    expect((await getGameData('20261021_1900', { latestDay: { date: '2026-10-21', gameIds: [7] } }))?.isLatestDay).toBe(true);
+    expect((await getGameData('20261021_1900', { latestDay: null }))?.isLatestDay).toBe(false);
+    expect(raw).not.toHaveBeenCalled();
+});
