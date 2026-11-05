@@ -29,11 +29,17 @@ const limit = (def: number, max: number) =>
   z.coerce.number().int().min(1).max(max).optional().openapi({ param: { name: 'limit', in: 'query' }, description: `Liczba wyników (domyślnie ${def}, maksymalnie ${max}).` });
 const offset = z.coerce.number().int().min(0).optional().openapi({ param: { name: 'offset', in: 'query' }, description: 'Przesunięcie od początku listy.' });
 
+// Odpowiedzi z błędami są w `components.responses` i trasy używają `$ref`.
+registry.register('Error', ErrorResponseSchema);
+const errorBody = { 'application/json': { schema: { $ref: '#/components/schemas/Error' } } };
+registry.registerComponent('responses', 'BadRequest', { description: 'Nieprawidłowy parametr', content: errorBody });
+registry.registerComponent('responses', 'NotFound', { description: 'Nie znaleziono', content: errorBody });
+registry.registerComponent('responses', 'ServerError', { description: 'Błąd serwera', content: errorBody });
 const errors = {
-  400: { description: 'Nieprawidłowy parametr', content: { 'application/json': { schema: ErrorResponseSchema } } },
-  500: { description: 'Błąd serwera', content: { 'application/json': { schema: ErrorResponseSchema } } },
+  400: { $ref: '#/components/responses/BadRequest' },
+  500: { $ref: '#/components/responses/ServerError' },
 };
-const notFound = { 404: { description: 'Nie znaleziono', content: { 'application/json': { schema: ErrorResponseSchema } } } };
+const notFound = { 404: { $ref: '#/components/responses/NotFound' } };
 const ok = (schema: z.ZodType, description: string) => ({ 200: { description, content: { 'application/json': { schema } } } });
 
 const dateParam = z.string().openapi({ param: { name: 'date', in: 'path' }, description: 'Data sesji: YYYYMMDD lub YYYY-MM-DD.', example: '20261021' });

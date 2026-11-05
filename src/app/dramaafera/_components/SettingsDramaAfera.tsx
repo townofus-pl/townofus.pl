@@ -6,7 +6,7 @@ import { CURRENT_SEASON } from "../_constants/seasons";
 import { resolveSettingsView } from "../_utils/settingsView";
 import { SlotsDisplay } from "./SlotsDisplay";
 import { SpecialSettingsAccordion } from "./SpecialSettingsAccordion";
-import { SettingsResponseSchema } from "@/app/api/v2/_lib/schemas";
+import { SettingsBaseSchema as SettingsResponseSchema } from "@/app/api/v2/_lib/settingsSchema";
 
 /**
  * The settings landing page. Fetch, then render whatever `resolveSettingsView` makes of the file —

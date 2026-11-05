@@ -5,7 +5,25 @@ import { V2_ACTION_TYPES } from '@/app/api/schema/gamesV2';
 import { TIMELINE_HIDDEN_TYPES, filterVisibleActions } from '@/app/dramaafera/_services/games/_buildGameTimeline';
 import { findForbiddenFields } from '@/app/dramaafera/_services/games/_forbiddenFields';
 
-const doc = buildOpenApiDocument();
+const rawDoc: any = buildOpenApiDocument();
+
+// Odpowiedzi używają `$ref` do `components`. Starsze testy czytają pełne drzewo, więc rozwijamy
+// odwołania. Opis i `nullable` z samego odwołania mają pierwszeństwo przed opisem struktury.
+function dereference(node: any, root: any = rawDoc): any {
+  if (Array.isArray(node)) return node.map((item) => dereference(item, root));
+  if (!node || typeof node !== 'object') return node;
+  if (typeof node.$ref === 'string') {
+    const target = node.$ref.replace('#/', '').split('/').reduce((acc: any, key: string) => acc[key], root);
+    const { $ref: _ref, ...rest } = node;
+    return { ...dereference(target, root), ...dereference(rest, root) };
+  }
+  if (Array.isArray(node.allOf)) {
+    const { allOf, ...rest } = node;
+    return Object.assign({}, ...allOf.map((part: any) => dereference(part, root)), dereference(rest, root));
+  }
+  return Object.fromEntries(Object.entries(node).map(([key, value]) => [key, dereference(value, root)]));
+}
+const doc: any = dereference(rawDoc);
 
 const EXPECTED = [
   '/api/v2/seasons', '/api/v2/sessions', '/api/v2/sessions/{date}', '/api/v2/games', '/api/v2/games/{id}', '/api/v2/games/{id}/events',
@@ -18,7 +36,7 @@ test('documents every planned public route and nothing else', () => {
 });
 
 test('every operation is a GET, so the POST of /api/v2/games is not documented', () => {
-  for (const item of Object.values(doc.paths ?? {})) expect(Object.keys(item)).toEqual(['get']);
+  for (const item of Object.values(doc.paths ?? {}) as any[]) expect(Object.keys(item)).toEqual(['get']);
   expect(JSON.stringify(doc)).not.toContain('basicAuth');
 });
 
@@ -202,13 +220,13 @@ test('the whole definition has no flat counter names', () => {
 
 test('the player route reuses the grouped counters of the game route', () => {
   const player = (doc.paths?.['/api/v2/players/{nick}']?.get?.responses as any)['200'].content['application/json'].schema;
-  expect(player.properties.stats.properties.counters).toEqual(counters);
+  expect({ ...player.properties.stats.properties.counters, description: undefined }).toEqual({ ...counters, description: undefined });
 });
 
 test('season 1 is out of scope: documented on the seasons route and as 404 on routes with season', () => {
   expect(doc.paths?.['/api/v2/seasons']?.get?.description).toMatch(/sezon 2 i późniejsze/);
   expect(JSON.stringify(doc)).not.toMatch(/1-3/);
-  const seasonRoutes = Object.entries(doc.paths ?? {}).filter(([, item]) =>
+  const seasonRoutes = (Object.entries(doc.paths ?? {}) as [string, any][]).filter(([, item]) =>
     ((item.get?.parameters ?? []) as { name: string }[]).some((p) => p.name === 'season'));
   expect(seasonRoutes.length).toBe(9);
   for (const [, item] of seasonRoutes) {

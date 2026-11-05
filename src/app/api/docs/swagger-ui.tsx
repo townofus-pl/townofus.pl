@@ -14,7 +14,7 @@ const SwaggerUI = dynamic(() => import('swagger-ui-react'), {
 export default function SwaggerUIComponent() {
   return (
     <div className="api-docs-theme min-h-screen rounded-xl bg-zinc-900/50 px-2 py-4 md:px-6 text-white">
-      <SwaggerUI url="/api/schema" docExpansion="list" />
+      <SwaggerUI url="/api/schema" docExpansion="list" defaultModelsExpandDepth={1} defaultModelExpandDepth={8} />
     </div>
   );
 }
