@@ -8,13 +8,18 @@
 //  4. Zrzut (kilkadziesiąt MB) nigdy nie leży w pamięci: strumień z fetch idzie prosto do R2,
 //     a kontrola czyta strumień kawałkami.
 
-import type { WorkflowStep } from 'cloudflare:workers';
-import type { SnapshotEnv } from './env';
+import type { WorkflowStep } from 'cloudflare:workers'; // tylko typ: znika po kompilacji
 
 export const MIN_DUMP_BYTES = 1_000_000;
 export const LATEST_KEY = 'latest.sql';
 /** Tekst, który musi być w poprawnym zrzucie: tabela migracji Prismy/Wranglera. */
 export const REQUIRED_TEXT = 'd1_migrations';
+
+/**
+ * Rozmiar części zapisu wieloczęściowego. R2 wymaga co najmniej 5 MiB dla każdej części poza
+ * ostatnią, a wszystkie części poza ostatnią muszą mieć ten sam rozmiar.
+ */
+export const PART_BYTES = 8 * 1024 * 1024;
 
 const API = 'https://api.cloudflare.com/client/v4';
 const POLL_INTERVAL_MS = 3_000;
@@ -23,12 +28,23 @@ const MAX_POLLS = 100;
 export interface SnapshotDeps {
     fetch: typeof fetch;
     sleep: (ms: number) => Promise<void>;
+    /**
+     * `NonRetryableError` z `cloudflare:workflows`. Wstrzykiwany, bo Node (Jest) nie ładuje modułów `cloudflare:*`.
+     * Błąd tej klasy kończy krok bez ponowień.
+     */
+    NonRetryableError: new (message: string) => Error;
+    /** Rozmiar części przy zapisie wieloczęściowym. Domyślnie PART_BYTES. Test ustawia mały. */
+    partBytes?: number;
 }
 
-const defaultDeps: SnapshotDeps = {
-    fetch: (input, init) => fetch(input, init),
-    sleep: (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
-};
+/** Zależności produkcyjne. Klasę błędu podaje workflow.ts. */
+export function createDeps(NonRetryableError: SnapshotDeps['NonRetryableError']): SnapshotDeps {
+    return {
+        fetch: (input, init) => fetch(input, init),
+        sleep: (ms) => new Promise((resolve) => setTimeout(resolve, ms)),
+        NonRetryableError,
+    };
+}
 
 /** Wynik kroku: tylko nazwa pliku i rozmiar. */
 export interface FileResult {
@@ -53,13 +69,39 @@ export function dumpKey(now: Date): string {
     return `prod-${stamp}.sql`;
 }
 
-/** Usuwa adresy z tekstu. Każdy błąd, który opuszcza krok, przechodzi przez to. */
+/** Usuwa adresy z tekstu, także w postaci JSON (`https:\/\/`). Każdy błąd opuszczający krok przechodzi przez to. */
 export function stripUrls(text: string): string {
-    return text.replace(/\bhttps?:\/\/\S+/gi, '[url removed]');
+    return text.replace(/https?:(?:\\?\/){2}\S*/gi, '[url removed]');
 }
 
-function fail(message: string): never {
-    throw new Error(stripUrls(message));
+/** Błąd, którego ponowienie nie naprawi (zły token, zły plik). Guard zamienia go na NonRetryableError. */
+class StableError extends Error {}
+
+/** Błąd stabilny: krok kończy się od razu, bez nowego eksportu. */
+function stable(message: string): never {
+    throw new StableError(message);
+}
+
+/** Błąd przejściowy: Workflow ponowi krok (maksymalnie 2 razy). */
+function transient(message: string): never {
+    throw new Error(message);
+}
+
+/**
+ * Każdy błąd opuszczający krok przechodzi tędy: tekst bez adresów, a klasa zależy od tego, czy
+ * ponowienie ma sens. Łapie też błędy z cudzego kodu, np. SyntaxError z `response.json()`, który
+ * cytuje fragment odpowiedzi.
+ */
+async function guard<T>(deps: SnapshotDeps, work: () => Promise<T>): Promise<T> {
+    try {
+        return await work();
+    } catch (error) {
+        const message = stripUrls(error instanceof Error ? error.message : String(error));
+        if (error instanceof StableError || error instanceof deps.NonRetryableError) {
+            throw new deps.NonRetryableError(message);
+        }
+        throw new Error(message);
+    }
 }
 
 interface ExportResponse {
@@ -73,9 +115,16 @@ interface ExportResponse {
     };
 }
 
+/** Brak wartości z konfiguracji to błąd wdrożenia: ponowienie go nie naprawi. */
+function requireConfig(env: SnapshotEnv): void {
+    for (const name of ['ACCOUNT_ID', 'DATABASE_ID', 'D1_EXPORT_TOKEN'] as const) {
+        if (!env[name]) stable(`Config value ${name} is not set`);
+    }
+}
+
 /**
- * Startuje eksport i odpytuje go do końca. Zwraca podpisany adres, który nie może wyjść poza
- * ten plik poza jednym fetch. Brak adresu po zakończeniu to błąd (krok się powtórzy).
+ * Startuje eksport i odpytuje go do końca. Zwraca podpisany adres, który nie wychodzi poza
+ * exportToR2. Brak adresu po zakończeniu to błąd przejściowy (krok się powtórzy).
  */
 async function requestSignedUrl(env: SnapshotEnv, deps: SnapshotDeps): Promise<string> {
     const endpoint = `${API}/accounts/${env.ACCOUNT_ID}/d1/database/${env.DATABASE_ID}/export`;
@@ -93,115 +142,159 @@ async function requestSignedUrl(env: SnapshotEnv, deps: SnapshotDeps): Promise<s
             },
             body: JSON.stringify(body),
         });
-        if (!response.ok) fail(`D1 export request failed with HTTP ${response.status}`);
+        if (!response.ok) {
+            const message = `D1 export request failed with HTTP ${response.status}`;
+            // 4xx (zły token, zła baza) się nie poprawi. 408 i 429 mijają, 5xx też.
+            const isStable = response.status >= 400 && response.status < 500 && response.status !== 408 && response.status !== 429;
+            return isStable ? stable(message) : transient(message);
+        }
 
         const json = (await response.json()) as ExportResponse;
         if (json.success === false) {
-            // Treść błędu API nie zawiera adresu, ale i tak przechodzi przez stripUrls w fail().
             const detail = json.errors?.map((e) => e.message).filter(Boolean).join('; ');
-            fail(`D1 export was refused${detail ? `: ${detail}` : ''}`);
+            stable(`D1 export was refused${detail ? `: ${detail}` : ''}`);
         }
 
         const result = json.result;
-        if (result?.status === 'error') fail(`D1 export failed${result.error ? `: ${result.error}` : ''}`);
+        if (result?.status === 'error') transient(`D1 export failed${result.error ? `: ${result.error}` : ''}`);
 
         if (result?.status === 'complete') {
             const url = result.result?.signed_url;
-            if (!url) fail('D1 export finished without a download address');
+            if (!url) transient('D1 export finished without a download address');
             return url;
         }
 
         bookmark = result?.at_bookmark ?? bookmark;
         await deps.sleep(POLL_INTERVAL_MS);
     }
-    return fail('D1 export did not finish in time');
+    return transient('D1 export did not finish in time');
+}
+
+
+/**
+ * Zapisuje strumień z pobrania do R2 bez trzymania pliku w pamięci.
+ *
+ * `R2Bucket.put` przyjmuje strumień tylko ze znaną długością (zmierzone w workerd: chunked i
+ * Content-Encoding kończą się błędem "must have a known length"). Dlatego:
+ *  - Content-Length i brak Content-Encoding: jeden `put`.
+ *  - inaczej: zapis wieloczęściowy, części po `partBytes`, w pamięci leży najwyżej jedna część.
+ * Nieudany zapis wieloczęściowy jest przerywany (`abort`), żeby w R2 nie zostały osierocone części.
+ */
+async function storeDownload(bucket: R2Bucket, key: string, download: Response, deps: SnapshotDeps): Promise<R2Object> {
+    const body = download.body!;
+    const length = Number(download.headers.get('content-length'));
+    const knownLength = Number.isFinite(length) && length > 0 && !download.headers.get('content-encoding');
+    if (knownLength) {
+        const stored = await bucket.put(key, body);
+        if (!stored) transient('Upload to R2 returned no object');
+        return stored;
+    }
+
+    const partBytes = deps.partBytes ?? PART_BYTES;
+    const upload = await bucket.createMultipartUpload(key);
+    try {
+        const parts: R2UploadedPart[] = [];
+        const reader = body.getReader();
+        const buffer = new Uint8Array(partBytes);
+        let filled = 0;
+        const flush = async (size: number) => {
+            parts.push(await upload.uploadPart(parts.length + 1, buffer.subarray(0, size)));
+            filled = 0;
+        };
+        for (;;) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            let offset = 0;
+            while (offset < value.length) {
+                const take = Math.min(partBytes - filled, value.length - offset);
+                buffer.set(value.subarray(offset, offset + take), filled);
+                filled += take;
+                offset += take;
+                if (filled === partBytes) await flush(partBytes);
+            }
+        }
+        // Ostatnia część może być mniejsza. Pusty plik nie ma części i R2 go nie przyjmie.
+        if (filled > 0) await flush(filled);
+        if (parts.length === 0) transient('The download was empty');
+        return await upload.complete(parts);
+    } catch (error) {
+        await upload.abort().catch(() => undefined);
+        throw error;
+    }
 }
 
 /** Krok 1: eksport i strumień do R2. Adres żyje tylko w tej funkcji. */
-export async function exportToR2(env: SnapshotEnv, key: string, deps: SnapshotDeps): Promise<FileResult> {
-    const signedUrl = await requestSignedUrl(env, deps);
+export function exportToR2(env: SnapshotEnv, key: string, deps: SnapshotDeps): Promise<FileResult> {
+    return guard(deps, async () => {
+        requireConfig(env);
+        const signedUrl = await requestSignedUrl(env, deps);
 
-    let download: Response;
-    try {
         // Adres jest podpisany: bez nagłówka Authorization.
-        download = await deps.fetch(signedUrl);
-    } catch {
-        // Komunikat błędu sieci może zawierać adres, więc go nie przekazujemy dalej.
-        return fail('Download of the export failed');
-    }
-    if (!download.ok || !download.body) fail(`Download of the export failed with HTTP ${download.status}`);
+        const download = await deps.fetch(signedUrl);
+        if (!download.ok || !download.body) transient(`Download of the export failed with HTTP ${download.status}`);
 
-    // Strumień idzie prosto do R2. Jeśli R2 odrzuci strumień bez znanej długości, wynik pokaże to test na stagingu.
-    let stored: R2Object | null;
-    try {
-        stored = await env.SNAPSHOTS.put(key, download.body);
-    } catch (error) {
-        return fail(`Upload to R2 failed: ${error instanceof Error ? error.message : 'unknown error'}`);
-    }
-    if (!stored) fail('Upload to R2 returned no object');
-    return { file: key, size: stored.size };
+        const stored = await storeDownload(env.SNAPSHOTS, key, download, deps);
+        return { file: key, size: stored.size };
+    });
 }
 
 /** Krok 2: rozmiar i obecność `d1_migrations`. Czyta strumień, nie trzyma pliku w pamięci. */
-export async function checkDump(env: SnapshotEnv, key: string): Promise<FileResult> {
-    const object = await env.SNAPSHOTS.get(key);
-    if (!object) return fail(`${key} is missing in the bucket`);
-    if (object.size < MIN_DUMP_BYTES) {
-        await object.body.cancel();
-        return fail(`${key} is smaller than ${MIN_DUMP_BYTES} bytes (${object.size}). latest.sql stays the same.`);
-    }
-
-    const reader = object.body.pipeThrough(new TextDecoderStream()).getReader();
-    // Ogon poprzedniego kawałka, żeby znaleźć tekst przecięty granicą kawałków.
-    let tail = '';
-    let found = false;
-    for (;;) {
-        const { done, value } = await reader.read();
-        if (done) break;
-        const window = tail + value;
-        if (window.includes(REQUIRED_TEXT)) {
-            found = true;
-            await reader.cancel();
-            break;
+export function checkDump(env: SnapshotEnv, key: string, deps: SnapshotDeps): Promise<FileResult> {
+    return guard(deps, async () => {
+        const object = await env.SNAPSHOTS.get(key);
+        if (!object) return stable(`${key} is missing in the bucket`);
+        if (object.size < MIN_DUMP_BYTES) {
+            await object.body.cancel();
+            return stable(`${key} is smaller than ${MIN_DUMP_BYTES} bytes (${object.size}). latest.sql stays the same.`);
         }
-        tail = window.slice(-(REQUIRED_TEXT.length - 1));
-    }
-    if (!found) fail(`${key} has no ${REQUIRED_TEXT} table. latest.sql stays the same.`);
-    return { file: key, size: object.size };
+
+        const reader = object.body.pipeThrough(new TextDecoderStream()).getReader();
+        // Ogon poprzedniego kawałka, żeby znaleźć tekst przecięty granicą kawałków.
+        let tail = '';
+        let found = false;
+        for (;;) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            const window = tail + value;
+            if (window.includes(REQUIRED_TEXT)) {
+                found = true;
+                await reader.cancel();
+                break;
+            }
+            tail = window.slice(-(REQUIRED_TEXT.length - 1));
+        }
+        if (!found) stable(`${key} has no ${REQUIRED_TEXT} table. latest.sql stays the same.`);
+        return { file: key, size: object.size };
+    });
 }
 
 /** Krok 3: kopiuje sprawdzony plik na latest.sql. Put w R2 jest atomowy: stary plik zostaje do końca. */
-export async function promoteLatest(env: SnapshotEnv, key: string): Promise<FileResult> {
-    const source = await env.SNAPSHOTS.get(key);
-    if (!source) return fail(`${key} is missing in the bucket`);
+export function promoteLatest(env: SnapshotEnv, key: string, deps: SnapshotDeps): Promise<FileResult> {
+    return guard(deps, async () => {
+        const source = await env.SNAPSHOTS.get(key);
+        if (!source) return stable(`${key} is missing in the bucket`);
 
-    let stored: R2Object | null;
-    try {
-        stored = await env.SNAPSHOTS.put(LATEST_KEY, source.body);
-    } catch (error) {
-        return fail(`Upload of ${LATEST_KEY} failed: ${error instanceof Error ? error.message : 'unknown error'}`);
-    }
-    if (!stored || stored.size !== source.size) {
-        fail(`${LATEST_KEY} size does not match ${key}`);
-    }
-    return { file: LATEST_KEY, size: stored.size };
+        const stored = await env.SNAPSHOTS.put(LATEST_KEY, source.body);
+        if (!stored || stored.size !== source.size) transient(`${LATEST_KEY} size does not match ${key}`);
+        return { file: LATEST_KEY, size: stored.size };
+    });
 }
 
 export async function runSnapshot(
     env: SnapshotEnv,
     step: Pick<WorkflowStep, 'do'>,
     now: Date,
-    deps: SnapshotDeps = defaultDeps,
+    deps: SnapshotDeps,
 ): Promise<FileResult> {
     const key = dumpKey(now);
 
     const exported = await step.do('export and upload', EXPORT_STEP, () => exportToR2(env, key, deps));
     console.log(`export stored: ${exported.file}, ${exported.size} bytes`);
 
-    const checked = await step.do('check dump', LOCAL_STEP, () => checkDump(env, exported.file));
+    const checked = await step.do('check dump', LOCAL_STEP, () => checkDump(env, exported.file, deps));
     console.log(`dump checked: ${checked.file}, ${checked.size} bytes`);
 
-    const latest = await step.do('promote latest', LOCAL_STEP, () => promoteLatest(env, checked.file));
+    const latest = await step.do('promote latest', LOCAL_STEP, () => promoteLatest(env, checked.file, deps));
     console.log(`latest updated: ${latest.file}, ${latest.size} bytes`);
     return latest;
 }

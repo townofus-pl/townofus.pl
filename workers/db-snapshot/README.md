@@ -14,11 +14,22 @@ Schedule: `20 3 * * 4` (Thursday), production only. Staging has no schedule.
 2. `check dump`: fails if the file is under 1 MB or has no `d1_migrations` text.
 3. `promote latest`: streams `prod-<date>.sql` to `latest.sql`.
 
-`latest.sql` changes last. A failure in step 1 or 2 keeps the old file. The export step retries at
-most 2 times with a 5 minute delay, because each export blocks the D1 for a short time.
+`latest.sql` changes last. A failure in step 1 or 2 keeps the old file.
+
+Retries: each export blocks the D1 for a short time, so the export step retries at most 2 times with
+a 5 minute delay, and only for errors a retry can fix (HTTP 5xx, 408 or 429 from the API, a network
+error, a failed download or upload, a missing `signed_url`). These errors end the step at once, with
+no new export (`NonRetryableError`): HTTP 4xx from the API (for example a wrong token), a refusal by
+the API, a missing config value, a file under 1 MB, a file without `d1_migrations`.
+
+Upload to R2: with `Content-Length` and no `Content-Encoding` the Worker uses one `put`. Otherwise it
+uses a multipart upload in parts of 8 MiB (one part in memory at a time) and aborts it on a failure.
+The reason: in workerd, `R2Bucket.put` rejects a stream of unknown length (chunked download, or a
+download with `Content-Encoding`). The tests in `test/r2.workerd.test.ts` measure this.
 
 Rules in the code: the signed URL never goes to a log, a step output or an error message. The dump
-is never held in memory. `fetch` returns 404 (`workers_dev = false`, `preview_urls = false`).
+is never held in memory. The Worker has no `fetch` handler and no route (`workers_dev = false`,
+`preview_urls = false`).
 Instance state is kept for 7 days (`default_retention`).
 
 | | staging | production |
@@ -46,10 +57,21 @@ Run in this directory. The root `npm ci` installs the dependencies. The config n
 or newer (`schedules` and `default_retention`), so the scripts use `npx wrangler@4.157.0`.
 
 ```bash
+npm run types             # regenerate worker-configuration.d.ts after a change in wrangler.toml
+npm run types:check       # fails when the generated file is stale (CI runs it)
 npm run typecheck
 npm test
 npm run dry-run           # bundles and validates both environments, uploads nothing
 ```
+
+`worker-configuration.d.ts` is generated and committed. It holds the `SnapshotEnv` type. Do not edit it.
+The top-level `name` in `wrangler.toml` is `townofus-db-snapshot-dev` and has no bindings: always
+pass `--env`.
+
+The tests have two parts. `test/snapshot.test.ts` uses a fake `fetch` and a fake R2 bucket.
+`test/r2.workerd.test.ts` runs the same code in real workerd through Miniflare, with a local HTTP
+server as the download side. It cannot show the real headers of the signed URL from the D1 export:
+the staging test answers that.
 
 ## Manual trigger
 

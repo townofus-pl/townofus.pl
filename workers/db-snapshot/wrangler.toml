@@ -10,7 +10,7 @@
 # Sekret: D1_EXPORT_TOKEN (token C, tylko do eksportu D1). Nie ma go w tym pliku.
 
 main = "src/index.ts"
-name = "townofus-db-snapshot"
+name = "townofus-db-snapshot-dev"
 compatibility_date = "2026-05-01"
 account_id = "d1287f321cc95882fc773ab71241b51a"
 workers_dev = false
@@ -51,7 +51,7 @@ default_retention = { success_retention = "7 days", error_retention = "7 days" }
 # production — kopia produkcyjnej bazy, czwartek w nocy
 # --------------------------------------------------------------------------------------------
 [env.production]
-name = "townofus-db-snapshot"
+name = "townofus-db-snapshot-dev"
 workers_dev = false
 preview_urls = false
 
@@ -73,7 +73,7 @@ bucket_name = "townofus-pl-db-snapshots"
 
 [[env.production.workflows]]
 binding = "SNAPSHOT_WORKFLOW"
-name = "townofus-db-snapshot"
+name = "townofus-db-snapshot-dev"
 class_name = "DbSnapshotWorkflow"
 # Czwartek 03:20. Strefa czasowa harmonogramu Workflow nie jest opisana w docs: sprawdza to
 # test na stagingu (pytanie 1 w planie). Eksport blokuje bazę na kilka sekund, więc idzie w nocy.

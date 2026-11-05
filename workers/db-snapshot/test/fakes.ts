@@ -1,7 +1,6 @@
 // Atrapy do testów: R2, fetch i krok Workflow. Bez sieci i bez runtime Workers.
 
 import type { WorkflowStep } from 'cloudflare:workers';
-import type { SnapshotEnv } from '../src/env';
 import type { SnapshotDeps } from '../src/snapshot';
 
 export const SIGNED_URL = 'https://r2.example.com/signed/export-secret-token?X-Amz-Signature=abcdef';
@@ -67,6 +66,37 @@ export class FakeBucket {
         return { size: data.length };
     }
 
+    uploads: { key: string; parts: Uint8Array[]; state: 'open' | 'complete' | 'aborted' }[] = [];
+    /** Numer części, której zapis ma się nie udać. */
+    failPart?: number;
+
+    async createMultipartUpload(key: string) {
+        const upload = { key, parts: [] as Uint8Array[], state: 'open' as 'open' | 'complete' | 'aborted' };
+        this.uploads.push(upload);
+        return {
+            uploadPart: async (partNumber: number, data: Uint8Array) => {
+                if (this.failPart === partNumber) throw new Error('simulated part failure');
+                upload.parts[partNumber - 1] = data.slice();
+                return { partNumber, etag: `e${partNumber}` };
+            },
+            complete: async () => {
+                const size = upload.parts.reduce((n, part) => n + part.length, 0);
+                const all = new Uint8Array(size);
+                let at = 0;
+                for (const part of upload.parts) {
+                    all.set(part, at);
+                    at += part.length;
+                }
+                this.files.set(key, all);
+                upload.state = 'complete';
+                return { size };
+            },
+            abort: async () => {
+                upload.state = 'aborted';
+            },
+        };
+    }
+
     async get(key: string): Promise<{ size: number; body: ReadableStream<Uint8Array> } | null> {
         const data = this.files.get(key);
         if (!data) return null;
@@ -80,6 +110,14 @@ export interface ExportScript {
     dump?: Uint8Array;
     /** Błąd sieci przy pobieraniu z podpisanego adresu. */
     downloadError?: Error;
+    /** Zamiast odpowiedzi API: kod HTTP albo surowe ciało. */
+    apiRaw?: { status: number; body: string };
+    /** Status pobierania z podpisanego adresu (domyślnie 200). */
+    downloadStatus?: number;
+    /** Nagłówki pobierania. Domyślnie tylko Content-Length równy rozmiarowi zrzutu. */
+    downloadHeaders?: Record<string, string>;
+    /** Strumień pobierania kończy się błędem po tylu bajtach. */
+    downloadBreaksAfter?: number;
 }
 
 export const complete = { success: true, result: { status: 'complete', result: { filename: 'x.sql', signed_url: SIGNED_URL } } };
@@ -95,11 +133,28 @@ export function makeFetch(script: ExportScript) {
         calls.push(url);
         if (url === SIGNED_URL) {
             if (script.downloadError) throw script.downloadError;
-            return new Response(streamOf(script.dump ?? new Uint8Array()), { status: 200 });
+            const dump = script.dump ?? new Uint8Array();
+            const headers = script.downloadHeaders ?? { 'Content-Length': String(dump.length) };
+            let body = streamOf(dump);
+            if (script.downloadBreaksAfter !== undefined) {
+                const limit = script.downloadBreaksAfter;
+                let sent = 0;
+                body = body.pipeThrough(
+                    new TransformStream({
+                        transform(chunk, controller) {
+                            if (sent >= limit) throw new Error('connection lost');
+                            sent += chunk.length;
+                            controller.enqueue(chunk);
+                        },
+                    }),
+                );
+            }
+            return new Response(body, { status: script.downloadStatus ?? 200, headers });
         }
         if (url.endsWith(API_PATH)) {
             apiBodies.push(JSON.parse(String(init?.body)));
             const index = Math.min(apiCalls++, script.responses.length - 1);
+            if (script.apiRaw) return new Response(script.apiRaw.body, { status: script.apiRaw.status });
             return new Response(JSON.stringify(script.responses[index]), { status: 200 });
         }
         throw new Error(`unexpected fetch: ${url}`);
@@ -107,7 +162,10 @@ export function makeFetch(script: ExportScript) {
     return { impl: impl as typeof fetch, apiBodies, calls, apiCallCount: () => apiCalls };
 }
 
-export function makeEnv(bucket: FakeBucket): SnapshotEnv {
+/** Zamiennik `NonRetryableError` z `cloudflare:workflows`. */
+export class TestNonRetryableError extends Error {}
+
+export function makeEnv(bucket: FakeBucket, overrides: Partial<SnapshotEnv> = {}): SnapshotEnv {
     return {
         SNAPSHOTS: bucket as unknown as R2Bucket,
         SNAPSHOT_WORKFLOW: {} as Workflow,
@@ -115,11 +173,12 @@ export function makeEnv(bucket: FakeBucket): SnapshotEnv {
         ACCOUNT_ID: 'acc',
         DATABASE_ID: 'db',
         D1_EXPORT_TOKEN: 'token-c',
+        ...overrides,
     };
 }
 
-export function makeDeps(fetchImpl: typeof fetch): SnapshotDeps {
-    return { fetch: fetchImpl, sleep: async () => {} };
+export function makeDeps(fetchImpl: typeof fetch, partBytes?: number): SnapshotDeps {
+    return { fetch: fetchImpl, sleep: async () => {}, NonRetryableError: TestNonRetryableError, partBytes };
 }
 
 export interface StepRecord {
@@ -145,7 +204,8 @@ export function makeStep() {
                     return record.output;
                 } catch (error) {
                     record.errors.push(error instanceof Error ? error.message : String(error));
-                    if (record.attempts > limit) throw error;
+                    // Jak Workflow: NonRetryableError kończy krok bez ponowień.
+                    if (error instanceof TestNonRetryableError || record.attempts > limit) throw error;
                 }
             }
         },
