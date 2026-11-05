@@ -1,12 +1,19 @@
 "use client";
 
+import Image from 'next/image';
+import Link from 'next/link';
+import { buildSeasonUrl } from '../../_utils/seasonHelpers';
+import { getPlayerAvatarPath, convertNickToUrlSlug } from '../../_utils/gameUtils';
+
 import type { VotingStatistics } from '../../_services';
 
 interface VotingStatsDisplayProps {
   votingStats: VotingStatistics;
+  playerName: string;
+  seasonId: number;
 }
 
-export function VotingStatsDisplay({ votingStats }: VotingStatsDisplayProps) {
+export function VotingStatsDisplay({ votingStats, playerName, seasonId }: VotingStatsDisplayProps) {
   if (votingStats.totalMeetings === 0) return null;
 
   return (
@@ -57,7 +64,7 @@ export function VotingStatsDisplay({ votingStats }: VotingStatsDisplayProps) {
       <div className="bg-zinc-800/50 rounded-lg p-4 border border-zinc-700/50 mb-6">
         <div className="flex items-center justify-between mb-2">
           <div className="text-sm text-zinc-400 uppercase tracking-wide">
-            🎯 Bandwagon Factor
+            Bandwagon Factor
           </div>
           <div className="text-2xl font-bold text-green-400">
             {votingStats.bandwagonFactor.toFixed(1)}%
@@ -79,11 +86,24 @@ export function VotingStatsDisplay({ votingStats }: VotingStatsDisplayProps) {
         {/* Najczęstsze ofiary głosowań */}
         {votingStats.votingTargets.length > 0 && (
           <div className="bg-zinc-800/30 rounded-lg p-4">
-            <h4 className="text-lg font-bold mb-4 text-white">
-              🎯 Najczęstsze Ofiary Głosowań
+            <h4 className="flex flex-wrap items-center gap-2 text-lg font-bold mb-4 text-white">
+              <span>Na kogo głosuje</span>
+              <Image
+                src={getPlayerAvatarPath(playerName)}
+                alt=""
+                width={24}
+                height={24}
+                className="h-6 w-6 shrink-0 rounded-full object-cover"
+              />
+              <Link
+                href={buildSeasonUrl(`/user/${convertNickToUrlSlug(playerName)}`, seasonId)}
+                className="hover:underline"
+              >
+                {playerName}:
+              </Link>
             </h4>
             <div className="space-y-2">
-              {votingStats.votingTargets.slice(0, 5).map((target, index) => (
+              {votingStats.votingTargets.map((target, index) => (
                 <div 
                   key={target.playerName}
                   className="flex items-center justify-between bg-zinc-900/50 rounded p-2"
@@ -92,9 +112,19 @@ export function VotingStatsDisplay({ votingStats }: VotingStatsDisplayProps) {
                     <span className="text-zinc-500 font-mono text-sm w-6">
                       {index + 1}.
                     </span>
-                    <span className="text-white font-semibold">
+                    <Image
+                      src={getPlayerAvatarPath(target.playerName)}
+                      alt=""
+                      width={24}
+                      height={24}
+                      className="h-6 w-6 shrink-0 rounded-full object-cover"
+                    />
+                    <Link
+                      href={buildSeasonUrl(`/user/${convertNickToUrlSlug(target.playerName)}`, seasonId)}
+                      className="text-white font-semibold hover:underline"
+                    >
                       {target.playerName}
-                    </span>
+                    </Link>
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-blue-400 font-bold">
@@ -113,11 +143,24 @@ export function VotingStatsDisplay({ votingStats }: VotingStatsDisplayProps) {
         {/* Kto głosuje na gracza */}
         {votingStats.votedByPlayers.length > 0 && (
           <div className="bg-zinc-800/30 rounded-lg p-4">
-            <h4 className="text-lg font-bold mb-4 text-white">
-              👥 Kto Głosuje Na Mnie
+            <h4 className="flex flex-wrap items-center gap-2 text-lg font-bold mb-4 text-white">
+              <span>Kto głosuje na</span>
+              <Image
+                src={getPlayerAvatarPath(playerName)}
+                alt=""
+                width={24}
+                height={24}
+                className="h-6 w-6 shrink-0 rounded-full object-cover"
+              />
+              <Link
+                href={buildSeasonUrl(`/user/${convertNickToUrlSlug(playerName)}`, seasonId)}
+                className="hover:underline"
+              >
+                {playerName}:
+              </Link>
             </h4>
             <div className="space-y-2">
-              {votingStats.votedByPlayers.slice(0, 5).map((voter, index) => (
+              {votingStats.votedByPlayers.map((voter, index) => (
                 <div 
                   key={voter.playerName}
                   className="flex items-center justify-between bg-zinc-900/50 rounded p-2"
@@ -126,9 +169,19 @@ export function VotingStatsDisplay({ votingStats }: VotingStatsDisplayProps) {
                     <span className="text-zinc-500 font-mono text-sm w-6">
                       {index + 1}.
                     </span>
-                    <span className="text-white font-semibold">
+                    <Image
+                      src={getPlayerAvatarPath(voter.playerName)}
+                      alt=""
+                      width={24}
+                      height={24}
+                      className="h-6 w-6 shrink-0 rounded-full object-cover"
+                    />
+                    <Link
+                      href={buildSeasonUrl(`/user/${convertNickToUrlSlug(voter.playerName)}`, seasonId)}
+                      className="text-white font-semibold hover:underline"
+                    >
                       {voter.playerName}
-                    </span>
+                    </Link>
                   </div>
                   <div className="flex items-center gap-2">
                     <span className="text-purple-400 font-bold">
