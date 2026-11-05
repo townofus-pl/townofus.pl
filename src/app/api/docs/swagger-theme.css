@@ -232,3 +232,16 @@
   .api-docs-theme .swagger-ui .wrapper { padding: 0 4px; }
   .api-docs-theme .swagger-ui .opblock .opblock-summary-path { word-break: break-all; }
 }
+
+/* Pola wyłączone (przed „Try it out”) wyglądają na wyłączone: ciemniejsze tło i szary tekst. */
+.api-docs-theme .swagger-ui input:disabled,
+.api-docs-theme .swagger-ui textarea:disabled,
+.api-docs-theme .swagger-ui select:disabled {
+  background: #18181b;
+  color: #71717a;
+  border-color: var(--docs-border);
+  cursor: not-allowed;
+  opacity: 1;
+}
+.api-docs-theme .swagger-ui input:disabled::placeholder,
+.api-docs-theme .swagger-ui textarea:disabled::placeholder { color: #52525b; }
