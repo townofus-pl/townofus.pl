@@ -1,4 +1,4 @@
-// A real D1 (workerd, in memory) with every migration from prisma/migrations applied.
+// Prawdziwy D1 (workerd) z każdą migracją z prisma/migrations. Miniflare 5 trzyma go na dysku w $TMPDIR/miniflare-<random>, a dispose() usuwa ten katalog.
 
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
@@ -12,7 +12,6 @@ export async function createTestD1(): Promise<{ db: D1Database; dispose: () => P
         modules: true,
         script: 'export default { fetch() { return new Response("ok") } }',
         d1Databases: { DB: 'signup-test' },
-        d1Persist: false,
         compatibilityDate: '2026-05-01',
     }));
     const db = (await mf.getD1Database('DB')) as unknown as D1Database;
