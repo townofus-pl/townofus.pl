@@ -1,11 +1,10 @@
-import { getGameDatesLightweight, generateRoleRankingStats } from "@/app/dramaafera/_services";
+import { getGameDatesLightweight } from "@/app/dramaafera/_services";
 import { CURRENT_SEASON } from "@/app/dramaafera/_constants/seasons";
 import HostTabs from "@/app/dramaafera/_components/HostTabs";
 
 export default async function HostPage() {
     const seasonId = CURRENT_SEASON;
     const { dates } = await getGameDatesLightweight(false, seasonId);
-    const roles = await generateRoleRankingStats(seasonId);
 
-    return <HostTabs initialDates={dates} seasonId={seasonId} roles={roles} />;
+    return <HostTabs initialDates={dates} seasonId={seasonId} />;
 }

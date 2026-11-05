@@ -1,8 +1,13 @@
 'use client';
 
 import { useEffect, useRef, useState, useId } from 'react';
-import { uploadSettingsAction } from '@/app/dramaafera/_actions/uploadSettingsAction';
+import dynamic from 'next/dynamic';
+import { uploadSettingsAction, uploadDraftSettingsAction } from '@/app/dramaafera/_actions/uploadSettingsAction';
 import { MAX_SETTINGS_FILE_SIZE_BYTES } from '@/app/api/dramaafera/settings/utils';
+
+const SettingsBuilder = dynamic(() => import('../host/_components/SettingsBuilder'), {
+  loading: () => <p className="p-4 text-gray-400">Ładowanie kreatora…</p>,
+});
 
 function validateClientFile(file: File): string | null {
   if (!file.name.endsWith('.cfg')) return 'Plik musi być w formacie .cfg';
@@ -16,6 +21,7 @@ function parseTargetVersion(value: string): 'current' | 'old' | null {
 }
 
 export function SettingsTab() {
+  const [builderOpened, setBuilderOpened] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [expandedAdvanced, setExpandedAdvanced] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -78,6 +84,23 @@ export function SettingsTab() {
     }
   };
 
+  const handleDraftUpload = async (mode: 'normal' | 'advanced') => {
+    if (uploading) return;
+    setUploading(true);
+    setMessage(null);
+    try {
+      const result = await uploadDraftSettingsAction(mode, mode === 'advanced' ? targetVersion : undefined);
+      if (!mountedRef.current) return;
+      setMessage(result.success
+        ? { type: 'success', text: result.message || 'Draft wgrany pomyślnie' }
+        : { type: 'error', text: result.error || 'Błąd podczas wgrywania draftu' });
+    } catch {
+      if (mountedRef.current) setMessage({ type: 'error', text: 'Błąd podczas wgrywania draftu' });
+    } finally {
+      if (mountedRef.current) setUploading(false);
+    }
+  };
+
   const handleAdvancedUpload = async (event: React.FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!selectedAdvancedFile) {
@@ -121,6 +144,11 @@ export function SettingsTab() {
 
   return (
     <div className="space-y-8">
+      <details className="rounded-xl border border-yellow-600/40 bg-zinc-900/70"
+        onToggle={(event) => { if (event.currentTarget.open) setBuilderOpened(true); }}>
+        <summary className="cursor-pointer p-6 font-brook text-3xl text-yellow-400">Utwórz własne ustawienia</summary>
+        <div className="px-6 pb-6">{builderOpened && <SettingsBuilder />}</div>
+      </details>
       {/* Zwykły upload */}
       <form onSubmit={handleNormalUpload} className="bg-zinc-800 rounded-lg p-6">
         <h3 className="text-xl font-bold text-white mb-4">Wgraj Plik Ustawień</h3>
@@ -159,6 +187,11 @@ export function SettingsTab() {
           >
             {uploading ? 'Wgrywanie...' : 'Wgraj plik ustawień'}
           </button>
+          <button type="button" onClick={() => void handleDraftUpload('normal')} disabled={uploading}
+            className="w-full border border-yellow-600 hover:bg-yellow-900/30 disabled:opacity-50 text-yellow-300 font-bold py-2 px-4 rounded-lg transition">
+            Wgraj draft
+          </button>
+          <p className="text-sm text-gray-400">Wgrywa ostatni draft zapisany w bazie. Poczekaj na zakończenie zapisu zmian w kreatorze.</p>
         </div>
       </form>
 
@@ -249,6 +282,11 @@ export function SettingsTab() {
             >
               {uploading ? 'Wgrywanie...' : 'Wgraj (bez rotacji)'}
             </button>
+            <button type="button" onClick={() => void handleDraftUpload('advanced')} disabled={uploading}
+              className="w-full border border-blue-600 hover:bg-blue-900/30 disabled:opacity-50 text-blue-300 font-bold py-2 px-4 rounded-lg transition">
+              Wgraj draft
+            </button>
+            <p className="text-sm text-gray-400">Wgrywa ostatni zapisany draft do wybranego wariantu, bez rotacji.</p>
           </form>
         )}
       </div>

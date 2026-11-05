@@ -7,6 +7,12 @@
 import { updateSettingValue } from './settingsParser';
 import { MIRA_ROLE_SETTINGS } from '@/roles/_generated/miraSettings';
 import { SettingTypes, type Setting } from '@/constants/settings';
+import type { Modifier } from '@/constants/rolesAndModifiers';
+import { MiraRoles } from '@/mira';
+
+function isHideAndSeekSection(name: string): boolean {
+    return name.split('.').some((part) => part === 'HideAndSeek' || /^Hns/i.test(part));
+}
 
 export interface CfgSection {
     name: string;
@@ -87,10 +93,12 @@ export function getMiraRoleSettings(cfgContent: string, roleName: string): Recor
     const labelByCfgKey = new Map(declared.map((d) => [normalizeLookupKey(d.cfgKey), d.label]));
 
     for (const section of sections) {
+        if (isHideAndSeekSection(section.name)) continue;
         if (section.name === 'Roles') {
             for (const entry of section.entries) {
                 const m = entry.key.match(/^(Num|Chance)\s+(.+)$/);
                 if (!m) continue;
+                if (isHideAndSeekSection(m[2])) continue;
                 const token = normalizeLookupKey(stripConfigAffixes(m[2].split('.').at(-1) ?? ''));
                 if (token !== roleToken) continue;
                 out[m[1] === 'Chance' ? 'Probability Of Appearing' : 'Maximum'] = entry.value;
@@ -98,6 +106,7 @@ export function getMiraRoleSettings(cfgContent: string, roleName: string): Recor
             continue;
         }
 
+        if (!section.name.includes('.Roles.')) continue;
         const sectionToken = normalizeLookupKey(stripConfigAffixes(section.name.split('.').at(-1) ?? ''));
         if (sectionToken !== roleToken) continue;
 
@@ -114,14 +123,16 @@ export function getMiraRoleSettings(cfgContent: string, roleName: string): Recor
  * A TOU-Mira role's settings in the shape `SettingsList` already renders, so the role page needs
  * no new component.
  *
- * Built entirely from generated data plus the live `.cfg` — the hand-written `settings` on
- * `src/mira/roles/*` are not consulted. They were a transcription that had already drifted:
+ * Labels, types and values come from generated data plus the live `.cfg`. Registry descriptions
+ * supplement options without generated enum labels, matched by exact label only.
+ * The hand-written settings were a transcription that had already drifted:
  * a typo in four labels, 55 entries describing options the mod no longer has, and no way to
  * match 59% of config keys. See #317.
  */
 export function buildMiraRoleSettings(cfgContent: string, roleName: string): Record<string, Setting> {
     const values = getMiraRoleSettings(cfgContent, roleName);
     const declared = MIRA_ROLE_SETTINGS[roleName] ?? [];
+    const registrySettings = MiraRoles.find((role) => role.name === roleName)?.settings;
     const out: Record<string, Setting> = {};
 
     // Probability first, so it heads the list as it does for legacy roles.
@@ -138,10 +149,13 @@ export function buildMiraRoleSettings(cfgContent: string, roleName: string): Rec
         if (raw === undefined) continue;
 
         const type = SettingTypes[def.type];
+        // Some numeric options (room ids, or a count with 0 = Off) have no enum
+        // labels in the generated source. Reuse only exact-label descriptions.
+        const description = def.description ?? registrySettings?.[def.label]?.description;
         out[def.label] = {
             value: updateSettingValue(type, raw),
             type,
-            ...(def.description ? { description: def.description } : {}),
+            ...(description ? { description } : {}),
         } as Setting;
     }
 
@@ -153,6 +167,29 @@ export function looksLikeMiraConfig(content: string): boolean {
     return /^\s*\[Roles\]\s*$/m.test(content);
 }
 
+/** Modifier labels and types follow the same declaration order as the changelog. */
+export function buildMiraModifierSettings(cfgContent: string, modifier: Modifier): Record<string, Setting> {
+    const definitions = Object.entries(modifier.settings)
+        .filter(([label]) => label !== 'Probability Of Appearing');
+    const out: Record<string, Setting> = {};
+    const token = normalizeLookupKey(modifier.name);
+
+    for (const section of parseCfgSections(cfgContent)) {
+        if (!section.name.includes('.Modifiers.') || isHideAndSeekSection(section.name)) continue;
+        if (normalizeLookupKey(stripConfigAffixes(section.name.split('.').at(-1) ?? '')) !== token) continue;
+
+        section.entries.forEach((entry, index) => {
+            const definition = definitions[index];
+            const [label, setting] = definition ?? [entry.key.replace(/([a-z0-9])([A-Z])/g, '$1 $2'), undefined];
+            const type = setting?.type ?? (/^(true|false)$/i.test(entry.value)
+                ? SettingTypes.Boolean : Number.isNaN(Number(entry.value.replace(',', '.')))
+                    ? SettingTypes.Text : SettingTypes.Number);
+            out[label] = { ...setting, type, value: updateSettingValue(type, entry.value) } as Setting;
+        });
+    }
+    return out;
+}
+
 /**
  * Appearance odds for every modifier, keyed by normalised name.
  *
@@ -160,15 +197,13 @@ export function looksLikeMiraConfig(content: string): boolean {
  * sections as `<Name>Chance` and `<Name>Amount`. One pass over the config rather than a scan
  * per modifier.
  *
- * Only the odds, deliberately. A modifier's own options live in
- * `Modifiers.<Team>.<Name>Options`, but nothing generates their labels yet — `MIRA_ROLE_SETTINGS`
- * covers role option classes only — so naming them would mean guessing. The odds are what decides
- * whether a modifier is shown at all, which is the question this page answers. See #317.
+ * A modifier's own options are read separately by `buildMiraModifierSettings`.
  */
 export function getMiraModifierOdds(cfgContent: string): Map<string, { chance?: number; amount?: number }> {
     const odds = new Map<string, { chance?: number; amount?: number }>();
 
     for (const section of parseCfgSections(cfgContent)) {
+        if (isHideAndSeekSection(section.name)) continue;
         if (!/ModifierOptions$/.test(section.name)) continue;
 
         for (const entry of section.entries) {
