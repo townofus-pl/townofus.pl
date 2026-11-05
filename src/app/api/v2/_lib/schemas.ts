@@ -109,9 +109,9 @@ export const CountersSchema = z.object({
   }).describe('Zgadywanie ról i modyfikatorów. Zgadują Vigilante, modyfikator Assassin i Doomsayer. Modyfikator Double Shot daje zgadywanie każdej roli, więc lista ról jest otwarta.'),
   protects: PairSchema.extend({
     types: pairs(['medic', 'mirrorcaster', 'oracle', 'warden'] as const).describe(
-      'Ochrony według roli: Medic, Mirrorcaster, Oracle, Warden. Źródło zależy od sezonu. Sezony 1-3: stare kolumny liczników. medic pochodzi z ochron (w sezonach 1-3 to tylko dane Medica), warden z wzmocnień Wardena, mirrorcaster i oracle mają 0. Sezon 4 i późniejsze: akcje protect z game_actions, według roli wykonawcy. Ochrony Monarcha są w other.types.knights.',
+      'Ochrony według roli: Medic, Mirrorcaster, Oracle, Warden. Źródło zależy od sezonu. Sezony 2-3: stare kolumny liczników. medic pochodzi z ochron (w sezonach 2-3 to tylko dane Medica), warden z wzmocnień Wardena, mirrorcaster i oracle mają 0. Sezon 4 i późniejsze: akcje protect z game_actions, według roli wykonawcy. Ochrony Monarcha są w other.types.knights.',
     ),
-  }).describe('Ochrony. Dla sezonów 1-3 dane są podane w formacie sezonu 4. Strona pokazuje te sezony inaczej, więc liczby wardena mogą się różnić od strony.'),
+  }).describe('Ochrony. Dla sezonów 2-3 dane są podane w formacie sezonu 4. Strona pokazuje te sezony inaczej, więc liczby wardena mogą się różnić od strony.'),
   other: PairSchema.extend({
     types: z.object({
       prosecutes: PairSchema,

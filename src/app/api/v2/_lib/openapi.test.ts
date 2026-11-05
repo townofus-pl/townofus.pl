@@ -58,7 +58,7 @@ test('player counters use the site grouping with types', () => {
 test('wardenFortifies is not in the definition and the protects text names the season sources', () => {
   expect(JSON.stringify(doc)).not.toContain('wardenFortifies');
   const text = counters.properties.protects.properties.types.description as string;
-  expect(text).toMatch(/Sezony 1-3: stare kolumny liczników/);
+  expect(text).toMatch(/Sezony 2-3: stare kolumny liczników/);
   expect(text).toMatch(/Sezon 4 i późniejsze: akcje protect z game_actions/);
 });
 
@@ -203,4 +203,18 @@ test('the whole definition has no flat counter names', () => {
 test('the player route reuses the grouped counters of the game route', () => {
   const player = (doc.paths?.['/api/v2/players/{nick}']?.get?.responses as any)['200'].content['application/json'].schema;
   expect(player.properties.stats.properties.counters).toEqual(counters);
+});
+
+test('season 1 is out of scope: documented on the seasons route and as 404 on routes with season', () => {
+  expect(doc.paths?.['/api/v2/seasons']?.get?.description).toMatch(/sezon 2 i późniejsze/);
+  expect(JSON.stringify(doc)).not.toMatch(/1-3/);
+  const seasonRoutes = Object.entries(doc.paths ?? {}).filter(([, item]) =>
+    ((item.get?.parameters ?? []) as { name: string }[]).some((p) => p.name === 'season'));
+  expect(seasonRoutes.length).toBe(9);
+  for (const [path, item] of seasonRoutes) {
+    const get = item.get as any;
+    expect(Object.keys(get.responses).includes('404')).toBe(true);
+    const season = get.parameters.find((p: { name: string }) => p.name === 'season');
+    expect(season.description).toContain('season=1 daje 404');
+  }
 });

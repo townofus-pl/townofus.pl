@@ -22,7 +22,7 @@ const registry = new OpenAPIRegistry();
 
 const season = z.coerce.number().int().optional().openapi({
   param: { name: 'season', in: 'query' },
-  description: 'Numer sezonu. Bez tego parametru: bieżący sezon.',
+  description: 'Numer sezonu, od 2. Bez tego parametru: bieżący sezon. Sezon 1 nie jest w bazie danych, więc season=1 daje 404.',
   example: 4,
 });
 const limit = (def: number, max: number) =>
@@ -40,7 +40,7 @@ const dateParam = z.string().openapi({ param: { name: 'date', in: 'path' }, desc
 
 registry.registerPath({
   method: 'get', path: '/api/v2/seasons', tags: ['Sezony'], summary: 'Lista sezonów',
-  description: 'Te same sezony, które pokazuje przełącznik sezonu na stronie.',
+  description: 'Te same sezony, które pokazuje przełącznik sezonu na stronie: sezon 2 i późniejsze. Sezonu 1 nie ma na liście, bo jego dane nie są w bazie danych.',
   responses: { ...ok(SeasonsResponseSchema, 'Sezony'), ...errors },
 });
 
@@ -48,7 +48,7 @@ registry.registerPath({
   method: 'get', path: '/api/v2/sessions', tags: ['Sesje'], summary: 'Lista sesji sezonu',
   description: 'Źródło: strona historia-gier. Zawiera też otwartą (ostatnią) sesję oraz daty, które mają tylko listę graczy sesji.',
   request: { query: z.object({ season }) },
-  responses: { ...ok(SessionsResponseSchema, 'Sesje od najnowszej'), ...errors },
+  responses: { ...ok(SessionsResponseSchema, 'Sesje od najnowszej'), ...notFound, ...errors },
 });
 
 registry.registerPath({
@@ -67,7 +67,7 @@ registry.registerPath({
       date: z.string().optional().openapi({ param: { name: 'date', in: 'query' }, description: 'Tylko gry z tej daty (YYYYMMDD).' }),
     }),
   },
-  responses: { ...ok(GamesResponseSchema, 'Gry od najnowszej'), ...errors },
+  responses: { ...ok(GamesResponseSchema, 'Gry od najnowszej'), ...notFound, ...errors },
 });
 
 registry.registerPath({
@@ -94,7 +94,7 @@ registry.registerPath({
   method: 'get', path: '/api/v2/ranking', tags: ['Ranking'], summary: 'Ranking sezonu',
   description: 'Źródło: strona ranking. Pole dap pomija ostatni dzień z grami w sezonie. Cesarz jest taki, jak na stronie rankingu.',
   request: { query: z.object({ season, limit: limit(50, 200), offset }) },
-  responses: { ...ok(RankingResponseSchema, 'Ranking'), ...errors },
+  responses: { ...ok(RankingResponseSchema, 'Ranking'), ...notFound, ...errors },
 });
 
 registry.registerPath({
@@ -111,7 +111,7 @@ registry.registerPath({
   method: 'get', path: '/api/v2/roles', tags: ['Role'], summary: 'Tabela ról',
   description: 'Źródło: strona role. Pola dap i averageDap pomijają ostatni dzień z grami w sezonie.',
   request: { query: z.object({ season }) },
-  responses: { ...ok(RolesResponseSchema, 'Role'), ...errors },
+  responses: { ...ok(RolesResponseSchema, 'Role'), ...notFound, ...errors },
 });
 
 registry.registerPath({
