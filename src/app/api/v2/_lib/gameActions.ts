@@ -96,8 +96,9 @@ export interface PlayerActionRow extends ActionRow {
 }
 
 /**
- * Akcje `protect` i `kill` jednego gracza w podanych grach (sezon 4+). Zapytanie jest ograniczone do
- * jego akcji (`performerId`) i do jego gier (`gameId`, porcjami), więc nie czyta akcji innych graczy.
+ * Akcje `protect` i `kill` jednego gracza w podanych grach (sezon 4+). Indeks (gameId, type) czyta
+ * akcje `protect` i `kill` wszystkich graczy z tych gier, a `performerId` zostawia z nich tylko akcje
+ * tego gracza (to pole nie ma własnego indeksu). Akcje z gier, w których gracz nie grał, nie są czytane.
  */
 export async function getPlayerActionRows(playerName: string, gameIds: number[]): Promise<PlayerActionRow[]> {
   if (gameIds.length === 0) return [];

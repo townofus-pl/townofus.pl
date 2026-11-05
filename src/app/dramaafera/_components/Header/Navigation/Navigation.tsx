@@ -138,7 +138,7 @@ export const Navigation = () => {
                 <Menu className="w-7 h-7 p-1 border-2 border-foreground rounded-2xl"/>
                 <NavigationLabel
                     label={isDramaAferaPath ? currentPage.label : 'Dokumentacja API'}
-                    image={currentPage.image}
+                    image={isDramaAferaPath ? currentPage.image : undefined}
                     selected={true}
                 />
             </div>

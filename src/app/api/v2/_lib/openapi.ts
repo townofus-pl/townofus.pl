@@ -132,7 +132,7 @@ registry.registerPath({
 
 registry.registerPath({
   method: 'get', path: '/api/v2/downloads/aunlocker', tags: ['Pobieranie'], summary: 'Najnowsza biblioteka AUnlocker',
-  description: 'Źródło: strona do_pobrania. Zwraca plik AUnlocker.dll. Gdy GitHub nie ma wydania z plikiem, trasa przekierowuje na stronę wydań. Trasa jest przeznaczona do pobrania przez link. Trasa nie ma nagłówków CORS, więc przeglądarka na innej stronie nie pobierze pliku przez fetch.',
+  description: 'Źródło: strona do_pobrania. Zwraca plik AUnlocker.dll. Gdy GitHub nie ma wydania z plikiem, trasa przekierowuje na stronę wydań. Trasa jest przeznaczona do pobrania przez link. Nagłówek Access-Control-Allow-Origin dostają tylko strony townofus.pl, www.townofus.pl i api.townofus.pl. Przeglądarka na innej stronie nie pobierze pliku przez fetch, ale link i otwarcie adresu działają.',
   responses: {
     200: { description: 'Plik DLL', content: { 'application/octet-stream': { schema: z.string().openapi({ format: 'binary' }) } } },
     302: { description: 'Przekierowanie na stronę wydań' },
