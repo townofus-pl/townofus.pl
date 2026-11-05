@@ -128,3 +128,43 @@ jobs:
           jq -n --arg token "$DISCORD_BOT_TOKEN" '{DISCORD_BOT_TOKEN: $token}' > "$secrets_file"
           trap 'rm -f "$secrets_file"' EXIT
           npx wrangler deploy --env "$TARGET" --secrets-file "$secrets_file"
+
+  # The weekly D1 snapshot Worker (workers/db-snapshot/). It runs after the site's job. The
+  # secret D1_EXPORT_TOKEN is set once with `wrangler secret put`. It is not in GitHub: wrangler
+  # refuses the deploy if the secret is unset (`secrets.required` in wrangler.toml).
+  deploy-snapshot:
+    needs: deploy
+    runs-on: ubuntu-latest
+
+    environment: ${{ github.event_name == 'push' && 'staging' || inputs.environment }}
+
+    env:
+      TARGET: ${{ github.event_name == 'push' && 'staging' || inputs.environment }}
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      CLOUDFLARE_ACCOUNT_ID: d1287f321cc95882fc773ab71241b51a
+
+    defaults:
+      run:
+        working-directory: workers/db-snapshot
+
+    steps:
+      # workflow_dispatch can start from any branch. The production Worker gets only the code on main.
+      - name: Production only from main
+        if: env.TARGET == 'production' && github.ref != 'refs/heads/main'
+        working-directory: .
+        run: |
+          echo "::error::The production snapshot Worker deploys only from main. This run is on $GITHUB_REF. Start the workflow from main."
+          exit 1
+
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - run: npm ci --ignore-scripts
+        working-directory: .
+
+      - name: Deploy snapshot Worker (${{ env.TARGET }})
+        run: npx --yes wrangler@4.157.0 deploy --env "$TARGET"

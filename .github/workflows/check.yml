@@ -60,3 +60,30 @@ jobs:
 
       # Bundles and validates the staging and production config without uploading.
       - run: npm run dry-run
+
+  # The weekly D1 snapshot Worker (workers/db-snapshot/). Own tsconfig and Jest config, root
+  # dependencies. The dry run pins wrangler 4.157.0 through npx (the root has an older one).
+  snapshot:
+    runs-on: ubuntu-latest
+    env:
+      HUSKY: 0
+    defaults:
+      run:
+        working-directory: workers/db-snapshot
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - run: npm ci
+        working-directory: .
+
+      - run: npm run typecheck
+
+      - run: npm test
+
+      # Bundles and validates the staging and production config without uploading.
+      - run: npm run dry-run

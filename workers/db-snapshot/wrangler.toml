@@ -1,0 +1,81 @@
+# Cotygodniowa kopia produkcyjnego D1 do prywatnego bucketu R2: Worker z Workflow.
+#
+# Zawsze podawaj `--env staging|production`. Najwyższy poziom trzyma tylko to, co wspólne.
+# Środowiska NIE dziedziczą bindingów, zmiennych ani triggerów, więc każdy blok `[env.*]`
+# deklaruje je w całości (ta sama zasada co w wrangler.toml strony).
+#
+# `default_retention` i `schedules` w bloku workflows wymagają wranglera 4.157 lub nowszego.
+# Root repo ma starszego, dlatego skrypty w package.json używają `npx wrangler@4.157.0`.
+#
+# Sekret: D1_EXPORT_TOKEN (token C, tylko do eksportu D1). Nie ma go w tym pliku.
+
+main = "src/index.ts"
+name = "townofus-db-snapshot"
+compatibility_date = "2026-05-01"
+account_id = "d1287f321cc95882fc773ab71241b51a"
+workers_dev = false
+preview_urls = false
+
+# --------------------------------------------------------------------------------------------
+# staging — kopia bazy podglądu do osobnego bucketu. Bez harmonogramu: tylko ręczny start.
+# --------------------------------------------------------------------------------------------
+[env.staging]
+name = "townofus-db-snapshot-staging"
+workers_dev = false
+preview_urls = false
+
+[env.staging.secrets]
+required = ["D1_EXPORT_TOKEN"]
+
+[env.staging.observability]
+enabled = true
+
+[env.staging.vars]
+ENVIRONMENT = "staging"
+ACCOUNT_ID = "d1287f321cc95882fc773ab71241b51a"
+# townofus_pl_preview
+DATABASE_ID = "44f0d77c-c0b4-43d1-b3a3-7777be86d5d6"
+
+[[env.staging.r2_buckets]]
+binding = "SNAPSHOTS"
+bucket_name = "townofus-pl-db-snapshots-staging"
+
+[[env.staging.workflows]]
+binding = "SNAPSHOT_WORKFLOW"
+name = "townofus-db-snapshot-staging"
+class_name = "DbSnapshotWorkflow"
+# Stan instancji żyje do 30 dni. Krótsze przechowanie zmniejsza ślad po przebiegu.
+default_retention = { success_retention = "7 days", error_retention = "7 days" }
+
+# --------------------------------------------------------------------------------------------
+# production — kopia produkcyjnej bazy, czwartek w nocy
+# --------------------------------------------------------------------------------------------
+[env.production]
+name = "townofus-db-snapshot"
+workers_dev = false
+preview_urls = false
+
+[env.production.secrets]
+required = ["D1_EXPORT_TOKEN"]
+
+[env.production.observability]
+enabled = true
+
+[env.production.vars]
+ENVIRONMENT = "production"
+ACCOUNT_ID = "d1287f321cc95882fc773ab71241b51a"
+# townofus-pl
+DATABASE_ID = "0edadde7-395f-4e3c-a69d-7d40ece774ad"
+
+[[env.production.r2_buckets]]
+binding = "SNAPSHOTS"
+bucket_name = "townofus-pl-db-snapshots"
+
+[[env.production.workflows]]
+binding = "SNAPSHOT_WORKFLOW"
+name = "townofus-db-snapshot"
+class_name = "DbSnapshotWorkflow"
+# Czwartek 03:20. Strefa czasowa harmonogramu Workflow nie jest opisana w docs: sprawdza to
+# test na stagingu (pytanie 1 w planie). Eksport blokuje bazę na kilka sekund, więc idzie w nocy.
+schedules = ["20 3 * * 4"]
+default_retention = { success_retention = "7 days", error_retention = "7 days" }
