@@ -1,3 +1,5 @@
+import { getPlayerActionStats } from '../../_services/players/getPlayerKillStats';
+import KillStatsDisplay from './KillStatsDisplay';
 import Link from "next/link";
 import Image from "next/image";
 import { getUserProfileStats, getAllPlayerNames, getPlayerRankingHistory, getPlayerTopGames, getPlayerVotingStats, getPlayerStars } from "../../_services";
@@ -58,6 +60,7 @@ export async function UserProfileContent({ nick, seasonId }: UserProfileContentP
     
     // Pobierz statystyki głosowań gracza
     const votingStats = await getPlayerVotingStats(playerNick, seasonId);
+    const { kills: killStats, guesses: guessStats, protects: protectStats } = await getPlayerActionStats(playerNick, seasonId);
     
     // Pobierz liczbę gwiazdek gracza
     const playerStars = await getPlayerStars(playerNick, seasonId);
@@ -450,6 +453,10 @@ export async function UserProfileContent({ nick, seasonId }: UserProfileContentP
                             hideZeroStats={false}
                             variant="wide"
                             layout="stacked"
+                            protectsContent={<KillStatsDisplay stats={protectStats} playerName={playerNick} seasonId={seasonId} category="protects" />}
+                            guessesContent={<KillStatsDisplay stats={guessStats} playerName={playerNick} seasonId={seasonId} category="guesses" />}
+                            killsContent={<KillStatsDisplay stats={killStats} playerName={playerNick} seasonId={seasonId} />}
+                            votesContent={<VotingStatsDisplay votingStats={votingStats} playerName={playerNick} seasonId={seasonId} />}
                         />
                     )}
                 </CollapsibleSection>
@@ -461,10 +468,6 @@ export async function UserProfileContent({ nick, seasonId }: UserProfileContentP
                     </CollapsibleSection>
                 )}
                 
-                {/* Statystyki głosowań */}
-                <CollapsibleSection title="Statystyki głosowań" defaultOpen={false} icon="🗳️">
-                    <VotingStatsDisplay votingStats={votingStats} />
-                </CollapsibleSection>
                 
                 {/* Najlepsze występy */}
                 {bestGames.length > 0 && (
