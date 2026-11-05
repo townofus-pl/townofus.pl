@@ -2,18 +2,19 @@
 
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
-import { Miniflare } from 'miniflare';
+import { Miniflare, convertV4MiniflareOptions } from 'miniflare';
 
 const MIGRATIONS = join(__dirname, '../../../prisma/migrations');
 
 export async function createTestD1(): Promise<{ db: D1Database; dispose: () => Promise<void> }> {
-    const mf = new Miniflare({
+    // Miniflare 5 (z wranglera 4.155+) zmienił kształt opcji. Stary kształt v4 przechodzi przez konwerter.
+    const mf = new Miniflare(convertV4MiniflareOptions({
         modules: true,
         script: 'export default { fetch() { return new Response("ok") } }',
         d1Databases: { DB: 'signup-test' },
         d1Persist: false,
         compatibilityDate: '2026-05-01',
-    });
+    }));
     const db = (await mf.getD1Database('DB')) as unknown as D1Database;
     for (const file of readdirSync(MIGRATIONS).filter((f) => f.endsWith('.sql')).sort()) {
         const sql = readFileSync(join(MIGRATIONS, file), 'utf8')

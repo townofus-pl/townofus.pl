@@ -76,7 +76,7 @@
         "ts-jest": "^29.4.11",
         "tsx": "^4.22.3",
         "typescript": "^5.9.3",
-        "wrangler": "^4.95.0"
+        "wrangler": "^4.158.0"
     },
     "engines": {
         "node": ">=v22.13.1",
