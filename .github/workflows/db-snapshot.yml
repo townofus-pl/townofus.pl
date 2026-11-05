@@ -4,13 +4,13 @@ name: DB snapshot
 # Z kopii korzystają potem Preview dla PR-ów (jedyne miejsce, które czyta produkcyjne D1).
 #
 # Eksport blokuje bazę na kilka sekund, więc biegnie w nocy: czwartek 04:20 czasu warszawskiego.
-# Cron GitHuba jest w UTC: 02:20 to 04:20 latem (CEST), 03:20 to 04:20 zimą (CET).
-# Bramka w .github/scripts/snapshot-gate.sh wybiera wpis po stringu cron i po przesunięciu
-# Warszawy względem UTC, więc w każdy czwartek biegnie dokładnie jeden, także po opóźnieniu.
+# Klucz `timezone` sprawia, że GitHub sam pilnuje czasu letniego i zimowego.
+# GitHub może uruchomić bieg z opóźnieniem albo pominąć go przy dużym obciążeniu. Nie ograniczamy
+# spóźnionego biegu: liczy się tak samo jak bieg o czasie. Następny czwartek nadrabia pominięcie.
 on:
   schedule:
-    - cron: '20 2 * * 4'
-    - cron: '20 3 * * 4'
+    - cron: '20 4 * * 4'
+      timezone: 'Europe/Warsaw'
   workflow_dispatch:
 
 permissions:
@@ -47,18 +47,7 @@ jobs:
 
       - uses: actions/checkout@v4
 
-      - name: Time gate (Warsaw 04:xx on Thursday, or manual run)
-        id: gate
-        shell: bash
-        env:
-          EVENT_NAME: ${{ github.event_name }}
-          EVENT_SCHEDULE: ${{ github.event.schedule }}
-        # Bez potoku: błąd bramki (kod wyjścia inny niż 0) musi wywalić krok, a nie dać zielony bieg bez eksportu.
-        run: |
-          .github/scripts/snapshot-gate.sh >> "$GITHUB_OUTPUT"
-
       - uses: actions/setup-node@v4
-        if: steps.gate.outputs.go == 'true'
         with:
           node-version: '22'
 
@@ -69,7 +58,6 @@ jobs:
       # logu to wyciek produkcji, a `::add-mask::` nie pomoże, bo nie znamy adresu z góry. Dlatego całe
       # wyjście idzie do pliku poza repo. Przy błędzie drukujemy je dopiero po usunięciu adresów.
       - name: Export production D1
-        if: steps.gate.outputs.go == 'true'
         shell: bash
         run: |
           date_stamp="$(date -u +%Y%m%d-%H%M)"
@@ -88,7 +76,6 @@ jobs:
 
       # Pusty albo ucięty plik nie może nadpisać dobrego latest.sql.
       - name: Check the dump
-        if: steps.gate.outputs.go == 'true'
         shell: bash
         run: |
           size="$(stat -c %s "$DUMP")"
@@ -106,7 +93,6 @@ jobs:
       # latest.sql: jeśli pierwsze wysłanie padnie, latest.sql zostaje poprzedni.
       # Wyjście aws przechodzi przez filtr adresów, tak jak eksport.
       - name: Upload to R2
-        if: steps.gate.outputs.go == 'true'
         shell: bash
         run: |
           secret="$(printf '%s' "$CLOUDFLARE_API_TOKEN" | sha256sum | cut -d' ' -f1)"
