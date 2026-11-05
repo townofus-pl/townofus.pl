@@ -3,7 +3,7 @@
 import { Fragment, useMemo, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
-import type { UIGameData, UIPlayerData } from '@/app/dramaafera/_services/games/types';
+import type { PublicGameData, PublicPlayerData } from '@/app/dramaafera/_services/games/types';
 import { buildSeasonUrl } from '@/app/dramaafera/_utils/seasonHelpers';
 import { convertNickToUrlSlug, determineTeam, getRoleIconPath } from '@/app/dramaafera/_utils/gameUtils';
 import ResultImage from './ResultImage';
@@ -34,7 +34,7 @@ interface PlayerDayStats {
 interface PlayerTableProps {
   players: PlayerDayStats[];
   reversedGames: { id: string }[];
-  detailedGames: (UIGameData | null)[];
+  detailedGames: (PublicGameData | null)[];
   date: string;
   hideZeroStats?: boolean; // Nowy prop do kontrolowania wyświetlania statystyk równych 0
   seasonId: number;
@@ -96,7 +96,6 @@ export default function PlayerTable({ players, reversedGames, detailedGames, dat
       crewmatesKilled: 0,
       impostorsKilled: 0,
       neutralsKilled: 0,
-      totalPoints: 0,
       gamesPlayed: 0,
       // Per role, for the Kills / Guesses / Protects / Other / Votes rows (PlayerStatsBreakdown).
       byRole: {} as RoleBreakdown,
@@ -105,7 +104,7 @@ export default function PlayerTable({ players, reversedGames, detailedGames, dat
     detailedGames.forEach((game) => {
       if (!game?.detailedStats?.playersData) return;
       
-      const playerData = game.detailedStats.playersData.find((p: UIPlayerData) => p.nickname === playerName);
+      const playerData = game.detailedStats.playersData.find((p: PublicPlayerData) => p.nickname === playerName);
       if (!playerData?.originalStats) return;
 
       aggregatedStats.gamesPlayed++;
@@ -157,7 +156,7 @@ export default function PlayerTable({ players, reversedGames, detailedGames, dat
 
       // Specjalna logika dla przeżytych rund: znajdź maksimum dla tej konkretnej gry
       let maxRoundsInThisGame = 0;
-      game.detailedStats.playersData.forEach((p: UIPlayerData) => {
+      game.detailedStats.playersData.forEach((p: PublicPlayerData) => {
         if (p.originalStats?.survivedRounds) {
           maxRoundsInThisGame = Math.max(maxRoundsInThisGame, p.originalStats.survivedRounds);
         }
@@ -257,7 +256,7 @@ export default function PlayerTable({ players, reversedGames, detailedGames, dat
                     let role = '';
                     const game = detailedGames[i];
                     if (game && game.detailedStats && game.detailedStats.playersData) {
-                      const found = game.detailedStats.playersData.find((p: UIPlayerData) => p.nickname === player.name);
+                      const found = game.detailedStats.playersData.find((p: PublicPlayerData) => p.nickname === player.name);
                       if (found) {
                         // Jeśli jest historia ról, pokaż ostatnią
                         if (found.roleHistory && found.roleHistory.length > 0) {

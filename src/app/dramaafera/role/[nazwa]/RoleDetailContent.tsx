@@ -2,7 +2,7 @@ import Link from "next/link";
 import Image from "next/image";
 import { notFound } from "next/navigation";
 import { RoleImage } from "../_components/RoleImage";
-import { getAllGamesData, getDramaAferaSettings } from "../../_services";
+import { getAllGamesData, getDramaAferaSettings, toPublicOriginalStats } from "../../_services";
 import { FIRST_MIRA_SEASON, getRoleColor, convertUrlSlugToRole, convertNickToUrlSlug, getPlayerAvatarPath } from "@/app/dramaafera/_utils/gameUtils";
 import { buildSeasonUrl } from "@/app/dramaafera/_utils/seasonHelpers";
 import { findFullRole } from "@/app/dramaafera/_utils/roleRegistry";
@@ -254,7 +254,7 @@ export async function RoleDetailContent({ nazwa, seasonId }: RoleDetailContentPr
                         detailedStats: { playersData: game.detailedStats.playersData
                             .filter(player => (player.roleHistory?.length ? player.roleHistory : [player.role])
                                 .some(role => normalizeRoleName(role, seasonId) === normalizeRoleName(roleName, seasonId)))
-                            .map(player => ({ nickname: player.nickname, role: player.role, roleHistory: player.roleHistory, win: player.win, originalStats: player.originalStats })) },
+                            .map(player => ({ nickname: player.nickname, role: player.role, roleHistory: player.roleHistory, win: player.win, originalStats: toPublicOriginalStats(player.originalStats) })) },
                     })).filter(game => game.detailedStats.playersData.length > 0)}
                 />
                 <CollapsibleSection title="Najlepsze występy" defaultOpen={false} icon="🏆">

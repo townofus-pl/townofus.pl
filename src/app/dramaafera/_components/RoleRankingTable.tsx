@@ -4,7 +4,7 @@ import { Fragment, useMemo, useState } from 'react';
 import Image from 'next/image';
 import Link from 'next/link';
 import type { RoleRankingSummary } from '@/app/dramaafera/_services';
-import { getRoleRankingsByDateRange } from '@/app/dramaafera/_actions/roleRankingActions';
+import { getRoleRankingsByDateRange, getHostRoleRankingsByDateRange } from '@/app/dramaafera/_actions/roleRankingActions';
 import { convertRoleToUrlSlug, getRoleIconPath } from '@/app/dramaafera/_utils/gameUtils';
 import { buildSeasonUrl } from '@/app/dramaafera/_utils/seasonHelpers';
 import { getWinRatioColor } from '@/app/dramaafera/_utils/winRatioColor';
@@ -56,7 +56,9 @@ export default function RoleRankingTable({ roles: initialRoles, seasonId, exclud
         setIsLoading(true);
         setError('');
         try {
-            const data = await getRoleRankingsByDateRange(seasonId, reset ? undefined : dateFrom || undefined, reset ? undefined : dateTo || undefined, excludeLatestDay);
+            // Panel hosta (excludeLatestDay=false) używa akcji z logowaniem.
+            const load = excludeLatestDay ? getRoleRankingsByDateRange : getHostRoleRankingsByDateRange;
+            const data = await load(seasonId, reset ? undefined : dateFrom || undefined, reset ? undefined : dateTo || undefined);
             setRoles(data);
             setAppliedRange(reset || (!dateFrom && !dateTo) ? 'Cały sezon' : `${dateFrom || 'Początek sezonu'} — ${dateTo || 'Koniec sezonu'}`);
             if (reset) { setDateFrom(''); setDateTo(''); }

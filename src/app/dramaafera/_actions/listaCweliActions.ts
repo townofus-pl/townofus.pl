@@ -6,6 +6,7 @@ import { CURRENT_SEASON } from '@/app/dramaafera/_constants/seasons';
 import { createPlayerWithRanking } from '@/app/api/_utils';
 import { findSimilarPlayerName } from '@/app/dramaafera/_utils/textMatch';
 import { getListaCweliPlayerPickerData } from '@/app/dramaafera/_services/gameSessionList/getListaCweliPlayerPicker';
+import { requireHostAuth } from './_requireHostAuth';
 import type {
   GameSessionListEntry,
   GameSessionListSummary,
@@ -16,6 +17,7 @@ import type {
  * Data for the Lista Cweli player picker (main list + Add-player dialog).
  */
 export async function getPlayerPickerData(seasonId: number): Promise<PlayerPickerData> {
+  await requireHostAuth();
   return getListaCweliPlayerPickerData(seasonId);
 }
 
@@ -26,6 +28,7 @@ export async function getPlayerPickerData(seasonId: number): Promise<PlayerPicke
 export async function checkNewPlayerNames(
   candidateNames: string[]
 ): Promise<Array<{ candidate: string; similarTo: string | null }>> {
+  await requireHostAuth();
   const prisma = await getDatabaseClient();
   if (!prisma) return candidateNames.map((candidate) => ({ candidate, similarTo: null }));
 
@@ -88,6 +91,7 @@ export async function getGameSessionLists(seasonId?: number): Promise<GameSessio
  * Get a specific game session list by ID
  */
 export async function getGameSessionListById(listId: number): Promise<GameSessionListEntry | null> {
+  await requireHostAuth();
   const prisma = await getDatabaseClient();
   if (!prisma) return null;
 
@@ -128,6 +132,7 @@ export async function saveGameSessionList(
   listIdToUpdate?: number,
   newPlayerNames: string[] = []
 ): Promise<GameSessionListEntry | null> {
+  await requireHostAuth();
   const prisma = await getDatabaseClient();
   if (!prisma) return null;
 
@@ -205,6 +210,7 @@ export async function saveGameSessionList(
  * Delete a game session list
  */
 export async function deleteGameSessionList(listId: number): Promise<boolean> {
+  await requireHostAuth();
   const prisma = await getDatabaseClient();
   if (!prisma) return false;
 
@@ -227,6 +233,7 @@ export async function deleteGameSessionList(listId: number): Promise<boolean> {
  * Called from game creation logic
  */
 export async function deleteGameSessionListByDate(seasonId: number, date: Date): Promise<boolean> {
+  await requireHostAuth();
   const prisma = await getDatabaseClient();
   if (!prisma) return false;
 

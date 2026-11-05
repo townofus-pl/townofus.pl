@@ -4,7 +4,7 @@ import { useState } from 'react';
 import Link from "next/link";
 import Image from "next/image";
 import { TeamColors } from "@/constants/teams";
-import type { UIPlayerData } from '../../../_services/games/types';
+import type { PublicPlayerData } from '../../../_services/games/types';
 import { formatPlayerStatsWithColors } from '@/app/dramaafera/_utils/formatPlayerStats';
 import { getRoleColor, convertRoleNameForDisplay, convertNickToUrlSlug, convertRoleToUrlSlug, getPlayerAvatarPath } from '@/app/dramaafera/_utils/gameUtils';
 import { buildSeasonUrl } from '@/app/dramaafera/_utils/seasonHelpers';
@@ -60,28 +60,28 @@ function renderRoleHistory(roleHistory: string[] | undefined, seasonId: number) 
 }
 
 interface PlayerStatsSectionProps {
-    playersData: UIPlayerData[];
+    playersData: PublicPlayerData[];
     maxTasks: number;
     seasonId: number;
+    /** False dla gry z ostatniego dnia: serwer wysyła graczy alfabetycznie i nie ma przycisków. */
+    showSortButtons?: boolean;
 }
 
 type SortType = 'points' | 'alphabetical';
 
-export function PlayerStatsSection({ playersData, maxTasks, seasonId }: PlayerStatsSectionProps) {
+export function PlayerStatsSection({ playersData, maxTasks, seasonId, showSortButtons = true }: PlayerStatsSectionProps) {
     const [sortType, setSortType] = useState<SortType>('points');
 
-    const sortedPlayers = [...playersData].sort((a, b) => {
-        if (sortType === 'points') {
-            return b.totalPoints - a.totalPoints;
-        } else {
-            return a.nickname.localeCompare(b.nickname);
-        }
-    });
+    // `playersData` przychodzi z serwera już w kolejności „Standardowo”.
+    const sortedPlayers = sortType === 'points'
+        ? playersData
+        : [...playersData].sort((a, b) => a.nickname.localeCompare(b.nickname));
 
     return (
         <div className="mb-8">
             <div className="flex items-center justify-between mb-4">
                 <h2 className="text-3xl font-bold">📊 Statystyki Graczy</h2>
+                {showSortButtons && (
                 <div className="flex gap-2">
                     <button
                         onClick={() => setSortType('points')}
@@ -104,6 +104,7 @@ export function PlayerStatsSection({ playersData, maxTasks, seasonId }: PlayerSt
                         Alfabetycznie
                     </button>
                 </div>
+                )}
             </div>
             <div className="space-y-4">
                 {sortedPlayers.map((player, index) => (

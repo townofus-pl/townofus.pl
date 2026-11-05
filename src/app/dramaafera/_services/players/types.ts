@@ -74,7 +74,6 @@ export interface PlayerTopGame {
   roleColor: string;
   team: string;
   win: boolean;
-  totalPoints: number;
 }
 
 // Interface for voting statistics

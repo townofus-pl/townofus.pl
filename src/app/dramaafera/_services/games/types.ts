@@ -140,6 +140,8 @@ export interface UIMeetingData {
 export interface UIGameData {
   /** v2 games retain actions with the performer's role at the time. */
   hasActionData?: boolean;
+  /** Gra z ostatniego dnia z grami w sezonie. Ustawia ją `getGameData`. */
+  isLatestDay?: boolean;
   id: string;
   date: string;
   gameNumber: number;
@@ -166,3 +168,22 @@ export interface UIGameData {
 
 // Type alias for backward compatibility
 export type DetailedGameData = UIGameData;
+
+// --- Typy publiczne ---------------------------------------------------------
+// Strony publiczne i `/api/v2` dostają wyłącznie te typy. Pola punktowe
+// (`totalPoints`, `initialRolePoints`) zostają w typach wewnętrznych powyżej,
+// dla kodu działającego tylko po stronie serwera.
+
+type PointFields = 'totalPoints' | 'initialRolePoints';
+
+export type PublicOriginalStats = Omit<UIPlayerData['originalStats'], PointFields>;
+
+export type PublicPlayerData = Omit<UIPlayerData, 'totalPoints' | 'originalStats'> & {
+  originalStats: PublicOriginalStats;
+};
+
+export type PublicGameData = Omit<UIGameData, 'detailedStats'> & {
+  detailedStats: Omit<UIGameData['detailedStats'], 'playersData'> & {
+    playersData: PublicPlayerData[];
+  };
+};

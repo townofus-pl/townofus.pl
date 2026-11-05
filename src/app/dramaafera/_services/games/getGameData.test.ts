@@ -33,6 +33,7 @@ describe('getGameData', () => {
     it('gives neither recorderFriendCode nor recorderPlayerId to the page (#287)', async () => {
         getClient.mockResolvedValue({
             game: { findFirst: jest.fn().mockResolvedValue(row) },
+            $queryRaw: jest.fn().mockResolvedValueOnce([{ date: '2026-10-21' }]).mockResolvedValueOnce([{ id: 7 }]),
         } as unknown as Awaited<ReturnType<typeof getDatabaseClient>>);
 
         const data = await getGameData('20261021_1900');
@@ -41,5 +42,15 @@ describe('getGameData', () => {
         const json = JSON.stringify(data);
         expect(json).not.toContain('recorder');
         expect(json).not.toContain('4242');
+    });
+
+    it('marks a game from the latest day', async () => {
+        const raw = jest.fn().mockResolvedValueOnce([{ date: '2026-10-21' }]).mockResolvedValueOnce([{ id: 7 }]);
+        getClient.mockResolvedValue({ game: { findFirst: jest.fn().mockResolvedValue(row) }, $queryRaw: raw } as unknown as Awaited<ReturnType<typeof getDatabaseClient>>);
+        expect((await getGameData('20261021_1900'))?.isLatestDay).toBe(true);
+
+        const older = jest.fn().mockResolvedValueOnce([{ date: '2026-10-28' }]).mockResolvedValueOnce([{ id: 99 }]);
+        getClient.mockResolvedValue({ game: { findFirst: jest.fn().mockResolvedValue(row) }, $queryRaw: older } as unknown as Awaited<ReturnType<typeof getDatabaseClient>>);
+        expect((await getGameData('20261021_1900'))?.isLatestDay).toBe(false);
     });
 });

@@ -1,7 +1,10 @@
 import { getGamesListByDate } from '../games/getGamesList';
 import { getGameData } from '../games/getGameData';
+import { getLatestGameDay } from '../games/getLatestGameDay';
 import { normalizeRoleName, getRoleColor, determineTeam, formatDisplayDate } from '@/app/dramaafera/_utils/gameUtils';
 import { CURRENT_SEASON } from '@/app/dramaafera/_constants/seasons';
+import { toPublicGameData } from '../games/_toPublic';
+import type { PublicGameData } from '../games/types';
 
 export interface SessionPlayer {
   name: string;
@@ -37,6 +40,29 @@ export interface SessionSummary {
   neutralWins: number;
 }
 
+/** Podsumowanie sesji bez pól punktowych. Używają go strony publiczne i `/api/v2`. */
+export type PublicSessionSummary = Omit<SessionSummary, 'detailedGames'> & {
+  detailedGames: Array<PublicGameData | null>;
+};
+
+export async function getPublicSessionSummaryByDate(
+  date: string,
+  seasonId?: number,
+): Promise<PublicSessionSummary> {
+  const summary = await getSessionSummaryByDate(date, seasonId);
+  return {
+    date: summary.date,
+    displayDate: summary.displayDate,
+    players: summary.players,
+    roles: summary.roles,
+    games: summary.games,
+    detailedGames: summary.detailedGames.map((game) => (game ? toPublicGameData(game) : null)),
+    crewmateWins: summary.crewmateWins,
+    impostorWins: summary.impostorWins,
+    neutralWins: summary.neutralWins,
+  };
+}
+
 export async function getSessionSummaryByDate(
   date: string,
   seasonId?: number,
@@ -58,9 +84,11 @@ export async function getSessionSummaryByDate(
   if (!games || games.length === 0) return empty;
 
   const displayDate = formatDisplayDate(date);
+  // Wszystkie gry sesji są z jednego sezonu, więc ostatni dzień czytamy raz.
+  const latestDay = await getLatestGameDay(season);
   const reversedGames = [...games].reverse();
   const detailedGames = await Promise.all(
-    reversedGames.map((game) => getGameData(game.id)),
+    reversedGames.map((game) => getGameData(game.id, { latestDay })),
   );
 
   // Player stats
