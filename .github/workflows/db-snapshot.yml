@@ -1,0 +1,110 @@
+name: DB snapshot
+
+# Raz w tygodniu robi kopię produkcyjnej bazy D1 i wysyła ją do prywatnego bucketu R2.
+# Z kopii korzystają potem Preview dla PR-ów (jedyne miejsce, które czyta produkcyjne D1).
+#
+# Eksport blokuje bazę na kilka sekund, więc biegnie w nocy: czwartek 04:xx czasu warszawskiego.
+# Cron GitHuba jest w UTC: 02:20 to 04:20 latem (CEST), 03:20 to 04:20 zimą (CET).
+# Bramka w .github/scripts/snapshot-gate.sh przepuszcza tylko ten wpis, który trafia na 04:xx.
+on:
+  schedule:
+    - cron: '20 2,3 * * 4'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+# Dwa biegi naraz nie mają sensu: oba chcą zablokować tę samą bazę.
+concurrency:
+  group: db-snapshot
+  cancel-in-progress: false
+
+jobs:
+  snapshot:
+    runs-on: ubuntu-latest
+    # Środowisko `production` przyjmuje tylko gałąź main. Token A (zapis do bucketu) jest tylko tam.
+    environment: production
+    timeout-minutes: 20
+
+    env:
+      CLOUDFLARE_ACCOUNT_ID: d1287f321cc95882fc773ab71241b51a
+      CLOUDFLARE_API_TOKEN: ${{ secrets.CLOUDFLARE_API_TOKEN }}
+      # Klucze S3 dla R2: Access Key ID to ID tokenu, Secret Access Key to SHA-256 tokenu.
+      R2_ACCESS_KEY_ID: ${{ secrets.CLOUDFLARE_API_TOKEN_ID }}
+      R2_BUCKET: townofus-pl-db-snapshots
+      # Wersja z testów Previews. Repo ma starszy wrangler, a ten job nie robi `npm ci`.
+      WRANGLER_VERSION: 4.157.0
+
+    steps:
+      # Zaplanowane biegi zawsze idą z domyślnej gałęzi. Ręczny bieg może wystartować z każdej.
+      - name: Production only from main
+        if: github.ref != 'refs/heads/main'
+        run: |
+          echo "::error::The snapshot reads the production database. It runs only from main. This run is on $GITHUB_REF."
+          exit 1
+
+      - uses: actions/checkout@v4
+
+      - name: Time gate (Warsaw 04:xx on Thursday, or manual run)
+        id: gate
+        env:
+          EVENT_NAME: ${{ github.event_name }}
+        run: |
+          .github/scripts/snapshot-gate.sh | tee -a "$GITHUB_OUTPUT"
+
+      - uses: actions/setup-node@v4
+        if: steps.gate.outputs.go == 'true'
+        with:
+          node-version: '22'
+
+      # Eksport trafia do katalogu tymczasowego runnera. Nie jest to artefakt GitHuba: repo jest
+      # publiczne, a zrzut zawiera dane produkcyjne. Nic nie wypisuje zawartości pliku.
+      - name: Export production D1
+        if: steps.gate.outputs.go == 'true'
+        run: |
+          set -euo pipefail
+          date_stamp="$(date -u +%Y%m%d-%H%M)"
+          dump="$RUNNER_TEMP/snapshot.sql"
+          echo "DUMP=$dump" >> "$GITHUB_ENV"
+          echo "DATE_STAMP=$date_stamp" >> "$GITHUB_ENV"
+          npx --yes "wrangler@$WRANGLER_VERSION" d1 export townofus-pl --remote --env production --output "$dump"
+
+      # Pusty albo ucięty plik nie może nadpisać dobrego latest.sql.
+      - name: Check the dump
+        if: steps.gate.outputs.go == 'true'
+        run: |
+          set -euo pipefail
+          size="$(stat -c %s "$DUMP")"
+          echo "Dump size: $size bytes"
+          if [ "$size" -lt 1000000 ]; then
+            echo "::error::The dump is smaller than 1 MB. Upload stopped, latest.sql stays the same."
+            exit 1
+          fi
+          grep -q 'CREATE TABLE d1_migrations' "$DUMP" || {
+            echo "::error::The dump has no d1_migrations table. Upload stopped, latest.sql stays the same."
+            exit 1
+          }
+
+      # Token A ma zapis do bucketu, ale nie ma odczytu. Dlatego dwa osobne wysłania,
+      # bez kopiowania po stronie serwera. Najpierw plik z datą, potem latest.sql:
+      # jeśli drugie wysłanie padnie, latest.sql zostaje poprzedni.
+      - name: Upload to R2
+        if: steps.gate.outputs.go == 'true'
+        run: |
+          set -euo pipefail
+          secret="$(printf '%s' "$CLOUDFLARE_API_TOKEN" | sha256sum | cut -d' ' -f1)"
+          echo "::add-mask::$secret"
+          export AWS_ACCESS_KEY_ID="$R2_ACCESS_KEY_ID"
+          export AWS_SECRET_ACCESS_KEY="$secret"
+          export AWS_DEFAULT_REGION=auto
+          # R2 nie przyjmuje nagłówków sum kontrolnych, które nowe AWS CLI dodaje domyślnie.
+          export AWS_REQUEST_CHECKSUM_CALCULATION=when_required
+          export AWS_RESPONSE_CHECKSUM_VALIDATION=when_required
+          endpoint="https://${CLOUDFLARE_ACCOUNT_ID}.r2.cloudflarestorage.com"
+
+          aws s3 cp "$DUMP" "s3://${R2_BUCKET}/prod-${DATE_STAMP}.sql" --endpoint-url "$endpoint" --no-progress
+          aws s3 cp "$DUMP" "s3://${R2_BUCKET}/latest.sql" --endpoint-url "$endpoint" --no-progress
+
+      - name: Remove the dump
+        if: always()
+        run: rm -f "$RUNNER_TEMP/snapshot.sql"
