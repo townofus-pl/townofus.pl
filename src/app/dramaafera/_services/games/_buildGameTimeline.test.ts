@@ -67,3 +67,12 @@ test('shows only the reveal phase of the Miner ability', () => {
   expect(result.events[0].timestamp).toBe('00:01');
   expect(result.events[0].ability?.name).toBe('Mine');
 });
+
+test('kill and death events carry the optional detail fields', () => {
+  const kill = { ...action('kill'), detail: JSON.stringify({ causeOfDeath: 'Guess', isGuess: true, guessedRole: 'Sheriff', ignored: 1 }) };
+  const task = { ...action('task_completed'), detail: JSON.stringify({ causeOfDeath: 'Guess' }) };
+  const [killEvent, taskEvent] = buildGameTimeline([kill, task], 4).events;
+  expect(killEvent).toMatchObject({ causeOfDeath: 'Guess', isGuess: true, guessedRole: 'Sheriff' });
+  expect(killEvent).not.toHaveProperty('guessedModifier');
+  expect(taskEvent).not.toHaveProperty('causeOfDeath');
+});

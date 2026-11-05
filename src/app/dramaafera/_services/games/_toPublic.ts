@@ -120,6 +120,7 @@ export function toPublicGameData(game: UIGameData, opts: { displayOrder?: boolea
   const stats = game.detailedStats;
   return {
     hasActionData: game.hasActionData,
+    season: game.season,
     isLatestDay: game.isLatestDay,
     id: game.id,
     date: game.date,

@@ -24,6 +24,8 @@ export interface UserProfileStats {
   name: string;
   /** Season 4+: the day-results grouping (Kills, Guesses, Protects, Other, Votes) per role. */
   roleBreakdown?: import('@/app/dramaafera/_utils/statsBreakdown').RoleBreakdown;
+  /** Sumy kolumn licznika według roli (sezon 4+). Używa ich `/api/v2/players/{nick}`. */
+  roleColumns?: Record<string, { gamesPlayed: number; columns: Record<string, number> }>;
   gamesPlayed: number;
   wins: number;
   winRate: number;

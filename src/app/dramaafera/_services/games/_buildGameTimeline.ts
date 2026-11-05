@@ -46,6 +46,7 @@ export function buildGameTimeline(actions: TimelineAction[], season: number) {
       targetRoleColor: action.targetRole ? getRoleColor(action.targetRole, season) : undefined,
       description: describeAction(action.type, action.performer.name, action.target?.name, action.detail),
       actionLabel: getActionLabel(action.type, action.detail),
+      ...readKillDetail(action.type, action.detail),
       actionType: action.type,
       isCorrect: action.isCorrect,
       ability: action.type === 'vent_use'
@@ -73,6 +74,24 @@ export function buildGameTimeline(actions: TimelineAction[], season: number) {
   const winAction = actions.find(action => action.type === 'win');
   return { events: groupedEvents, hasTimeline: actions.length > 0,
     endTimestamp: winAction ? formatActionTimestamp(winAction.timestampMs) : undefined };
+}
+
+/** Pola szczegółów zabójstwa i śmierci. Inne typy akcji ich nie mają. */
+function readKillDetail(type: string, detail: string | null): Pick<UIGameEvent, 'causeOfDeath' | 'isGuess' | 'guessedRole' | 'guessedModifier'> {
+  if ((type !== 'kill' && type !== 'death') || !detail) return {};
+  try {
+    const parsed: unknown = JSON.parse(detail);
+    if (!parsed || typeof parsed !== 'object') return {};
+    const d = parsed as Record<string, unknown>;
+    return {
+      ...(typeof d.causeOfDeath === 'string' ? { causeOfDeath: d.causeOfDeath } : {}),
+      ...(typeof d.isGuess === 'boolean' ? { isGuess: d.isGuess } : {}),
+      ...(typeof d.guessedRole === 'string' ? { guessedRole: d.guessedRole } : {}),
+      ...(typeof d.guessedModifier === 'string' ? { guessedModifier: d.guessedModifier } : {}),
+    };
+  } catch {
+    return {};
+  }
 }
 
 export function formatActionTimestamp(timestampMs: number): string {

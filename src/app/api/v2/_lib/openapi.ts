@@ -116,7 +116,7 @@ registry.registerPath({
 
 registry.registerPath({
   method: 'get', path: '/api/v2/roles/{name}', tags: ['Role'], summary: 'Szczegóły roli',
-  description: 'Źródło: strona roli. Najlepsze występy są w kolejności ze strony roli. Pole role.winRate jest zaokrąglone do całości, jak w tabeli ról, a winRateOneDecimal ma jedno miejsce po przecinku.',
+  description: 'Źródło: strona roli. Najlepsze występy są w kolejności ze strony roli.',
   request: {
     params: z.object({ name: z.string().openapi({ param: { name: 'name', in: 'path' }, description: 'Nazwa roli albo slug.', example: 'sheriff' }) }),
     query: z.object({ season, limit: limit(50, 500) }),

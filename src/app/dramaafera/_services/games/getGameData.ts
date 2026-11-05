@@ -166,6 +166,7 @@ export async function getGameData(gameId: string): Promise<UIGameData | null> {
   const winnerInfo = calculateWinnerFromStats(game.gamePlayerStatistics, game.season);
 
   return {
+    season: game.season,
     isLatestDay,
     id: game.gameIdentifier,
     date: extractDateFromGameId(game.gameIdentifier),

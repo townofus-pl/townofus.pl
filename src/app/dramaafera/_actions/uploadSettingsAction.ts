@@ -5,7 +5,7 @@ import { authenticateHeaders } from '@/app/api/_middlewares/auth';
 import {
   validateSettingsFile,
   validateSettingsContent,
-} from '@/app/api/dramaafera/settings/utils';
+} from '@/app/dramaafera/_utils/settingsUpload';
 import {
   rotateDramaAferaSettings,
   replaceDramaAferaSettings,

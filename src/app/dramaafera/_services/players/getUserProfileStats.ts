@@ -5,7 +5,7 @@ import { CURRENT_SEASON, FIRST_MIRA_SEASON } from '@/app/dramaafera/_constants/s
 import { Teams } from '@/constants/teams';
 import type { UserProfileStats } from './types';
 import { determineTeam } from '@/app/dramaafera/_utils/gameUtils';
-import { addGame, type RoleBreakdown } from '@/app/dramaafera/_utils/statsBreakdown';
+import { addGame, roleLabel, type RoleBreakdown } from '@/app/dramaafera/_utils/statsBreakdown';
 import { countVotes } from '../games/_countVotes';
 
 // Get user profile statistics from database.
@@ -98,6 +98,8 @@ export async function getUserProfileStats(playerName: string, seasonId?: number)
     }
   }
   const roleBreakdown: RoleBreakdown = {};
+  // Sumy kolumn licznika według roli, dla `GET /api/v2/players/{nick}` (sezon 4+).
+  const roleColumns: NonNullable<UserProfileStats['roleColumns']> = {};
 
   // game.maxTasks per gameId
   const games = await chunkedInQuery(uniqueGameIds, (chunk) =>
@@ -177,11 +179,17 @@ export async function getUserProfileStats(playerName: string, seasonId?: number)
 
     if (season >= FIRST_MIRA_SEASON) {
       const votes = votesByGameId.get(stat.gameId);
-      addGame(roleBreakdown, finalRoleByStatId.get(stat.id)?.roleName ?? (primaryRole || 'Unknown'), {
-        ...stat,
-        correctVotes: votes?.correct ?? 0,
-        incorrectVotes: votes?.incorrect ?? 0,
-      }, season);
+      const roleKey = finalRoleByStatId.get(stat.id)?.roleName ?? (primaryRole || 'Unknown');
+      const withVotes = { ...stat, correctVotes: votes?.correct ?? 0, incorrectVotes: votes?.incorrect ?? 0 };
+      addGame(roleBreakdown, roleKey, withVotes, season);
+      const label = roleLabel(roleKey, season);
+      const row = (roleColumns[label] ??= { gamesPlayed: 0, columns: {} });
+      row.gamesPlayed += 1;
+      for (const [column, value] of Object.entries(withVotes)) {
+        if (typeof value === 'number' && column !== 'id' && column !== 'gameId') {
+          row.columns[column] = (row.columns[column] ?? 0) + value;
+        }
+      }
     }
   });
 
@@ -219,5 +227,6 @@ export async function getUserProfileStats(playerName: string, seasonId?: number)
     correctSwaps,
     incorrectSwaps,
     roleBreakdown: season >= FIRST_MIRA_SEASON ? roleBreakdown : undefined,
+    roleColumns: season >= FIRST_MIRA_SEASON ? roleColumns : undefined,
   };
 }

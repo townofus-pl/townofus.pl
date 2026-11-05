@@ -283,7 +283,7 @@ export const RoleSummarySchema = z.object({
   team: z.string(),
   gamesPlayed: z.number().int(),
   wins: z.number().int(),
-  winRate: z.number(),
+  winRate: z.number().describe('Procent wygranych, jedno miejsce po przecinku'),
   dapGames: z.number().int().describe('Liczba rozgrywek wliczonych do wartości DAP'),
   dap: z.number().describe('Wartość opóźniona: bez ostatniego dnia z grami w sezonie'),
   averageDap: z.number().describe('Średnia opóźniona, liczona z dapGames'),
@@ -296,7 +296,6 @@ export const RoleResponseSchema = z.object({
   season: z.number().int(),
   role: RoleSummarySchema.extend({
     totalAppearances: z.number().int().describe('Występy gracza w tej roli w całej historii roli, także po zmianie roli'),
-    winRateOneDecimal: z.number().describe('winRate z jednym miejscem po przecinku. Pole winRate jest zaokrąglone do całości, jak w tabeli ról.'),
   }),
   players: z.array(z.object({
     player: z.string(),

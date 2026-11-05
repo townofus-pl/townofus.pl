@@ -108,6 +108,11 @@ export interface UIGameEvent {
   survivors?: { name: string; role?: string; color?: string }[];
   killAbility?: { name: string; icon: string };
   actionType?: string;
+  /** Pola zabójstwa i śmierci z `detail`. Brak w starszych grach. */
+  causeOfDeath?: string;
+  isGuess?: boolean;
+  guessedRole?: string;
+  guessedModifier?: string;
   ability?: { name: string; icon: string };
   playerRole?: string;
   playerRoleColor?: string;
@@ -142,6 +147,8 @@ export interface UIGameData {
   hasActionData?: boolean;
   /** Gra z ostatniego dnia z grami w sezonie. Ustawia ją `getGameData`. */
   isLatestDay?: boolean;
+  /** Sezon gry. Ustawia go `getGameData`; `getAllGamesData` go nie ustawia. */
+  season?: number;
   id: string;
   date: string;
   gameNumber: number;
