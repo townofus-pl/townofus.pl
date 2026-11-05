@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * Sprawdza odpowiedzi `/api/v2` z działającego serwera (`npm run dev`) na lokalnych danych D1.
  * Nie czyta bazy produkcyjnej. Użycie: `npx tsx scripts/check-api-v2.ts [http://localhost:3000]`.

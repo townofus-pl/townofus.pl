@@ -97,7 +97,7 @@ Consequences for this skill:
   other steps
 
 To confirm it happened, the GET endpoint is public:
-`GET /api/dramaafera/settings` returns `{ current, old }`.
+`GET /api/v2/settings` returns `{ current, old }`.
 
 ## Step 3: Add Playlist Entry
 
@@ -128,7 +128,7 @@ Rules:
 After making all changes:
 1. Validate the JSON file is parseable: `node -e "require('./public/emperor-polls/<DATE>.json')"`
 2. Settings need no verification from you (Step 2 is automated). If you want to
-   confirm the host uploaded: `GET /api/dramaafera/settings` or `/dramaafera/changelog`.
+   confirm the host uploaded: `GET /api/v2/settings` or `/dramaafera/changelog`.
 3. Verify the playlista page compiles: `npm run build`
    (do NOT run `npx tsc --noEmit <single-file>` — it bypasses `tsconfig.json`, so the
    `@/*` path alias and `jsx` option are unset and it reports dozens of false errors)

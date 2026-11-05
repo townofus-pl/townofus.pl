@@ -11,13 +11,10 @@ upload, which is the signal this table is behind.
 
 ## Ground rules
 
-1. **The mod scores, the server sums.** `totalPoints` = Σ every action's `pointsChange`, full stop.
-   No win bonus is added (the `win` action already carries it) and the disconnect clamp arrives
-   already applied. Counters are for display only — the ranking reads `totalPoints` alone.
-2. **The counter set is frozen at 24.** New statistics are queried from `game_actions`, not added
+1. **The counter set is frozen at 24.** New statistics are queried from `game_actions`, not added
    as columns. Empirically justified: of the 24, five carry almost all signal and everything below
    `correctGuesses` fires in under 6 % of 11,374 real rows; `incorrectDeputyShoots` has fired once.
-3. **`correctMedicShields`/`incorrectMedicShields` are renamed to `correctProtects`/`incorrectProtects`.**
+2. **`correctMedicShields`/`incorrectMedicShields` are renamed to `correctProtects`/`incorrectProtects`.**
    They collect the Mirrorcaster, the Oracle and the Monarch's knight as well as the Medic, so the
    Medic-specific name was wrong. `protect` is emitted only by the Medic, the Warden, the
    Mirrorcaster and the Oracle's save from ejection; the Mercenary's guard, like the Cleric's and
@@ -32,8 +29,8 @@ upload, which is the signal this table is behind.
 ## Counter rules by action type
 
 `isCorrect` is three-valued: `true` → the `correct*` counter, `false` → the `incorrect*` counter,
-`null` → **neither** (the mod could not classify; it scores nothing and is not the actor's failure).
-On `swap` the field may be **absent**, which means the rule declined to score — also neither.
+`null` → **neither** (the mod could not classify, and it is not the actor's failure).
+On `swap` the field may be **absent**, which means the rule declined to classify — also neither.
 
 | Action type | Counter | Performer roles that may produce it |
 |---|---|---|
@@ -49,7 +46,7 @@ On `swap` the field may be **absent**, which means the rule declined to score �
 | `janitor_clean` | `janitorCleans` (flat +1) | Janitor |
 | `task_completed` | `completedTasks` (flat +1) | any role that started Crewmate-aligned |
 | `round_survived` | `survivedRounds` (flat +1) | any living, still-connected player |
-| `role_assigned` | `initialRolePoints` ← this action's `pointsChange` | every player, once |
+| `role_assigned` | `initialRolePoints` | every player, once |
 
 ### Types that map to no counter
 
@@ -66,8 +63,8 @@ epsilon, so absence does not mean the player stayed.
 ### Traps
 
 - **`kill` vs `death`.** `kill` is a kill the player chose to make, **including a Sheriff misfire
-  or a Vigilante misguess that kills the guesser themselves** (self-target, scored as incorrect). `death` is
-  an unscored mechanical death. Bucketing `death` into a kill counter inflates it.
+  or a Vigilante misguess that kills the guesser themselves** (self-target, incorrect). `death` is
+  a mechanical death. Bucketing `death` into a kill counter inflates it.
 - **A Doomsayer miss is the one `kill` in which nobody dies.** Since mod `2ec7364` the Doomsayer's
   guesses carry `isGuess`, so both hits and misses land in the guess counters. A miss arrives as
   `kill` with `isGuess: true`, `isCorrect: false`, no `causeOfDeath`, and a `target` who is the
@@ -90,8 +87,6 @@ epsilon, so absence does not mean the player stayed.
   terms and the automatic reopen is its fix.
 - **`ability_used` is an open vocabulary** — all 58 `AbilityType` values plus a synthetic
   `ChefServe`, plus whatever TOU-Mira adds next. Never enum-constrain it.
-- **`pointsChange` is a C# `float`.** Expect `0.30000001`. Sum wide, round for display, never
-  equality-compare.
 
 ## The role allow-list
 

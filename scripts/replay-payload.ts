@@ -6,13 +6,12 @@
  * actually write?" and "what happens when the same payload arrives twice?".
  *
  * Start a server first — `npm run dev` (port 3000) or `npm run preview` (port 8787) —
- * and point `--url` at whichever endpoint is being exercised. Defaults to `/api/v2/games`;
- * pass `--url http://localhost:3000/api/games` for a v1-shaped payload.
+ * and point `--url` at whichever host is being exercised. Defaults to `/api/v2/games`.
  *
  * Usage:
  *   npm run replay -- --file fixtures/game.json
  *   npm run replay -- --file fixtures/game.json --twice
- *   npm run replay -- --file fixtures/game.json --url http://localhost:8787/api/games
+ *   npm run replay -- --file fixtures/game.json --url http://localhost:8787/api/v2/games
  */
 import { readFileSync, existsSync } from 'node:fs';
 import { openLocalD1, count } from './lib/localD1';

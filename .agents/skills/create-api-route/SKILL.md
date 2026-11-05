@@ -16,7 +16,7 @@ Gather from the user:
 | Resource name     | Yes      | `seasons`                                     |
 | HTTP methods      | Yes      | GET, POST, PUT, DELETE                        |
 | Route path        | Yes      | `/api/seasons` or `/api/seasons/[id]`         |
-| Protected or public | Yes   | Protected (default) or public (`/api/dramaafera/*`) |
+| Protected or public | Yes   | Protected (default) or public read (`GET /api/v2/*`) |
 | Has dynamic segment | No    | `[id]`, `[date]`, `[nickname]`                |
 | Prisma model      | If exists | `Season`                                     |
 
@@ -311,26 +311,24 @@ openApiRegistry.registerPath({
 });
 ```
 
-### Public route (for `/api/dramaafera/*`)
+### Public route (for `GET /api/v2/*`)
 
-The only difference — no `withAuth`, no `security`:
+A public read is not a protected route without `withAuth`. Use the helpers of the v2 API:
 
 ```typescript
-// Middleware: no withAuth
-export const GET = withCors(getHandler);
-
-// OpenAPI: no security field
-openApiRegistry.registerPath({
-  method: 'get',
-  path: '/api/dramaafera/resource',
-  // ... same structure but WITHOUT: security: [{ basicAuth: [] }],
+// Response schema: src/app/api/v2/_lib/schemas.ts (the allow-list of fields)
+// Route: src/app/api/v2/<resource>/route.ts
+export const GET = publicGet(ResourceResponseSchema, async (request) => {
+  const season = seasonParam(request);
+  // build the response from explicit fields, never spread a service object
 });
+// Definition: add registerPath() in src/app/api/v2/_lib/openapi.ts, plus a test in openapi.test.ts
 ```
 
 ## Step 4: Verify
 
 1. Run `npm run build` to catch TypeScript errors
-2. Check that the OpenAPI docs render: `GET /api/docs`
+2. Check that the OpenAPI docs render: open `/api/docs` (the definition is `GET /api/schema`)
 
 ## Critical Checklist
 

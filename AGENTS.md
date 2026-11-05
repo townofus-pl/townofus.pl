@@ -63,25 +63,20 @@ excludes `workers/`. The bot shares the site's pipeline: job `bot` in `check.yml
 `deploy-bot` in `deploy.yml` (after `deploy`). `discord-bot.yml` only registers commands. See
 `workers/discord-bot/README.md`.
 
-## Ingest: v1 and v2
+## Ingest (v2)
 
-The league's games arrive from the companion mod, not from a human. Two endpoints are live:
+The league's games arrive from the companion mod, not from a human. One endpoint is live:
+`POST /api/v2/games` — event-based, a flat `actions[]` the server aggregates. The old aggregated
+endpoint (`POST /api/games`) was removed; the 735 pre-cutover games stay in the database, never
+rewritten.
 
-| | endpoint | payload | who writes it |
-|---|---|---|---|
-| v1 | `POST /api/games` | aggregated — 24 counters already computed per player | the 735 pre-cutover games; never rewritten |
-| v2 | `POST /api/v2/games` | event-based — a flat `actions[]` the server aggregates | what the mod sends today |
+Two rules. Breaking either corrupts data quietly rather than loudly:
 
-Three rules. Breaking any of them corrupts data quietly rather than loudly:
-
-1. **The mod scores, the server sums.** `totalPoints` = Σ every action's `pointsChange`, full
-   stop. Never add a bonus server-side; never re-apply the disconnect clamp, which arrives
-   already applied. Counters are for display — the ranking reads `totalPoints` alone.
-2. **The era comes from the data.** A game's season is derived from its own timestamp
+1. **The era comes from the data.** A game's season is derived from its own timestamp
    (`getSeasonForDate`), and the role registry follows from the season — never from the request
    and never from "what season is it now". `FIRST_MIRA_SEASON` in `_constants/seasons.ts` is the
    boundary between `src/roles/` (60 legacy) and `src/mira/roles/` (77 Mira).
-3. **Ingest is chronological.** `rankingCalculator` refuses a game older than one already scored:
+2. **Ingest is chronological.** `rankingCalculator` refuses a game older than one already processed:
    `previousRating` only means anything in order.
 
 ### v2 shapes worth knowing before touching the ingest
@@ -94,7 +89,7 @@ Three rules. Breaking any of them corrupts data quietly rather than loudly:
   is load-bearing — the subqueries assume exactly one match.
 - **`isCorrect` is three-valued, and absent ≠ null.** `true`/`false` pick the `correct*` /
   `incorrect*` counter; `null` means the mod could not classify and counts as neither; **absent**
-  on a `swap` means the rule declined to score. Different facts, both scoring zero.
+  on a `swap` means the rule declined to classify. Different facts, and only one of them is a counter's business.
 - **Actions land in `game_actions`, not `game_events`.** UI built on `game_actions` renders for
   v2 games only and hides itself when a game has no actions, as the game timeline does with
   `hasTimeline`. v1's `game_events` table has no reader on the game page.
@@ -107,10 +102,6 @@ Three rules. Breaking any of them corrupts data quietly rather than loudly:
   `recorder.ts`). Both are D1 only. No page and no response shows them (#287).
 
 `POST /api/v2/games` is idempotent on `gameIdentifier` — a re-submit is a 409 with zero writes.
-
-**Never publish the mod's scoring weights.** The site names which actions score, not what each is
-worth; the values live in the private mod repo and must not be restated here, in docs, in issues
-or in commit messages.
 
 ## AI Tools
 
@@ -234,18 +225,17 @@ src/
 ## Patterns
 
 ### API routes
-Split HTTP methods: get.ts / post.ts / put.ts / delete.ts + route.ts composing middleware.
+The public data API lives under `src/app/api/v2/` and is read-only (`GET`, no login). Each route
+builds its response from the Zod schemas in `src/app/api/v2/_lib/schemas.ts` through `publicGet`
+(`_lib/http.ts`). Never spread a service object into a response. The same schemas generate the
+definition served at `/api/schema` (`_lib/openapi.ts`) and shown at `/api/docs`. A new public route
+needs its schema, its `registerPath` entry and a test in `_lib/openapi.test.ts`.
 
-Always wrap in route.ts:
+Routes that write or give private data wrap the handler in route.ts:
 ```
-  Protected:  export const GET = withCors(withAuth(getHandler));  // all /api/* except /api/dramaafera/* GET
-  Public:     export const GET = withCors(handler);               // /api/dramaafera/* read endpoints (GET)
+  export const POST = withCors(withAuth(postHandler));  // POST /api/v2/games, /api/season/reset
 ```
-
-`/api/dramaafera/*` reads (GET) are public so they can be consumed by client
-components and embeddable widgets. Destructive endpoints under the same prefix
-(POST/PUT/DELETE, e.g. `/api/dramaafera/settings` POST upload) MUST still wrap
-with `withAuth` — the public-prefix rule applies to read shape only.
+`GET /api/mod/host/[name]` uses Basic Auth as well. Split HTTP methods into get.ts / post.ts for these.
 
 Response format (from @/app/api/_utils — returns NextResponse, not plain objects):
 ```
@@ -314,7 +304,7 @@ Type: { type, name, id, color, team: Teams, icon, description: ReactNode, settin
 
 ## Ranking System
 
-ELO-like: START_RATING=2000, W=9 (game influence), PEN=5 (absence penalty)
+ELO-like rating. The constants are in rankingCalculator.ts (`RANKING_CONSTANTS`).
 Calculator: src/app/api/_utils/rankingCalculator.ts → calculateRankingForGame(prisma, gameId)
 PlayerRanking.reason values defined in src/app/api/_constants/rankingTypes.ts as PlayerRankingReason:
   `const` object + derived type (same identifier — valid TS value/type namespace split):

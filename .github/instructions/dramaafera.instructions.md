@@ -73,15 +73,16 @@ A string without `Z` parses as the browser's local time and shifts Polish users 
 which drops evening games from a range (#343). Run date tests with `TZ=Europe/Warsaw npx jest`
 so a missing `Z` fails locally, since CI runs in UTC.
 
-## Public API routes (/api/dramaafera/*)
+## Public API routes (/api/v2/*)
 
-These are intentionally public — withCors only, no withAuth:
-  export const GET = withCors(handler);          // correct
-  export const GET = withCors(withAuth(handler)); // wrong — breaks public access
+The public data API is read-only and needs no login. Every route is a `GET` built with
+`publicGet(schema, build)` from `src/app/api/v2/_lib/http.ts`, and the response passes through the
+Zod schema in `_lib/schemas.ts`. Do not wrap these routes in `withAuth`. The definition is served at
+`/api/schema` and shown at `/api/docs`.
 
 ## Ranking system
 
-ELO-like: START_RATING=2000, W=9 (game influence), PEN=5 (absence penalty)
+ELO-like rating. The constants are in rankingCalculator.ts (`RANKING_CONSTANTS`).
 Calculator: src/app/api/_utils/rankingCalculator.ts → calculateRankingForGame(prisma, gameId)
 PlayerRanking.reason: typed as PlayerRankingReason (src/app/api/_constants/rankingTypes.ts)
   base_value | initial_value | game_result | absence_penalty | absence_no_penalty |
@@ -171,8 +172,8 @@ unavailable at build time — pages rendered on-demand).
   `getRankingAction`, `getGameDatesAction` — used by client components for dynamic data (date
   switching, auto-refresh). Always pass `seasonId` to keep data season-scoped.
 - **Auto-refresh** (ranking, wyniki): uses server actions — NOT `fetch('/api/...')`.
-  API routes have no season filter; fetching from them would return cross-season data.
-- **File upload** (host): continues to POST `/api/games/upload` — game creation sets season
+  Public `/api/v2` routes take a `season` parameter, but pages still use server actions.
+- **Game upload** (host): `POST /api/v2/games` — game creation sets season
   from `startTime` automatically.
 - **Emperor poll data**: read via `env.ASSETS.fetch()` (Cloudflare Workers), not `fs.readFile`
 
