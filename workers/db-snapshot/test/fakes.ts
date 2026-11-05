@@ -163,7 +163,10 @@ export function makeFetch(script: ExportScript) {
 }
 
 /** Zamiennik `NonRetryableError` z `cloudflare:workflows`. */
-export class TestNonRetryableError extends Error {}
+export class TestNonRetryableError extends Error {
+    // Silnik Workflows rozpoznaje ten błąd po nazwie, nie po klasie.
+    name = 'NonRetryableError';
+}
 
 export function makeEnv(bucket: FakeBucket, overrides: Partial<SnapshotEnv> = {}): SnapshotEnv {
     return {
@@ -205,7 +208,7 @@ export function makeStep() {
                 } catch (error) {
                     record.errors.push(error instanceof Error ? error.message : String(error));
                     // Jak Workflow: NonRetryableError kończy krok bez ponowień.
-                    if (error instanceof TestNonRetryableError || record.attempts > limit) throw error;
+                    if ((error as Error).name === 'NonRetryableError' || record.attempts > limit) throw error;
                 }
             }
         },
