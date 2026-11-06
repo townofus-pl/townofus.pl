@@ -63,6 +63,10 @@ excludes `workers/`. The bot shares the site's pipeline: job `bot` in `check.yml
 `deploy-bot` in `deploy.yml` (after `deploy`). `discord-bot.yml` only registers commands. See
 `workers/discord-bot/README.md`.
 
+**The weekly D1 snapshot is a separate Worker with a Workflow** in `workers/db-snapshot/`. It exports the
+production D1 to a private R2 bucket (`prod-<date>.sql` and `latest.sql`). Jobs `snapshot` in `check.yml` and
+`deploy-snapshot` in `deploy.yml`. See `workers/db-snapshot/README.md`.
+
 ## Ingest: v1 and v2
 
 The league's games arrive from the companion mod, not from a human. Two endpoints are live:
