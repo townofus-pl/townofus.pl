@@ -2,11 +2,10 @@
 
 import { useState } from 'react';
 import HostClient from './HostClient';
-import RoleRankingTable from './RoleRankingTable';
+import HostRolePanels from './HostRolePanels';
 import ListaCweliTab from './ListaCweliTab';
 import { SettingsTab } from './SettingsTab';
 import type { GameDateEntry } from '@/app/dramaafera/_services';
-import type { RoleRankingStats } from '@/app/dramaafera/_services';
 
 // Tab constants
 const TAB_HOST = 'host';
@@ -26,18 +25,19 @@ const TABS: ReadonlyArray<{ id: HostTabId; label: string }> = [
 interface HostTabsProps {
   initialDates: GameDateEntry[];
   seasonId: number;
-  roles: RoleRankingStats[];
 }
 
-export default function HostTabs({ initialDates, seasonId, roles }: HostTabsProps) {
+export default function HostTabs({ initialDates, seasonId }: HostTabsProps) {
   const [activeTab, setActiveTab] = useState<HostTabId>(TAB_HOST);
+  const [rolesVisited, setRolesVisited] = useState(false);
+  const [settingsVisited, setSettingsVisited] = useState(false);
 
   const getTabContent = () => {
     switch (activeTab) {
       case TAB_HOST:
         return <HostClient initialDates={initialDates} seasonId={seasonId} />;
       case TAB_ROLES:
-        return <RoleRankingTable roles={roles} seasonId={seasonId} excludeLatestDay={false} />;
+        return null;
       case TAB_LIST:
         return <ListaCweliTab seasonId={seasonId} />;
       case TAB_SETTINGS:
@@ -56,7 +56,11 @@ export default function HostTabs({ initialDates, seasonId, roles }: HostTabsProp
         {TABS.map((tab) => (
           <button
             key={tab.id}
-            onClick={() => setActiveTab(tab.id)}
+            onClick={() => {
+              setActiveTab(tab.id);
+              if (tab.id === TAB_ROLES) setRolesVisited(true);
+              if (tab.id === TAB_SETTINGS) setSettingsVisited(true);
+            }}
             className={`px-6 py-3 font-semibold text-lg transition-all whitespace-nowrap ${
               activeTab === tab.id
                 ? 'text-yellow-400 border-b-2 border-yellow-400'
@@ -69,7 +73,10 @@ export default function HostTabs({ initialDates, seasonId, roles }: HostTabsProp
       </div>
 
       {/* Zawartość kart */}
-      <div>{getTabContent()}</div>
+      <div>{activeTab !== TAB_SETTINGS && getTabContent()}</div>
+      <div hidden={activeTab !== TAB_ROLES}>{rolesVisited && <HostRolePanels seasonId={seasonId} />}</div>
+      {/* Keep an in-progress preset when the host switches to another panel tab. */}
+      <div hidden={activeTab !== TAB_SETTINGS}>{settingsVisited && <SettingsTab />}</div>
     </div>
   );
 }

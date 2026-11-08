@@ -9,6 +9,7 @@ import {
 import {
   rotateDramaAferaSettings,
   replaceDramaAferaSettings,
+  getSettingsDraft,
 } from '@/app/dramaafera/_services/settings';
 
 export interface UploadSettingsActionResult {
@@ -21,6 +22,7 @@ export async function uploadSettingsAction(
   formData: FormData,
   mode: 'normal' | 'advanced' = 'normal',
   targetVersion?: 'current' | 'old',
+  source: 'file' | 'draft' = 'file',
 ): Promise<UploadSettingsActionResult> {
   try {
     // Defense-in-depth: `src/middleware.ts` already gates `/dramaafera/host`
@@ -32,17 +34,29 @@ export async function uploadSettingsAction(
       return { success: false, error: 'Brak autoryzacji' };
     }
 
-    const file = formData.get('file') as File | null;
-    if (!file) {
-      return { success: false, error: 'Brak pliku do wgrania' };
+    if ((mode !== 'normal' && mode !== 'advanced') || (source !== 'file' && source !== 'draft')) {
+      return { success: false, error: 'Nieprawidłowy tryb wgrywania' };
+    }
+    if (mode === 'advanced' && targetVersion !== 'current' && targetVersion !== 'old') {
+      return { success: false, error: 'Brak wybranej wersji do zamiany' };
     }
 
-    const fileError = validateSettingsFile(file);
-    if (fileError) {
-      return { success: false, error: fileError };
+    let content: string;
+    if (source === 'draft') {
+      const draft = await getSettingsDraft();
+      if (!draft.exists) {
+        return { success: false, error: 'Brak zapisanego draftu. Zmień i zapisz ustawienia w kreatorze.' };
+      }
+      content = draft.content;
+    } else {
+      const file = formData.get('file');
+      if (!file || typeof file === 'string') {
+        return { success: false, error: 'Brak pliku do wgrania' };
+      }
+      const fileError = validateSettingsFile(file);
+      if (fileError) return { success: false, error: fileError };
+      content = await file.text();
     }
-
-    const content = await file.text();
     const contentError = validateSettingsContent(content);
     if (contentError) {
       return { success: false, error: contentError };
@@ -66,11 +80,20 @@ export async function uploadSettingsAction(
       success: true,
       message:
         mode === 'advanced'
-          ? `Wersja ${targetVersion} zmieniona pomyślnie`
-          : 'Ustawienia wgrane pomyślnie',
+          ? source === 'draft'
+            ? `Draft wgrany do ${targetVersion === 'current' ? 'aktualnych' : 'starych'} ustawień bez rotacji`
+            : `Wersja ${targetVersion} zmieniona pomyślnie`
+          : source === 'draft' ? 'Draft wgrany jako aktualne ustawienia' : 'Ustawienia wgrane pomyślnie',
     };
   } catch (error) {
     console.error('Error in uploadSettingsAction:', error);
     return { success: false, error: 'Błąd serwera podczas wgrywania ustawień' };
   }
+}
+
+export async function uploadDraftSettingsAction(
+  mode: 'normal' | 'advanced' = 'normal',
+  targetVersion?: 'current' | 'old',
+): Promise<UploadSettingsActionResult> {
+  return uploadSettingsAction(new FormData(), mode, targetVersion, 'draft');
 }

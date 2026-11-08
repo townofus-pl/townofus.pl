@@ -45,6 +45,8 @@ const TABLE_ORDER = [
     'player_modifiers',
     'game_events',
     'game_actions',
+    'role_balance_cycles',
+    'role_balance_reviews',
     'meeting_votes',
     'meeting_skip_votes',
     'meeting_jailed_players',
@@ -471,6 +473,13 @@ async function main(): Promise<void> {
             ? ['--local', '--persist-to', persistToDir]
             : ['--remote', '--env', 'staging'];
 
+    console.log('Aplikuję migracje...');
+    runCommand(
+        wranglerCommand,
+        ['d1', 'migrations', 'apply', options.databaseName, ...where],
+        'y\n',
+    );
+
     if (options.target === 'staging') {
         console.log('Czyszczę tabele stagingu w odwrotnej kolejności FK...');
         const deleteOrder = [...TABLE_ORDER].reverse().filter((t) => t !== 'sqlite_sequence');
@@ -483,13 +492,6 @@ async function main(): Promise<void> {
         await writeFile(wipeFile, `${statements.join('\n')}\n`, 'utf8');
         runCommand(wranglerCommand, ['d1', 'execute', options.databaseName, ...where, '--file', wipeFile, '--yes']);
     }
-
-    console.log('Aplikuję migracje...');
-    runCommand(
-        wranglerCommand,
-        ['d1', 'migrations', 'apply', options.databaseName, ...where],
-        'y\n',
-    );
 
     console.log('Importuję dane...');
     runCommand(wranglerCommand, ['d1', 'execute', options.databaseName, ...where, '--file', options.importFile, '--yes']);

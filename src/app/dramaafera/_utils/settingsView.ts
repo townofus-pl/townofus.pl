@@ -16,7 +16,7 @@ import { MiraModifiers, MiraRoles } from "@/mira";
 import type { Modifier, Role } from "@/constants/rolesAndModifiers";
 import { SettingTypes, type Setting } from "@/constants/settings";
 import { parseSettingsFile, getMatchingFileName, updateSettingValue } from "./settingsParser";
-import { buildMiraRoleSettings, getMiraModifierOdds, looksLikeMiraConfig, normalizeLookupKey } from "./miraConfig";
+import { buildMiraModifierSettings, buildMiraRoleSettings, getMiraModifierOdds, looksLikeMiraConfig, normalizeLookupKey } from "./miraConfig";
 import { FIRST_MIRA_SEASON } from "../_constants/seasons";
 
 export type Populated = { roles: Role[]; modifiers: Modifier[] };
@@ -94,16 +94,13 @@ export function populateMira(cfgContent: string): Populated {
         .map((role) => withSettings(role, buildMiraRoleSettings(cfgContent, role.name)))
         .filter((role) => chanceOf(role.settings) > 0);
 
-    // Modifiers get their odds only. Their own options live in `Modifiers.<Team>.<Name>Options`
-    // but nothing generates labels for those yet, so the registry's declared settings are left
-    // as they are rather than half-filled from keys we cannot name.
     const odds = getMiraModifierOdds(cfgContent);
     const modifiers = MiraModifiers
         .map((modifier) => {
             const entry = odds.get(normalizeLookupKey(modifier.name));
-            if (!entry) return modifier;
+            if (!entry) return withSettings(modifier, {});
 
-            const settings = { ...modifier.settings };
+            const settings: Record<string, Setting> = {};
             if (entry.chance !== undefined) {
                 settings["Probability Of Appearing"] = {
                     value: entry.chance,
@@ -113,6 +110,7 @@ export function populateMira(cfgContent: string): Populated {
             if (entry.amount !== undefined) {
                 settings["Maximum"] = { value: entry.amount, type: SettingTypes.Number };
             }
+            Object.assign(settings, buildMiraModifierSettings(cfgContent, modifier));
             return withSettings(modifier, settings);
         })
         .filter((modifier) => chanceOf(modifier.settings) > 0);
