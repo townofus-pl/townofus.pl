@@ -1,7 +1,10 @@
 'use client';
 
-import { useState } from 'react';
-import { getRoleColor, FIRST_MIRA_SEASON } from '@/app/dramaafera/_utils/gameUtils';
+import { useState, type ReactNode } from 'react';
+import Image from 'next/image';
+import Link from 'next/link';
+import { buildSeasonUrl } from '@/app/dramaafera/_utils/seasonHelpers';
+import { getRoleColor, getRoleIconPath, convertRoleToUrlSlug, FIRST_MIRA_SEASON } from '@/app/dramaafera/_utils/gameUtils';
 import type { CategoryKey, Pair, RoleBreakdown } from '@/app/dramaafera/_utils/statsBreakdown';
 
 const LABELS: Record<CategoryKey, (seasonId: number) => string> = {
@@ -14,6 +17,10 @@ const LABELS: Record<CategoryKey, (seasonId: number) => string> = {
 
 interface Props {
   breakdown: RoleBreakdown;
+  votesContent?: ReactNode;
+  killsContent?: ReactNode;
+  guessesContent?: ReactNode;
+  protectsContent?: ReactNode;
   seasonId: number;
   /** Hide a box whose correct and incorrect are both 0. */
   hideZeroStats: boolean;
@@ -24,7 +31,7 @@ interface Props {
    * 'wide' matches the profile's and role page's stat cards.
    */
   variant?: 'compact' | 'wide';
-  /** Stack action boxes at full width instead of placing them in columns. */
+  /** Use wide action boxes, with two columns when the container has enough room. */
   layout?: 'grid' | 'stacked';
 }
 
@@ -33,7 +40,7 @@ interface Props {
  * its correct and incorrect count. ▼ opens the roles (or players) behind the box, in tight columns
  * inside the box, so a name sits right next to its numbers.
  */
-export default function PlayerStatsBreakdown({ breakdown, seasonId, hideZeroStats, rows = 'role', variant = 'compact', layout = 'grid' }: Props) {
+export default function PlayerStatsBreakdown({ breakdown, seasonId, hideZeroStats, rows = 'role', variant = 'compact', layout = 'grid', votesContent, killsContent, guessesContent, protectsContent }: Props) {
   const wide = variant === 'wide';
   const [open, setOpen] = useState<Set<CategoryKey>>(new Set());
   const toggle = (key: CategoryKey) =>
@@ -53,6 +60,7 @@ export default function PlayerStatsBreakdown({ breakdown, seasonId, hideZeroStat
 
   const keys = (Object.keys(LABELS) as CategoryKey[]).filter((key) => {
     // The v1 games before Mira carry no vote verdicts: a Votes box there would read 0 / 0 as fact.
+    if (key === 'votes' && votesContent) return true;
     if (key === 'votes' && seasonId < FIRST_MIRA_SEASON) return false;
     const t = totals(key);
     return !hideZeroStats || t.correct > 0 || t.incorrect > 0;
@@ -77,7 +85,7 @@ export default function PlayerStatsBreakdown({ breakdown, seasonId, hideZeroStat
             <div className={layout === 'stacked' ? 'grid grid-cols-[10rem_10rem_10rem] items-center gap-4 overflow-x-auto mr-6' : ''}>
             <div className={`flex items-center justify-between ${layout === 'stacked' ? 'gap-3 shrink-0' : 'mb-1'}`}>
               <div className={layout === 'stacked' ? 'text-lg font-bold text-zinc-200 whitespace-nowrap text-left' : wide ? 'text-base font-semibold text-zinc-200' : 'text-sm font-medium text-zinc-300'}>{LABELS[key](seasonId)}</div>
-              {rowsInBox.length > 0 && (
+              {(rowsInBox.length > 0 || (key === 'votes' && votesContent) || (key === 'kills' && killsContent) || (key === 'guesses' && guessesContent) || (key === 'protects' && protectsContent)) && (
                 <button
                   type="button"
                   onClick={() => toggle(key)}
@@ -96,21 +104,57 @@ export default function PlayerStatsBreakdown({ breakdown, seasonId, hideZeroStat
             </div>
 
             {isOpen && (
-              <div className={`mt-2 pt-2 border-t border-zinc-600/60 grid w-fit max-w-full items-center ${layout === 'stacked' ? 'grid-cols-[minmax(0,max-content)_2.5rem_2.5rem_2.5rem] gap-x-3 gap-y-1.5 text-base' : 'grid-cols-[minmax(0,max-content)_1.75rem_1.75rem_1.75rem] gap-x-2 gap-y-0.5 text-xs'}`}>
+              <div className="mt-2 pt-2 border-t border-zinc-600/60 grid grid-cols-[repeat(auto-fit,minmax(min(100%,20rem),1fr))] gap-6">
+                {(layout === 'stacked' && rowsInBox.length > 1
+                  ? [rowsInBox.slice(0, Math.ceil(rowsInBox.length / 2)), rowsInBox.slice(Math.ceil(rowsInBox.length / 2))]
+                  : [rowsInBox]
+                ).map((group, index) => (
+                  <div key={index}>
+              <div className={`grid min-w-0 items-center ${layout === 'stacked' ? 'grid-cols-[minmax(0,max-content)_2.5rem_2.5rem_2.5rem] gap-x-3 gap-y-1.5 text-base' : 'grid-cols-[minmax(0,max-content)_1.75rem_1.75rem_1.75rem] gap-x-2 gap-y-0.5 text-xs'}`}>
                 <div className="text-zinc-500">{rows === 'role' ? 'rola' : 'gracz'}</div>
                 <div className="text-zinc-500 text-center">✓</div>
                 <div className="text-zinc-500 text-center">✗</div>
                 <div className="text-zinc-500 text-center" title={rows === 'role' ? 'Liczba gier tą rolą' : 'Liczba gier tego gracza'}>gry</div>
-                {rowsInBox.map(([name, r]) => (
+                {group.map(([name, r]) => (
                   <div key={name} className="contents">
-                    <div className="truncate font-semibold" title={name}
-                      style={{ color: rows === 'role' ? getRoleColor(name, seasonId) : '#E4E4E7' }}>{name}</div>
+                    <div className="flex min-w-0 items-center gap-2 font-semibold" title={name}
+                      style={{ color: rows === 'role' ? getRoleColor(name, seasonId) : '#E4E4E7' }}>
+                      {rows === 'role' && (
+                        <Image
+                          src={getRoleIconPath(name, seasonId)}
+                          alt=""
+                          width={24}
+                          height={24}
+                          className="h-6 w-6 shrink-0 object-contain"
+                        />
+                      )}
+                      {rows === 'role' ? (
+                        <Link href={buildSeasonUrl(`/role/${convertRoleToUrlSlug(name)}`, seasonId)} className="truncate hover:underline">
+                          {name}
+                        </Link>
+                      ) : <span className="truncate">{name}</span>}
+                    </div>
                     <div className="text-center text-green-400">{r.categories[key].correct}</div>
                     <div className="text-center text-red-400">{r.categories[key].incorrect}</div>
                     <div className="text-center text-sky-300">{r.games}</div>
                   </div>
                 ))}
               </div>
+                  </div>
+                ))}
+              </div>
+            )}
+            {isOpen && key === 'protects' && protectsContent && (
+              <div className="mt-4">{protectsContent}</div>
+            )}
+            {isOpen && key === 'guesses' && guessesContent && (
+              <div className="mt-4">{guessesContent}</div>
+            )}
+            {isOpen && key === 'kills' && killsContent && (
+              <div className="mt-4">{killsContent}</div>
+            )}
+            {isOpen && key === 'votes' && votesContent && (
+              <div className="mt-4">{votesContent}</div>
             )}
           </div>
         );

@@ -41,6 +41,7 @@
   "exclude": [
     "node_modules",
     "src/generated",
-    "workers"
+    "workers",
+    "local-only-changes"
   ]
 }

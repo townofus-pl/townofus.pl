@@ -37,6 +37,14 @@ jobs:
       CLOUDFLARE_ACCOUNT_ID: d1287f321cc95882fc773ab71241b51a
 
     steps:
+      # workflow_dispatch może wystartować z dowolnej gałęzi. Produkcja dostaje tylko kod z main,
+      # bo ten job stosuje migracje i wdraża stronę. Krok jest pierwszy: przed checkoutem i przed migracjami.
+      - name: Production only from main
+        if: env.TARGET == 'production' && github.ref != 'refs/heads/main'
+        run: |
+          echo "::error::The production site deploys only from main. This run is on $GITHUB_REF. Start the workflow from main."
+          exit 1
+
       - uses: actions/checkout@v4
 
       - uses: actions/setup-node@v4
