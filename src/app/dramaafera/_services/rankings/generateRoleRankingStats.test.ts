@@ -32,7 +32,7 @@ test('bounded SQL reads exclude latest-day DAP but count every active initial-ro
     const [role] = await generateRoleRankingStats(4, undefined, undefined, true, { excludeLatestDay: true });
     expect(role).toMatchObject({ name: 'Sheriff', gamesPlayed: 2, wins: 1, totalPoints: 12, averagePoints: 12 });
     expect(role.players[0]).toMatchObject({ gamesPlayed: 2, wins: 1, averagePoints: 12 });
-    expect(query).toHaveBeenCalledTimes(2);
+    expect(query).toHaveBeenCalledTimes(1);
 });
 
 test('a role played only on the newest day has zero DAP without division by zero', async () => {
@@ -65,6 +65,11 @@ test('lightweight summary preserves aggregates without returning player breakdow
     const summary = await generateRoleRankingSummary(4);
     expect(summary).toEqual(full.map(({ players: _players, ...role }) => role));
     expect(summary[0]).not.toHaveProperty('players');
+    for (const field of ['strength', 'strengthGames', 'strengthPlayers']) {
+        expect(summary[0]).not.toHaveProperty(field);
+        expect(full[0]).not.toHaveProperty(field);
+    }
+    expect(query).toHaveBeenCalledTimes(2);
 });
 
 test('date bounds include late games and stop at the following month', async () => {
@@ -78,7 +83,7 @@ test('API and host defaults include the newest day in role and player DAP', asyn
     const [role] = await generateRoleRankingStats(4);
     expect(role).toMatchObject({ gamesPlayed: 2, wins: 1, totalPoints: 52, averagePoints: 26 });
     expect(role.players[0]).toMatchObject({ gamesPlayed: 2, averagePoints: 26 });
-    expect(query).toHaveBeenCalledTimes(2);
+    expect(query).toHaveBeenCalledTimes(1);
     const sql = Prisma.sql(query.mock.calls[0][0], ...query.mock.calls[0].slice(1));
     expect(sql.sql).not.toContain('latest_day');
 });
@@ -122,7 +127,7 @@ function seedRankedLobby() {
 
 test('uses pre-game ranking relative to the full lobby, not post-game or current ranking', async () => {
     seedRankedLobby();
-    const roles = await generateRoleRankingSummary(4);
+    const roles = await generateRoleRankingSummary(4, undefined, undefined, { includeStrength: true });
     const hunter = roles.find(role => role.name === 'Hunter')!;
     // 2400 / 2000 * 5 = 6 expected, 8 scored: +2; k=3, n=1.
     expect(hunter.strength).toBeCloseTo(100 + 20 * 2 / 4);
@@ -135,7 +140,7 @@ test('uses pre-game ranking relative to the full lobby, not post-game or current
 
 test('host includes latest-day strength and counts repeated players once', async () => {
     seedRankedLobby();
-    const roles = await generateRoleRankingSummary(4, undefined, undefined, { excludeLatestDay: false });
+    const roles = await generateRoleRankingSummary(4, undefined, undefined, { includeStrength: true, excludeLatestDay: false });
     const hunter = roles.find(role => role.name === 'Hunter')!;
     // Second game's only participant expects 5, scores 10: total deviation +7.
     expect(hunter.strength).toBeCloseTo(100 + 20 * 7 / 5);
@@ -144,7 +149,7 @@ test('host includes latest-day strength and counts repeated players once', async
 
 test('date filtering keeps historical rankings and does not change the lobby denominator', async () => {
     seedRankedLobby();
-    const roles = await generateRoleRankingSummary(4, new Date('2026-10-24'), new Date('2026-10-24'));
+    const roles = await generateRoleRankingSummary(4, new Date('2026-10-24'), new Date('2026-10-24'), { includeStrength: true });
     expect(roles.find(role => role.name === 'Hunter')!.strength).toBeCloseTo(100 + 20 * 2 / 4);
 });
 
@@ -155,7 +160,7 @@ test('manual corrections and absence penalties before a game contribute to its e
       (5,1,99,4,2600,'absence_penalty',NULL),
       (6,1,NULL,4,99999,'reward','deleted'),
       (7,1,NULL,3,99999,'reward',NULL)`);
-    const roles = await generateRoleRankingSummary(4);
+    const roles = await generateRoleRankingSummary(4, undefined, undefined, { includeStrength: true });
     const expected = 5 * 2600 / ((2600 + 2000 + 1600) / 3);
     expect(roles.find(role => role.name === 'Hunter')!.strength).toBeCloseTo(100 + 20 * (8 - expected) / 4);
 });
@@ -163,7 +168,7 @@ test('manual corrections and absence penalties before a game contribute to its e
 test('missing or soft-deleted ranking history invalidates the entire lobby, without hiding DAP', async () => {
     seedRankedLobby();
     db.exec("UPDATE player_rankings SET deletedAt='deleted' WHERE playerId=4");
-    const roles = await generateRoleRankingSummary(4);
+    const roles = await generateRoleRankingSummary(4, undefined, undefined, { includeStrength: true });
     expect(roles.find(role => role.name === 'Hunter')).toMatchObject({ strength: null, strengthGames: 0, strengthPlayers: 0, dapGames: 1, totalPoints: 8 });
     expect(roles.find(role => role.name === 'Sheriff')!.strength).toBeNull();
 });
@@ -171,7 +176,7 @@ test('missing or soft-deleted ranking history invalidates the entire lobby, with
 test('a subsequently deleted participant still contributes to the historical lobby average', async () => {
     seedRankedLobby();
     db.exec("UPDATE players SET deletedAt='deleted' WHERE id=4");
-    const roles = await generateRoleRankingSummary(4);
+    const roles = await generateRoleRankingSummary(4, undefined, undefined, { includeStrength: true });
     expect(roles.find(role => role.name === 'Hunter')!.strength).toBeCloseTo(100 + 20 * 2 / 4);
     expect(roles.find(role => role.name === 'Sheriff')).toMatchObject({ gamesPlayed: 1, strengthGames: 1, strengthPlayers: 1 });
 });
@@ -180,15 +185,15 @@ test('newest-day-only public filters expose no strength while host filters expos
     seedRankedLobby();
     const from = new Date('2026-10-25');
     const [publicRole] = await generateRoleRankingSummary(4, from, from);
-    const [hostRole] = await generateRoleRankingSummary(4, from, from, { excludeLatestDay: false });
-    expect(publicRole).toMatchObject({ strength: null, strengthGames: 0, strengthPlayers: 0 });
+    const [hostRole] = await generateRoleRankingSummary(4, from, from, { includeStrength: true, excludeLatestDay: false });
+    expect(publicRole).not.toHaveProperty('strength');
     expect(hostRole.strength).toBeCloseTo(100 + 20 * 5 / 4);
 });
 
 
 test('last N appearances are selected independently per role with deterministic same-game ordering', async () => {
     seedRankedLobby();
-    const roles = await generateRoleRankingStats(4, undefined, undefined, true, { lastGamesPerRole: 1 });
+    const roles = await generateRoleRankingStats(4, undefined, undefined, true, { includeStrength: true, lastGamesPerRole: 1 });
     const hunter = roles.find(role => role.name === 'Hunter')!;
     expect(hunter).toMatchObject({ gamesPlayed: 1, dapGames: 1, totalPoints: 10, averagePoints: 10, strengthGames: 1 });
     expect(hunter.strength).toBeCloseTo(100 + 20 * 5 / 4);
@@ -200,14 +205,14 @@ test('last N appearances are selected independently per role with deterministic 
 
 test('last N retains all available appearances when fewer than N exist', async () => {
     seedRankedLobby();
-    const limited = await generateRoleRankingSummary(4, undefined, undefined, { excludeLatestDay: false, lastGamesPerRole: 10 });
-    const all = await generateRoleRankingSummary(4, undefined, undefined, { excludeLatestDay: false });
+    const limited = await generateRoleRankingSummary(4, undefined, undefined, { includeStrength: true, excludeLatestDay: false, lastGamesPerRole: 10 });
+    const all = await generateRoleRankingSummary(4, undefined, undefined, { includeStrength: true, excludeLatestDay: false });
     expect(limited).toEqual(all);
 });
 
 test('public last N skips unreleased sessions before selecting each role sample', async () => {
     seedRankedLobby();
-    const roles = await generateRoleRankingSummary(4, undefined, undefined, { lastGamesPerRole: 1 });
+    const roles = await generateRoleRankingSummary(4, undefined, undefined, { includeStrength: true, lastGamesPerRole: 1 });
     expect(roles.find(role => role.name === 'Hunter')).toMatchObject({ gamesPlayed: 1, dapGames: 1, totalPoints: 8, strengthGames: 1 });
     expect(roles.find(role => role.name === 'Hunter')!.strength).toBeCloseTo(110);
 });
@@ -215,7 +220,7 @@ test('public last N skips unreleased sessions before selecting each role sample'
 test('normalizes aliases before enforcing the per-role limit', async () => {
     seedRankedLobby();
     db.exec("UPDATE player_roles SET roleName='TimeLord' WHERE gamePlayerStatisticsId=1; UPDATE player_roles SET roleName='Time Lord' WHERE gamePlayerStatisticsId=4");
-    const roles = await generateRoleRankingSummary(4, undefined, undefined, { excludeLatestDay: false, lastGamesPerRole: 1 });
+    const roles = await generateRoleRankingSummary(4, undefined, undefined, { includeStrength: true, excludeLatestDay: false, lastGamesPerRole: 1 });
     const timeLord = roles.find(role => role.name === 'Time Lord')!;
     expect(timeLord).toMatchObject({ gamesPlayed: 1, totalPoints: 10 });
 });
@@ -223,6 +228,6 @@ test('normalizes aliases before enforcing the per-role limit', async () => {
 test('last N does not replace a recent appearance with an older one when ranking history is missing', async () => {
     seedRankedLobby();
     db.exec('DELETE FROM player_rankings WHERE gameId=2');
-    const roles = await generateRoleRankingSummary(4, undefined, undefined, { excludeLatestDay: false, lastGamesPerRole: 1 });
+    const roles = await generateRoleRankingSummary(4, undefined, undefined, { includeStrength: true, excludeLatestDay: false, lastGamesPerRole: 1 });
     expect(roles.find(role => role.name === 'Hunter')).toMatchObject({ gamesPlayed: 1, totalPoints: 10, strength: null, strengthGames: 0 });
 });

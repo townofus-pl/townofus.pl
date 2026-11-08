@@ -13,7 +13,7 @@ async function authorize(season: number) {
 
 export async function getHostRoleRankingsAction(season: number) {
     await authorize(season);
-    return generateRoleRankingSummary(season, undefined, undefined, { excludeLatestDay: false });
+    return generateRoleRankingSummary(season, undefined, undefined, { excludeLatestDay: false, includeStrength: true });
 }
 
 export async function getHostRoleProbabilitiesAction(season: number) {

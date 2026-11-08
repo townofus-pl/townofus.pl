@@ -36,7 +36,7 @@ async function readConfig(file: File): Promise<string> {
     }
 }
 
-export default function RoleProbabilityConfig({ roles, seasonId }: { roles: RoleProbabilityData['roles']; seasonId: number }) {
+export default function RoleProbabilityConfig({ roles, seasonId, completeFactionSample }: { roles: RoleProbabilityData['roles']; seasonId: number; completeFactionSample: boolean }) {
     const [loaded, setLoaded] = useState<LoadedConfig | null>(null);
     const [supportsPicker, setSupportsPicker] = useState(false);
     const [busy, setBusy] = useState(false);
@@ -46,7 +46,7 @@ export default function RoleProbabilityConfig({ roles, seasonId }: { roles: Role
     useEffect(() => { setSupportsPicker(typeof (window as PickerWindow).showOpenFilePicker === 'function'); }, []);
 
     async function applyToDraft() {
-        if (busy) return;
+        if (busy || !completeFactionSample) return;
         setBusy(true); setError(''); setMessage('');
         try {
             const result = await applyRoleWeightsToDraftAction(seasonId);
@@ -127,7 +127,8 @@ export default function RoleProbabilityConfig({ roles, seasonId }: { roles: Role
         <div className="mb-5 border-b border-zinc-700 pb-5">
             <h2 className="font-brook text-xl font-bold text-yellow-400">Zastosuj w drafcie ustawień</h2>
             <p className="mt-2 text-sm text-gray-400">Zapisz wyliczone wagi we wspólnym drafcie. Jeśli draft jeszcze nie istnieje, powstanie z aktualnych ustawień. Zmienią się tylko szanse ról, zaokrąglone do pełnego 1%. Role z Num = 0 pozostaną wyłączone.</p>
-            <button type="button" className={`${buttonClass} mt-4`} disabled={busy} onClick={() => void applyToDraft()}>Zastosuj w drafcie ustawień</button>
+            <button type="button" className={`${buttonClass} mt-4`} disabled={busy || !completeFactionSample} onClick={() => void applyToDraft()}>Zastosuj w drafcie ustawień</button>
+            {!completeFactionSample && <p className="mt-2 text-sm text-yellow-300">Do zapisania wag potrzeba 20 gier z ustalonym zwycięzcą w każdej z nich.</p>}
         </div>
         <details>
         <summary className="cursor-pointer font-brook text-xl font-bold text-yellow-400">Awaryjnie: plik ustawień</summary>

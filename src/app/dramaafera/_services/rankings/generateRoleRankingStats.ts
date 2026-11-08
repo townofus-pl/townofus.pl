@@ -28,14 +28,15 @@ interface RankingRow {
 }
 
 interface RoleRankingOptions {
+  includeStrength?: boolean;
   excludeLatestDay?: boolean;
   lastGamesPerRole?: number;
   roleWindows?: Record<string, RoleReviewWindow>;
   reviewThrough?: RoleReviewBoundary;
 }
 
-// Two bounded reads: no nested relation fetches, per-appearance history scans or IN lists.
-export async function generateRoleRankingStats(seasonId?: number, dateFrom?: Date, dateTo?: Date, includePlayers = true, { excludeLatestDay = false, lastGamesPerRole, roleWindows, reviewThrough }: RoleRankingOptions = {}): Promise<RoleRankingStats[]> {
+// One read for public stats; host balance also needs the season ranking history.
+export async function generateRoleRankingStats(seasonId?: number, dateFrom?: Date, dateTo?: Date, includePlayers = true, { includeStrength = false, excludeLatestDay = false, lastGamesPerRole, roleWindows, reviewThrough }: RoleRankingOptions = {}): Promise<RoleRankingStats[]> {
   const prisma = await getDatabaseClient();
   if (!prisma) return [];
   const season = seasonId ?? CURRENT_SEASON;
@@ -72,10 +73,10 @@ export async function generateRoleRankingStats(seasonId?: number, dateFrom?: Dat
   `,
     // IDs follow write order even when multiple rankings have the same timestamp.
     // Read the whole season so date filters retain preceding rankings, resets and corrections.
-    prisma.$queryRaw<RankingRow[]>`
+    includeStrength ? prisma.$queryRaw<RankingRow[]>`
       SELECT playerId, gameId, score, reason FROM player_rankings
       WHERE season = ${season} AND deletedAt IS NULL ORDER BY id ASC
-    `,
+    ` : [],
   ]);
 
   const previousByAppearance = new Map<string, number>();
@@ -91,7 +92,7 @@ export async function generateRoleRankingStats(seasonId?: number, dateFrom?: Dat
   // Include every original participant in the lobby average, even if their profile was
   // deleted later. Missing history invalidates the whole lobby, never just its denominator.
   const lobbies = new Map<number, { sum: number; count: number; complete: boolean }>();
-  for (const stat of stats) {
+  if (includeStrength) for (const stat of stats) {
     const lobby = lobbies.get(stat.gameId) ?? { sum: 0, count: 0, complete: true };
     const previous = previousByAppearance.get(`${stat.gameId}:${stat.playerId}`);
     lobby.count += 1;
@@ -145,9 +146,9 @@ export async function generateRoleRankingStats(seasonId?: number, dateFrom?: Dat
     if (includeDap) {
       roleData.totalPoints += stat.totalPoints;
       roleData.dapGames += 1;
-      const lobby = lobbies.get(stat.gameId)!;
+      const lobby = lobbies.get(stat.gameId);
       const previous = previousByAppearance.get(`${stat.gameId}:${stat.playerId}`);
-      if (lobby.complete && previous !== undefined) {
+      if (lobby?.complete && previous !== undefined) {
         const expectedDap = ROLE_STRENGTH_TARGET_DAP * previous / (lobby.sum / lobby.count);
         roleData.totalDeviation += stat.totalPoints - expectedDap;
         roleData.strengthGames += 1;
@@ -209,9 +210,11 @@ export async function generateRoleRankingStats(seasonId?: number, dateFrom?: Dat
       dapGames: data.dapGames,
       totalPoints: data.totalPoints,
       averagePoints,
-      strength: calculateRoleStrength(data.totalDeviation, data.strengthGames),
-      strengthGames: data.strengthGames,
-      strengthPlayers: data.strengthPlayers.size,
+      ...(includeStrength && {
+        strength: calculateRoleStrength(data.totalDeviation, data.strengthGames),
+        strengthGames: data.strengthGames,
+        strengthPlayers: data.strengthPlayers.size,
+      }),
       players
     };
   });
@@ -221,7 +224,7 @@ export async function generateRoleRankingStats(seasonId?: number, dateFrom?: Dat
 }
 
 /** Lightweight table response; per-player breakdowns remain available to existing callers. */
-export async function generateRoleRankingSummary(seasonId?: number, dateFrom?: Date, dateTo?: Date, { excludeLatestDay = true, lastGamesPerRole }: RoleRankingOptions = {}): Promise<RoleRankingSummary[]> {
-  const roles = await generateRoleRankingStats(seasonId, dateFrom, dateTo, false, { excludeLatestDay, lastGamesPerRole });
+export async function generateRoleRankingSummary(seasonId?: number, dateFrom?: Date, dateTo?: Date, { excludeLatestDay = true, ...options }: RoleRankingOptions = {}): Promise<RoleRankingSummary[]> {
+  const roles = await generateRoleRankingStats(seasonId, dateFrom, dateTo, false, { excludeLatestDay, ...options });
   return roles.map(({ players: _players, ...role }) => role);
 }

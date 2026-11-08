@@ -56,7 +56,7 @@ export async function getRoleBalanceOverview(season: number, throughGameId?: num
     const through = throughGameId === undefined ? games.at(-1) ?? null : games.find(g => g.gameId === throughGameId) ?? null;
     if (throughGameId !== undefined && !through) throw new Error('Wybrana gra nie istnieje w tym sezonie. Odśwież dane.');
     const roleWindows = Object.fromEntries(cycles.map(c => [c.roleName, { after: { time: c.afterTime, gameId: c.afterGameId }, through: through ?? undefined }]));
-    const stats = await generateRoleRankingStats(season, undefined, undefined, false, { roleWindows, reviewThrough: through ?? undefined });
+    const stats = await generateRoleRankingStats(season, undefined, undefined, false, { includeStrength: true, roleWindows, reviewThrough: through ?? undefined });
     const statsMap = new Map(stats.map(({ players: _players, ...stat }) => [stat.name, stat]));
     const cycleMap = new Map(cycles.map(c => [c.roleName, c]));
     const roleNames = new Set([...statsMap.keys(), ...cycleMap.keys()]);

@@ -3,13 +3,22 @@
 import { generateRoleRankingSummary } from '@/app/dramaafera/_services';
 import type { RoleRankingSummary } from '@/app/dramaafera/_services';
 import { z } from 'zod';
+import { headers } from 'next/headers';
+import { authenticateHeaders } from '@/app/api/_middlewares/auth';
 import { getSeasonById } from '@/app/dramaafera/_constants/seasons';
+
+async function getStrengthOptions(requested: boolean) {
+  if (!z.boolean().parse(requested)) return {};
+  if (!(await authenticateHeaders(await headers())).success) throw new Error('Brak autoryzacji.');
+  return { includeStrength: true };
+}
 
 export async function getRoleRankingsByDateRange(
   seasonId: number,
   dateFromStr?: string,
   dateToStr?: string,
-  excludeLatestDay = true
+  excludeLatestDay = true,
+  includeStrength = false
 ): Promise<RoleRankingSummary[]> {
   if (!getSeasonById(seasonId)) throw new Error('Nieprawidłowy sezon.');
   const dateSchema = z.iso.date();
@@ -29,18 +38,23 @@ export async function getRoleRankingsByDateRange(
     dateTo = new Date(`${dateToStr}T23:59:59.999Z`);
   }
 
-  return generateRoleRankingSummary(seasonId, dateFrom, dateTo, { excludeLatestDay: z.boolean().parse(excludeLatestDay) });
+  return generateRoleRankingSummary(seasonId, dateFrom, dateTo, {
+    excludeLatestDay: z.boolean().parse(excludeLatestDay),
+    ...await getStrengthOptions(includeStrength),
+  });
 }
 
 export async function getRoleRankingsByAppearanceCount(
   seasonId: number,
   count: number,
-  excludeLatestDay = true
+  excludeLatestDay = true,
+  includeStrength = false
 ): Promise<RoleRankingSummary[]> {
   if (!getSeasonById(seasonId)) throw new Error('Nieprawidłowy sezon.');
   const lastGamesPerRole = z.number().int().min(1).max(10000).parse(count);
   return generateRoleRankingSummary(seasonId, undefined, undefined, {
     excludeLatestDay: z.boolean().parse(excludeLatestDay),
     lastGamesPerRole,
+    ...await getStrengthOptions(includeStrength),
   });
 }

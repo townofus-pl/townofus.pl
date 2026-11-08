@@ -8,7 +8,7 @@ import { convertRoleToUrlSlug, getRoleIconPath } from '../_utils/gameUtils';
 import { buildSeasonUrl } from '../_utils/seasonHelpers';
 import { getWinRatioColor } from '../_utils/winRatioColor';
 import type { RoleProbabilityData } from '../_utils/roleProbabilities';
-import { ROLE_PROBABILITY_K } from '../_utils/roleProbabilities';
+import { hasCompleteFactionSample, ROLE_PROBABILITY_K } from '../_utils/roleProbabilities';
 import RoleProbabilityConfig from './RoleProbabilityConfig';
 
 const TEAM_LABELS = { [Teams.Crewmate]: 'Załoga', [Teams.Impostor]: 'Impostorzy', [Teams.Neutral]: 'Neutralni' };
@@ -30,6 +30,7 @@ interface RoleProbabilitiesProps {
 }
 
 export default function RoleProbabilities({ data, seasonId }: RoleProbabilitiesProps) {
+    const completeFactionSample = hasCompleteFactionSample(data);
     const [search, setSearch] = useState('');
     const [team, setTeam] = useState('');
     const [sortBy, setSortBy] = useState<SortKey>('weight');
@@ -62,11 +63,11 @@ export default function RoleProbabilities({ data, seasonId }: RoleProbabilitiesP
                     </div>)}
                 </div>
 
-                {(data.games < 20 || data.unknownWins > 0) && <p className="mb-6 rounded-lg border border-yellow-700/50 bg-yellow-900/20 p-4 text-yellow-300" role="status">
+                {!completeFactionSample && <p className="mb-6 rounded-lg border border-yellow-700/50 bg-yellow-900/20 p-4 text-yellow-300" role="status">
                     {data.games < 20 ? `Zebrano ${data.games}/20 gier. Do zebrania pełnej próby wagi pozostają na poziomie 50%.` : `Nie ustalono zwycięzcy w ${data.unknownWins} grach. Wagi pozostają na poziomie 50%.`}
                 </p>}
 
-                <RoleProbabilityConfig roles={data.roles} seasonId={seasonId} />
+                <RoleProbabilityConfig roles={data.roles} seasonId={seasonId} completeFactionSample={completeFactionSample} />
 
                 <div className="mb-4 flex flex-wrap items-end gap-4">
                     <label className="min-w-48 flex-1 text-sm text-gray-300">Szukaj roli

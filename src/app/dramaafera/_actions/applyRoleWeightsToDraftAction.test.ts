@@ -52,3 +52,13 @@ it('surfaces concurrency conflicts without retrying over newer edits', async () 
     expect(await applyRoleWeightsToDraftAction(CURRENT_SEASON)).toMatchObject({ success: false, error: 'Draft lub aktualne ustawienia zmieniły się w innym miejscu.' });
     expect(saveSettingsDraft).toHaveBeenCalledTimes(1);
 });
+
+it.each([{ games: 19, unknownWins: 0 }, { games: 20, unknownWins: 1 }])(
+    'leaves the draft untouched without a complete faction sample (%j)',
+    async sample => {
+        jest.mocked(getRoleProbabilities).mockResolvedValue({ ...sample, factions: [], roles: [] });
+        expect(await applyRoleWeightsToDraftAction(CURRENT_SEASON)).toMatchObject({ success: false });
+        expect(getSettingsDraft).not.toHaveBeenCalled();
+        expect(saveSettingsDraft).not.toHaveBeenCalled();
+    }
+);

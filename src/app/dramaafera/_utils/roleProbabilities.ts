@@ -8,6 +8,7 @@ export const FACTION_TARGETS = {
 
 export type ProbabilityTeam = keyof typeof FACTION_TARGETS;
 export const ROLE_PROBABILITY_K = 2;
+export const FACTION_SAMPLE_SIZE = 20;
 
 export interface RoleProbabilityData {
   games: number;
@@ -22,6 +23,10 @@ export interface RoleProbabilityData {
     winRate: number | null;
     weight: number;
   }>;
+}
+
+export function hasCompleteFactionSample({ games, unknownWins }: Pick<RoleProbabilityData, 'games' | 'unknownWins'>): boolean {
+  return games === FACTION_SAMPLE_SIZE && unknownWins === 0;
 }
 
 /** Rates and returned weight are fractions; base weight = 0.5. */

@@ -22,6 +22,7 @@ function parseTargetVersion(value: string): 'current' | 'old' | null {
 
 export function SettingsTab() {
   const [builderOpened, setBuilderOpened] = useState(false);
+  const [draftPublishBlocked, setDraftPublishBlocked] = useState(true);
   const [uploading, setUploading] = useState(false);
   const [expandedAdvanced, setExpandedAdvanced] = useState(false);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
@@ -84,8 +85,10 @@ export function SettingsTab() {
     }
   };
 
+  const cannotPublishDraft = uploading || (builderOpened && draftPublishBlocked);
+
   const handleDraftUpload = async (mode: 'normal' | 'advanced') => {
-    if (uploading) return;
+    if (cannotPublishDraft) return;
     setUploading(true);
     setMessage(null);
     try {
@@ -147,7 +150,7 @@ export function SettingsTab() {
       <details className="rounded-xl border border-yellow-600/40 bg-zinc-900/70"
         onToggle={(event) => { if (event.currentTarget.open) setBuilderOpened(true); }}>
         <summary className="cursor-pointer p-6 font-brook text-3xl text-yellow-400">Utwórz własne ustawienia</summary>
-        <div className="px-6 pb-6">{builderOpened && <SettingsBuilder />}</div>
+        <div className="px-6 pb-6">{builderOpened && <SettingsBuilder onPublishBlockedChange={setDraftPublishBlocked} />}</div>
       </details>
       {/* Zwykły upload */}
       <form onSubmit={handleNormalUpload} className="bg-zinc-800 rounded-lg p-6">
@@ -187,11 +190,11 @@ export function SettingsTab() {
           >
             {uploading ? 'Wgrywanie...' : 'Wgraj plik ustawień'}
           </button>
-          <button type="button" onClick={() => void handleDraftUpload('normal')} disabled={uploading}
+          <button type="button" onClick={() => void handleDraftUpload('normal')} disabled={cannotPublishDraft}
             className="w-full border border-yellow-600 hover:bg-yellow-900/30 disabled:opacity-50 text-yellow-300 font-bold py-2 px-4 rounded-lg transition">
             Wgraj draft
           </button>
-          <p className="text-sm text-gray-400">Wgrywa ostatni draft zapisany w bazie. Poczekaj na zakończenie zapisu zmian w kreatorze.</p>
+          <p className="text-sm text-gray-400">{builderOpened && draftPublishBlocked ? 'Przed wgraniem poczekaj na zapis draftu i usuń ewentualne błędy w kreatorze.' : 'Wgrywa ostatni draft zapisany w bazie.'}</p>
         </div>
       </form>
 
@@ -282,11 +285,11 @@ export function SettingsTab() {
             >
               {uploading ? 'Wgrywanie...' : 'Wgraj (bez rotacji)'}
             </button>
-            <button type="button" onClick={() => void handleDraftUpload('advanced')} disabled={uploading}
+            <button type="button" onClick={() => void handleDraftUpload('advanced')} disabled={cannotPublishDraft}
               className="w-full border border-blue-600 hover:bg-blue-900/30 disabled:opacity-50 text-blue-300 font-bold py-2 px-4 rounded-lg transition">
               Wgraj draft
             </button>
-            <p className="text-sm text-gray-400">Wgrywa ostatni zapisany draft do wybranego wariantu, bez rotacji.</p>
+            <p className="text-sm text-gray-400">{builderOpened && draftPublishBlocked ? 'Przed wgraniem poczekaj na zapis draftu i usuń ewentualne błędy w kreatorze.' : 'Wgrywa ostatni zapisany draft do wybranego wariantu, bez rotacji.'}</p>
           </form>
         )}
       </div>

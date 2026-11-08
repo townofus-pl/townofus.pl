@@ -23,9 +23,9 @@ export interface RoleRankingStats {
   totalPoints: number;
   averagePoints: number;
   /** Ranking-adjusted index; null when no eligible appearances have complete lobby history. */
-  strength: number | null;
-  strengthGames: number;
-  strengthPlayers: number;
+  strength?: number | null;
+  strengthGames?: number;
+  strengthPlayers?: number;
   players: Array<{
     playerName: string;
     gamesPlayed: number;

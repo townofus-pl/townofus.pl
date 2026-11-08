@@ -5,6 +5,7 @@ import { authenticateHeaders } from '@/app/api/_middlewares/auth';
 import { CURRENT_SEASON } from '../_constants/seasons';
 import { getSettingsDraft, saveSettingsDraft } from '../_services/settings/settingsDraft';
 import { getRoleProbabilities } from '../_services/rankings/getRoleProbabilities';
+import { hasCompleteFactionSample } from '../_utils/roleProbabilities';
 import { updateRoleProbabilityConfig } from '../_utils/roleProbabilityConfig';
 
 export async function applyRoleWeightsToDraftAction(seasonId: number) {
@@ -12,7 +13,9 @@ export async function applyRoleWeightsToDraftAction(seasonId: number) {
         const auth = await authenticateHeaders(await headers());
         if (!auth.success) return { success: false as const, error: 'Brak autoryzacji.' };
         if (seasonId !== CURRENT_SEASON) return { success: false as const, error: 'Wagi do draftu można zastosować tylko z aktualnego sezonu.' };
-        const [draft, probabilities] = await Promise.all([getSettingsDraft(), getRoleProbabilities(seasonId)]);
+        const probabilities = await getRoleProbabilities(seasonId);
+        if (!hasCompleteFactionSample(probabilities)) return { success: false as const, error: 'Do zapisania wag potrzeba 20 gier z ustalonym zwycięzcą w każdej z nich.' };
+        const draft = await getSettingsDraft();
         const updated = updateRoleProbabilityConfig(draft.content, probabilities.roles);
         if (!draft.exists || updated.content !== draft.content) await saveSettingsDraft(updated.content, draft.token);
         return { success: true as const, updated: updated.updated, disabled: updated.disabled, unmatched: updated.unmatched };

@@ -4,7 +4,7 @@ import { CURRENT_SEASON, FIRST_MIRA_SEASON } from '../../_constants/seasons';
 import { LEGACY_ROLE_INDEX, MIRA_ROLE_INDEX } from '@/roles/_generated/roleIndex';
 import { normalizeRoleName, determineTeam, getRoleColor } from '../../_utils/gameUtils';
 import { calculateWinnerFromStats } from '../games/winCalculator';
-import { FACTION_TARGETS, calculateRoleWeight, type ProbabilityTeam, type RoleProbabilityData } from '../../_utils/roleProbabilities';
+import { FACTION_SAMPLE_SIZE, FACTION_TARGETS, calculateRoleWeight, hasCompleteFactionSample, type ProbabilityTeam, type RoleProbabilityData } from '../../_utils/roleProbabilities';
 
 interface AppearanceRow {
   gameId: number;
@@ -23,7 +23,7 @@ export async function getRoleProbabilities(season = CURRENT_SEASON): Promise<Rol
       SELECT g.id FROM games g WHERE g.season = ${season} AND g.deletedAt IS NULL
         AND EXISTS (SELECT 1 FROM game_player_statistics gps JOIN players p ON p.id = gps.playerId
                     WHERE gps.gameId = g.id AND p.deletedAt IS NULL)
-      ORDER BY g.startTime DESC, g.id DESC LIMIT 20
+      ORDER BY g.startTime DESC, g.id DESC LIMIT ${FACTION_SAMPLE_SIZE}
     )
     SELECT g.id AS gameId, gps.win,
       (SELECT r.roleName FROM player_roles r WHERE r.gamePlayerStatisticsId = gps.id
@@ -52,7 +52,7 @@ export function buildRoleProbabilities(rows: AppearanceRow[], season: number): R
     game.push(row);
     games.set(row.gameId, game);
   }
-  const recent = [...games.values()].slice(0, 20);
+  const recent = [...games.values()].slice(0, FACTION_SAMPLE_SIZE);
   const factionWins = new Map<ProbabilityTeam, number>(teams.map(team => [team, 0]));
   let unknownWins = 0;
   for (const game of recent) {
@@ -67,6 +67,7 @@ export function buildRoleProbabilities(rows: AppearanceRow[], season: number): R
     if (team) factionWins.set(team, (factionWins.get(team) ?? 0) + 1);
     else unknownWins++;
   }
+  const completeFactionSample = hasCompleteFactionSample({ games: recent.length, unknownWins });
   const factions: RoleProbabilityData['factions'] = teams.map(team => ({
     team, wins: factionWins.get(team) ?? 0,
     winRate: recent.length ? (factionWins.get(team) ?? 0) / recent.length : 0,
@@ -105,7 +106,7 @@ export function buildRoleProbabilities(rows: AppearanceRow[], season: number): R
       const faction = factions.find(item => item.team === sample.team)!;
       return {
         name, team: sample.team, color: sample.color, games: sample.results.length, wins, winRate,
-        weight: recent.length === 20 && unknownWins === 0 && sample.results.length >= 10 && winRate !== null
+        weight: completeFactionSample && sample.results.length >= 10 && winRate !== null
           ? calculateRoleWeight(faction.winRate, faction.target, winRate) : 0.5,
       };
     }).sort((a, b) => a.name.localeCompare(b.name, 'pl')),

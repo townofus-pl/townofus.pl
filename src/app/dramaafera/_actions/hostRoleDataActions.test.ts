@@ -30,6 +30,6 @@ it('rejects invalid seasons before querying and loads summaries without player b
     expect(getRoleProbabilities).not.toHaveBeenCalled();
     await getHostRoleRankingsAction(CURRENT_SEASON);
     await getHostRoleProbabilitiesAction(CURRENT_SEASON);
-    expect(generateRoleRankingSummary).toHaveBeenCalledWith(CURRENT_SEASON, undefined, undefined, { excludeLatestDay: false });
+    expect(generateRoleRankingSummary).toHaveBeenCalledWith(CURRENT_SEASON, undefined, undefined, { excludeLatestDay: false, includeStrength: true });
     expect(getRoleProbabilities).toHaveBeenCalledWith(CURRENT_SEASON);
 });

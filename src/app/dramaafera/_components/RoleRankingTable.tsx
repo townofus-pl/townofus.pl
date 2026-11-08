@@ -51,7 +51,7 @@ export default function RoleRankingTable({ roles: initialRoles, seasonId, exclud
 
     const sortedRoles = useMemo(() => roles
         .map(role => {
-            const assessment = getRoleAssessment(role.strength, role.strengthGames);
+            const assessment = getRoleAssessment(role.strength ?? null, role.strengthGames ?? 0);
             return { ...role, losses: role.gamesPlayed - role.wins, assessment,
                 assessmentOrder: ASSESSMENT_ORDER[assessment.label] ?? 0 };
         })
@@ -67,7 +67,7 @@ export default function RoleRankingTable({ roles: initialRoles, seasonId, exclud
                 if (missing) return missing;
             }
             if (sortBy === 'strength') {
-                const missing = Number(a[sortBy] === null) - Number(b[sortBy] === null);
+                const missing = Number(a[sortBy] == null) - Number(b[sortBy] == null);
                 if (missing) return missing;
             }
             return (ascending ? (a[sortBy] ?? 0) - (b[sortBy] ?? 0) : (b[sortBy] ?? 0) - (a[sortBy] ?? 0)) || a.displayName.localeCompare(b.displayName, 'pl');
@@ -81,8 +81,8 @@ export default function RoleRankingTable({ roles: initialRoles, seasonId, exclud
         try {
             const byCount = !reset && filterMode === 'appearances';
             const data = byCount
-                ? await getRoleRankingsByAppearanceCount(seasonId, Number(appearanceCount), excludeLatestDay)
-                : await getRoleRankingsByDateRange(seasonId, reset ? undefined : dateFrom || undefined, reset ? undefined : dateTo || undefined, excludeLatestDay);
+                ? await getRoleRankingsByAppearanceCount(seasonId, Number(appearanceCount), excludeLatestDay, showBalance)
+                : await getRoleRankingsByDateRange(seasonId, reset ? undefined : dateFrom || undefined, reset ? undefined : dateTo || undefined, excludeLatestDay, showBalance);
             setRoles(data);
             setAppliedRange(byCount ? `Ostatnie ${Number(appearanceCount)} występów każdej roli` : reset || (!dateFrom && !dateTo) ? 'Cały sezon' : `${dateFrom || 'Początek sezonu'} — ${dateTo || 'Koniec sezonu'}`);
             if (reset) { setDateFrom(''); setDateTo(''); setFilterMode('dates'); }
@@ -175,7 +175,7 @@ export default function RoleRankingTable({ roles: initialRoles, seasonId, exclud
                                     <td className="px-2 py-1 text-center text-cyan-400">{role.dapGames > 0 ? numberFormat.format(role.averagePoints) : '—'}</td>
                                     {showBalance && <>
                                     <td className="px-2 py-2 text-center">
-                                        <span className="font-bold text-yellow-300">{role.strength !== null ? numberFormat.format(role.strength) : '—'}</span>
+                                        <span className="font-bold text-yellow-300">{role.strength != null ? numberFormat.format(role.strength) : '—'}</span>
                                     </td>
                                     <td className={`px-2 py-1 text-center font-semibold whitespace-nowrap ${role.assessment.className}`}>{role.assessment.label}</td>
                                     </>}

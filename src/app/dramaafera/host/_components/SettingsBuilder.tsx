@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useId, useMemo, useRef, useState } from 'react';
+import { useEffect, useId, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import Image from 'next/image';
 import { MAX_SETTINGS_FILE_SIZE_BYTES } from '@/app/api/dramaafera/settings/utils';
 import { getSettingsDraftAction, saveSettingsDraftAction } from '../../_actions/settingsDraftActions';
@@ -40,7 +40,7 @@ function FieldGroup({ fields, changes, expanded, onChange }: {
     );
 }
 
-export default function SettingsBuilder() {
+export default function SettingsBuilder({ onPublishBlockedChange }: { onPublishBlockedChange: (blocked: boolean) => void }) {
     const [source, setSource] = useState<Source | null>(null);
     const [changes, setChanges] = useState<Record<string, string>>({});
     const [pendingSource, setPendingSource] = useState<Source | null>(null);
@@ -85,6 +85,11 @@ export default function SettingsBuilder() {
         return exportCfgDocument(source.document, changes);
     }, [source, changes, invalid.length]);
     const unsaved = !!source && (content === null || content !== savedContent.current);
+
+    const publishBlocked = !source || unsaved || saving.current || loading || !!pendingSource || !!saveError;
+    useLayoutEffect(() => {
+        onPublishBlockedChange(publishBlocked);
+    }, [publishBlocked, onPublishBlockedChange]);
 
     useEffect(() => {
         if (!unsaved) return;
