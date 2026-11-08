@@ -49,6 +49,15 @@ describe('CFG import/export', () => {
         expect(exportCfgDocument(document, { [field.id]: 'hello' })).toBe(content.replace('  Label =     ', '  Label =     hello'));
     });
 
+    it('exports edited Num and Chance as decimal integers even without type comments', () => {
+        const content = '[Roles]\r\nNum TownOfUs.Roles.Crewmate.SheriffRole = 2\r\nChance TownOfUs.Roles.Crewmate.SheriffRole = 51\r\n';
+        const document = parseCfgDocument(content);
+        const [num, chance] = document.fields;
+        expect(exportCfgDocument(document, { [num.id]: '1.0', [chance.id]: '5e1' }))
+            .toBe(content.replace(' = 2', ' = 1').replace(' = 51', ' = 50'));
+        expect(() => exportCfgDocument(document, { [num.id]: '1.5' })).toThrow('Podaj liczbę całkowitą');
+    });
+
     it('changes only Chance, leaving Num and similarly named HideAndSeek fields intact', () => {
         const content = prefix + '[TownOfUs.Options.Roles.HideAndSeek.SheriffOptions]\nChance = 0\n';
         const document = parseCfgDocument(content);

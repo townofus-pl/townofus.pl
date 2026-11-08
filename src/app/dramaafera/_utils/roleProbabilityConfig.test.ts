@@ -24,6 +24,14 @@ test('does not enable Num=0 roles, change other modes or invent unknown weights'
     });
 });
 
+test('accepts older whole-number spellings without changing Num or enabling zero-count roles', () => {
+    const content = '[Roles]\r\nNum TownOfUs.Roles.Crewmate.TimeLordRole = 1,0 ; keep\r\nChance TownOfUs.Roles.Crewmate.TimeLordRole = 5e1  # keep\r\nNum TownOfUs.Roles.Neutral.JesterRole = +0.0\r\nChance TownOfUs.Roles.Neutral.JesterRole = +50\r\n';
+    expect(updateRoleProbabilityConfig(content, roles)).toEqual({
+        content: content.replace('5e1  # keep', '34  # keep'),
+        updated: 1, disabled: 1, unmatched: [],
+    });
+});
+
 test('rejects invalid files and ambiguous or incomplete role settings', () => {
     expect(() => updateRoleProbabilityConfig('not a config', roles)).toThrow('brakuje sekcji');
     expect(() => updateRoleProbabilityConfig('[Roles]\n\0', roles)).toThrow('UTF-8');

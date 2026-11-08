@@ -1,4 +1,5 @@
 import { normalizeLookupKey, parseCfgSections, stripConfigAffixes } from './miraConfig';
+import { parseCfgRoleInteger } from './cfgNumber';
 import type { RoleProbabilityData } from './roleProbabilities';
 
 export const MIRA_PRESET_PATH = '%USERPROFILE%\\AppData\\LocalLow\\Innersloth\\Among Us\\mira_presets\\auavengers.tou.mira';
@@ -33,9 +34,11 @@ export function updateRoleProbabilityConfig(content: string, roles: RoleProbabil
         const section = line.trim().match(/^\[([^\]]+)\]$/);
         if (section) inRoles = section[1] === 'Roles';
         if (!inRoles || !/^\s*Chance\s/.test(line)) continue;
-        const match = line.match(/^(\s*Chance\s+(TownOfUs\.Roles\.[A-Za-z0-9_.]+)\s*=\s*)(\d+)([ \t]*(?:[#;].*)?)$/);
+        const match = line.match(/^(\s*Chance\s+(TownOfUs\.Roles\.[A-Za-z0-9_.]+)\s*=\s*)([^#;]*?)([ \t]*(?:[#;].*)?)$/);
         if (!match) throw new Error('Nieprawidłowy wpis Chance w sekcji [Roles].');
-        const [, prefix, qualifiedName, current, suffix] = match;
+        const [, prefix, qualifiedName, currentText, suffix] = match;
+        const current = parseCfgRoleInteger(currentText);
+        if (current === undefined) throw new Error('Nieprawidłowy wpis Chance w sekcji [Roles].');
         const roleClass = qualifiedName.match(/^TownOfUs\.Roles\.(Crewmate|Impostor|Neutral)\.([A-Za-z0-9_]+)$/);
         if (!roleClass) continue; // Other game modes are outside the calculated role pools.
         const [, team, className] = roleClass;
@@ -47,14 +50,15 @@ export function updateRoleProbabilityConfig(content: string, roles: RoleProbabil
         }
         matched++;
         if (!Number.isFinite(weight) || weight < 0 || weight > 1) throw new Error('Wyliczona waga roli jest nieprawidłowa. Odśwież stronę.');
-        const maximum = values.get(`Num ${qualifiedName}`)?.match(/^\d+(?:\s*(?:[#;].*)?)$/)?.[0];
+        const maximumText = values.get(`Num ${qualifiedName}`)?.split(/[#;]/, 1)[0];
+        const maximum = maximumText === undefined ? undefined : parseCfgRoleInteger(maximumText);
         if (maximum === undefined) throw new Error(`Brakuje poprawnej wartości Num dla roli ${stripConfigAffixes(className)}.`);
-        if (parseInt(maximum, 10) === 0) {
+        if (maximum === 0) {
             result.disabled++;
             continue;
         }
         const next = Math.round(weight * 100);
-        if (Number(current) !== next) result.updated++;
+        if (current !== next) result.updated++;
         parts[index] = `${prefix}${next}${suffix}`;
     }
     if (!matched) throw new Error('Nie znaleziono pasujących wpisów Chance ról TOU-Mira.');

@@ -1,4 +1,5 @@
 import { MAX_SETTINGS_FILE_SIZE_BYTES, validateSettingsContent } from '@/app/api/dramaafera/settings/utils';
+import { parseCfgNumber } from '../../_utils/cfgNumber';
 
 export interface CfgField {
     id: string;
@@ -88,7 +89,12 @@ export function parseCfgDocument(content: string): CfgDocument {
     return { lines, fields };
 }
 
+function isRoleOddsField(field: CfgField): boolean {
+    return field.section === 'Roles' && /^(Num|Chance)\s+/.test(field.key);
+}
+
 export function cfgValueKind(field: CfgField): 'boolean' | 'integer' | 'number' | 'text' {
+    if (isRoleOddsField(field)) return 'integer';
     if (field.options?.length) return 'text';
     if (field.valueType === 'Boolean' || (!field.valueType && /^(true|false)$/i.test(field.value))) return 'boolean';
     if (/^(Int32|Int64|UInt32|Byte)$/.test(field.valueType ?? '')) return 'integer';
@@ -108,17 +114,12 @@ export function getCfgMinimum(field: CfgField): number {
 
 export function validateCfgValue(field: CfgField, value: string): string | null {
     if (/[\r\n\0\uFFFD]/.test(value)) return 'Wartość nie może zawierać nowych wierszy ani znaków binarnych.';
-    if (field.options?.length) {
-        return field.options.includes(value) ? null : 'Wybierz jedną z dostępnych wartości.';
-    }
+    if (field.options?.length && !field.options.includes(value)) return 'Wybierz jedną z dostępnych wartości.';
     const kind = cfgValueKind(field);
     if (kind === 'boolean') return /^(true|false)$/i.test(value) ? null : 'Wybierz Tak lub Nie.';
     if (kind === 'number' || kind === 'integer') {
-        const normalized = value.trim().replace(',', '.');
-        if (!/^[-+]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][-+]?\d+)?$/.test(normalized) || !Number.isFinite(Number(normalized))) {
-            return 'Podaj poprawną liczbę.';
-        }
-        const numeric = Number(normalized);
+        const numeric = parseCfgNumber(value);
+        if (numeric === undefined) return 'Podaj poprawną liczbę.';
         const specialNegativeOne = allowsNegativeOne(field) && numeric === -1;
         if (numeric < 0 && !specialNegativeOne) return 'Minimalna wartość: 0. Tylko wybrane ustawienia dopuszczają -1.';
         if (kind === 'integer' && !Number.isSafeInteger(numeric)) return 'Podaj liczbę całkowitą.';
@@ -143,7 +144,12 @@ export function exportCfgDocument(document: CfgDocument, changes: Readonly<Recor
         if (error) throw new Error(`${field.key}: ${error}`);
         if (value === field.value) continue;
         const kind = cfgValueKind(field);
-        const serialized = kind === 'integer' || kind === 'number' ? value.trim().replace(',', '.') : value;
+        let serialized = value;
+        if (isRoleOddsField(field)) {
+            serialized = String(parseCfgNumber(value));
+        } else if (kind === 'integer' || kind === 'number') {
+            serialized = value.trim().replace(',', '.');
+        }
         lines[field.line].text = field.prefix + serialized + field.suffix;
     }
     return lines.map(line => line.text + line.ending).join('');
