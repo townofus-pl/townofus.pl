@@ -47,8 +47,7 @@ export async function rotateDramaAferaSettings(content: string): Promise<void> {
 }
 
 /**
- * Advanced mode: soft-delete the existing record for `version` (current|old) and insert
- * a fresh row in its place. History is preserved via the soft-deleted previous row.
+ * Advanced mode: replace one live preset and preserve its previous content in history.
  * Executed atomically via D1 batch().
  */
 export async function replaceDramaAferaSettings(
@@ -57,6 +56,26 @@ export async function replaceDramaAferaSettings(
 ): Promise<void> {
   const db = await getDb();
   if (!db) throw new Error('Cloudflare context not available');
+
+  if (version === 'old') {
+    // Archive a copy before replacing the live slot so its publication date can
+    // be inherited atomically, even when another upload happens in the same second.
+    await batchStatements(db, [
+      db.prepare(
+        `INSERT INTO ${TABLE} ("versionType", "content", "revision", "uploadedAt", "publishedAt", "createdAt", "updatedAt", "deletedAt")
+         SELECT "versionType", "content", "revision", "uploadedAt", "publishedAt", "createdAt", CURRENT_TIMESTAMP, CURRENT_TIMESTAMP
+         FROM ${TABLE} WHERE "versionType" = 'old' AND "deletedAt" IS NULL`,
+      ),
+      db.prepare(
+        `INSERT INTO ${TABLE} ("versionType", "content", "uploadedAt", "createdAt", "updatedAt")
+         VALUES ('old', ?, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP, CURRENT_TIMESTAMP)
+         ON CONFLICT ("versionType") WHERE "deletedAt" IS NULL DO UPDATE SET
+           "publishedAt" = COALESCE("publishedAt", "uploadedAt"),
+           "content" = excluded."content", "uploadedAt" = excluded."uploadedAt", "updatedAt" = excluded."updatedAt"`,
+      ).bind(content),
+    ]);
+    return;
+  }
 
   await batchStatements(db, [
     db

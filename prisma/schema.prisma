@@ -517,6 +517,7 @@ model DramaAferaSettings {
   content     String // Full .txt file content — saved as-is
   revision    Int      @default(0) // Optimistic concurrency for the shared draft
   uploadedAt  DateTime @default(now())
+  publishedAt DateTime? // Original publication time retained when the old preset is replaced
 
   // Timestamps
   createdAt DateTime  @default(now())

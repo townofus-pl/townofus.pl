@@ -27,7 +27,14 @@ export default function RoleReviewSettingsDialog({ seasonId, roleName, initial, 
         return () => { active = false; };
     }, [initial, seasonId, roleName]);
     const invalid = edit?.fields.some(field => validateCfgValue(field, edit.changes[field.id] ?? field.value));
-    return <ReviewModal title={`Ustawienia roli: ${roleName}`} onClose={onClose}>
+    const hasUnsavedChanges = edit?.fields.some(field =>
+        (edit.changes[field.id] ?? field.value) !== (initial?.changes[field.id] ?? field.value)
+    );
+    const requestClose = () => {
+        if (hasUnsavedChanges && !window.confirm('Masz niezapisane zmiany. Czy na pewno chcesz zamknąć okno i je odrzucić?')) return;
+        onClose();
+    };
+    return <ReviewModal title={`Ustawienia roli: ${roleName}`} onClose={requestClose}>
         <p className="mb-4 text-sm text-gray-300">Zmiany trafią do wspólnego draftu dopiero po zatwierdzeniu przeglądu. Pozostałe role zachowają swoje ustawienia.</p>
         {error && <p role="alert" className="text-red-300">{error}</p>}
         {!edit && !error && <p role="status">Wczytywanie ustawień…</p>}
@@ -41,7 +48,7 @@ export default function RoleReviewSettingsDialog({ seasonId, roleName, initial, 
                 })} />)}
             <div className="mt-5 flex flex-wrap gap-3">
                 <button type="button" disabled={invalid} className="rounded-lg bg-blue-600 px-4 py-2 disabled:opacity-50" onClick={() => onApply(edit)}>Dołącz zmiany do przeglądu</button>
-                <button type="button" className="rounded-lg bg-zinc-700 px-4 py-2" onClick={onClose}>Anuluj</button>
+                <button type="button" className="rounded-lg bg-zinc-700 px-4 py-2" onClick={requestClose}>Anuluj</button>
             </div>
         </>}
     </ReviewModal>;

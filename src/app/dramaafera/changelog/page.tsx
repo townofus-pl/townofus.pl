@@ -4,9 +4,11 @@ import { Modifiers } from "@/modifiers";
 import { SettingTypes } from "@/constants/settings";
 import { Teams } from "@/constants/teams";
 import { getDramaAferaSettings } from "../_services";
+import { getDramaAferaSettingsPair } from "../_services/settings/getDramaAferaSettings";
 import { parseSettingsFile, updateSettingValue } from "../_utils/settingsParser";
 import { MiraChangelog } from "./_components/MiraChangelog";
 import { readSnapshotPair } from "./_resolvePair";
+import { getCategorizedChangelogChanges } from "./_getCategories";
 import { looksLikeMiraConfig, pickMiraPair } from "../_utils/miraConfig";
 
 // `force-dynamic` because the project's `open-next.config.ts` uses the default
@@ -197,11 +199,17 @@ const EMPTY_MESSAGE: Record<Exclude<ChangelogResult['status'], 'ok'>, string> = 
  * same one. See #317.
  */
 export default async function ChangelogPage() {
-    const { current, old } = await getDramaAferaSettings();
+    const { current, old } = await getDramaAferaSettingsPair();
 
-    const miraPair = pickMiraPair(current, old) ?? (looksLikeMiraConfig(current) ? await readSnapshotPair() : null);
-    if (miraPair) {
-        return <MiraChangelog current={miraPair.current} old={miraPair.old} />;
+    const miraPair = pickMiraPair(current?.content ?? null, old?.content ?? null);
+    if (miraPair && current && old) {
+        const changes = await getCategorizedChangelogChanges(current, old);
+        const categories = Object.fromEntries(changes.map(({ id, category }) => [id, category]));
+        return <MiraChangelog {...miraPair} categories={categories} />;
+    }
+    const snapshot = looksLikeMiraConfig(current?.content ?? '') ? await readSnapshotPair() : null;
+    if (snapshot) {
+        return <MiraChangelog {...snapshot} />;
     }
 
     const result = await getChanges();

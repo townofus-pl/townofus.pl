@@ -255,6 +255,25 @@ test('review, full draft and immutable before/after history are saved together',
     expect((await getRoleBalanceOverview(4)).rows.find(r => r.roleName === 'Sheriff')!.history[0].settingsChanges).toEqual(history.settingsChanges);
 });
 
+test('a second review can correct the draft without another game', async () => {
+    await initializeRoleBalanceCycles(4, 1, 'host');
+    await saveRoleBalanceReview(await settingsPayload(), 'host');
+    const draft = db.prepare("SELECT id, revision FROM drama_afera_settings WHERE versionType='draft'").get()!;
+    await saveRoleBalanceReview({
+        ...await payload(13, 'adjustment'),
+        settingsEdit: { token: `draft:${draft.id}:${draft.revision}`, changes: { [chanceId]: '40' } },
+    }, 'host');
+
+    const row = (await getRoleBalanceOverview(4)).rows.find(r => r.roleName === 'Sheriff')!;
+    expect(row).toMatchObject({ revision: 2, after: { gameId: 13 }, stats: null });
+    expect(row.history).toMatchObject([
+        { from: { gameId: 13 }, through: { gameId: 13 }, settingsChanges: [{ before: '35', after: '40' }] },
+        { through: { gameId: 13 }, settingsChanges: [{ before: '50', after: '35' }] },
+    ]);
+    expect(db.prepare("SELECT content FROM drama_afera_settings WHERE versionType='draft'").get()!.content)
+        .toBe(rolePreset.replace('Role = 50', 'Role = 40'));
+});
+
 test('a racing draft creation prevents both history and cycle writes', async () => {
     await initializeRoleBalanceCycles(4, 1, 'host');
     const input = await settingsPayload();

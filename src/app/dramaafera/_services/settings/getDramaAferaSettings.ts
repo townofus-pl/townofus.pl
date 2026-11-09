@@ -16,12 +16,12 @@ const BUILD_PHASES = new Set([
   'phase-export',
 ]);
 
-export async function getDramaAferaSettings(): Promise<DramaAferaSettings> {
+export async function getDramaAferaSettingsPair() {
   const prisma = await getDatabaseClient();
   if (!prisma) {
     if (BUILD_PHASES.has(process.env.NEXT_PHASE ?? '')) {
       // Expected during build: D1 bindings aren't available at SSG time.
-      return { current: '', old: null };
+      return { current: null, old: null };
     }
     // Runtime with no Cloudflare context — points at a misconfigured deploy
     // (missing DB binding). Fail loudly so the operator can fix it.
@@ -33,14 +33,18 @@ export async function getDramaAferaSettings(): Promise<DramaAferaSettings> {
   const [currentRecord, oldRecord] = await Promise.all([
     prisma.dramaAferaSettings.findFirst({
       where: { versionType: 'current', ...withoutDeleted },
+      select: { content: true, uploadedAt: true },
     }),
     prisma.dramaAferaSettings.findFirst({
       where: { versionType: 'old', ...withoutDeleted },
+      select: { content: true, uploadedAt: true, publishedAt: true },
     }),
   ]);
 
-  return {
-    current: currentRecord?.content ?? '',
-    old: oldRecord?.content ?? null,
-  };
+  return { current: currentRecord, old: oldRecord };
+}
+
+export async function getDramaAferaSettings(): Promise<DramaAferaSettings> {
+  const { current, old } = await getDramaAferaSettingsPair();
+  return { current: current?.content ?? '', old: old?.content ?? null };
 }
