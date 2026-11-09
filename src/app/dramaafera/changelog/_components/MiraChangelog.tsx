@@ -11,6 +11,7 @@ import { REVIEW_CATEGORIES, type ChangelogCategories, type ReviewCategory } from
 import { parseSections, settingId } from "../_miraConfigSections";
 
 type GroupKind = "role" | "modifier" | "section";
+const PROBABILITY_LABEL = "Szansa wystąpienia";
 
 type MiraEntity = (typeof MiraRoles)[number] | (typeof MiraModifiers)[number];
 type MiraSettingGroup = (typeof MiraSettings)[number];
@@ -224,7 +225,8 @@ function parseConfigFile(content: string): Map<string, ParsedEntry> {
                     continue;
                 }
 
-                const settingName = "Probability Of Appearing";
+                const isChance = match[1] === "Chance";
+                const settingName = isChance ? PROBABILITY_LABEL : "Maksymalna liczba";
                 entries.set(
                     `${entity.id}::${normalizeLookupKey(settingName)}`,
                     createEntityEntry({
@@ -232,7 +234,7 @@ function parseConfigFile(content: string): Map<string, ParsedEntry> {
                         entity,
                         sectionOrder,
                         settingName,
-                        settingType: SettingTypes.Percentage,
+                        settingType: isChance ? SettingTypes.Percentage : SettingTypes.Number,
                         value: entry.value,
                     })
                 );
@@ -259,7 +261,7 @@ function parseConfigFile(content: string): Map<string, ParsedEntry> {
                     continue;
                 }
 
-                const settingName = "Probability Of Appearing";
+                const settingName = PROBABILITY_LABEL;
                 entries.set(
                     `${modifier.id}::${normalizeLookupKey(settingName)}`,
                     createEntityEntry({
@@ -337,7 +339,7 @@ function parseConfigFile(content: string): Map<string, ParsedEntry> {
             if (probabilityMatch) {
                 const entity = getEntityFromToken(probabilityMatch[1]);
                 if (entity) {
-                    const settingName = probabilityMatch[2] === "Chance" ? "Probability Of Appearing" : humanizeIdentifier(probabilityMatch[2]);
+                    const settingName = probabilityMatch[2] === "Chance" ? PROBABILITY_LABEL : humanizeIdentifier(probabilityMatch[2]);
                     entries.set(
                         `${entity.id}::${normalizeLookupKey(settingName)}`,
                         createEntityEntry({
@@ -432,7 +434,7 @@ export function MiraChangelog({ current, old, categories }: { current: string; o
 
     const groupedChanges = useMemo(() => {
         const grouped = changes.reduce((accumulator, change) => {
-            if (!showProbabilities && change.settingName === "Probability Of Appearing") return accumulator;
+            if (!showProbabilities && change.settingName === PROBABILITY_LABEL) return accumulator;
             if (!accumulator[change.groupName]) {
                 accumulator[change.groupName] = [];
             }
@@ -443,8 +445,8 @@ export function MiraChangelog({ current, old, categories }: { current: string; o
 
         Object.values(grouped).forEach((groupChanges) => {
             groupChanges.sort((left, right) => {
-                const leftIsProbability = left.settingName === "Probability Of Appearing";
-                const rightIsProbability = right.settingName === "Probability Of Appearing";
+                const leftIsProbability = left.settingName === PROBABILITY_LABEL;
+                const rightIsProbability = right.settingName === PROBABILITY_LABEL;
 
                 if (leftIsProbability !== rightIsProbability) {
                     return leftIsProbability ? -1 : 1;

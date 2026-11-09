@@ -1,7 +1,5 @@
-import { getDatabaseClient } from '../db';
-import { withoutDeleted } from '@/app/api/schema/common';
+import { buildSeasonGameWhere, getDatabaseClient } from '../db';
 import { CURRENT_SEASON } from '@/app/dramaafera/_constants/seasons';
-import { getGamesListByDate } from '../games/getGamesList';
 
 export interface SessionRankingPlayer {
   nickname: string;
@@ -11,42 +9,32 @@ export interface SessionRankingPlayer {
 }
 
 async function getRankingTableAtSession(
-  firstGameDbId: number,
-  lastGameDbId: number,
-  seasonId?: number,
+  prisma: NonNullable<Awaited<ReturnType<typeof getDatabaseClient>>>,
+  firstGame: { id: number; startTime: Date },
+  lastGame: { id: number; startTime: Date },
+  season: number,
+  preciseRating: boolean,
 ): Promise<SessionRankingPlayer[]> {
-  const prisma = await getDatabaseClient();
-  if (!prisma) return [];
-
-  const season = seasonId ?? CURRENT_SEASON;
-
-  // Pobierz ranking przed pierwszą grą
-  // NOTE: (pr.gameId < firstGameDbId OR pr.gameId IS NULL) intentionally includes
-  // season_reset entries (which have gameId = NULL). This is by design — a season_reset
-  // row represents the player's starting rating for the season. SQLite sorts NULLs last
-  // in DESC order, so if a player has both game entries and a season_reset entry before
-  // firstGameDbId, the most recent game entry wins (higher gameId takes precedence).
-  //
-  // ROW_NUMBER over the same ORDER BY rather than a correlated subquery. The subquery ran once per
-  // row of a full-season scan, each with its own sort — 1.46 s and ~4.2M rows read to return 65.
-  // The window keeps the tie-break identical (gameId DESC puts season_reset's NULL last, so a game
-  // row always beats it), which `MAX(id)` would not: a penalty/reward row carries gameId NULL but
-  // a high id. Measured 1,476 ms -> 2.65 ms. See #299.
+  const firstTime = firstGame.startTime.toISOString();
+  const lastTime = lastGame.startTime.toISOString();
+  // A late import can have a greater id than a game from a later session.
+  // Keep game-less season resets as the fallback, after all eligible game rows.
   const playersBeforeQuery = await prisma.$queryRaw<
     Array<{ playerId: number; playerName: string; score: number }>
   >`
     WITH latest AS (
       SELECT
-        playerId,
-        score,
+        pr.playerId,
+        pr.score,
         ROW_NUMBER() OVER (
-          PARTITION BY playerId
-          ORDER BY gameId DESC, createdAt DESC
+          PARTITION BY pr.playerId
+          ORDER BY julianday(g.startTime) DESC, pr.gameId DESC, pr.createdAt DESC, pr.id DESC
         ) AS rn
-      FROM player_rankings
-      WHERE (gameId < ${firstGameDbId} OR gameId IS NULL)
-        AND season = ${season}
-        AND deletedAt IS NULL
+      FROM player_rankings pr
+      LEFT JOIN games g ON g.id = pr.gameId AND g.deletedAt IS NULL AND g.season = pr.season
+      WHERE (pr.gameId IS NULL OR (julianday(g.startTime), g.id) < (julianday(${firstTime}), ${firstGame.id}))
+        AND pr.season = ${season}
+        AND pr.deletedAt IS NULL
     )
     SELECT l.playerId, p.name as playerName, l.score
     FROM latest l
@@ -63,16 +51,17 @@ async function getRankingTableAtSession(
   >`
     WITH latest AS (
       SELECT
-        playerId,
-        score,
+        pr.playerId,
+        pr.score,
         ROW_NUMBER() OVER (
-          PARTITION BY playerId
-          ORDER BY gameId DESC, createdAt DESC
+          PARTITION BY pr.playerId
+          ORDER BY julianday(g.startTime) DESC, pr.gameId DESC, pr.createdAt DESC, pr.id DESC
         ) AS rn
-      FROM player_rankings
-      WHERE (gameId <= ${lastGameDbId} OR gameId IS NULL)
-        AND season = ${season}
-        AND deletedAt IS NULL
+      FROM player_rankings pr
+      LEFT JOIN games g ON g.id = pr.gameId AND g.deletedAt IS NULL AND g.season = pr.season
+      WHERE (pr.gameId IS NULL OR (julianday(g.startTime), g.id) <= (julianday(${lastTime}), ${lastGame.id}))
+        AND pr.season = ${season}
+        AND pr.deletedAt IS NULL
     )
     SELECT l.playerId, p.name as playerName, l.score
     FROM latest l
@@ -85,7 +74,7 @@ async function getRankingTableAtSession(
         WHERE gps.playerId = l.playerId
           AND g.season = ${season}
           AND g.deletedAt IS NULL
-          AND g.id <= ${lastGameDbId}
+          AND (julianday(g.startTime), g.id) <= (julianday(${lastTime}), ${lastGame.id})
       )
     ORDER BY l.score DESC
   `;
@@ -101,7 +90,7 @@ async function getRankingTableAtSession(
 
     return {
       nickname: player.playerName,
-      rating: Number(player.score),
+      rating: preciseRating ? Number(player.score) : Math.round(Number(player.score)),
       position: index + 1,
       ratingChange: Math.round(ratingChange),
     };
@@ -111,29 +100,21 @@ async function getRankingTableAtSession(
 export async function getRankingAfterSession(
   date: string,
   seasonId?: number,
+  { preciseRating = false }: { preciseRating?: boolean } = {},
 ): Promise<SessionRankingPlayer[] | null> {
-  const games = await getGamesListByDate(date, seasonId);
-  if (!games || games.length === 0) return null;
-
   const prisma = await getDatabaseClient();
   if (!prisma) return null;
 
-  const sortedGames = [...games].sort((a, b) => a.id.localeCompare(b.id));
-  const firstGameIdentifier = sortedGames[0]?.id;
-  const lastGameIdentifier = sortedGames[sortedGames.length - 1]?.id;
-
-  // Fetch both boundary games in a single query (only 2 values — safe for D1 variable limit)
-  const boundaryGames = await prisma.game.findMany({
+  const season = seasonId ?? CURRENT_SEASON;
+  const games = await prisma.game.findMany({
     where: {
-      gameIdentifier: { in: [firstGameIdentifier, lastGameIdentifier] },
-      ...withoutDeleted,
+      ...buildSeasonGameWhere(season),
+      gameIdentifier: { startsWith: date },
     },
+    select: { id: true, startTime: true },
   });
-
-  const firstGameDb = boundaryGames.find(g => g.gameIdentifier === firstGameIdentifier);
-  const lastGameDb = boundaryGames.find(g => g.gameIdentifier === lastGameIdentifier);
-
-  if (!firstGameDb || !lastGameDb) return null;
-
-  return getRankingTableAtSession(firstGameDb.id, lastGameDb.id, seasonId);
+  games.sort((a, b) => a.startTime.getTime() - b.startTime.getTime() || a.id - b.id);
+  const first = games[0];
+  const last = games.at(-1);
+  return first && last ? getRankingTableAtSession(prisma, first, last, season, preciseRating) : null;
 }

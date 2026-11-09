@@ -41,7 +41,7 @@ export async function getDiscordRankingAction() {
     ]);
     const [latest, previous] = dates;
     const [previousRanking, weeklyStats] = await Promise.all([
-        previous ? getRankingAfterSession(previous.date, CURRENT_SEASON) : null,
+        previous ? getRankingAfterSession(previous.date, CURRENT_SEASON, { preciseRating: true }) : null,
         latest ? getWeeklyStats(latest.date, CURRENT_SEASON) : null,
     ]);
     const previousRatings = new Map(previousRanking?.map(player => [player.nickname, player.rating]));

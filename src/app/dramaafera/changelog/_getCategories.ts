@@ -14,10 +14,14 @@ function settingValues(content: string): Map<string, string> {
     ));
 }
 
-export async function getCategorizedChangelogChanges(current: PublishedSettings, old: PublishedSettings): Promise<CategorizedChangelogChange[]> {
+export async function getCategorizedChangelogChanges(
+    current: PublishedSettings,
+    old: PublishedSettings & { publishedAt: Date | null },
+): Promise<CategorizedChangelogChange[]> {
     const prisma = await getDatabaseClient();
     if (!prisma) return [];
 
+    const from = (old.publishedAt ?? old.uploadedAt).toISOString();
     const reviews = await prisma.$queryRaw<ReviewedSetting[]>`
         SELECT json_extract(setting.value, '$.section') AS section,
                json_extract(setting.value, '$.key') AS key,
@@ -26,7 +30,7 @@ export async function getCategorizedChangelogChanges(current: PublishedSettings,
         FROM role_balance_reviews review
         JOIN json_each(review.snapshot, '$.settingsChanges') setting
         WHERE review.deletedAt IS NULL
-          AND julianday(review.createdAt) BETWEEN julianday(${old.uploadedAt.toISOString()}) AND julianday(${current.uploadedAt.toISOString()})
+          AND julianday(review.createdAt) BETWEEN julianday(${from}) AND julianday(${current.uploadedAt.toISOString()})
         ORDER BY review.id DESC
     `;
     const currentValues = settingValues(current.content);

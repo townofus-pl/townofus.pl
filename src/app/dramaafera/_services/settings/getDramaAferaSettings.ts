@@ -37,7 +37,7 @@ export async function getDramaAferaSettingsPair() {
     }),
     prisma.dramaAferaSettings.findFirst({
       where: { versionType: 'old', ...withoutDeleted },
-      select: { content: true, uploadedAt: true },
+      select: { content: true, uploadedAt: true, publishedAt: true },
     }),
   ]);
 
