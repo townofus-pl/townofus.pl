@@ -7,6 +7,8 @@ import { MiraModifiers, MiraRoles, MiraSettings } from "@/mira";
 import { RoleOrModifierTypes } from "@/constants/rolesAndModifiers";
 import { SettingTypes, type Setting } from "@/constants/settings";
 import { Teams } from "@/constants/teams";
+import { REVIEW_CATEGORIES, type ChangelogCategories, type ReviewCategory } from "../_categories";
+import { parseSections, settingId } from "../_miraConfigSections";
 
 type GroupKind = "role" | "modifier" | "section";
 
@@ -14,6 +16,7 @@ type MiraEntity = (typeof MiraRoles)[number] | (typeof MiraModifiers)[number];
 type MiraSettingGroup = (typeof MiraSettings)[number];
 
 interface Change {
+    category: ReviewCategory | undefined;
     groupName: string;
     settingName: string;
     oldValue: string;
@@ -26,6 +29,7 @@ interface Change {
 }
 
 interface ParsedEntry {
+    fieldId?: string;
     groupName: string;
     settingName: string;
     comparisonKey: string;
@@ -145,41 +149,12 @@ function getEntityFromSection(sectionName: string): MiraEntity | undefined {
     return getEntityFromToken(entityToken);
 }
 
-function parseSections(content: string): Array<{ name: string; entries: Array<{ key: string; value: string }> }> {
-    const lines = content.split(/\r?\n/).map((line) => line.trim());
-    const sections: Array<{ name: string; entries: Array<{ key: string; value: string }> }> = [];
-    let currentSectionName = "";
-
-    for (const line of lines) {
-        if (!line || line.startsWith("#")) {
-            continue;
-        }
-
-        if (line.startsWith("[") && line.endsWith("]")) {
-            currentSectionName = line.slice(1, -1).trim();
-            sections.push({ name: currentSectionName, entries: [] });
-            continue;
-        }
-
-        const equalsIndex = line.indexOf("=");
-        if (equalsIndex === -1 || sections.length === 0) {
-            continue;
-        }
-
-        sections[sections.length - 1].entries.push({
-            key: line.slice(0, equalsIndex).trim(),
-            value: line.slice(equalsIndex + 1).trim(),
-        });
-    }
-
-    return sections;
-}
-
 function getOrderedSettingDefinitions(entity: MiraEntity): Array<[string, Setting]> {
     return Object.entries(entity.settings).filter(([label]) => label !== "Probability Of Appearing");
 }
 
 function createEntityEntry(params: {
+    fieldId?: string;
     entity: MiraEntity;
     sectionOrder: number;
     settingName: string;
@@ -188,6 +163,7 @@ function createEntityEntry(params: {
     value: string;
 }): ParsedEntry {
     return {
+        fieldId: params.fieldId,
         groupName: params.entity.name,
         settingName: params.settingName,
         comparisonKey: `${params.entity.id}::${normalizeLookupKey(params.settingName)}`,
@@ -252,6 +228,7 @@ function parseConfigFile(content: string): Map<string, ParsedEntry> {
                 entries.set(
                     `${entity.id}::${normalizeLookupKey(settingName)}`,
                     createEntityEntry({
+                        fieldId: settingId(section.name, entry.key),
                         entity,
                         sectionOrder,
                         settingName,
@@ -340,6 +317,7 @@ function parseConfigFile(content: string): Map<string, ParsedEntry> {
                 entries.set(
                     `${sectionEntity.id}::${normalizeLookupKey(settingName)}`,
                     createEntityEntry({
+                        fieldId: settingId(section.name, entry.key),
                         entity: sectionEntity,
                         sectionOrder,
                         settingName,
@@ -403,6 +381,13 @@ function inferTypeFromValue(value: string): SettingTypes {
     return SettingTypes.Text;
 }
 
+const categoryTitles: Record<ReviewCategory, string> = {
+    emperor_decree: "DEKRET EMPERORA",
+    buff: "Buffs",
+    nerf: "Nerfs",
+    adjustment: "Adjustments",
+};
+
 /**
  * The TOU:Mira view of the changelog. Rendered by `/dramaafera/changelog` when the settings pair
  * is a TOU:Mira config; there is no `/changelog/mira` URL.
@@ -411,7 +396,7 @@ function inferTypeFromValue(value: string): SettingTypes {
  * decides which era to render, so this component has no loading or error state of its own — one
  * source of truth for "which changelog", and no second round trip from the browser.
  */
-export function MiraChangelog({ current, old }: { current: string; old: string }) {
+export function MiraChangelog({ current, old, categories }: { current: string; old: string; categories?: ChangelogCategories }) {
     const [showProbabilities, setShowProbabilities] = useState(false);
     const changes = useMemo<Change[]>(() => {
         const currentData = parseConfigFile(current);
@@ -429,6 +414,7 @@ export function MiraChangelog({ current, old }: { current: string; old: string }
             const processedNewValue = normalizeSettingValue(currentEntry.value, currentEntry.settingType);
 
             detected.push({
+                category: currentEntry.fieldId ? categories?.[currentEntry.fieldId] : undefined,
                 groupName: currentEntry.groupName,
                 settingName: currentEntry.settingName,
                 oldValue: formatValue(processedOldValue, currentEntry.settingType, currentEntry.description),
@@ -442,7 +428,7 @@ export function MiraChangelog({ current, old }: { current: string; old: string }
         }
 
         return detected;
-    }, [current, old]);
+    }, [current, old, categories]);
 
     const groupedChanges = useMemo(() => {
         const grouped = changes.reduce((accumulator, change) => {
@@ -520,13 +506,20 @@ export function MiraChangelog({ current, old }: { current: string; old: string }
                     Brak zmian do wyświetlenia
                 </div>
             ) : (
-                <div className="space-y-6">
-                    {groupedChanges.map(([groupName, groupChanges]) => {
-                        const groupInfo = groupChanges[0];
-
+                <div className="space-y-8">
+                    {[...REVIEW_CATEGORIES, undefined].map(category => {
+                        const groups = groupedChanges.map(([, changes]) => changes.filter(change => change.category === category))
+                            .filter(changes => changes.length > 0);
+                        if (!groups.length) return null;
                         return (
-                            <SettingsChangesCard key={groupName} name={groupName} color={groupInfo.groupColor} icon={groupInfo.groupIcon}
-                                changes={groupChanges.map(change => ({ name: change.settingName, before: change.oldValue, after: change.newValue }))} />
+                            <section key={category ?? "other"} className="space-y-4">
+                                <h2 className="font-brook text-4xl text-white">{category ? categoryTitles[category] : "Pozostałe zmiany"}</h2>
+                                {groups.map(groupChanges => {
+                                    const group = groupChanges[0];
+                                    return <SettingsChangesCard key={group.groupName} name={group.groupName} color={group.groupColor} icon={group.groupIcon}
+                                        changes={groupChanges.map(change => ({ name: change.settingName, before: change.oldValue, after: change.newValue }))} />;
+                                })}
+                            </section>
                         );
                     })}
                 </div>

@@ -154,7 +154,7 @@ function ReviewEditor({ row, data, seasonId, busy, setBusy, onError, onNotice, r
         unchanged: 'bg-blue-600 hover:bg-blue-500',
         settings_changed: 'bg-blue-600 hover:bg-blue-500',
     };
-    const canSubmit = row.revision !== null && data.through && row.after && compareReviewBoundary(data.through, row.after) > 0 &&
+    const canSubmit = row.revision !== null && data.through && row.after && compareReviewBoundary(data.through, row.after) >= 0 &&
         confirmed && decision && !(decision === 'unchanged' && settingsEdit && Object.keys(settingsEdit.changes).length) && choices.includes(decision);
     async function submit(event: React.FormEvent) {
         event.preventDefault();

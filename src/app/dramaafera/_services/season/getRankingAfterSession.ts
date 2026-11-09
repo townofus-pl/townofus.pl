@@ -101,7 +101,7 @@ async function getRankingTableAtSession(
 
     return {
       nickname: player.playerName,
-      rating: Math.round(Number(player.score)),
+      rating: Number(player.score),
       position: index + 1,
       ratingChange: Math.round(ratingChange),
     };

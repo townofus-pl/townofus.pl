@@ -106,7 +106,7 @@ export async function saveRoleBalanceReview(input: SaveRoleBalanceReview, author
     const row = overview.rows.find(r => r.roleName === input.roleName);
     if (!row || row.revision === null || !row.after || !overview.through) throw new Error('Najpierw rozpocznij próbę tej roli.');
     if (row.revision !== input.revision || row.sampleToken !== input.sampleToken) throw new Error('Dane przeglądu zmieniły się. Odśwież i sprawdź ocenę ponownie.');
-    if (compareReviewBoundary(overview.through, row.after) <= 0) throw new Error('Granica nowej próby musi być późniejsza od poprzedniej.');
+    if (compareReviewBoundary(overview.through, row.after) < 0) throw new Error('Granica nowej próby nie może być wcześniejsza od poprzedniej.');
     const { env } = await getCloudflareContext();
     const through = overview.through;
     let settingsChanges: RoleSettingChange[] = [];
