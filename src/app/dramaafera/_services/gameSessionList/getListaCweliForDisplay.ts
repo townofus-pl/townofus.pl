@@ -17,13 +17,14 @@ import type { ListaCweliDisplayEntry } from './types';
  * Players sorted by ELO descending, then alphabetically. Returns an empty array gracefully on
  * build-time or DB error.
  */
-export async function getListaCweliForDisplay(seasonId: number): Promise<ListaCweliDisplayEntry[]> {
+export async function getListaCweliForDisplay(seasonId: number, listId?: number): Promise<ListaCweliDisplayEntry[]> {
     const prisma = await getDatabaseClient();
     if (!prisma) return [];
 
     try {
         const lists = await prisma.listaCweli.findMany({
             where: {
+                id: listId,
                 season: seasonId,
                 ...withoutDeleted,
             },
@@ -34,7 +35,7 @@ export async function getListaCweliForDisplay(seasonId: number): Promise<ListaCw
 
         if (lists.length === 0) return [];
 
-        // One statement, two bound parameters, no IN clause — so no D1 parameter-cap concern
+        // One statement, one bound parameter, no IN clause — so no D1 parameter-cap concern
         // however many names accumulate across the season's lists. Returns the terminal ranking
         // row per player *within this season*.
         const seasonScores = await prisma.$queryRaw<Array<{ name: string; score: number }>>`

@@ -6,11 +6,18 @@ import { CURRENT_SEASON } from '@/app/dramaafera/_constants/seasons';
 import { createPlayerWithRanking } from '@/app/api/_utils';
 import { findSimilarPlayerName } from '@/app/dramaafera/_utils/textMatch';
 import { getListaCweliPlayerPickerData } from '@/app/dramaafera/_services/gameSessionList/getListaCweliPlayerPicker';
+import { getListaCweliForDisplay } from '@/app/dramaafera/_services/gameSessionList/getListaCweliForDisplay';
 import type {
   GameSessionListEntry,
   GameSessionListSummary,
+  ListaCweliDisplayEntry,
   PlayerPickerData,
 } from '@/app/dramaafera/_services/gameSessionList/types';
+
+export async function getGameSessionListForDisplay(seasonId: number, listId: number): Promise<ListaCweliDisplayEntry | null> {
+  const [list] = await getListaCweliForDisplay(seasonId, listId);
+  return list ?? null;
+}
 
 /**
  * Data for the Lista Cweli player picker (main list + Add-player dialog).

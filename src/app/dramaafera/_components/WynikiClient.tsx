@@ -7,23 +7,17 @@ import RoleTable from "@/app/_components/RoleTable";
 import type { GameDateEntry, SessionSummary } from "@/app/dramaafera/_services";
 import { CURRENT_SEASON } from "@/app/dramaafera/_constants/seasons";
 import { getSessionResults } from "@/app/dramaafera/_actions/seasonActions";
-import { getGameSessionLists } from "@/app/dramaafera/_actions/listaCweliActions";
+import { getGameSessionListForDisplay } from "@/app/dramaafera/_actions/listaCweliActions";
+import type { ListaCweliDisplayEntry } from "@/app/dramaafera/_services/gameSessionList/types";
 import { AvatarImageFill } from "@/app/dramaafera/_components/PodsumowanieClient/AvatarImage";
 
 import { useColorblindMode } from '@/app/dramaafera/_hooks/useColorblindMode';
-
-interface GameSessionListData {
-    id: number;
-    date: string;
-    displayDate: string;
-    players: Array<{ name: string; eloRanking: number | null }>;
-}
 
 interface WynikiClientProps {
     initialDates: GameDateEntry[];
     initialResults: SessionSummary | null;
     seasonId: number;
-    listaCweli?: GameSessionListData[];
+    listaCweli?: ListaCweliDisplayEntry[];
 }
 
 export default function WynikiClient({ initialDates, initialResults, seasonId, listaCweli = [] }: WynikiClientProps) {
@@ -42,7 +36,7 @@ export default function WynikiClient({ initialDates, initialResults, seasonId, l
             displayDate: string;
             type: 'games' | 'lista';
             gamesData?: GameDateEntry;
-            listaData?: GameSessionListData;
+            listaData?: ListaCweliDisplayEntry;
         }> = [];
 
         // Add game dates
@@ -76,7 +70,7 @@ export default function WynikiClient({ initialDates, initialResults, seasonId, l
     const [resultsData, setResultsData] = useState<SessionSummary | null>(
         combinedDates[0]?.type === 'games' ? initialResults : null
     );
-    const [listaCweliData, setListaCweliData] = useState<GameSessionListData | null>(
+    const [listaCweliData, setListaCweliData] = useState<ListaCweliDisplayEntry | null>(
         combinedDates[0]?.type === 'lista' ? combinedDates[0]?.listaData ?? null : null
     );
     const [selectedDateType, setSelectedDateType] = useState<'games' | 'lista'>(combinedDates[0]?.type ?? 'games');
@@ -90,14 +84,6 @@ export default function WynikiClient({ initialDates, initialResults, seasonId, l
               })
             : ""
     );
-    const [listaCweliLastUpdateHash, setListaCweliLastUpdateHash] = useState<string>(() =>
-        listaCweli.length > 0 && combinedDates[0]?.listaData
-            ? JSON.stringify({
-                  players: combinedDates[0].listaData.players.map(p => p.name),
-                  count: combinedDates[0].listaData.players.length,
-              })
-            : ""
-    );
     const [lastUpdateTime, setLastUpdateTime] = useState<Date | null>(null);
     const [isRefreshing, setIsRefreshing] = useState(false);
 
@@ -105,8 +91,7 @@ export default function WynikiClient({ initialDates, initialResults, seasonId, l
     const lastUpdateHashRef = useRef(lastUpdateHash);
     useEffect(() => { lastUpdateHashRef.current = lastUpdateHash; }, [lastUpdateHash]);
 
-    const listaCweliLastUpdateHashRef = useRef(listaCweliLastUpdateHash);
-    useEffect(() => { listaCweliLastUpdateHashRef.current = listaCweliLastUpdateHash; }, [listaCweliLastUpdateHash]);
+    const listaCweliLastUpdateHashRef = useRef(JSON.stringify(listaCweliData));
 
     // Pobieranie wyników przez server action
     const fetchResultsData = useCallback(async (date: string, isAutoRefresh = false) => {
@@ -142,8 +127,7 @@ export default function WynikiClient({ initialDates, initialResults, seasonId, l
         }
     }, [seasonId]);
 
-    // Pobieranie Lista Cweli dla danego dnia
-    const fetchListaCweliData = useCallback(async (date: string, isAutoRefresh = false) => {
+    const fetchListaCweliData = useCallback(async (listId: number, isAutoRefresh = false) => {
         try {
             if (isAutoRefresh) {
                 setIsRefreshing(true);
@@ -152,68 +136,40 @@ export default function WynikiClient({ initialDates, initialResults, seasonId, l
             }
             setError(null);
 
-            // Pobierz wszystkie listy dla sezonu
-            const allLists = await getGameSessionLists(seasonId);
-            
-            // Filtruj listę dla wybranego dnia
-            const dateStr = date;
-            const targetList = allLists.find(list => list.date === dateStr);
-
-            if (!targetList) {
-                setListaCweliData(null);
-                return;
-            }
-
-            // Przetransformuj do formatu GameSessionListData
-            const transformedList: GameSessionListData = {
-                id: targetList.id,
-                date: targetList.date,
-                displayDate: targetList.dateFormatted,
-                players: targetList.players.map((p) => ({
-                    name: p.name,
-                    eloRanking: null, // TODO: pobrać ranking
-                })),
-            };
-
-            // Oblicz hash aby sprawdzić czy się zmieniła
-            const dataHash = JSON.stringify({
-                players: transformedList.players.map(p => p.name),
-                count: transformedList.players.length,
-            });
+            const list = await getGameSessionListForDisplay(seasonId, listId);
+            const dataHash = JSON.stringify(list);
 
             // Aktualizuj tylko jeśli dane się zmieniły lub to nie jest auto-refresh
             if (dataHash !== listaCweliLastUpdateHashRef.current || !isAutoRefresh) {
-                setListaCweliData(transformedList);
-                setListaCweliLastUpdateHash(dataHash);
+                setListaCweliData(list);
+                listaCweliLastUpdateHashRef.current = dataHash;
                 setLastUpdateTime(new Date());
             }
         } catch (err) {
             console.error('Błąd pobierania Lista Cweli:', err);
             setError("Nie udało się pobrać listy. Spróbuj ponownie później.");
             setListaCweliData(null);
+            listaCweliLastUpdateHashRef.current = JSON.stringify(null);
         } finally {
             setDataLoading(false);
             setIsRefreshing(false);
         }
     }, [seasonId]);
 
-    // Auto-odświeżanie co 30 sekund tylko dla najnowszej daty (bieżący sezon)
+    // Auto-odświeżanie co 5 minut tylko dla najnowszej pozycji w bieżącym sezonie (#299).
     useEffect(() => {
         if (seasonId !== CURRENT_SEASON) return;
         if (!selectedDate || !combinedDates.length) return;
 
-        // Sprawdź czy wybrana data to najnowsza i czy to gry (nie Lista Cweli)
-        const newestCompound = combinedDates[0] ? `${combinedDates[0].date}__${combinedDates[0].type}` : '';
-        const isNewestDate = selectedDate === newestCompound;
-        if (!isNewestDate) return;
+        const newestItem = combinedDates[0];
+        if (selectedDate !== `${newestItem.date}__${newestItem.type}`) return;
 
         const interval = setInterval(() => {
             if (selectedDateType === 'games') {
                 fetchResultsData(selectedPlainDate, true);
-            } else if (selectedDateType === 'lista') {
-                fetchListaCweliData(selectedPlainDate, true);
+            } else if (newestItem.listaData) {
+                fetchListaCweliData(newestItem.listaData.id, true);
             }
-            // 5 minut, nie 30 s — zob. #299. Dane zmieniają się tylko po wrzuceniu gry.
         }, 300000);
 
         return () => clearInterval(interval);
@@ -236,9 +192,8 @@ export default function WynikiClient({ initialDates, initialResults, seasonId, l
             setSelectedDateType(selectedItem.type);
             if (selectedItem.type === 'games') {
                 fetchResultsData(dateValue);
-            } else {
-                // Fetch Lista Cweli for the selected date
-                fetchListaCweliData(dateValue);
+            } else if (selectedItem.listaData) {
+                fetchListaCweliData(selectedItem.listaData.id);
             }
         }
     };

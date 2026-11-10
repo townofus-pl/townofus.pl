@@ -13,6 +13,7 @@ import CweleSlide from './CweleSlide';
 import EmperorHistorySlide from './EmperorHistorySlide';
 import FinalRankingSlide from './FinalRankingSlide';
 import { getRoleIconPath } from '@/app/dramaafera/_utils/gameUtils';
+import { getModifierIcons } from './getModifierIcons';
 
 const AUDIO_PRELOAD_TIMEOUT_MS = 15_000;
 
@@ -173,7 +174,13 @@ export default function PodsumowanieClient({
             '/images/star.svg',
             '/images/avatars/placeholder.png',
             ...[...nicknames].map(n => `/images/avatars/${n}.png`),
-            ...topPlayerGames.flatMap(g => g.detailedStats.playersData.map(p => getRoleIconPath(p.role, seasonId))),
+            ...topPlayerGames.flatMap(game => game.detailedStats.playersData.flatMap(player => {
+                const roles = player.roleHistory?.length ? player.roleHistory : [player.role];
+                return [
+                    ...roles.map(role => getRoleIconPath(role, seasonId)),
+                    ...getModifierIcons(player.modifiers).map(modifier => modifier.icon),
+                ];
+            })),
         ])];
     }, [weeklyStats, emperorPoll, topSigmas, topCwele, emperorHistory, rankingAfterSession, topPlayerGames, seasonId]);
 

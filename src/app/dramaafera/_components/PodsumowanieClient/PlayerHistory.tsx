@@ -3,6 +3,7 @@ import { UIGameData } from '@/app/dramaafera/_services/games/types';
 import { videotext, formatDate } from './constants';
 import { getRoleIconPath, FIRST_MIRA_SEASON } from '@/app/dramaafera/_utils/gameUtils';
 import { categorize, otherParts } from '@/app/dramaafera/_utils/statsBreakdown';
+import { getModifierIcons } from './getModifierIcons';
 
 interface PlayerHistoryProps {
     seasonId: number;
@@ -28,6 +29,7 @@ export default function PlayerHistory({ nickname, isFullscreen, topPlayerGames, 
 
     // Rozmiar kwadratów
     const squareSize = isFullscreen ? 160 : 80;
+    const smallIconSize = isFullscreen ? 36 : 18;
     const gap = isFullscreen ? 16 : 12;
 
     return (
@@ -71,6 +73,9 @@ export default function PlayerHistory({ nickname, isFullscreen, topPlayerGames, 
                                 const { playerData, played, game } = gameDetail;
                                 const won = playerData?.win || false;
                                 const disconnected = !!playerData?.originalStats?.disconnected;
+                                const finalRole = playerData?.roleHistory?.at(-1) ?? playerData?.role;
+                                const previousRoles = playerData?.roleHistory?.slice(0, -1) ?? [];
+                                const modifierIcons = getModifierIcons(playerData?.modifiers ?? []);
                                 const actualIndex = startIdx + index;
 
                                 // Pobierz zmianę punktów rankingowych dla tej gry
@@ -115,10 +120,10 @@ export default function PlayerHistory({ nickname, isFullscreen, topPlayerGames, 
                                         justifyContent: 'center'
                                     }}
                                 >
-                                    {played && playerData && (
+                                    {finalRole !== undefined && (
                                         <Image
-                                            src={getRoleIconPath(playerData.role, seasonId)}
-                                            alt={playerData.role}
+                                            src={getRoleIconPath(finalRole, seasonId)}
+                                            alt={finalRole}
                                             width={squareSize}
                                             height={squareSize}
                                             className={`object-contain ${seasonId < FIRST_MIRA_SEASON ? 'scale-[1.3]' : ''} ${disconnected ? 'pixelated' : ''}`}
@@ -130,16 +135,46 @@ export default function PlayerHistory({ nickname, isFullscreen, topPlayerGames, 
                                         />
                                     )}
 
+                                    {modifierIcons.length > 0 && (
+                                        <div className="absolute left-0.5 right-0.5 top-0.5 z-20 grid grid-cols-2 gap-y-0.5">
+                                            {modifierIcons.map(({ name, icon }, modifierIndex) => (
+                                                <Image
+                                                    key={`${name}-${modifierIndex}`}
+                                                    src={icon}
+                                                    alt={name}
+                                                    width={smallIconSize}
+                                                    height={smallIconSize}
+                                                    className="object-contain even:justify-self-end"
+                                                    style={{ filter: disconnected ? 'grayscale(100%)' : undefined }}
+                                                />
+                                            ))}
+                                        </div>
+                                    )}
+
+                                    {previousRoles.length > 0 && (
+                                        <div className="absolute bottom-0.5 left-0.5 right-0.5 z-20 flex flex-wrap gap-0.5">
+                                            {previousRoles.map((role, roleIndex) => (
+                                                <Image
+                                                    key={`${role}-${roleIndex}`}
+                                                    src={getRoleIconPath(role, seasonId)}
+                                                    alt={role}
+                                                    width={smallIconSize}
+                                                    height={smallIconSize}
+                                                    className="object-contain"
+                                                    style={{ filter: disconnected ? 'grayscale(100%)' : undefined }}
+                                                />
+                                            ))}
+                                        </div>
+                                    )}
+
                                     {/* D/C overlay dla disconnect */}
                                     {disconnected && (
                                         <div
-                                            className={`${videotext.className} font-bold absolute`}
+                                            className={`${videotext.className} font-bold absolute z-30 ${isFullscreen ? 'bottom-2' : 'bottom-1'}`}
                                             style={{
-                                                bottom: isFullscreen ? '8px' : '4px',
                                                 color: 'rgba(255, 255, 255, 0.9)',
                                                 textShadow: '0 0 10px rgba(0, 0, 0, 1)',
                                                 fontSize: isFullscreen ? '32px' : '16px',
-                                                zIndex: 20,
                                                 letterSpacing: '0.1em'
                                             }}
                                         >
@@ -153,14 +188,13 @@ export default function PlayerHistory({ nickname, isFullscreen, topPlayerGames, 
                                     <div className={`text-center mt-2 ${isFullscreen ? 'text-sm' : 'text-xs'} leading-tight`}>
                                         {/* Od sezonu 4 te same grupy co w Wynikach dnia (Malkiz, 2026-10). */}
                                         {seasonId >= FIRST_MIRA_SEASON && (() => {
-                                            const role = playerData.roleHistory?.[playerData.roleHistory.length - 1] ?? playerData.role;
-                                            const g = categorize(playerData.originalStats, seasonId, role);
+                                            const g = categorize(playerData.originalStats, seasonId, finalRole);
                                             // One game: the actions behind "Other" under their own names (CORRECT KNIGHT).
                                             const rows: Array<[number, number, string, string, boolean]> = [
                                                 [g.kills.correct, g.kills.incorrect, 'KILL', 'S', true],
                                                 [g.guesses.correct, g.guesses.incorrect, 'GUESS', 'ES', true],
                                                 [g.protects.correct, g.protects.incorrect, 'PROTECT', 'S', true],
-                                                ...otherParts(playerData.originalStats, seasonId, role)
+                                                ...otherParts(playerData.originalStats, seasonId, finalRole)
                                                     .map((p): [number, number, string, string, boolean] => [p.correct, p.incorrect, p.word.toUpperCase(), p.plural.toUpperCase(), p.verdict]),
                                                 [g.votes.correct, g.votes.incorrect, 'VOTE', 'S', true],
                                             ];
