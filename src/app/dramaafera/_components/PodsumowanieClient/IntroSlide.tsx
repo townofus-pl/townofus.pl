@@ -35,7 +35,10 @@ function renderFinalIntro(isFullscreen: boolean, randomAvatars: string[], animat
             </div>
         );
     }
-    
+
+    const lastAvatar = randomAvatars[randomAvatars.length - 1];
+    const avatarStrip = [lastAvatar, ...randomAvatars, ...randomAvatars];
+
     return (
         <div className="relative flex flex-col items-center justify-center h-full overflow-hidden">
             {/* Animowane tło z avatarami - tylko graczy z tego tygodnia */}
@@ -50,26 +53,16 @@ function renderFinalIntro(isFullscreen: boolean, randomAvatars: string[], animat
                         animationPlayState: animate ? 'running' : 'paused',
                     }}
                 >
-                    {/* Dwa identyczne sety — keyframes przesuwają o -50%, czyli dokładnie o jeden */}
-                    {[0, 1].map((setIndex) => (
-                        <div key={`set-${setIndex}`} className="flex h-full">
-                            {randomAvatars.map((player, index) => (
-                                <div 
-                                    key={`${player}-${index}-${setIndex}`} 
-                                    className="relative h-full"
-                                    style={{ 
-                                        marginLeft: index > 0 ? '-200px' : '0',
-                                        zIndex: index 
-                                    }}
-                                >
-                                    {/* Avatar na całą wysokość ekranu */}
-                                    <div className="relative w-[48rem] h-full overflow-hidden filter sepia hue-rotate-[315deg] saturate-[2] brightness-75" style={{ clipPath: 'polygon(25% 0%, 100% 0%, 75% 100%, 0% 100%)' }}>
-                                        {/* Szare tło pod avatarem (wypełnia przezroczystość) */}
-                                        <div className="absolute inset-0" style={{ backgroundColor: '#303030' }}></div>
-                                     <AvatarImageFill nickname={player} className="object-cover" style={{ objectPosition: 'center' }} />
-                                    </div>
-                                </div>
-                            ))}
+                    {/* Ostatni avatar wystaje z lewej i wypełnia skos pierwszego.
+                        Ujemne marginesy zachowują szerokość dwóch pełnych pętli. */}
+                    {avatarStrip.map((player, index) => (
+                        <div
+                            key={`${player}-${index}`}
+                            className={`relative h-full w-[48rem] shrink-0 -mr-[200px] overflow-hidden filter sepia hue-rotate-[315deg] saturate-[2] brightness-75 ${index === 0 ? 'ml-[calc(200px_-_48rem)]' : ''}`}
+                            style={{ clipPath: 'polygon(25% 0%, 100% 0%, 75% 100%, 0% 100%)' }}
+                        >
+                            <div className="absolute inset-0" style={{ backgroundColor: '#303030' }} />
+                            <AvatarImageFill nickname={player} className="object-cover" style={{ objectPosition: 'center' }} />
                         </div>
                     ))}
                 </div>

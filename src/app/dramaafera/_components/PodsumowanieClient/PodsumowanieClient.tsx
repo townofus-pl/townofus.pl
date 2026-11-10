@@ -14,6 +14,8 @@ import EmperorHistorySlide from './EmperorHistorySlide';
 import FinalRankingSlide from './FinalRankingSlide';
 import { getRoleIconPath } from '@/app/dramaafera/_utils/gameUtils';
 
+const AUDIO_PRELOAD_TIMEOUT_MS = 15_000;
+
 export default function PodsumowanieClient({
     date,
     weeklyStats,
@@ -191,6 +193,57 @@ export default function PodsumowanieClient({
 
     const preload = { loaded: Math.min(loadedCount, preloadUrls.length), total: preloadUrls.length };
     const imagesReady = loadedCount >= preloadUrls.length;
+    const hasGames = weeklyStats.length > 0;
+    const [audioPreloadFinished, setAudioPreloadFinished] = useState(false);
+
+    useEffect(() => {
+        if (!imagesReady || !hasGames) return;
+
+        const audio = new Audio();
+        audio.preload = 'auto';
+        audio.loop = true;
+        backgroundMusicRef.current = audio;
+
+        function stopWaiting() {
+            clearTimeout(timeoutId);
+            audio.removeEventListener('canplaythrough', finishPreload);
+            audio.removeEventListener('error', finishPreload);
+        }
+
+        function finishPreload() {
+            stopWaiting();
+            setAudioPreloadFinished(true);
+        }
+
+        // Błąd lub wolne połączenie nie powinny blokować prezentacji.
+        const timeoutId = setTimeout(finishPreload, AUDIO_PRELOAD_TIMEOUT_MS);
+        audio.addEventListener('canplaythrough', finishPreload);
+        audio.addEventListener('error', finishPreload);
+        audio.src = '/sounds/among us DRAMA AFERA.mp3';
+        audio.load();
+
+        return () => {
+            stopWaiting();
+            audio.pause();
+            audio.removeAttribute('src');
+            audio.load();
+            backgroundMusicRef.current = null;
+        };
+    }, [imagesReady, hasGames]);
+
+    const resetBackgroundMusic = useCallback(() => {
+        if (fadeIntervalRef.current) {
+            clearInterval(fadeIntervalRef.current);
+            fadeIntervalRef.current = null;
+        }
+
+        const audio = backgroundMusicRef.current;
+        if (audio) {
+            audio.pause();
+            audio.currentTime = 0;
+            audio.volume = 1;
+        }
+    }, []);
 
     // Każdy gracz z sesji dokładnie raz, w losowej kolejności. Przy małej sesji lista jest
     // powtarzana, żeby jeden set był szerszy niż ekran (IntroSlide renderuje go 2× dla pętli).
@@ -247,24 +300,15 @@ export default function PodsumowanieClient({
         if (currentSlideConfig.id === 'intro' && introBlackOverlay) {
             setIntroBlackOverlay(false);
             
-            // Uruchom muzykę w tle - używamy Ref zamiast state żeby uniknąć cleanup
-            // Muzyka uruchamia się PO kliknięciu, więc przeglądarka już nie blokuje autoplay
-            if (!backgroundMusicRef.current) {
-                const audio = new Audio('/sounds/among us DRAMA AFERA.mp3');
-                audio.loop = true;
-                audio.volume = 1.0;
-                
-                // Zapisz audio NAJPIERW, potem play
-                backgroundMusicRef.current = audio;
-                
-                // Opóźniamy play() o 100ms żeby przeglądarka nie myślała że to autoplay
+            const audio = backgroundMusicRef.current;
+            if (audio) {
                 const audioTimerId = setTimeout(() => {
+                    if (!document.fullscreenElement || backgroundMusicRef.current !== audio) return;
                     audio.play().catch(() => {
-                        // Autoplay zablokowany — ignorujemy
+                        // Intro może działać bez muzyki, jeśli odtwarzanie się nie uda.
                     });
                 }, 100);
                 pendingTimersRef.current.push(audioTimerId);
-                // NIE USTAWIAMY STATE - tylko Ref! State triggeruje re-render i cleanup
             }
             
             return;
@@ -364,15 +408,9 @@ export default function PodsumowanieClient({
             setIntroBlackOverlay(true); // Przywróć czarną warstwę dla restartu
             setIntroInitialDelayPassed(false); // Zresetuj stan początkowego opóźnienia
             
-            // Zatrzymaj muzykę i zresetuj
-            if (backgroundMusicRef.current) {
-                backgroundMusicRef.current.pause();
-                backgroundMusicRef.current.currentTime = 0;
-                backgroundMusicRef.current = null;
-                // NIE USTAWIAMY STATE
-            }
+            resetBackgroundMusic();
         }
-    }, [currentSlide, currentStep, slides, totalSlides, introBlackOverlay, weeklyStats]);
+    }, [currentSlide, currentStep, slides, totalSlides, introBlackOverlay, weeklyStats, resetBackgroundMusic]);
 
     // Efekt do aktualizacji wyświetlanych zmian rankingu w zależności od aktualnie wyświetlanego gracza
     useEffect(() => {
@@ -469,18 +507,7 @@ export default function PodsumowanieClient({
                 document.body.style.overflow = '';
                 document.documentElement.style.overflow = '';
                 
-                // Zatrzymaj muzykę TYLKO przy wyjściu z pełnego ekranu
-                if (backgroundMusicRef.current) {
-                    try {
-                        backgroundMusicRef.current.pause();
-                    } catch {
-                        // Ignorujemy błędy przy zatrzymywaniu
-                    }
-                    
-                    backgroundMusicRef.current.currentTime = 0;
-                    backgroundMusicRef.current = null;
-                    // NIE USTAWIAMY STATE - już niepotrzebny
-                }
+                resetBackgroundMusic();
             }
         };
 
@@ -502,21 +529,12 @@ export default function PodsumowanieClient({
             // Cleanup - przywróć normalny overflow
             document.body.style.overflow = '';
             document.documentElement.style.overflow = '';
-            
-            // NIE CZYŚCIMY AUDIO TUTAJ - tylko przy unmount całego komponentu
-            // Audio jest czyszczone przy wyjściu z fullscreen w handleFullscreenChange
         };
-    }, [isPresentationFullscreen, handleNext]);
-    // backgroundMusic usunięte z dependencies - używamy Ref w cleanup
+    }, [isPresentationFullscreen, handleNext, resetBackgroundMusic]);
 
     // useEffect do cleanup przy unmount komponentu
     useEffect(() => {
         return () => {
-            if (backgroundMusicRef.current) {
-                backgroundMusicRef.current.pause();
-                backgroundMusicRef.current.currentTime = 0;
-                backgroundMusicRef.current = null;
-            }
             if (fadeIntervalRef.current) {
                 clearInterval(fadeIntervalRef.current);
                 fadeIntervalRef.current = null;
@@ -527,7 +545,7 @@ export default function PodsumowanieClient({
     }, []); // Puste dependencies - cleanup tylko przy unmount
 
     // No data state
-    if (weeklyStats.length === 0) {
+    if (!hasGames) {
         return (
             <div className="min-h-screen bg-gradient-to-br from-zinc-900 via-zinc-800 to-amber-900 text-white flex items-center justify-center">
                 <div className="text-center">
@@ -557,12 +575,14 @@ export default function PodsumowanieClient({
                         {/* Przycisk uruchomienia prezentacji */}
                         <button
                             onClick={togglePresentationFullscreen}
-                            disabled={!imagesReady}
+                            disabled={!imagesReady || !audioPreloadFinished}
                             className="inline-flex items-center gap-3 bg-amber-600 hover:bg-amber-700 text-white px-8 py-4 rounded-xl font-bold transition-colors shadow-2xl text-2xl mb-6 hover:scale-105 transform disabled:opacity-50 disabled:cursor-wait disabled:hover:scale-100 disabled:hover:bg-amber-600"
                         >
-                            {imagesReady
-                                ? '🎬 Rozpocznij Prezentację'
-                                : `⏳ Ładowanie grafik ${preload.loaded}/${preload.total}`}
+                            {!imagesReady
+                                ? `⏳ Ładowanie grafik ${preload.loaded}/${preload.total}`
+                                : !audioPreloadFinished
+                                    ? '⏳ Ładowanie dźwięku…'
+                                    : '🎬 Rozpocznij Prezentację'}
                         </button>
                         
                         <div className="max-w-md mx-auto">

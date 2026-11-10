@@ -82,6 +82,52 @@ export default function RemainingPlayersSlide({ isFullscreen, weeklyStats, step 
                          calculatedItemHeight >= 60 ? 'text-lg' : 
                          calculatedItemHeight >= 45 ? 'text-base' : 'text-sm';
     const padding = Math.max(6, Math.min(16, calculatedItemHeight * 0.12));
+    const tileGap = Math.max(6, padding * 0.8);
+
+    const placeFontSize = calculatedItemHeight >= 100 ? 'text-5xl' :
+                          calculatedItemHeight >= 80 ? 'text-4xl' :
+                          calculatedItemHeight >= 60 ? 'text-3xl' :
+                          calculatedItemHeight >= 45 ? 'text-2xl' : 'text-xl';
+
+    function renderPlayerTile(player: WeeklyPlayerStats) {
+        const globalIndex = playersToReveal.indexOf(player);
+        const isVisible = globalIndex < visibleCount;
+        const isNew = globalIndex === visibleCount - 1;
+        const place = playersToReveal.length - globalIndex + 3;
+
+        return (
+            <div
+                key={isVisible ? player.nickname : `placeholder-${player.nickname}`}
+                className="flex w-full items-center bg-gradient-to-r from-zinc-800/90 to-zinc-900/90 backdrop-blur-sm rounded-lg shadow-2xl"
+                style={{
+                    padding: `${padding}px ${padding * 1.5}px ${padding}px ${tileGap}px`,
+                    minHeight: calculatedItemHeight,
+                    gap: tileGap,
+                    border: `${calculatedItemHeight < 60 ? '1px' : '2px'} solid rgba(251, 191, 36, 0.5)`,
+                    visibility: isVisible ? 'visible' : 'hidden',
+                    opacity: isNew ? 0 : 1,
+                    animation: isNew ? 'fadeInSlide 0.7s ease-out forwards' : 'none'
+                }}
+            >
+                <div className={`shrink-0 text-center font-bold tabular-nums text-amber-400 leading-none ${placeFontSize}`} style={{ width: numberWidth }}>
+                    {place}
+                </div>
+                <div
+                    className="relative shrink-0 overflow-hidden rounded-lg border-amber-400 shadow-xl"
+                    style={{ width: avatarSize, height: avatarSize, borderWidth: calculatedItemHeight < 60 ? 2 : 3 }}
+                >
+                    {isVisible && <AvatarImageFill nickname={player.nickname} />}
+                </div>
+                <div className={`min-w-0 flex-1 truncate font-bold text-white leading-tight ${fontSize}`}>
+                    {player.nickname}
+                </div>
+                <div className="shrink-0 whitespace-nowrap text-center text-amber-300">
+                    <div className={`font-bold tabular-nums leading-none ${fontSize}`}>{player.totalPoints}</div>
+                    <div className={`leading-tight ${smallFontSize}`}>DAP</div>
+                </div>
+            </div>
+        );
+    }
 
     // Krok 0: Tylko napis
     if (step === 0) {
@@ -194,62 +240,7 @@ export default function RemainingPlayersSlide({ isFullscreen, weeklyStats, step 
                 {/* Gracz 4. wyśrodkowany na górze (jeśli nieparzysta liczba) */}
                 {hasCenter && centerRow.length > 0 && (
                     <div className="flex justify-center" style={{ width: '45%', maxWidth: isFullscreen ? '450px' : '350px' }}>
-                        {centerRow.map((player) => {
-                            const globalIndex = playersToReveal.findIndex(p => p.nickname === player.nickname);
-                            const isVisible = globalIndex < visibleCount;
-                            const isNew = globalIndex === visibleCount - 1;
-                            const actualPosition = playersToReveal.length - globalIndex + 3;
-                            
-                            if (!isVisible) {
-                                // Placeholder - niewidoczny ale zajmuje miejsce
-                                return (
-                                    <div
-                                        key={`placeholder-${player.nickname}`}
-                                        className="flex items-center bg-gradient-to-r from-zinc-800/90 to-zinc-900/90 backdrop-blur-sm rounded-lg shadow-2xl w-full"
-                                        style={{
-                                            padding: `${padding}px ${padding * 1.5}px`,
-                                            minHeight: `${calculatedItemHeight}px`,
-                                            gap: `${Math.max(6, padding * 0.8)}px`,
-                                            border: `${calculatedItemHeight < 60 ? '1px' : '2px'} solid rgba(251, 191, 36, 0.5)`,
-                                            visibility: 'hidden'
-                                        }}
-                                    >
-                                        <div className={`font-bold text-amber-400 ${fontSize} flex-shrink-0`} style={{ width: `${numberWidth}px`, textAlign: 'center' }}>#</div>
-                                        <div className="relative rounded-lg overflow-hidden border-amber-400 shadow-xl flex-shrink-0" style={{ width: `${avatarSize}px`, height: `${avatarSize}px`, borderWidth: calculatedItemHeight < 60 ? '2px' : '3px' }} />
-                                        <div className="flex-grow">
-                                            <div className={`font-bold text-white ${fontSize} leading-tight mb-1`}>&nbsp;</div>
-                                            <div className={`text-amber-300 ${smallFontSize} leading-tight`}>&nbsp;</div>
-                                        </div>
-                                    </div>
-                                );
-                            }
-                            
-                            return (
-                                <div
-                                    key={player.nickname}
-                                    className="flex items-center bg-gradient-to-r from-zinc-800/90 to-zinc-900/90 backdrop-blur-sm rounded-lg shadow-2xl w-full"
-                                    style={{
-                                        padding: `${padding}px ${padding * 1.5}px`,
-                                        minHeight: `${calculatedItemHeight}px`,
-                                        gap: `${Math.max(6, padding * 0.8)}px`,
-                                        border: `${calculatedItemHeight < 60 ? '1px' : '2px'} solid rgba(251, 191, 36, 0.5)`,
-                                        opacity: isNew ? 0 : 1,
-                                        animation: isNew ? 'fadeInSlide 0.7s ease-out forwards' : 'none'
-                                    }}
-                                >
-                                    <div className={`font-bold text-amber-400 ${fontSize} flex-shrink-0`} style={{ width: `${numberWidth}px`, textAlign: 'center' }}>
-                                        #{actualPosition}
-                                    </div>
-                                    <div className="relative rounded-lg overflow-hidden border-amber-400 shadow-xl flex-shrink-0" style={{ width: `${avatarSize}px`, height: `${avatarSize}px`, borderWidth: calculatedItemHeight < 60 ? '2px' : '3px' }}>
-                                        <AvatarImageFill nickname={player.nickname} />
-                                    </div>
-                                    <div className="flex-grow">
-                                        <div className={`font-bold text-white ${fontSize} leading-tight mb-1`}>{player.nickname}</div>
-                                        <div className={`text-amber-300 ${smallFontSize} leading-tight`}><span className="font-bold">{player.totalPoints}</span> DAP</div>
-                                    </div>
-                                </div>
-                            );
-                        })}
+                        {centerRow.map(renderPlayerTile)}
                     </div>
                 )}
                 
@@ -266,107 +257,7 @@ export default function RemainingPlayersSlide({ isFullscreen, weeklyStats, step 
                                 gap: `${gapSize}px`
                             }}
                         >
-                    {columnPlayers.map((player) => {
-                        // Oblicz globalny indeks gracza w oryginalnej liście playersToReveal
-                        // Ponieważ rozdzielaliśmy naprzemiennie: lewa=0,2,4... prawa=1,3,5...
-                        const globalIndex = playersToReveal.findIndex(p => p.nickname === player.nickname);
-                        // Sprawdź czy ten gracz jest już widoczny
-                        const isVisible = globalIndex < visibleCount;
-                        const isNew = globalIndex === visibleCount - 1;
-                        // Oblicz pozycję: playersToReveal są odwróceni, więc ostatni w tablicy to 4. miejsce
-                        const actualPosition = playersToReveal.length - globalIndex + 3; // +3 bo top 3 nie jest w tej liście
-                        
-                        // Jeśli niewidoczny, renderuj placeholder z identyczną strukturą
-                        if (!isVisible) {
-                            return (
-                                <div
-                                    key={`placeholder-${player.nickname}`}
-                                    className="flex items-center bg-gradient-to-r from-zinc-800/90 to-zinc-900/90 backdrop-blur-sm rounded-lg shadow-2xl"
-                                    style={{
-                                        padding: `${padding}px ${padding * 1.5}px`,
-                                        minHeight: `${calculatedItemHeight}px`,
-                                        gap: `${Math.max(6, padding * 0.8)}px`,
-                                        border: `${calculatedItemHeight < 60 ? '1px' : '2px'} solid rgba(251, 191, 36, 0.5)`,
-                                        visibility: 'hidden'
-                                    }}
-                                >
-                                    {/* Numer pozycji - placeholder */}
-                                    <div 
-                                        className={`font-bold text-amber-400 ${fontSize} flex-shrink-0`}
-                                        style={{ width: `${numberWidth}px`, textAlign: 'center' }}
-                                    >
-                                        #
-                                    </div>
-
-                                    {/* Avatar - placeholder */}
-                                    <div 
-                                        className="relative rounded-lg overflow-hidden border-amber-400 shadow-xl flex-shrink-0"
-                                        style={{ 
-                                            width: `${avatarSize}px`, 
-                                            height: `${avatarSize}px`,
-                                            borderWidth: calculatedItemHeight < 60 ? '2px' : '3px'
-                                        }}
-                                    />
-
-                                    {/* Nick i punkty - placeholder */}
-                                    <div className="flex-grow">
-                                        <div className={`font-bold text-white ${fontSize} leading-tight mb-1`}>
-                                            &nbsp;
-                                        </div>
-                                        <div className={`text-amber-300 ${smallFontSize} leading-tight`}>
-                                            &nbsp;
-                                        </div>
-                                    </div>
-                                </div>
-                            );
-                        }
-                        
-                        // Renderuj widocznego gracza
-                        return (
-                            <div
-                                key={player.nickname}
-                                className="flex items-center bg-gradient-to-r from-zinc-800/90 to-zinc-900/90 backdrop-blur-sm rounded-lg shadow-2xl"
-                                style={{
-                                    padding: `${padding}px ${padding * 1.5}px`,
-                                    minHeight: `${calculatedItemHeight}px`,
-                                    gap: `${Math.max(6, padding * 0.8)}px`,
-                                    border: `${calculatedItemHeight < 60 ? '1px' : '2px'} solid rgba(251, 191, 36, 0.5)`,
-                                    opacity: isNew ? 0 : 1,
-                                    animation: isNew ? 'fadeInSlide 0.7s ease-out forwards' : 'none'
-                                }}
-                            >
-                                {/* Numer pozycji */}
-                                <div 
-                                    className={`font-bold text-amber-400 ${fontSize} flex-shrink-0`}
-                                    style={{ width: `${numberWidth}px`, textAlign: 'center' }}
-                                >
-                                    #{actualPosition}
-                                </div>
-
-                                {/* Avatar */}
-                                <div 
-                                    className="relative rounded-lg overflow-hidden border-amber-400 shadow-xl flex-shrink-0"
-                                    style={{ 
-                                        width: `${avatarSize}px`, 
-                                        height: `${avatarSize}px`,
-                                        borderWidth: calculatedItemHeight < 60 ? '2px' : '3px'
-                                    }}
-                                >
-                                    <AvatarImageFill nickname={player.nickname} />
-                                </div>
-
-                                {/* Nick i punkty */}
-                                <div className="flex-grow">
-                                    <div className={`font-bold text-white ${fontSize} leading-tight mb-1`}>
-                                        {player.nickname}
-                                    </div>
-                                    <div className={`text-amber-300 ${smallFontSize} leading-tight`}>
-                                        <span className="font-bold">{player.totalPoints}</span> DAP
-                                    </div>
-                                </div>
-                            </div>
-                        );
-                    })}
+                            {columnPlayers.map(renderPlayerTile)}
                         </div>
                     );
                 })}
