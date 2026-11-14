@@ -1,0 +1,14 @@
+{
+    "name": "townofus-db-snapshot",
+    "private": true,
+    "description": "Weekly D1 snapshot Worker. Uses the dependencies installed at the repo root (npm ci there), except wrangler, which is pinned below.",
+    "scripts": {
+        "test": "jest",
+        "typecheck": "tsc --noEmit",
+        "types": "npx --yes wrangler@4.157.0 types worker-configuration.d.ts --config wrangler.toml --env production --env-interface SnapshotEnv --include-runtime=false --strict-vars=false",
+        "types:check": "npx --yes wrangler@4.157.0 types worker-configuration.d.ts --config wrangler.toml --env production --env-interface SnapshotEnv --include-runtime=false --strict-vars=false --check",
+        "dry-run": "npx --yes wrangler@4.157.0 deploy --dry-run --env staging --outdir .wrangler/dry-run && npx --yes wrangler@4.157.0 deploy --dry-run --env production --outdir .wrangler/dry-run",
+        "deploy:staging": "npx --yes wrangler@4.157.0 deploy --env staging",
+        "deploy:production": "npx --yes wrangler@4.157.0 deploy --env production"
+    }
+}

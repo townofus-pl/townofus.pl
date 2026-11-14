@@ -32,15 +32,21 @@ jobs:
       # player's auto-update fail silently, visible only in their own log.
       - run: npm run mod:publish
 
-  # The Discord bot (workers/discord-bot/). It has its own tsconfig and Jest config and uses the
-  # root's dependencies.
-  bot:
+  # The Workers under workers/: the Discord bot and the weekly D1 snapshot. Each has its own
+  # tsconfig and Jest config and uses the root's dependencies. The snapshot dry run pins wrangler
+  # 4.157.0 through npx (the root has an older one).
+  worker:
+    name: worker (${{ matrix.worker }})
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        worker: [discord-bot, db-snapshot]
     env:
       HUSKY: 0
     defaults:
       run:
-        working-directory: workers/discord-bot
+        working-directory: workers/${{ matrix.worker }}
     steps:
       - uses: actions/checkout@v4
 
@@ -53,6 +59,11 @@ jobs:
       # Miniflare need the workerd binary in place.
       - run: npm ci
         working-directory: .
+
+      # worker-configuration.d.ts is generated from wrangler.toml and committed. Fails when it is stale.
+      - name: Check generated types
+        if: matrix.worker == 'db-snapshot'
+        run: npm run types:check
 
       - run: npm run typecheck
 

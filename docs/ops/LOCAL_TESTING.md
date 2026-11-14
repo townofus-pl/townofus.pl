@@ -33,6 +33,9 @@ no dump and `npm run db:import:local -- --no-export` will fail on the missing fi
    Prefer **staging** over production. `npm run db:import:local` without `--no-export` reaches for
    *production* by default — read-only, but still production.
 
+A Worker with a Workflow (`workers/db-snapshot/`) also exports the production D1 once a week to a private
+R2 bucket. It is not a local source: only the Preview job reads `latest.sql`. See its README.
+
 Then:
 
 ```bash
