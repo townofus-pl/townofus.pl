@@ -2,28 +2,64 @@
 
 import Image from "next/image";
 import {useState} from "react";
-import {installGuides, TOU_DOWNLOAD_LABEL} from "./installGuides";
-import {leagueMiraDownloadUrl, leagueMiraZip, type MiraBuildKey} from "@/constants/miraRelease";
+import {installGuides} from "./installGuides";
 
 const windowsGuide = installGuides.find((guide) => guide.key === "windows");
-const TOU_DOWNLOAD_BUILD: Record<string, MiraBuildKey> = {
-    steam: "steam",
-    "itch-io": "itch-io",
-    "epic-games": "epic-games",
-    "microsoft-store": "microsoft-store",
+const TOU_RELEASES_LATEST_PAGE = "https://github.com/AU-Avengers/TOU-Mira/releases/latest";
+const TOU_RELEASES_LATEST_API = "https://api.github.com/repos/AU-Avengers/TOU-Mira/releases/latest";
+
+// Podpowiedzi są w kolejności ważności i pasują do nazw zipów z obu układów wydań:
+// 1.7.3 (`x86-steam-itch`, `x64-epic-msstore`) i 1.7.9-beta2 (`x64-Steam-Epic-MsStore`, `x86-ItchIo`).
+// Dla itch.io pierwszy jest "itch": zip Steam/Epic/MS z beta2 go nie zawiera, więc nie zostanie wybrany.
+const platformAssetHints: Record<string, string[]> = {
+    steam: ["steam"],
+    "itch-io": ["itch"],
+    "epic-games": ["epic"],
+    "microsoft-store": ["msstore", "epic"],
 };
+
+interface GitHubReleaseAsset {
+    name: string;
+    browser_download_url: string;
+}
+
+interface GitHubRelease {
+    assets: GitHubReleaseAsset[];
+}
 
 export default function InstallGuidesClient() {
     const platforms = windowsGuide?.platforms ?? [];
     const [selectedPlatform, setSelectedPlatform] = useState(platforms[0]?.key ?? "");
     const currentPlatform = platforms.find((platform) => platform.key === selectedPlatform) ?? platforms[0];
 
-    /** Prowadzi prosto do paczki przypiętego wydania. Bez wywołania GitHub API i bez `releases/latest`. */
-    function handleTouDownloadClick(event: React.MouseEvent<HTMLAnchorElement>, platformKey: string) {
-        const build = TOU_DOWNLOAD_BUILD[platformKey];
-        if (!build) return; // Domyślnie: strona wydania z href linku.
+    async function handleTouDownloadClick(event: React.MouseEvent<HTMLAnchorElement>, platformKey: string) {
         event.preventDefault();
-        window.location.assign(leagueMiraDownloadUrl(leagueMiraZip(build)));
+
+        try {
+            const response = await fetch(TOU_RELEASES_LATEST_API, {
+                headers: {
+                    Accept: "application/vnd.github+json",
+                },
+            });
+
+            if (!response.ok) {
+                window.location.assign(TOU_RELEASES_LATEST_PAGE);
+                return;
+            }
+
+            const release = (await response.json()) as GitHubRelease;
+            const hints = platformAssetHints[platformKey] ?? [];
+
+            const zips = release.assets.filter((asset) => asset.name.toLowerCase().endsWith(".zip"));
+            // Pętla po podpowiedziach na zewnątrz: ważniejsza podpowiedź wygrywa z kolejnością assetów.
+            const matchingAsset = hints
+                .map((hint) => zips.find((asset) => asset.name.toLowerCase().includes(hint)))
+                .find((asset) => asset !== undefined) ?? zips[0];
+
+            window.location.assign(matchingAsset?.browser_download_url ?? TOU_RELEASES_LATEST_PAGE);
+        } catch {
+            window.location.assign(TOU_RELEASES_LATEST_PAGE);
+        }
     }
 
     if (!currentPlatform) {
@@ -132,7 +168,7 @@ export default function InstallGuidesClient() {
                     <section>
                         <div className="mt-1 flex flex-wrap gap-3">
                             {currentPlatform.guide.linki.map((link) => {
-                                const isTouDownload = link.label === TOU_DOWNLOAD_LABEL;
+                                const isTouDownload = link.label === "Pobierz najnowszy TOU: Mira";
                                 const isGitHubLink = link.label.toLowerCase().includes("github");
                                 const isMicrosoftLink = link.label.toLowerCase().includes("microsoft");
                                 const isSteamLink = link.label.toLowerCase().includes("steam");

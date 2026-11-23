@@ -1,12 +1,3 @@
-import {
-    LEAGUE_MIRA_ANDROID_DLLS,
-    LEAGUE_MIRA_ANDROID_NOTES,
-    LEAGUE_MIRA_NOTES,
-    LEAGUE_MIRA_RELEASE_URL,
-    LEAGUE_MIRA_VERSION,
-    leagueMiraZip,
-} from "@/constants/miraRelease";
-
 export type OsKey = "android" | "windows" | "mac" | "linux";
 
 export interface GuideLink {
@@ -37,14 +28,7 @@ export interface OsGuides {
     platforms: PlatformGuide[];
 }
 
-/** macOS i Linux grają w paczkę Windows przez Wine/Proton/CrossOver. Dodajemy tę uwagę do kroku z paczką Windows. */
-const WINE_NOTE = " Działa w Wine, Proton i CrossOver: to paczka Windows.";
-
-/** Strona wydania przypiętego w `src/constants/miraRelease.ts` (nie `releases/latest`). */
-const RELEASE_PAGE = LEAGUE_MIRA_RELEASE_URL;
-
-/** Etykieta przycisku pobierania. `InstallGuidesClient` rozpoznaje po niej przycisk TOU. */
-export const TOU_DOWNLOAD_LABEL = `Pobierz TOU: Mira ${LEAGUE_MIRA_VERSION}`;
+const RELEASES_LATEST = "https://github.com/AU-Avengers/TOU-Mira/releases/latest";
 
 export const installGuides: OsGuides[] = [
     {
@@ -62,7 +46,7 @@ export const installGuides: OsGuides[] = [
                         "Masz dostęp do lokalnych plików gry.",
                     ],
                     kroki: [
-                        `Pobierz TOU: Mira ${LEAGUE_MIRA_VERSION}.`,
+                        "Pobierz najnowsze wydanie TOU: Mira.",
                         "W bibliotece Steam kliknij PPM na Among Us i wybierz Zarządzaj > Przeglądaj pliki lokalne.",
                         "W folderze common skopiuj katalog Among Us i nazwij go np. Among Us - TOU Mira.",
                         "Rozpakuj pobrane archiwum i skopiuj całą zawartość do nowego folderu TOU Mira.",
@@ -72,7 +56,7 @@ export const installGuides: OsGuides[] = [
                         "Jeśli potrzebny jest downgrade, w Steam wejdź w Właściwości > Betas i wybierz public previous.",
                     ],
                     linki: [
-                        { label: TOU_DOWNLOAD_LABEL, href: RELEASE_PAGE },
+                        { label: "Pobierz najnowszy TOU: Mira", href: RELEASES_LATEST },
                         { label: "Among Us na Steam", href: "https://store.steampowered.com/app/945360" },
                     ],
                 },
@@ -87,16 +71,16 @@ export const installGuides: OsGuides[] = [
                         "Posiadasz Among Us na Epic Games.",
                     ],
                     kroki: [
-                        `Pobierz TOU: Mira ${LEAGUE_MIRA_VERSION}.`,
+                        "Pobierz najnowsze wydanie moda.",
                         "Przejdź do katalogu instalacji Epic Games i skopiuj folder Among Us (np. jako Among Us - TOU Mira).",
                         "Rozpakuj archiwum moda i skopiuj wszystkie pliki do nowego folderu.",
                         "Uruchom grę przez EpicGamesStarter.exe (czasami wymagane uruchomienie jako administrator).",
                     ],
                     notatki: [
-                        `Jeśli wolisz, możesz użyć alternatywnie Heroic Launcher (ta sama paczka ${leagueMiraZip("epic-games")}).`,
+                        "Jeśli wolisz, możesz użyć alternatywnie Heroic Launcher (ta sama paczka co dla Epic / Microsoft Store).",
                     ],
                     linki: [
-                        { label: TOU_DOWNLOAD_LABEL, href: RELEASE_PAGE },
+                        { label: "Pobierz najnowszy TOU: Mira", href: RELEASES_LATEST },
                         { label: "Among Us na Epic Games", href: "https://store.epicgames.com/en-US/p/among-us" },
                     ],
                 },
@@ -112,14 +96,14 @@ export const installGuides: OsGuides[] = [
                         "Masz zainstalowaną aplikację Itch.io.",
                     ],
                     kroki: [
-                        `Pobierz TOU: Mira ${LEAGUE_MIRA_VERSION}.`,
+                        "Pobierz najnowsze wydanie TOU: Mira.",
                         "W bibliotece Itch.io kliknij PPM na Among Us i wybierz Manage > Open folder in explorer.",
                         "Skopiuj folder Among Us i nadaj nazwę np. Among Us - TOU Mira.",
                         "Rozpakuj paczkę moda i wklej wszystkie pliki do nowego folderu.",
                         "Uruchom Among Us.exe z folderu TOU Mira.",
                     ],
                     linki: [
-                        { label: TOU_DOWNLOAD_LABEL, href: RELEASE_PAGE },
+                        { label: "Pobierz najnowszy TOU: Mira", href: RELEASES_LATEST },
                         { label: "Among Us na Itch.io", href: "https://innersloth.itch.io/among-us" },
                     ],
                 },
@@ -134,7 +118,7 @@ export const installGuides: OsGuides[] = [
                         "Posiadasz Among Us na Microsoft Store lub Xbox App.",
                     ],
                     kroki: [
-                        `Pobierz TOU: Mira ${LEAGUE_MIRA_VERSION}.`,
+                        "Pobierz najnowszy TOU: Mira.",
                         "W Xbox App kliknij PPM na Among Us i wejdź w Zarządzaj.",
                         "Przejdź do zakładki Pliki i kliknij Przeglądaj.",
                         "Otwórz folder Content w katalogu gry.",
@@ -145,7 +129,7 @@ export const installGuides: OsGuides[] = [
                         "Ta platforma nie wspiera downgrade wersji gry.",
                     ],
                     linki: [
-                        { label: TOU_DOWNLOAD_LABEL, href: RELEASE_PAGE },
+                        { label: "Pobierz najnowszy TOU: Mira", href: RELEASES_LATEST },
                         { label: "Among Us w Microsoft Store", href: "https://apps.microsoft.com/detail/9NG07QJNK38J" },
                     ],
                 },
@@ -169,7 +153,7 @@ export const installGuides: OsGuides[] = [
                     kroki: [
                         "Zainstaluj CrossOver i doinstaluj przez niego Steam.",
                         "Zainstaluj i uruchom Among Us przynajmniej raz.",
-                        `Pobierz TOU: Mira ${LEAGUE_MIRA_VERSION} (pakiet ${leagueMiraZip("steam")}).${WINE_NOTE}`,
+                        "Pobierz najnowszy TOU: Mira (paczkę dla Steam; to build Windows, działa w Wine, Proton i CrossOver).",
                         "W CrossOver otwórz dysk C i przejdź do Program Files (x86) > Steam > steamapps > common > Among Us.",
                         "Rozpakuj paczkę moda i wklej wszystkie pliki do folderu Among Us.",
                         "W konfiguracji Wine dodaj bibliotekę winhttp i uruchom grę ponownie.",
@@ -177,10 +161,10 @@ export const installGuides: OsGuides[] = [
                     kod: "Program Files (x86) > Steam > steamapps > common > Among Us",
                     notatki: [
                         "W razie potrzeby wykonaj downgrade gry w Steam (Betas > public previous).",
-                        "W części przypadków pomaga najpierw instalacja TOU: Mira v1.0.0, a potem aktualizacja do wersji ligowej.",
+                        "W części przypadków pomaga najpierw instalacja TOU: Mira v1.0.0, a potem aktualizacja do najnowszej wersji.",
                     ],
                     linki: [
-                        { label: TOU_DOWNLOAD_LABEL, href: RELEASE_PAGE },
+                        { label: "Pobierz najnowszy TOU: Mira", href: RELEASES_LATEST },
                         { label: "CrossOver", href: "https://www.codeweavers.com/crossover/download" },
                     ],
                 },
@@ -199,12 +183,12 @@ export const installGuides: OsGuides[] = [
                         "Zainstaluj Heroic i zaloguj się na konto Epic Games.",
                         "W Wine Manager pobierz wersję Wine-Stable-MacOS.",
                         "W Library zainstaluj Among Us, otwórz Details i kliknij Install Path.",
-                        `Pobierz TOU: Mira ${LEAGUE_MIRA_VERSION} (pakiet ${leagueMiraZip("epic-games")}), rozpakuj i skopiuj pliki do folderu gry.`,
+                        "Pobierz TOU: Mira (paczkę dla Epic / Microsoft Store; to build Windows), rozpakuj i skopiuj pliki do folderu gry.",
                         "W ustawieniach gry ustaw pobraną wersję Wine, uruchom winecfg i dodaj bibliotekę winhttp.",
                         "Uruchom grę z Heroic i zweryfikuj logo TOU: Mira.",
                     ],
                     linki: [
-                        { label: TOU_DOWNLOAD_LABEL, href: RELEASE_PAGE },
+                        { label: "Pobierz najnowszy TOU: Mira", href: RELEASES_LATEST },
                         { label: "Heroic Games Launcher", href: "https://heroicgameslauncher.com/" },
                         { label: "Among Us na Epic Games", href: "https://store.epicgames.com/en-US/p/among-us" },
                     ],
@@ -226,7 +210,7 @@ export const installGuides: OsGuides[] = [
                         "Posiadasz Among Us na Steam.",
                     ],
                     kroki: [
-                        `Pobierz TOU: Mira ${LEAGUE_MIRA_VERSION} (pakiet ${leagueMiraZip("steam")}).${WINE_NOTE}`,
+                        "Pobierz najnowszy TOU: Mira (paczkę dla Steam; to build Windows, działa w Wine, Proton i CrossOver).",
                         "W Steam kliknij PPM na Among Us > Zarządzaj > Przeglądaj pliki lokalne.",
                         "Rozpakuj paczkę moda i skopiuj jej zawartość do folderu gry.",
                         "W Steam ustaw opcje uruchamiania zgodnie z komendą poniżej.",
@@ -238,7 +222,7 @@ export const installGuides: OsGuides[] = [
                         "Na Steam Deck zwykle działa bez zmian, ale sterowanie padem może wymagać dodatkowej konfiguracji.",
                     ],
                     linki: [
-                        { label: TOU_DOWNLOAD_LABEL, href: RELEASE_PAGE },
+                        { label: "Pobierz najnowszy TOU: Mira", href: RELEASES_LATEST },
                         { label: "Among Us na Steam", href: "https://store.steampowered.com/app/945360" },
                     ],
                 },
@@ -254,7 +238,7 @@ export const installGuides: OsGuides[] = [
                         "Masz zainstalowany Heroic Launcher.",
                     ],
                     kroki: [
-                        `Pobierz TOU: Mira ${LEAGUE_MIRA_VERSION} (pakiet ${leagueMiraZip("epic-games")}).`,
+                        "Pobierz najnowszy TOU: Mira (paczkę dla Epic / Microsoft Store; to build Windows).",
                         "W Heroic, w zakładce Wine Manager, zainstaluj Wine-GE-Latest.",
                         "W Library kliknij PPM na Among Us > Details i otwórz Install Path.",
                         "Rozpakuj paczkę moda i skopiuj wszystkie pliki do folderu Among Us.",
@@ -262,7 +246,7 @@ export const installGuides: OsGuides[] = [
                         "Uruchom grę z Heroic i sprawdź, czy mod się ładuje.",
                     ],
                     linki: [
-                        { label: TOU_DOWNLOAD_LABEL, href: RELEASE_PAGE },
+                        { label: "Pobierz najnowszy TOU: Mira", href: RELEASES_LATEST },
                         { label: "Heroic Games Launcher", href: "https://heroicgameslauncher.com/" },
                     ],
                 },
@@ -304,17 +288,18 @@ export const installGuides: OsGuides[] = [
                         "Aplikacja Starlight z Google Play.",
                     ],
                     kroki: [
-                        `Pobierz pliki wydania TOU: Mira ${LEAGUE_MIRA_VERSION} (zakładka Assets na stronie wydania).`,
-                        `Potrzebne pliki: ${LEAGUE_MIRA_ANDROID_DLLS.join(", ")}.`,
+                        "Pobierz najnowsze wydanie TOU: Mira i z zakładki Assets wybierz pliki DLL dla Androida.",
+                        "Potrzebne pliki DLL: TownOfUsMira-Android.dll i MiraAPI.dll (starsze wydania nazywały je TownOfUsMira.dll, MiraAPI.dll, Reactor.dll).",
                         "Uruchom najpierw vanilla Among Us co najmniej raz.",
                         "Otwórz Starlight i w zakładce Mods zaimportuj wszystkie pobrane pliki DLL.",
                         "Uruchom grę i sprawdź, czy logo Among Us zostało zastąpione przez Town of Us: Mira.",
                     ],
                     notatki: [
+                        "Przy aktualizacji ze starszego wydania utwórz w Starlight nowy profil moda zamiast używać starego.",
                         "Jeśli aplikacja wymaga konta gościa, zaloguj się przez Itch.io w ustawieniach Starlight.",
                     ],
                     linki: [
-                        { label: TOU_DOWNLOAD_LABEL, href: RELEASE_PAGE },
+                        { label: "Pobierz najnowszy TOU: Mira", href: RELEASES_LATEST },
                         { label: "Among Us w Google Play", href: "https://play.google.com/store/apps/details?id=com.innersloth.spacemafia" },
                         { label: "Starlight w Google Play", href: "https://play.google.com/store/apps/details?id=dev.allofus.starlight" },
                     ],
@@ -324,12 +309,17 @@ export const installGuides: OsGuides[] = [
     },
 ];
 
-// Uwagi wydania (np. pełna reinstalacja) dopisujemy do każdego przewodnika w jednym miejscu.
+// Uwagi wspólne dla wszystkich przewodników. Nie podajemy numerów wersji: strona zawsze
+// wskazuje najnowsze wydanie, więc tekst musi być prawdziwy także dla kolejnych.
+const REINSTALL_NOTE =
+    "Przy aktualizacji ze starszego wydania zrób pełną reinstalację: nie nakładaj nowej paczki na starą kopię moda.";
+const NO_MAC_LINUX_ZIP_NOTE =
+    "Najnowsze wydania mogą nie mieć osobnej paczki dla macOS i Linuksa. Wtedy użyj paczki Windows przez Wine, Proton lub CrossOver.";
+
 for (const os of installGuides) {
     for (const platform of os.platforms) {
-        const extra = os.key === "android" ? [...LEAGUE_MIRA_NOTES, ...LEAGUE_MIRA_ANDROID_NOTES] : LEAGUE_MIRA_NOTES;
-        if (extra.length > 0) {
-            platform.guide.notatki = [...extra, ...(platform.guide.notatki ?? [])];
-        }
+        const extra = [REINSTALL_NOTE];
+        if (os.key === "mac" || os.key === "linux") extra.push(NO_MAC_LINUX_ZIP_NOTE);
+        platform.guide.notatki = [...extra, ...(platform.guide.notatki ?? [])];
     }
 }
