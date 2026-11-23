@@ -102,13 +102,6 @@ export default function DoPobraniaPage() {
                     ))}
                 </div>
 
-                {!LEAGUE_MIRA_MAC_LINUX_ZIP && (
-                    <p className="text-xs text-[#b0aeb8] mb-3">
-                        macOS i Linux: to wydanie nie ma osobnej paczki. Zobacz{' '}
-                        <a href="https://au-avengers.github.io/docs.toum.gg/docs/category/linux--steam-deck-install" className="underline hover:text-white">przewodnik TOU-Mira dla Linuksa</a>.
-                    </p>
-                )}
-
                 <p className="text-xs text-[#b0aeb8] mb-6">
                     Źródło: {' '}
                     <a href={LEAGUE_MIRA_RELEASE_URL} className="underline hover:text-white">

@@ -1,12 +1,11 @@
 /**
- * Wydanie TOU-Mira, na którym gra liga. Używa go TYLKO strona `/dramaafera/do_pobrania`.
+ * Wydanie TOU-Mira, na którym gra liga. Używa go strona `/dramaafera/do_pobrania`.
  *
  * To JEDNO miejsce do zmiany, gdy liga przechodzi na nowszą wersję. Nie czytamy `releases/latest`:
  * upstream wydaje kolejne wersje (także beta), zanim liga na nie przejdzie, a gracz z `latest`
  * dostałby paczkę niezgodną z lobby.
  *
- * Publiczna strona `/instalacja-tou` jest inna: ona zawsze wskazuje `releases/latest`
- * i nie importuje tego pliku.
+ * Publiczna strona `/instalacja-tou` jest inna: ona wskazuje `releases/latest` i nie importuje tego pliku.
  *
  * `MIRA_VERSION` w `src/roles/_generated/miraVersion.ts` to też coś innego: tag submodułu, z którego
  * wygenerowano ustawienia ról. Może wyprzedzać wersję ligi.
@@ -21,7 +20,7 @@ export type MiraBuildKey = 'steam' | 'itch-io' | 'epic-games' | 'microsoft-store
 interface MiraRelease {
     /** Nazwy paczek ZIP z wydania, po jednej na platformę. */
     zips: Record<MiraBuildKey, string>;
-    /** Nazwa osobnej paczki dla macOS/Linuksa. Gdy jej nie ma, wydanie nie wspiera macOS/Linuksa osobną paczką. */
+    /** Nazwa osobnej paczki dla macOS/Linuksa. Wydania bez niej (np. 1.7.9-beta2) nie mają paczki dla macOS/Linuksa. */
     macLinuxZip?: string;
 }
 

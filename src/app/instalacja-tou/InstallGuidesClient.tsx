@@ -8,14 +8,11 @@ const windowsGuide = installGuides.find((guide) => guide.key === "windows");
 const TOU_RELEASES_LATEST_PAGE = "https://github.com/AU-Avengers/TOU-Mira/releases/latest";
 const TOU_RELEASES_LATEST_API = "https://api.github.com/repos/AU-Avengers/TOU-Mira/releases/latest";
 
-// Nazwy zipów w wydaniach TOU-Mira: 1.7.3 `x86-steam-itch`, `x64-epic-msstore`;
-// 1.7.9-beta2 `x64-Steam-Epic-MsStore`, `x86-ItchIo`. Podpowiedzi muszą pasować do obu układów.
-// Dla itch.io "itch" jest pierwsze: zip Steam/Epic/MS z beta2 go nie zawiera, więc nie zostanie wybrany.
 const platformAssetHints: Record<string, string[]> = {
-    steam: ["steam"],
-    "itch-io": ["itch"],
-    "epic-games": ["epic"],
-    "microsoft-store": ["msstore", "epic"],
+    steam: ["steam-itch", "steam", "itch"],
+    "itch-io": ["steam-itch", "itch", "steam"],
+    "epic-games": ["epic-msstore", "epic", "msstore"],
+    "microsoft-store": ["epic-msstore", "msstore", "epic"],
 };
 
 interface GitHubReleaseAsset {
@@ -50,11 +47,10 @@ export default function InstallGuidesClient() {
             const release = (await response.json()) as GitHubRelease;
             const hints = platformAssetHints[platformKey] ?? [];
 
-            const zips = release.assets.filter((asset) => asset.name.toLowerCase().endsWith(".zip"));
-            // Pętla po podpowiedziach na zewnątrz: ważniejsza podpowiedź wygrywa z kolejnością assetów.
-            const matchingAsset = hints
-                .map((hint) => zips.find((asset) => asset.name.toLowerCase().includes(hint)))
-                .find((asset) => asset !== undefined) ?? zips[0];
+            const matchingAsset = release.assets.find((asset) => {
+                const assetName = asset.name.toLowerCase();
+                return hints.some((hint) => assetName.includes(hint));
+            }) ?? release.assets.find((asset) => asset.name.toLowerCase().endsWith(".zip"));
 
             window.location.assign(matchingAsset?.browser_download_url ?? TOU_RELEASES_LATEST_PAGE);
         } catch {
