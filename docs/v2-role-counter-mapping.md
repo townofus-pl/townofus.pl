@@ -9,7 +9,7 @@ differs from `2e751b7`, the build serving production, only in the mod's docs. Re
 mod's `game_data.schema.json` or its correctness rules move; a new (type, role) pair rejects the
 upload, which is the signal this table is behind.
 
-Re-checked on 2026-11-22 against `dramaafera-stats-mod` at `96fa4e8` (TOU-Mira `22b145e`, tag `1.7.9-beta2`):
+Re-checked on 2026-11-22 against TOU-Mira `22b145e` (tag `1.7.9-beta2`; `dramaafera-stats-mod` at `cceceb7` as of 2026-11-23):
 no role or modifier added or removed, `IdPart` values and the `AbilityType` enum unchanged. Counted
 actions were not replayed at runtime; that needs a playtest.
 

@@ -3,7 +3,7 @@
  *
  * To JEDNO miejsce do zmiany, gdy liga przechodzi na nowszą wersję. Nie czytamy `releases/latest`:
  * upstream wydaje kolejne wersje (także beta), zanim liga na nie przejdzie, a nowy gracz z
- * `latest` dostałby paczkę niezgodną z lobby. Zob. N5 w `verify-plan.md` (TOU-Mira 1.7.9-beta2).
+ * `latest` dostałby paczkę niezgodną z lobby.
  *
  * `MIRA_VERSION` w `src/roles/_generated/miraVersion.ts` to coś innego: tag submodułu, z którego
  * wygenerowano ustawienia ról. Może wyprzedzać wersję ligi.
@@ -12,13 +12,13 @@
  */
 export const LEAGUE_MIRA_VERSION = '1.7.3';
 
-/** Klucze platform z przewodnika instalacji (`installGuides.ts`) plus macOS/Linux. */
+/** Klucze platform z przewodnika instalacji (`installGuides.ts`). Paczka macOS/Linux ma osobne pole. */
 export type MiraBuildKey = 'steam' | 'itch-io' | 'epic-games' | 'microsoft-store';
 
 interface MiraRelease {
     /** Nazwy paczek ZIP z wydania, po jednej na platformę. */
     zips: Record<MiraBuildKey, string>;
-    /** Czy wydanie ma osobną paczkę dla macOS/Linuksa. Jeśli nie, tam działa paczka Windows (Wine/Proton). */
+    /** Nazwa osobnej paczki dla macOS/Linuksa. Gdy jej nie ma, tam działa paczka Windows (Wine/Proton). */
     macLinuxZip?: string;
     /** Pliki DLL dla Androida (Starlight). */
     androidDlls: string[];
@@ -37,7 +37,8 @@ const RELEASES: Record<string, MiraRelease> = {
             'microsoft-store': 'TouMira.v1.7.3-x64-epic-msstore.zip',
         },
         macLinuxZip: 'TouMira.v1.7.3-x86-macOS-linux.zip',
-        androidDlls: ['MiraAPI.dll', 'Reactor.dll', 'TownOfUs.dll'],
+        // Prawdziwe assety wydania 1.7.3 (`gh release view 1.7.3`): MiraAPI.dll i TownOfUsMira.dll.
+        androidDlls: ['TownOfUsMira.dll', 'MiraAPI.dll'],
         notes: [],
         androidNotes: [],
     },

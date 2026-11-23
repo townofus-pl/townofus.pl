@@ -37,10 +37,10 @@ export interface OsGuides {
     platforms: PlatformGuide[];
 }
 
-/** Strona wydania przypiętego w `src/constants/miraRelease.ts` (nie `releases/latest`). */
-/** macOS i Linux używają paczki Windows przez Wine/Proton, gdy wydanie nie ma własnej paczki. */
+/** macOS i Linux grają w paczkę Windows przez Wine/Proton/CrossOver. Dodajemy tę uwagę do kroku z paczką Windows. */
 const WINE_NOTE = " Działa w Wine, Proton i CrossOver: to paczka Windows.";
 
+/** Strona wydania przypiętego w `src/constants/miraRelease.ts` (nie `releases/latest`). */
 const RELEASE_PAGE = LEAGUE_MIRA_RELEASE_URL;
 
 /** Etykieta przycisku pobierania. `InstallGuidesClient` rozpoznaje po niej przycisk TOU. */

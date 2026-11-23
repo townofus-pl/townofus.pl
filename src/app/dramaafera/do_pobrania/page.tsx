@@ -17,8 +17,8 @@ import clientManifest from '../../../../public/mod/client/latest.json';
  * plugin, and the host kicks anyone without it — so following that page would have got a player
  * kicked rather than merely confused. See #316.
  *
- * The plugin's version and hash are read from the manifest the auto-updater uses, so the page
- * cannot advertise a file other than the one being served. Wersja TOU:Mira jest przypięta w
+ * Wersja i hash pluginu pochodzą z manifestu, którego używa auto-update, więc strona nie
+ * zareklamuje innego pliku niż serwowany. Wersja TOU:Mira jest przypięta w
  * `src/constants/miraRelease.ts` do wersji, na której gra liga. Nie czytamy `releases/latest` ani
  * tagu submodułu, bo upstream wydaje nowe wersje wcześniej niż liga na nie przechodzi.
  */
@@ -105,7 +105,7 @@ export default function DoPobraniaPage() {
                 {!LEAGUE_MIRA_MAC_LINUX_ZIP && (
                     <p className="text-xs text-[#b0aeb8] mb-3">
                         macOS i Linux: to wydanie nie ma osobnej paczki. Użyj paczki Windows przez
-                        Wine, Proton lub CrossOver (zob. <a href="/instalacja-tou" className="underline hover:text-white">instrukcję instalacji</a>).
+                        Wine, Proton lub CrossOver.
                     </p>
                 )}
 
