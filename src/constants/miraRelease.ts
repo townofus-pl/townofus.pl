@@ -21,7 +21,7 @@ export type MiraBuildKey = 'steam' | 'itch-io' | 'epic-games' | 'microsoft-store
 interface MiraRelease {
     /** Nazwy paczek ZIP z wydania, po jednej na platformę. */
     zips: Record<MiraBuildKey, string>;
-    /** Nazwa osobnej paczki dla macOS/Linuksa. Gdy jej nie ma, tam działa paczka Windows (Wine/Proton). */
+    /** Nazwa osobnej paczki dla macOS/Linuksa. Gdy jej nie ma, wydanie nie wspiera macOS/Linuksa osobną paczką. */
     macLinuxZip?: string;
 }
 
@@ -42,7 +42,7 @@ const RELEASES: Record<string, MiraRelease> = {
             'epic-games': 'TouMira.v1.7.9-beta2-x64-Steam-Epic-MsStore.zip',
             'microsoft-store': 'TouMira.v1.7.9-beta2-x64-Steam-Epic-MsStore.zip',
         },
-        // Brak paczki dla macOS/Linuksa: grasz w wersję Windows przez Wine/Proton/CrossOver.
+        // Brak paczki dla macOS/Linuksa (wydanie ma tylko dwa zipy: Steam/Epic/MS i ItchIo).
     },
 };
 

@@ -104,8 +104,8 @@ export default function DoPobraniaPage() {
 
                 {!LEAGUE_MIRA_MAC_LINUX_ZIP && (
                     <p className="text-xs text-[#b0aeb8] mb-3">
-                        macOS i Linux: to wydanie nie ma osobnej paczki. Użyj paczki Windows przez
-                        Wine, Proton lub CrossOver.
+                        macOS i Linux: to wydanie nie ma osobnej paczki. Zobacz{' '}
+                        <a href="https://au-avengers.github.io/docs.toum.gg/docs/category/linux--steam-deck-install" className="underline hover:text-white">przewodnik TOU-Mira dla Linuksa</a>.
                     </p>
                 )}
 
