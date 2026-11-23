@@ -21,6 +21,7 @@ import { execFileSync } from 'node:child_process';
 import path from 'node:path';
 import os from 'node:os';
 
+const GENERATED_SETTINGS = 'src/roles/_generated/miraSettings.ts';
 const DEFAULT_MOD_PATH = path.join(os.homedir(), 'Projects/dramaafera-stats-mod');
 
 function parseArgs(argv: string[]): { modPath: string } {
@@ -40,7 +41,8 @@ function readLocale(file: string): Map<string, string> {
     const out = new Map<string, string>();
     const re = /<string\s+name="([^"]+)"\s*>([^<]*)<\/string>/g;
     for (const m of readFileSync(file, 'utf8').matchAll(re)) {
-        out.set(m[1], m[2].trim());
+        // Od 1.7.9 locale zapisuje `&` jako `[and]` (placeholder), więc zamieniamy z powrotem.
+        out.set(m[1], m[2].trim().replaceAll('[and]', '&'));
     }
     return out;
 }
@@ -110,10 +112,12 @@ function writeMiraVersion(modPath: string): void {
     }
 
     const version = tag.replace(/^v/, '');
-    if (!/^\d+\.\d+(\.\d+)?$/.test(version)) {
+    // Dopuszczamy sufiks wydania wstępnego (np. `1.7.9-beta2`). `git describe` zwraca
+    // `<tag>-<n>-g<hash>` dla commita poza tagiem, więc taki wynik nadal jest odrzucany.
+    if (!/^\d+\.\d+(\.\d+)?(-(?:alpha|beta|rc)\.?\d+)?$/.test(version)) {
         throw new Error(
-            `TOU-Mira is at "${tag}", which is not a plain release tag. Players are pointed at an ` +
-                `upstream release, so the submodule has to sit on one.`,
+            `TOU-Mira is at "${tag}", which is not a release tag (X.Y.Z or X.Y.Z-betaN). Players are ` +
+                `pointed at an upstream release, so the submodule has to sit on one.`,
         );
     }
 
@@ -156,6 +160,7 @@ function main(): void {
     const byRole = new Map<string, RoleSetting[]>();
     let fromAttribute = 0;
     let fromInline = 0;
+    let fromList = 0;
     let literalLabels = 0;
     const unresolved: string[] = [];
 
@@ -182,7 +187,7 @@ function main(): void {
 
         // [ModdedNumberOption("Key", …)] \n public float PropName
         for (const m of src.matchAll(
-            /\[Modded(\w+)Option\(\s*"([^"]+)"([\s\S]*?)\]\s*public\s+[\w<>.?]+\s+(\w+)\s*\{/g,
+            /\[Modded(\w+)Option(?:<[\w.]+>)?\(\s*"([^"]+)"([\s\S]*?)\]\s*public\s+[\w<>.?]+\s+(\w+)\s*\{/g,
         )) {
             const label = resolve(m[2]);
             if (!label) continue;
@@ -190,17 +195,31 @@ function main(): void {
             fromAttribute += 1;
         }
 
+        // Od 1.7.9 opcje enum są generyczne: `ModdedEnumOption<JestWinOptions>` — stąd `(?:<…>)?`.
         // public ModdedToggleOption PropName { get; set; } = new("Key", …)
         // …and the setter-less form, with `new(` on the following line:
         // public ModdedEnumOption ReviveMode { get; } =
         //     new("TouOptionAltruistReviveType", …);
         for (const m of src.matchAll(
-            /public\s+Modded(\w+)Option\s+(\w+)\s*\{\s*get;(?:\s*set;)?\s*\}\s*=\s*new\(\s*"([^"]+)"([^;]*)/g,
+            /public\s+Modded(\w+)Option(?:<[\w.]+>)?\s+(\w+)\s*\{\s*get;(?:\s*set;)?\s*\}\s*=\s*new\(\s*"([^"]+)"([^;]*)/g,
         )) {
             const label = resolve(m[3]);
             if (!label) continue;
             settings.push({ cfgKey: m[2], label, ...describe(m[1], m[4], resolve) });
             fromInline += 1;
+        }
+
+        // Lista opcji: `ModdedOptionList<ModdedEnumOption<SystemTypes>> X { get; } = new(10, i => new($"TouOptionSentryBlindspot{i + 1}Room", …)) { ConfigName = i => $"Blindspot{i + 1}Room" }`
+        // Jedna deklaracja daje N ustawień, więc zwykłe wzorce jej nie widzą. Obsługujemy ją wprost.
+        for (const m of src.matchAll(
+            /ModdedOptionList<Modded(\w+)Option<[\w.]+>>\s+\w+\s*\{\s*get;\s*\}\s*=\s*new\(\s*(\d+)\s*,\s*i\s*=>\s*new\(\$"([^"]*)\{i \+ 1\}([^"]*)"[\s\S]*?ConfigName\s*=\s*i\s*=>\s*\$"([^"]*)\{i \+ 1\}([^"]*)"/g,
+        )) {
+            for (let i = 1; i <= Number(m[2]); i += 1) {
+                const label = resolve(`${m[3]}${i}${m[4]}`);
+                if (!label) continue;
+                settings.push({ cfgKey: `${m[5]}${i}${m[6]}`, label, ...describe(m[1], '', resolve) });
+                fromList += 1;
+            }
         }
 
         if (settings.length > 0) {
@@ -234,12 +253,27 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
     )};
 `;
 
-    writeFileSync('src/roles/_generated/miraSettings.ts', out);
+    const total = sorted.reduce((n, [, v]) => n + v.length, 0);
+
+    // Straż: wzorce wyżej są regexami, więc zmiana składni w TOU-Mira potrafi po cichu zgubić
+    // dziesiątki ustawień (tak było przy 1.7.9: generyczne `ModdedEnumOption<T>`). Spadek liczby
+    // ustawień względem zatwierdzonego pliku przerywa generowanie, zanim cokolwiek nadpiszemy.
+    // Jeśli spadek jest zamierzony (TOU usunęło opcje), uruchom z `--allow-drop`.
+    const previous = existsSync(GENERATED_SETTINGS)
+        ? (readFileSync(GENERATED_SETTINGS, 'utf8').match(/"cfgKey":/g) ?? []).length
+        : 0;
+    if (total < previous && !process.argv.includes('--allow-drop')) {
+        throw new Error(
+            `Setting count dropped from ${previous} to ${total}. A regex probably no longer matches ` +
+                `the TOU-Mira source. Fix the generator, or pass --allow-drop if TOU removed options.`,
+        );
+    }
+
+    writeFileSync(GENERATED_SETTINGS, out);
     writeMiraVersion(modPath);
 
-    const total = sorted.reduce((n, [, v]) => n + v.length, 0);
     console.log(`mira settings written: ${sorted.length} roles, ${total} settings`);
-    console.log(`  from attributes: ${fromAttribute}   inline: ${fromInline}   literal labels: ${literalLabels}`);
+    console.log(`  from attributes: ${fromAttribute}   inline: ${fromInline}   list: ${fromList}   literal labels: ${literalLabels}`);
     if (unresolved.length) {
         console.log(`  ⚠ ${unresolved.length} locale keys not found in en_US.xml:`);
         for (const u of unresolved.slice(0, 10)) console.log(`      ${u}`);

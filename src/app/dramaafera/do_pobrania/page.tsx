@@ -1,5 +1,12 @@
 import React from 'react';
-import { MIRA_VERSION, MIRA_RELEASE_URL, miraDownloadUrl } from '@/roles/_generated/miraVersion';
+import {
+    LEAGUE_MIRA_VERSION,
+    LEAGUE_MIRA_RELEASE_URL,
+    LEAGUE_MIRA_MAC_LINUX_ZIP,
+    leagueMiraDownloadUrl,
+    leagueMiraZip,
+    type MiraBuildKey,
+} from '@/constants/miraRelease';
 import clientManifest from '../../../../public/mod/client/latest.json';
 
 /**
@@ -11,17 +18,34 @@ import clientManifest from '../../../../public/mod/client/latest.json';
  * kicked rather than merely confused. See #316.
  *
  * The plugin's version and hash are read from the manifest the auto-updater uses, so the page
- * cannot advertise a file other than the one being served. The TOU:Mira version comes from the
- * submodule tag the league's mod is built against, so the link can never point at a release the
- * plugin was not compiled for.
+ * cannot advertise a file other than the one being served. Wersja TOU:Mira jest przypięta w
+ * `src/constants/miraRelease.ts` do wersji, na której gra liga. Nie czytamy `releases/latest` ani
+ * tagu submodułu, bo upstream wydaje nowe wersje wcześniej niż liga na nie przechodzi.
  */
 
-/** Upstream ships one archive per store, because the game's architecture differs between them. */
-const MIRA_BUILDS = [
-    { label: 'Steam / itch.io', asset: `TouMira.v${MIRA_VERSION}-x86-steam-itch.zip` },
-    { label: 'Epic / Microsoft Store', asset: `TouMira.v${MIRA_VERSION}-x64-epic-msstore.zip` },
-    { label: 'macOS (x86) / Linux', asset: `TouMira.v${MIRA_VERSION}-x86-macOS-linux.zip` },
+const BUILD_LABELS: [MiraBuildKey, string][] = [
+    ['steam', 'Steam'],
+    ['epic-games', 'Epic'],
+    ['microsoft-store', 'Microsoft Store'],
+    ['itch-io', 'itch.io'],
 ];
+
+/**
+ * Upstream wydaje po jednej paczce na architekturę gry. Platformy z tą samą paczką łączymy w jeden
+ * wiersz, więc układ wierszy zależy od wydania (1.7.3: Steam+itch.io; 1.7.9-beta2: Steam+Epic+MS).
+ */
+const MIRA_BUILDS = (() => {
+    const byAsset = new Map<string, string[]>();
+    for (const [key, label] of BUILD_LABELS) {
+        const asset = leagueMiraZip(key);
+        byAsset.set(asset, [...(byAsset.get(asset) ?? []), label]);
+    }
+    const builds = [...byAsset].map(([asset, labels]) => ({ label: labels.join(' / '), asset }));
+    if (LEAGUE_MIRA_MAC_LINUX_ZIP) {
+        builds.push({ label: 'macOS (x86) / Linux', asset: LEAGUE_MIRA_MAC_LINUX_ZIP });
+    }
+    return builds;
+})();
 
 const PLUGIN_NAME = 'DramaAferaStats.Client.dll';
 
@@ -59,17 +83,17 @@ export default function DoPobraniaPage() {
                     </h1>
                 </div>
 
-                <h2 className="text-xl font-semibold mb-3">1. TOU:Mira {MIRA_VERSION}</h2>
+                <h2 className="text-xl font-semibold mb-3">1. TOU:Mira {LEAGUE_MIRA_VERSION}</h2>
                 <p className="text-[#b0aeb8] mb-4">
                     Wybierz paczkę dla swojego sklepu i rozpakuj ją do <strong>osobnej kopii</strong>{' '}
-                    folderu Among Us. Nasz mod ligowy jest zbudowany dokładnie pod {MIRA_VERSION}.
+                    folderu Among Us. Nasz mod ligowy jest zbudowany dokładnie pod {LEAGUE_MIRA_VERSION}.
                 </p>
 
                 <div className="space-y-2 mb-3">
                     {MIRA_BUILDS.map((build) => (
                         <a
                             key={build.asset}
-                            href={miraDownloadUrl(build.asset)}
+                            href={leagueMiraDownloadUrl(build.asset)}
                             className="flex items-center justify-between bg-[#23202a] hover:bg-[#2d2936] transition rounded-lg px-4 py-3 shadow border border-[#23202a] gap-4"
                         >
                             <span className="font-medium">{build.label}</span>
@@ -78,10 +102,17 @@ export default function DoPobraniaPage() {
                     ))}
                 </div>
 
+                {!LEAGUE_MIRA_MAC_LINUX_ZIP && (
+                    <p className="text-xs text-[#b0aeb8] mb-3">
+                        macOS i Linux: to wydanie nie ma osobnej paczki. Użyj paczki Windows przez
+                        Wine, Proton lub CrossOver (zob. <a href="/instalacja-tou" className="underline hover:text-white">instrukcję instalacji</a>).
+                    </p>
+                )}
+
                 <p className="text-xs text-[#b0aeb8] mb-6">
-                    Source: {' '}
-                    <a href={MIRA_RELEASE_URL} className="underline hover:text-white">
-                        TOU:Mira {MIRA_VERSION}
+                    Źródło: {' '}
+                    <a href={LEAGUE_MIRA_RELEASE_URL} className="underline hover:text-white">
+                        TOU:Mira {LEAGUE_MIRA_VERSION}
                     </a>
                 </p>
 

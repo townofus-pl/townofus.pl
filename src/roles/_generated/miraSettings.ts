@@ -186,19 +186,19 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
         {
             "cfgKey": "IgniteRadius",
             "label": "Ignite Radius",
-            "type": "Multiplier"
+            "type": "Number"
         }
     ],
     "Aurial": [
         {
             "cfgKey": "AuraInnerRadius",
             "label": "Radiate Color Range",
-            "type": "Multiplier"
+            "type": "Number"
         },
         {
             "cfgKey": "AuraOuterRadius",
             "label": "Radiate Max Range",
-            "type": "Multiplier"
+            "type": "Number"
         },
         {
             "cfgKey": "SenseDuration",
@@ -299,7 +299,7 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
         {
             "cfgKey": "DetonateRadius",
             "label": "Detonate Radius",
-            "type": "Multiplier"
+            "type": "Number"
         },
         {
             "cfgKey": "MaxKillsInDetonation",
@@ -367,7 +367,7 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
         },
         {
             "cfgKey": "ResetCooldowns",
-            "label": "Reset Cook [and] Serve Cooldowns Together",
+            "label": "Reset Cook & Serve Cooldowns Together",
             "type": "Boolean"
         },
         {
@@ -511,7 +511,7 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
         {
             "cfgKey": "BlindRadius",
             "label": "Blind Radius",
-            "type": "Multiplier"
+            "type": "Number"
         }
     ],
     "EngineerTou": [
@@ -617,6 +617,11 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
             "cfgKey": "MaxProtects",
             "label": "Max Number Of Protects",
             "type": "Number"
+        },
+        {
+            "cfgKey": "TaskUses",
+            "label": "Get More Uses From Completing Tasks",
+            "type": "Boolean"
         },
         {
             "cfgKey": "ShowProtect",
@@ -739,7 +744,7 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
         {
             "cfgKey": "FlashRadius",
             "label": "Flash Radius",
-            "type": "Multiplier"
+            "type": "Number"
         },
         {
             "cfgKey": "SabotageFlashing",
@@ -923,6 +928,11 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
         {
             "cfgKey": "RetributionOnVote",
             "label": "Hunter Kills Last Voter If Voted Out",
+            "type": "Boolean"
+        },
+        {
+            "cfgKey": "SameRoundKillPunishment",
+            "label": "Hunter Leaves If Killing Caught Crew Same Round",
             "type": "Boolean"
         },
         {
@@ -1403,6 +1413,11 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
             "type": "Number"
         },
         {
+            "cfgKey": "TaskUses",
+            "label": "Get More Uses From Completing Tasks",
+            "type": "Boolean"
+        },
+        {
             "cfgKey": "BribeCost",
             "label": "Bribe Cost",
             "type": "Number"
@@ -1416,6 +1431,26 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
             "cfgKey": "GoldGivenFromAttack",
             "label": "Gold Given From An Attack",
             "type": "Number"
+        },
+        {
+            "cfgKey": "WinsWithNeutralBenign",
+            "label": "Wins with Neutral Benign",
+            "type": "Boolean"
+        },
+        {
+            "cfgKey": "WinsWithNeutralEvil",
+            "label": "Wins with Neutral Evil",
+            "type": "Boolean"
+        },
+        {
+            "cfgKey": "WinsWithNeutralKilling",
+            "label": "Wins with Neutral Killing",
+            "type": "Boolean"
+        },
+        {
+            "cfgKey": "WinsWithNeutralOutlier",
+            "label": "Wins with Neutral Outlier",
+            "type": "Boolean"
         }
     ],
     "Miner": [
@@ -1431,11 +1466,11 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
         },
         {
             "cfgKey": "MineVisibility",
-            "label": "Mine Visiblity",
+            "label": "Mine Visibility",
             "type": "Number",
             "description": {
                 "0": "Immediate",
-                "1": "After Use"
+                "1": "AfterUse"
             }
         },
         {
@@ -1499,7 +1534,7 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
         },
         {
             "cfgKey": "KnightDelay",
-            "label": "Knight Delay (Cancellable)",
+            "label": "Knight Delay (Cancelable)",
             "type": "Time"
         },
         {
@@ -1519,7 +1554,7 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
         },
         {
             "cfgKey": "InformWhenKnightDies",
-            "label": "Inform Monarch If a Knight Dies",
+            "label": "Inform Monarch If Knight Dies",
             "type": "Boolean"
         },
         {
@@ -1947,6 +1982,11 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
             }
         },
         {
+            "cfgKey": "PortableCamsBattery",
+            "label": "Portable Cameras Battery",
+            "type": "Time"
+        },
+        {
             "cfgKey": "CameraRoundsLast",
             "label": "Amount Of Rounds Cameras Last",
             "type": "Number"
@@ -1957,11 +1997,6 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
             "type": "Number"
         },
         {
-            "cfgKey": "PortableCamsBattery",
-            "label": "Portable Cameras Battery",
-            "type": "Time"
-        },
-        {
             "cfgKey": "CamerasVisibleAfter",
             "label": "Cameras Visible After",
             "type": "Time"
@@ -1970,6 +2005,11 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
             "cfgKey": "CanMoveWhilePlacingCameras",
             "label": "Can Move While Placing Cameras",
             "type": "Boolean"
+        },
+        {
+            "cfgKey": "PortableCamsRechargePerTask",
+            "label": "Portable Cams Recharge per Task",
+            "type": "Time"
         },
         {
             "cfgKey": "InitialCameras",
@@ -2171,6 +2211,11 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
             "cfgKey": "HexBombDuration",
             "label": "Hex Bomb Countdown Duration",
             "type": "Time"
+        },
+        {
+            "cfgKey": "HexBombDecreasePerMeeting",
+            "label": "Hex Bomb Timer Decrease From Meetings",
+            "type": "Time"
         }
     ],
     "Spy": [
@@ -2242,6 +2287,11 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
             "cfgKey": "MaxVests",
             "label": "Max Number Of Vests",
             "type": "Number"
+        },
+        {
+            "cfgKey": "TaskUses",
+            "label": "Get More Uses From Completing Tasks",
+            "type": "Boolean"
         },
         {
             "cfgKey": "ScatterOn",
@@ -2559,7 +2609,7 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
         {
             "cfgKey": "FreezeRadius",
             "label": "Freeze Radius",
-            "type": "Multiplier"
+            "type": "Number"
         }
     ],
     "Veteran": [

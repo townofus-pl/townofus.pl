@@ -2,7 +2,7 @@
 // Read from the TOU-Mira submodule's tag, so it always names the build these role
 // settings were derived from and the one /do_pobrania links.
 
-export const MIRA_VERSION = '1.7.3';
+export const MIRA_VERSION = '1.7.9-beta2';
 
 /** Upstream releases. townofus-pl/TOU-Mira is a fork and publishes none of its own. */
 export const MIRA_RELEASE_URL = `https://github.com/AU-Avengers/TOU-Mira/releases/tag/${MIRA_VERSION}`;
