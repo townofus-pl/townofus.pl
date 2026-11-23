@@ -44,7 +44,7 @@ function readLocale(file: string): Map<string, string> {
     const out = new Map<string, string>();
     const re = /<string\s+name="([^"]+)"\s*>([^<]*)<\/string>/g;
     for (const m of readFileSync(file, 'utf8').matchAll(re)) {
-        // Od 1.7.9 locale zapisuje `&` jako `[and]` (placeholder), więc zamieniamy z powrotem.
+        // Since 1.7.9 the locale writes `&` as the placeholder `[and]`, so turn it back.
         out.set(m[1], m[2].trim().replaceAll('[and]', '&'));
     }
     return out;
@@ -117,8 +117,8 @@ function writeMiraVersion(modPath: string): void {
     }
 
     const version = tag.replace(/^v/, '');
-    // Dopuszczamy sufiks wydania wstępnego (np. `1.7.9-beta2`). `git describe` zwraca
-    // `<tag>-<n>-g<hash>` dla commita poza tagiem, więc taki wynik nadal jest odrzucany.
+    // Allow a pre-release suffix (for example `1.7.9-beta2`). `git describe` returns
+    // `<tag>-<n>-g<hash>` for a commit past a tag, so that result is still rejected.
     if (!/^\d+\.\d+(\.\d+)?(-(?:alpha|beta|rc)\.?\d+)?$/.test(version)) {
         throw new Error(
             `TOU-Mira is at "${tag}", which is not a release tag (X.Y.Z or X.Y.Z-betaN). The ` +
@@ -193,7 +193,7 @@ function main(): void {
             fromAttribute += 1;
         }
 
-        // Od 1.7.9 opcje enum są generyczne: `ModdedEnumOption<JestWinOptions>` — stąd `(?:<…>)?`.
+        // Since 1.7.9 enum options are generic: `ModdedEnumOption<JestWinOptions>`, hence `(?:<…>)?`.
         // public ModdedToggleOption PropName { get; set; } = new("Key", …)
         // …and the setter-less form, with `new(` on the following line:
         // public ModdedEnumOption ReviveMode { get; } =
@@ -207,8 +207,8 @@ function main(): void {
             fromInline += 1;
         }
 
-        // Lista opcji: `ModdedOptionList<ModdedEnumOption<SystemTypes>> X { get; } = new(10, i => new($"TouOptionSentryBlindspot{i + 1}Room", …)) { ConfigName = i => $"Blindspot{i + 1}Room" }`
-        // Jedna deklaracja daje N ustawień, więc zwykłe wzorce jej nie widzą. Obsługujemy ją wprost.
+        // Option list: `ModdedOptionList<ModdedEnumOption<SystemTypes>> X { get; } = new(10, i => new($"TouOptionSentryBlindspot{i + 1}Room", …)) { ConfigName = i => $"Blindspot{i + 1}Room" }`
+        // One declaration gives N settings, so the plain patterns do not see it. Handle it explicitly.
         for (const m of src.matchAll(
             /ModdedOptionList<Modded(\w+)Option<[\w.]+>>\s+\w+\s*\{\s*get;\s*\}\s*=\s*new\(\s*(\d+)\s*,\s*i\s*=>\s*new\(\$"([^"]*)\{i \+ 1\}([^"]*)"[\s\S]*?ConfigName\s*=\s*i\s*=>\s*\$"([^"]*)\{i \+ 1\}([^"]*)"/g,
         )) {
@@ -253,11 +253,11 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
 
     const total = sorted.reduce((n, [, v]) => n + v.length, 0);
 
-    // Straż: wzorce wyżej są regexami, więc zmiana składni w TOU-Mira potrafi po cichu zgubić
-    // dziesiątki ustawień (tak było przy 1.7.9: generyczne `ModdedEnumOption<T>`). Porównujemy
-    // ZBIORY kluczy `Rola.cfgKey`, nie samą liczbę: 10 nowych ustawień nie ukryje 10 zgubionych.
-    // Zgubiony klucz przerywa generowanie, zanim cokolwiek nadpiszemy. Jeśli TOU faktycznie
-    // usunęło opcje, uruchom z `--allow-drop`.
+    // Guard: the patterns above are regexes, so a syntax change in TOU-Mira can silently lose
+    // dozens of settings (as with generic `ModdedEnumOption<T>` in 1.7.9). Compare the SETS of
+    // `Role.cfgKey` keys, not only the count: 10 new settings must not hide 10 lost ones.
+    // A lost key stops the run before anything is written. If TOU really removed options,
+    // run with `--allow-drop`.
     const keyOf = (role: string, cfgKey: string) => `${role}.${cfgKey}`;
     const current = new Set(sorted.flatMap(([role, list]) => list.map((x) => keyOf(role, x.cfgKey))));
     const previous = new Set<string>();

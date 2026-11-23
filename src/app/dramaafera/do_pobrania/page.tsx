@@ -17,10 +17,10 @@ import clientManifest from '../../../../public/mod/client/latest.json';
  * plugin, and the host kicks anyone without it — so following that page would have got a player
  * kicked rather than merely confused. See #316.
  *
- * Wersja i hash pluginu pochodzą z manifestu, którego używa auto-update, więc strona nie
- * zareklamuje innego pliku niż serwowany. Wersja TOU:Mira jest przypięta w
- * `src/constants/miraRelease.ts` do wersji, na której gra liga. Nie czytamy `releases/latest` ani
- * tagu submodułu, bo upstream wydaje nowe wersje wcześniej niż liga na nie przechodzi.
+ * The plugin's version and hash are read from the manifest the auto-updater uses, so the page
+ * cannot advertise a file other than the one being served. The TOU:Mira version is pinned in
+ * `src/constants/miraRelease.ts` to the version the league plays on. It reads neither
+ * `releases/latest` nor the submodule tag, because upstream releases before the league moves.
  */
 
 const BUILD_LABELS: [MiraBuildKey, string][] = [
@@ -31,8 +31,8 @@ const BUILD_LABELS: [MiraBuildKey, string][] = [
 ];
 
 /**
- * Upstream wydaje po jednej paczce na architekturę gry. Platformy z tą samą paczką łączymy w jeden
- * wiersz, więc układ wierszy zależy od wydania (1.7.3: Steam+itch.io; 1.7.9-beta2: Steam+Epic+MS).
+ * Upstream ships one archive per game architecture. Platforms that share an archive are merged
+ * into one row, so the row layout depends on the release (1.7.3: Steam+itch.io; 1.7.9-beta2: Steam+Epic+MS).
  */
 const MIRA_BUILDS = (() => {
     const byAsset = new Map<string, string[]>();
