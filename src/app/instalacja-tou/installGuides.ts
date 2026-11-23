@@ -307,7 +307,7 @@ export const installGuides: OsGuides[] = [
                         `Pobierz pliki wydania TOU: Mira ${LEAGUE_MIRA_VERSION} (zakładka Assets na stronie wydania).`,
                         `Potrzebne pliki: ${LEAGUE_MIRA_ANDROID_DLLS.join(", ")}.`,
                         "Uruchom najpierw vanilla Among Us co najmniej raz.",
-                        "Otwórz Starlight i w zakładce Mods zaimportuj wszystkie rozpakowane pliki.",
+                        "Otwórz Starlight i w zakładce Mods zaimportuj wszystkie pobrane pliki DLL.",
                         "Uruchom grę i sprawdź, czy logo Among Us zostało zastąpione przez Town of Us: Mira.",
                     ],
                     notatki: [
