@@ -21,6 +21,12 @@ import clientManifest from '../../../../public/mod/client/latest.json';
  * `releases/latest` nor the submodule tag, because upstream releases before the league moves.
  */
 
+// Platforms that share one zip become one row, in the order of the first platform (for 1.7.3: "Steam / itch.io").
+const MIRA_ROWS = [...Map.groupBy(LEAGUE_MIRA_BUILDS, (build) => build.zip)].map(([zip, builds]) => ({
+    zip,
+    label: builds.map((build) => build.label).join(' / '),
+}));
+
 const PLUGIN_NAME = 'DramaAferaStats.Client.dll';
 
 /**
@@ -64,9 +70,9 @@ export default function DoPobraniaPage() {
                 </p>
 
                 <div className="space-y-2 mb-3">
-                    {LEAGUE_MIRA_BUILDS.map((build) => (
+                    {MIRA_ROWS.map((build) => (
                         <a
-                            key={build.label}
+                            key={build.zip}
                             href={leagueMiraDownloadUrl(build.zip)}
                             className="flex items-center justify-between bg-[#23202a] hover:bg-[#2d2936] transition rounded-lg px-4 py-3 shadow border border-[#23202a] gap-4"
                         >

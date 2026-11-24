@@ -32,7 +32,7 @@ const RELEASES: Record<string, MiraBuild[]> = {
         { label: 'itch.io', zip: 'TouMira.v1.7.3-x86-steam-itch.zip' },
         { label: 'Epic', zip: 'TouMira.v1.7.3-x64-epic-msstore.zip' },
         { label: 'Microsoft Store', zip: 'TouMira.v1.7.3-x64-epic-msstore.zip' },
-        { label: 'macOS / Linux', zip: 'TouMira.v1.7.3-x86-macOS-linux.zip' },
+        { label: 'macOS (x86) / Linux', zip: 'TouMira.v1.7.3-x86-macOS-linux.zip' },
     ],
     '1.7.9-beta2': [
         { label: 'Steam', zip: 'TouMira.v1.7.9-beta2-x64-Steam-Epic-MsStore.zip' },
