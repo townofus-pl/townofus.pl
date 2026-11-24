@@ -2,10 +2,8 @@ import React from 'react';
 import {
     LEAGUE_MIRA_VERSION,
     LEAGUE_MIRA_RELEASE_URL,
-    LEAGUE_MIRA_MAC_LINUX_ZIP,
+    LEAGUE_MIRA_BUILDS,
     leagueMiraDownloadUrl,
-    leagueMiraZip,
-    type MiraBuildKey,
 } from '@/constants/miraRelease';
 import clientManifest from '../../../../public/mod/client/latest.json';
 
@@ -22,30 +20,6 @@ import clientManifest from '../../../../public/mod/client/latest.json';
  * `src/constants/miraRelease.ts` to the version the league plays on. It reads neither
  * `releases/latest` nor the submodule tag, because upstream releases before the league moves.
  */
-
-const BUILD_LABELS: [MiraBuildKey, string][] = [
-    ['steam', 'Steam'],
-    ['epic-games', 'Epic'],
-    ['microsoft-store', 'Microsoft Store'],
-    ['itch-io', 'itch.io'],
-];
-
-/**
- * Upstream ships one archive per game architecture. Platforms that share an archive are merged
- * into one row, so the row layout depends on the release (1.7.3: Steam+itch.io; 1.7.9-beta2: Steam+Epic+MS).
- */
-const MIRA_BUILDS = (() => {
-    const byAsset = new Map<string, string[]>();
-    for (const [key, label] of BUILD_LABELS) {
-        const asset = leagueMiraZip(key);
-        byAsset.set(asset, [...(byAsset.get(asset) ?? []), label]);
-    }
-    const builds = [...byAsset].map(([asset, labels]) => ({ label: labels.join(' / '), asset }));
-    if (LEAGUE_MIRA_MAC_LINUX_ZIP) {
-        builds.push({ label: 'macOS (x86) / Linux', asset: LEAGUE_MIRA_MAC_LINUX_ZIP });
-    }
-    return builds;
-})();
 
 const PLUGIN_NAME = 'DramaAferaStats.Client.dll';
 
@@ -90,14 +64,14 @@ export default function DoPobraniaPage() {
                 </p>
 
                 <div className="space-y-2 mb-3">
-                    {MIRA_BUILDS.map((build) => (
+                    {LEAGUE_MIRA_BUILDS.map((build) => (
                         <a
-                            key={build.asset}
-                            href={leagueMiraDownloadUrl(build.asset)}
+                            key={build.label}
+                            href={leagueMiraDownloadUrl(build.zip)}
                             className="flex items-center justify-between bg-[#23202a] hover:bg-[#2d2936] transition rounded-lg px-4 py-3 shadow border border-[#23202a] gap-4"
                         >
                             <span className="font-medium">{build.label}</span>
-                            <span className="text-xs text-[#6b6874] font-mono truncate">{build.asset}</span>
+                            <span className="text-xs text-[#6b6874] font-mono truncate">{build.zip}</span>
                         </a>
                     ))}
                 </div>

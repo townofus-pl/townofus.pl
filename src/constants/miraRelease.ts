@@ -15,39 +15,35 @@
  */
 export const LEAGUE_MIRA_VERSION = '1.7.3';
 
-/** Platforms for which the download page shows an archive. */
-export type MiraBuildKey = 'steam' | 'itch-io' | 'epic-games' | 'microsoft-store';
-
-interface MiraRelease {
-    /** ZIP names in the release, one per platform. */
-    zips: Record<MiraBuildKey, string>;
-    /** Name of the separate macOS/Linux archive. Releases without it (for example 1.7.9-beta2) have none. */
-    macLinuxZip?: string;
+/** One row on the download page: a platform, its label and the archive to download. */
+export interface MiraBuild {
+    label: string;
+    zip: string;
 }
 
-const RELEASES: Record<string, MiraRelease> = {
-    '1.7.3': {
-        zips: {
-            steam: 'TouMira.v1.7.3-x86-steam-itch.zip',
-            'itch-io': 'TouMira.v1.7.3-x86-steam-itch.zip',
-            'epic-games': 'TouMira.v1.7.3-x64-epic-msstore.zip',
-            'microsoft-store': 'TouMira.v1.7.3-x64-epic-msstore.zip',
-        },
-        macLinuxZip: 'TouMira.v1.7.3-x86-macOS-linux.zip',
-    },
-    '1.7.9-beta2': {
-        zips: {
-            steam: 'TouMira.v1.7.9-beta2-x64-Steam-Epic-MsStore.zip',
-            'itch-io': 'TouMira.v1.7.9-beta2-x86-ItchIo.zip',
-            'epic-games': 'TouMira.v1.7.9-beta2-x64-Steam-Epic-MsStore.zip',
-            'microsoft-store': 'TouMira.v1.7.9-beta2-x64-Steam-Epic-MsStore.zip',
-        },
-        // No macOS/Linux archive (the release has only two zips: Steam/Epic/MS and ItchIo).
-    },
+/**
+ * The archives of each release, in the order the page shows them. One entry per platform: when
+ * two platforms share an archive (1.7.3: Steam and itch.io), both entries name the same zip.
+ * A release with no macOS/Linux archive (1.7.9-beta2) simply has no such entry.
+ */
+const RELEASES: Record<string, MiraBuild[]> = {
+    '1.7.3': [
+        { label: 'Steam', zip: 'TouMira.v1.7.3-x86-steam-itch.zip' },
+        { label: 'itch.io', zip: 'TouMira.v1.7.3-x86-steam-itch.zip' },
+        { label: 'Epic', zip: 'TouMira.v1.7.3-x64-epic-msstore.zip' },
+        { label: 'Microsoft Store', zip: 'TouMira.v1.7.3-x64-epic-msstore.zip' },
+        { label: 'macOS / Linux', zip: 'TouMira.v1.7.3-x86-macOS-linux.zip' },
+    ],
+    '1.7.9-beta2': [
+        { label: 'Steam', zip: 'TouMira.v1.7.9-beta2-x64-Steam-Epic-MsStore.zip' },
+        { label: 'Epic', zip: 'TouMira.v1.7.9-beta2-x64-Steam-Epic-MsStore.zip' },
+        { label: 'Microsoft Store', zip: 'TouMira.v1.7.9-beta2-x64-Steam-Epic-MsStore.zip' },
+        { label: 'itch.io', zip: 'TouMira.v1.7.9-beta2-x86-ItchIo.zip' },
+    ],
 };
 
-const release = RELEASES[LEAGUE_MIRA_VERSION];
-if (!release) {
+const builds = RELEASES[LEAGUE_MIRA_VERSION];
+if (!builds) {
     throw new Error(`No entry for release ${LEAGUE_MIRA_VERSION} in src/constants/miraRelease.ts`);
 }
 
@@ -55,13 +51,9 @@ const BASE = 'https://github.com/AU-Avengers/TOU-Mira/releases';
 
 export const LEAGUE_MIRA_RELEASE_URL = `${BASE}/tag/${LEAGUE_MIRA_VERSION}`;
 
-export function leagueMiraZip(key: MiraBuildKey): string {
-    return release.zips[key];
-}
+/** The rows of the download page for the pinned release. */
+export const LEAGUE_MIRA_BUILDS: readonly MiraBuild[] = builds;
 
-/** The macOS/Linux archive, or `undefined` when the release has none. */
-export const LEAGUE_MIRA_MAC_LINUX_ZIP = release.macLinuxZip;
-
-export function leagueMiraDownloadUrl(asset: string): string {
-    return `${BASE}/download/${LEAGUE_MIRA_VERSION}/${asset}`;
+export function leagueMiraDownloadUrl(zip: string): string {
+    return `${BASE}/download/${LEAGUE_MIRA_VERSION}/${zip}`;
 }
