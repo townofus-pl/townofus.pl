@@ -14,6 +14,12 @@ export interface MiraRoleSetting {
     type: 'Percentage' | 'Time' | 'Number' | 'Multiplier' | 'Boolean' | 'Text';
     /** Enum values, indexed as they appear in the config. */
     description?: Record<number, string>;
+    /**
+     * Enum member names in ordinal order. Since 1.7.9-beta2 the .cfg writes an enum option as its
+     * member name (ReviveMode = GroupRevive), older builds as its number. Absent when the enum is not
+     * declared in the TOU-Mira source.
+     */
+    names?: readonly string[];
 }
 
 export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSetting[]>> = {
@@ -26,7 +32,12 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
                 "0": "Sacrifice",
                 "1": "Group Sacrifice",
                 "2": "Group Revive"
-            }
+            },
+            "names": [
+                "Sacrifice",
+                "GroupSacrifice",
+                "GroupRevive"
+            ]
         },
         {
             "cfgKey": "ReviveRange",
@@ -67,7 +78,13 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
                 "1": "Neutrals",
                 "2": "Impostors",
                 "3": "Neutrals and Impostors"
-            }
+            },
+            "names": [
+                "Nobody",
+                "Neutrals",
+                "Impostors",
+                "NeutralsAndImpostors"
+            ]
         },
         {
             "cfgKey": "KillersAlertedAtEnd",
@@ -78,7 +95,13 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
                 "1": "Neutrals",
                 "2": "Impostors",
                 "3": "Neutrals and Impostors"
-            }
+            },
+            "names": [
+                "Nobody",
+                "Neutrals",
+                "Impostors",
+                "NeutralsAndImpostors"
+            ]
         }
     ],
     "Ambassador": [
@@ -346,7 +369,12 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
                 "0": "Delay End",
                 "1": "Meeting Start",
                 "2": "Meeting End"
-            }
+            },
+            "names": [
+                "OnDurationEnd",
+                "OnMeetingStart",
+                "OnMeetingEnd"
+            ]
         },
         {
             "cfgKey": "ForcedPoisonDelay",
@@ -442,7 +470,12 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
                 "0": "Disabled",
                 "1": "Announce Role",
                 "2": "Reveal Deputy"
-            }
+            },
+            "names": [
+                "NoReveal",
+                "AnnounceRole",
+                "RevealPlayer"
+            ]
         }
     ],
     "Doomsayer": [
@@ -479,7 +512,12 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
                 "0": "Ends Game",
                 "1": "Leaves In Victory",
                 "2": "Nothing"
-            }
+            },
+            "names": [
+                "EndsGame",
+                "Leaves",
+                "Nothing"
+            ]
         },
         {
             "cfgKey": "DoomsayerKillOnlyLast",
@@ -579,7 +617,14 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
                 "2": "TownOfUsMira.Role.Survivor",
                 "3": "TownOfUsMira.Role.Mercenary",
                 "4": "TownOfUsMira.Role.Jester"
-            }
+            },
+            "names": [
+                "Crew",
+                "Amnesiac",
+                "Survivor",
+                "Mercenary",
+                "Jester"
+            ]
         },
         {
             "cfgKey": "CanButton",
@@ -594,7 +639,12 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
                 "0": "Ends Game",
                 "1": "Leaves & Torments",
                 "2": "Nothing"
-            }
+            },
+            "names": [
+                "EndsGame",
+                "Torments",
+                "Nothing"
+            ]
         },
         {
             "cfgKey": "ExeAnonymizeWin",
@@ -631,7 +681,12 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
                 "0": "Fairy",
                 "1": "Fairy + Target",
                 "2": "Everyone"
-            }
+            },
+            "names": [
+                "Fairy",
+                "SelfAndFairy",
+                "Everyone"
+            ]
         },
         {
             "cfgKey": "OnTargetDeath",
@@ -643,7 +698,14 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
                 "2": "TownOfUsMira.Role.Survivor",
                 "3": "TownOfUsMira.Role.Mercenary",
                 "4": "TownOfUsMira.Role.Jester"
-            }
+            },
+            "names": [
+                "Crew",
+                "Amnesiac",
+                "Survivor",
+                "Mercenary",
+                "Jester"
+            ]
         },
         {
             "cfgKey": "FairyTargetKnows",
@@ -722,7 +784,12 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
                 "0": "Never",
                 "1": "Unless Mimicking",
                 "2": "Always"
-            }
+            },
+            "names": [
+                "Never",
+                "Unmimic",
+                "Always"
+            ]
         }
     ],
     "Grenadier": [
@@ -781,7 +848,12 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
                 "0": "Everyone",
                 "1": "Non-Crew",
                 "2": "Impostors Only"
-            }
+            },
+            "names": [
+                "Everyone",
+                "NonCrew",
+                "ImpsOnly"
+            ]
         }
     ],
     "Herbalist": [
@@ -957,7 +1029,11 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
             "description": {
                 "0": "All Abilities",
                 "1": "Interactions"
-            }
+            },
+            "names": [
+                "Always",
+                "Interactions"
+            ]
         },
         {
             "cfgKey": "SeesTypeOfInteraction",
@@ -1001,7 +1077,12 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
                 "0": "Imitator",
                 "1": "Imitated Role",
                 "2": "Imitator or Imitated Role"
-            }
+            },
+            "names": [
+                "CachedRole",
+                "ActiveRole",
+                "ActiveOrCachedRole"
+            ]
         }
     ],
     "Inquisitor": [
@@ -1070,7 +1151,11 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
         {
             "cfgKey": "FootprintMode",
             "label": "Footprints Added Based On",
-            "type": "Number"
+            "type": "Number",
+            "names": [
+                "Distance",
+                "Time"
+            ]
         },
         {
             "cfgKey": "FootprintIntervalDistance",
@@ -1129,7 +1214,12 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
                 "0": "Unlinked",
                 "1": "With Teammates",
                 "2": "Always"
-            }
+            },
+            "names": [
+                "Unlinked",
+                "WithTeammates",
+                "Always"
+            ]
         },
         {
             "cfgKey": "JanitorKill",
@@ -1156,7 +1246,12 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
                 "0": "Ends Game",
                 "1": "Haunts",
                 "2": "Nothing"
-            }
+            },
+            "names": [
+                "EndsGame",
+                "Haunts",
+                "Nothing"
+            ]
         },
         {
             "cfgKey": "CanVent",
@@ -1235,7 +1330,11 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
         {
             "cfgKey": "WatchType",
             "label": "Watched Player Feedback Reveals",
-            "type": "Number"
+            "type": "Number",
+            "names": [
+                "Roles",
+                "Players"
+            ]
         },
         {
             "cfgKey": "LookoutSeesIndirectAttacks",
@@ -1259,7 +1358,14 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
                 "2": "Shielded + Medic",
                 "3": "Everyone",
                 "4": "Nobody"
-            }
+            },
+            "names": [
+                "Medic",
+                "Shielded",
+                "ShieldedAndMedic",
+                "Everyone",
+                "Nobody"
+            ]
         },
         {
             "cfgKey": "WhoGetsNotification",
@@ -1271,7 +1377,14 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
                 "2": "Shielded + Medic",
                 "3": "Everyone",
                 "4": "Nobody"
-            }
+            },
+            "names": [
+                "Medic",
+                "Shielded",
+                "ShieldedAndMedic",
+                "Everyone",
+                "Nobody"
+            ]
         },
         {
             "cfgKey": "ChangeTarget",
@@ -1334,7 +1447,13 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
                 "1": "Ghosts",
                 "2": "Living + Ghosts",
                 "3": "Nobody"
-            }
+            },
+            "names": [
+                "Living",
+                "Ghosts",
+                "Both",
+                "None"
+            ]
         },
         {
             "cfgKey": "ArrowVisibility",
@@ -1345,7 +1464,13 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
                 "1": "Mediated",
                 "2": "Medium + Mediated",
                 "3": "Disabled"
-            }
+            },
+            "names": [
+                "ShowMedium",
+                "ShowMediate",
+                "Both",
+                "None"
+            ]
         },
         {
             "cfgKey": "WhoIsRevealed",
@@ -1356,7 +1481,13 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
                 "1": "Newest Dead",
                 "2": "Random Dead",
                 "3": "All Dead"
-            }
+            },
+            "names": [
+                "OldestDead",
+                "NewestDead",
+                "RandomDead",
+                "AllDead"
+            ]
         }
     ],
     "Medusa": [
@@ -1471,7 +1602,11 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
             "description": {
                 "0": "Immediate",
                 "1": "AfterUse"
-            }
+            },
+            "names": [
+                "Immediate",
+                "AfterUse"
+            ]
         },
         {
             "cfgKey": "MinerKill",
@@ -1492,7 +1627,11 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
             "description": {
                 "0": "Mirrorcaster",
                 "1": "Mirrorcaster + Killer"
-            }
+            },
+            "names": [
+                "Mirrorcaster",
+                "MirrorcasterAndKiller"
+            ]
         },
         {
             "cfgKey": "MultiUnleash",
@@ -1513,7 +1652,13 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
                 "1": "Subalignment",
                 "2": "Faction",
                 "3": "Nothing"
-            }
+            },
+            "names": [
+                "Role",
+                "Subalignment",
+                "Faction",
+                "Nothing"
+            ]
         }
     ],
     "Monarch": [
@@ -1592,7 +1737,12 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
                 "0": "Never",
                 "1": "Unless Morphed",
                 "2": "Always"
-            }
+            },
+            "names": [
+                "Never",
+                "Unmimic",
+                "Always"
+            ]
         }
     ],
     "Mystic": [
@@ -1852,7 +2002,12 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
                 "0": "Eject Prosecutor",
                 "1": "Eject Victim, Lose Uses",
                 "2": "Eject Both"
-            }
+            },
+            "names": [
+                "EjectPros",
+                "LoseUsesAndEjectTarget",
+                "EjectProsAndEjectTarget"
+            ]
         }
     ],
     "Puppeteer": [
@@ -1969,7 +2124,11 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
             "description": {
                 "0": "Immediately",
                 "1": "After Meeting"
-            }
+            },
+            "names": [
+                "Immediately",
+                "AfterMeeting"
+            ]
         },
         {
             "cfgKey": "PortableCamerasMode",
@@ -1979,7 +2138,12 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
                 "0": "Always",
                 "1": "After Tasks",
                 "2": "Only On Cam-less Maps"
-            }
+            },
+            "names": [
+                "Immediately",
+                "AfterTasks",
+                "OnMapsWithoutCameras"
+            ]
         },
         {
             "cfgKey": "PortableCamsBattery",
@@ -2102,7 +2266,13 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
                 "1": "Target",
                 "2": "Self + Target",
                 "3": "Nobody"
-            }
+            },
+            "names": [
+                "Sheriff",
+                "Target",
+                "Both",
+                "Nobody"
+            ]
         },
         {
             "cfgKey": "ShootNeutralBenign",
@@ -2193,7 +2363,12 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
                 "0": "Ends Game",
                 "1": "Spooks",
                 "2": "Nothing"
-            }
+            },
+            "names": [
+                "EndsGame",
+                "Spooks",
+                "Nothing"
+            ]
         }
     ],
     "Spellslinger": [
@@ -2228,7 +2403,13 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
                 "1": "Spy",
                 "2": "Everyone But Spy",
                 "3": "Everyone"
-            }
+            },
+            "names": [
+                "Nobody",
+                "Spy",
+                "EveryoneButSpy",
+                "Everyone"
+            ]
         },
         {
             "cfgKey": "HasPortableAdmin",
@@ -2239,7 +2420,13 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
                 "1": "Modifier",
                 "2": "Role + Modifier",
                 "3": "Disabled"
-            }
+            },
+            "names": [
+                "Role",
+                "Modifier",
+                "Both",
+                "None"
+            ]
         },
         {
             "cfgKey": "MoveWithMenu",
@@ -2335,7 +2522,12 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
                 "0": "Never",
                 "1": "Not by Radar",
                 "2": "Always"
-            }
+            },
+            "names": [
+                "Never",
+                "NonRadar",
+                "Always"
+            ]
         },
         {
             "cfgKey": "CanVent",
@@ -2345,7 +2537,12 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
                 "0": "Never",
                 "1": "While Visible",
                 "2": "Always"
-            }
+            },
+            "names": [
+                "Never",
+                "Visible",
+                "Always"
+            ]
         }
     ],
     "TimeLord": [
@@ -2402,7 +2599,12 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
                 "0": "Disabled",
                 "1": "Until Next Round",
                 "2": "Fully"
-            }
+            },
+            "names": [
+                "Disabled",
+                "UntilNextRound",
+                "Permanent"
+            ]
         }
     ],
     "Traitor": [
@@ -2429,7 +2631,12 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
                 "0": "Traitor",
                 "1": "New Role",
                 "2": "Traitor or New Role"
-            }
+            },
+            "names": [
+                "CachedRole",
+                "ActiveRole",
+                "ActiveOrCachedRole"
+            ]
         },
         {
             "cfgKey": "TraitorCanAssassin",
@@ -2701,7 +2908,13 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
                 "1": "Warden",
                 "2": "Fortified + Warden",
                 "3": "Everyone"
-            }
+            },
+            "names": [
+                "Self",
+                "Warden",
+                "SelfAndWarden",
+                "Everyone"
+            ]
         }
     ],
     "Warlock": [

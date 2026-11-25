@@ -3,6 +3,7 @@ import 'server-only';
 import { getDatabaseClient } from '../_services/db';
 import { REVIEW_CATEGORIES, type ReviewCategory } from './_categories';
 import { parseSections, settingId } from './_miraConfigSections';
+import { canonicalEnumValue } from '../_utils/miraConfig';
 
 interface PublishedSettings { content: string; uploadedAt: Date }
 interface ReviewedSetting { section: string; key: string; after: string; decision: string; roleName: string }
@@ -10,7 +11,7 @@ export interface CategorizedChangelogChange { id: string; roleName: string; cate
 
 function settingValues(content: string): Map<string, string> {
     return new Map(parseSections(content).flatMap(section =>
-        section.entries.map(entry => [settingId(section.name, entry.key), entry.value] as const)
+        section.entries.map(entry => [settingId(section.name, entry.key), canonicalEnumValue(section.name, entry.key, entry.value)] as const)
     ));
 }
 
@@ -42,8 +43,9 @@ export async function getCategorizedChangelogChanges(
         const id = settingId(review.section, review.key);
         if (seen.has(id)) continue;
         seen.add(id);
+        const after = canonicalEnumValue(review.section, review.key, review.after);
         const category = REVIEW_CATEGORIES.find(value => value === review.decision);
-        if (category && oldValues.has(id) && oldValues.get(id) !== review.after && currentValues.get(id) === review.after) {
+        if (category && oldValues.has(id) && oldValues.get(id) !== after && currentValues.get(id) === after) {
             changes.push({ id, roleName: review.roleName, category });
         }
     }

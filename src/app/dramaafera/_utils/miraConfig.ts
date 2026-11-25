@@ -4,7 +4,7 @@
 // component. The role pages need the same thing, and a second copy would drift exactly the way
 // the four role→icon maps already had. See #317.
 
-import { updateSettingValue } from './settingsParser';
+import { enumNameToOrdinal, updateSettingValue } from './settingsParser';
 import { MIRA_ROLE_SETTINGS } from '@/roles/_generated/miraSettings';
 import { SettingTypes, type Setting } from '@/constants/settings';
 import type { Modifier } from '@/constants/rolesAndModifiers';
@@ -153,13 +153,30 @@ export function buildMiraRoleSettings(cfgContent: string, roleName: string): Rec
         // labels in the generated source. Reuse only exact-label descriptions.
         const description = def.description ?? registrySettings?.[def.label]?.description;
         out[def.label] = {
-            value: updateSettingValue(type, raw),
+            value: updateSettingValue(type, raw, def.names),
             type,
             ...(description ? { description } : {}),
         } as Setting;
     }
 
     return out;
+}
+
+/**
+ * Gives an enum value the same form in an old (`2`) and a new (`GroupRevive`) config, so a
+ * comparison sees no change between them. `sectionName` is the cfg section of a role, `key` the
+ * option. Anything that is not a known enum name comes back unchanged.
+ */
+export function canonicalEnumValue(sectionName: string, key: string, value: string): string {
+    if (!sectionName.includes('.Roles.')) return value;
+    const roleToken = normalizeLookupKey(stripConfigAffixes(sectionName.split('.').at(-1) ?? ''));
+    const keyToken = normalizeLookupKey(key);
+    for (const [role, defs] of Object.entries(MIRA_ROLE_SETTINGS)) {
+        if (normalizeLookupKey(role) !== roleToken) continue;
+        const def = defs.find((d) => normalizeLookupKey(d.cfgKey) === keyToken);
+        return enumNameToOrdinal(value, def?.names);
+    }
+    return value;
 }
 
 /** A BepInEx config always opens its role block with a `[Roles]` section. */

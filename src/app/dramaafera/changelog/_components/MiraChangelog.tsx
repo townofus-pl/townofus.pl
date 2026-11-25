@@ -9,6 +9,7 @@ import { SettingTypes, type Setting } from "@/constants/settings";
 import { Teams } from "@/constants/teams";
 import { REVIEW_CATEGORIES, type ChangelogCategories, type ReviewCategory } from "../_categories";
 import { parseSections, settingId } from "../_miraConfigSections";
+import { canonicalEnumValue } from "../../_utils/miraConfig";
 
 type GroupKind = "role" | "modifier" | "section";
 const PROBABILITY_LABEL = "Szansa wystąpienia";
@@ -325,7 +326,7 @@ function parseConfigFile(content: string): Map<string, ParsedEntry> {
                         settingName,
                         settingType: settingDefinition?.type ?? inferTypeFromValue(entry.value),
                         description: settingDefinition?.description,
-                        value: entry.value,
+                        value: canonicalEnumValue(section.name, entry.key, entry.value),
                     })
                 );
             });
