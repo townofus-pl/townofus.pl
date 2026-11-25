@@ -25,6 +25,7 @@ import path from 'node:path';
 import os from 'node:os';
 
 const GENERATED_SETTINGS = 'src/roles/_generated/miraSettings.ts';
+const GENERATED_GLOBAL_SETTINGS = 'src/roles/_generated/miraGlobalSettings.ts';
 const DEFAULT_MOD_PATH = path.join(os.homedir(), 'Projects/dramaafera-stats-mod');
 
 function parseArgs(argv: string[]): { modPath: string } {
@@ -100,6 +101,115 @@ function readEnums(dir: string, skipped: string[]): EnumIndex {
         }
     }
     return index;
+}
+
+interface Counters { attribute: number; inline: number; list: number; literal: number }
+
+/**
+ * Every option declared in one option file: the .cfg key, the English label, the type and, for
+ * enums, the member names. Used for role files and for all other option files.
+ */
+function extractSettings(
+    src: string,
+    owner: string,
+    locale: Map<string, string>,
+    enums: EnumIndex,
+    noNames: string[],
+    unresolved: string[],
+    counters: Counters,
+): RoleSetting[] {
+    const settings: RoleSetting[] = [];
+
+    const resolve = (token: string): string | null => {
+        // A locale key is either a `Tou…` key or a key the locale knows (the map options use
+        // `TownOfUsMira.BetterMaps.…`). Anything else is already the label.
+        const hit = locale.get(token);
+        if (hit) return hit;
+        if (!token.startsWith('Tou')) {
+            counters.literal += 1;
+            return token;
+        }
+        unresolved.push(`${owner}: ${token}`);
+        return null;
+    };
+
+    // [ModdedNumberOption("Key", …)] \n public float PropName
+    for (const m of src.matchAll(
+        /\[Modded(\w+)Option(?:<([\w.]+)>)?\(\s*"([^"]+)"([\s\S]*?)\]\s*public\s+[\w<>.?]+\s+(\w+)\s*\{/g,
+    )) {
+        const label = resolve(m[3]);
+        if (!label) continue;
+        settings.push({ cfgKey: m[5], label, ...describe(m[1], m[4], resolve, m[2], enums, noNames) });
+        counters.attribute += 1;
+    }
+
+    // Since 1.7.9 enum options are generic: `ModdedEnumOption<JestWinOptions>`, hence `(?:<…>)?`.
+    // public ModdedToggleOption PropName { get; set; } = new("Key", …)
+    // …and the setter-less form, with `new(` on the following line:
+    // public ModdedEnumOption ReviveMode { get; } =
+    //     new("TouOptionAltruistReviveType", …);
+    for (const m of src.matchAll(
+        /public\s+Modded(\w+)Option(?:<([\w.]+)>)?\s+(\w+)\s*\{\s*get;(?:\s*set;)?\s*\}\s*=\s*new\(\s*\$?"([^"]+)"([^;]*)/g,
+    )) {
+        const label = resolve(m[4]);
+        if (!label) continue;
+        settings.push({ cfgKey: m[3], label, ...describe(m[1], m[5], resolve, m[2], enums, noNames) });
+        counters.inline += 1;
+    }
+
+    // Option list: `ModdedOptionList<ModdedEnumOption<SystemTypes>> X { get; } = new(10, i => new($"TouOptionSentryBlindspot{i + 1}Room", …)) { ConfigName = i => $"Blindspot{i + 1}Room" }`
+    // One declaration gives N settings, so the plain patterns do not see it. Handle it explicitly.
+    for (const m of src.matchAll(
+        /ModdedOptionList<Modded(\w+)Option<([\w.]+)>>\s+\w+\s*\{\s*get;\s*\}\s*=\s*new\(\s*(\d+)\s*,\s*i\s*=>\s*new\(\$"([^"]*)\{i \+ 1\}([^"]*)"[\s\S]*?ConfigName\s*=\s*i\s*=>\s*\$"([^"]*)\{i \+ 1\}([^"]*)"/g,
+    )) {
+        for (let i = 1; i <= Number(m[3]); i += 1) {
+            const label = resolve(`${m[4]}${i}${m[5]}`);
+            if (!label) continue;
+            settings.push({
+                cfgKey: `${m[6]}${i}${m[7]}`,
+                label,
+                ...describe(m[1], '', resolve, m[2], enums, noNames),
+            });
+            counters.list += 1;
+        }
+    }
+
+    return settings;
+}
+
+/**
+ * Every option outside `Options/Roles` (maps, game mechanics, role list, modifiers), by cfg section.
+ *
+ * Why: the changelog matched these options to the hand-written lists in src/mira/settings by
+ * POSITION. TOU-Mira 1.7.9-beta2 added keys, so the positions moved and labels landed on the
+ * wrong values ("Max Players Alive When Vents Disable: 2 -> true"). Since 1.7.9-beta2 the .cfg
+ * also writes enum options as names (`MapTheme = Auto`) where 1.7.3 wrote numbers. With the key,
+ * the label and the member names from the source, the changelog matches by key and sees both
+ * forms as one value.
+ *
+ * The cfg section is `<namespace>.<class>`, and each option file holds one option class.
+ */
+function collectGlobalSettings(
+    optionsRoot: string,
+    locale: Map<string, string>,
+    enums: EnumIndex,
+    noNames: string[],
+    unresolved: string[],
+): Record<string, RoleSetting[]> {
+    const out: Record<string, RoleSetting[]> = {};
+    const counters: Counters = { attribute: 0, inline: 0, list: 0, literal: 0 };
+    const rolesDir = path.join(optionsRoot, 'Roles') + path.sep;
+    for (const file of walk(optionsRoot).filter((f) => f.endsWith('.cs') && !f.startsWith(rolesDir))) {
+        // Strip comments: some files keep old declarations commented out.
+        const src = readFileSync(file, 'utf8').replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/[^\n]*/g, '');
+        const ns = src.match(/\bnamespace\s+([\w.]+)/)?.[1];
+        const cls = src.match(/\bclass\s+(\w+)\s*:/)?.[1];
+        if (!ns || !cls) continue;
+        const section = `${ns}.${cls}`;
+        const settings = extractSettings(src, section, locale, enums, noNames, unresolved, counters);
+        if (settings.length > 0) out[section] = [...(out[section] ?? []), ...settings];
+    }
+    return out;
 }
 
 /** `MiraNumberSuffixes.Seconds` and friends decide how a number is formatted. */
@@ -208,12 +318,9 @@ function main(): void {
     const enums = readEnums(path.join(modPath, 'TOU-Mira/TownOfUs'), skippedEnums);
     const noNames: string[] = [];
     const byRole = new Map<string, RoleSetting[]>();
-    let fromAttribute = 0;
-    let fromInline = 0;
-    let fromList = 0;
-    let literalLabels = 0;
     const unresolved: string[] = [];
 
+    const counters: Counters = { attribute: 0, inline: 0, list: 0, literal: 0 };
     for (const file of walk(optionsDir).filter((f) => f.endsWith('.cs'))) {
         const src = readFileSync(file, 'utf8');
 
@@ -222,64 +329,15 @@ function main(): void {
         if (!cls) continue;
         const role = cls[1];
 
-        const settings: RoleSetting[] = [];
-
-        const resolve = (token: string): string | null => {
-            // A `Tou…` token is a locale key; anything else is already the label.
-            if (!token.startsWith('Tou')) {
-                literalLabels += 1;
-                return token;
-            }
-            const hit = locale.get(token);
-            if (!hit) unresolved.push(`${role}: ${token}`);
-            return hit ?? null;
-        };
-
-        // [ModdedNumberOption("Key", …)] \n public float PropName
-        for (const m of src.matchAll(
-            /\[Modded(\w+)Option(?:<([\w.]+)>)?\(\s*"([^"]+)"([\s\S]*?)\]\s*public\s+[\w<>.?]+\s+(\w+)\s*\{/g,
-        )) {
-            const label = resolve(m[3]);
-            if (!label) continue;
-            settings.push({ cfgKey: m[5], label, ...describe(m[1], m[4], resolve, m[2], enums, noNames) });
-            fromAttribute += 1;
-        }
-
-        // Since 1.7.9 enum options are generic: `ModdedEnumOption<JestWinOptions>`, hence `(?:<…>)?`.
-        // public ModdedToggleOption PropName { get; set; } = new("Key", …)
-        // …and the setter-less form, with `new(` on the following line:
-        // public ModdedEnumOption ReviveMode { get; } =
-        //     new("TouOptionAltruistReviveType", …);
-        for (const m of src.matchAll(
-            /public\s+Modded(\w+)Option(?:<([\w.]+)>)?\s+(\w+)\s*\{\s*get;(?:\s*set;)?\s*\}\s*=\s*new\(\s*\$?"([^"]+)"([^;]*)/g,
-        )) {
-            const label = resolve(m[4]);
-            if (!label) continue;
-            settings.push({ cfgKey: m[3], label, ...describe(m[1], m[5], resolve, m[2], enums, noNames) });
-            fromInline += 1;
-        }
-
-        // Option list: `ModdedOptionList<ModdedEnumOption<SystemTypes>> X { get; } = new(10, i => new($"TouOptionSentryBlindspot{i + 1}Room", …)) { ConfigName = i => $"Blindspot{i + 1}Room" }`
-        // One declaration gives N settings, so the plain patterns do not see it. Handle it explicitly.
-        for (const m of src.matchAll(
-            /ModdedOptionList<Modded(\w+)Option<([\w.]+)>>\s+\w+\s*\{\s*get;\s*\}\s*=\s*new\(\s*(\d+)\s*,\s*i\s*=>\s*new\(\$"([^"]*)\{i \+ 1\}([^"]*)"[\s\S]*?ConfigName\s*=\s*i\s*=>\s*\$"([^"]*)\{i \+ 1\}([^"]*)"/g,
-        )) {
-            for (let i = 1; i <= Number(m[3]); i += 1) {
-                const label = resolve(`${m[4]}${i}${m[5]}`);
-                if (!label) continue;
-                settings.push({
-                    cfgKey: `${m[6]}${i}${m[7]}`,
-                    label,
-                    ...describe(m[1], '', resolve, m[2], enums, noNames),
-                });
-                fromList += 1;
-            }
-        }
-
+        const settings = extractSettings(src, role, locale, enums, noNames, unresolved, counters);
         if (settings.length > 0) {
             byRole.set(role, [...(byRole.get(role) ?? []), ...settings]);
         }
     }
+    const fromAttribute = counters.attribute;
+    const fromInline = counters.inline;
+    const fromList = counters.list;
+    const literalLabels = counters.literal;
 
     const sorted = [...byRole.entries()].sort(([a], [b]) => a.localeCompare(b));
     const out = `// GENERATED by scripts/generate-mira-settings.ts — do not edit by hand.
@@ -344,10 +402,40 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
     writeFileSync(GENERATED_SETTINGS, out);
     writeMiraVersion(modPath);
 
+    const globalSettings = collectGlobalSettings(
+        path.join(modPath, 'TOU-Mira/TownOfUs/Options'),
+        locale,
+        enums,
+        [],
+        [],
+    );
+    const sortedGlobal = Object.fromEntries(Object.entries(globalSettings).sort(([a], [b]) => a.localeCompare(b)));
+    writeFileSync(
+        GENERATED_GLOBAL_SETTINGS,
+        `// GENERATED by scripts/generate-mira-settings.ts — do not edit by hand.
+// Re-run it after bumping the TOU-Mira submodule; the submodule is synced manually.
+//
+// Every TOU-Mira option outside Options/Roles (maps, game mechanics, role list, modifiers), by .cfg
+// section: the .cfg key, the English label, the type and, for enums, the member names. The
+// changelog matches these options by key, and sees an old number (MapTheme = 0) and a new name
+// (MapTheme = Auto) as one value. Role options are in miraSettings.ts.
+
+import type { MiraRoleSetting } from './miraSettings';
+
+export const MIRA_GLOBAL_SETTINGS: Readonly<Record<string, readonly MiraRoleSetting[]>> = ${JSON.stringify(
+            sortedGlobal,
+            null,
+            4,
+        )};
+`,
+    );
+    const globalCount = Object.values(sortedGlobal).reduce((n, list) => n + list.length, 0);
+
     console.log(`mira settings written: ${sorted.length} roles, ${total} settings`);
     console.log(`  from attributes: ${fromAttribute}   inline: ${fromInline}   list: ${fromList}   literal labels: ${literalLabels}`);
     const withNames = sorted.reduce((n, [, v]) => n + v.filter((x) => x.names).length, 0);
     console.log(`  enum options with member names: ${withNames}   without: ${noNames.length} (${[...new Set(noNames)].join(', ') || '-'})`);
+    console.log(`  global options (outside Options/Roles): ${globalCount} in ${Object.keys(sortedGlobal).length} sections`);
     if (skippedEnums.length) console.log(`  enums skipped: ${skippedEnums.join(', ')}`);
     if (unresolved.length) {
         console.log(`  ⚠ ${unresolved.length} locale keys not found in en_US.xml:`);

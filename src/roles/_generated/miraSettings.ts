@@ -643,10 +643,10 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
             "type": "Number",
             "description": {
                 "0": "MiraApi.RoleTeam.Crewmate",
-                "1": "TownOfUsMira.Role.Amnesiac",
-                "2": "TownOfUsMira.Role.Survivor",
-                "3": "TownOfUsMira.Role.Mercenary",
-                "4": "TownOfUsMira.Role.Jester"
+                "1": "Amnesiac",
+                "2": "Survivor",
+                "3": "Mercenary",
+                "4": "Jester"
             },
             "names": [
                 "Crew",
@@ -724,10 +724,10 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
             "type": "Number",
             "description": {
                 "0": "MiraApi.RoleTeam.Crewmate",
-                "1": "TownOfUsMira.Role.Amnesiac",
-                "2": "TownOfUsMira.Role.Survivor",
-                "3": "TownOfUsMira.Role.Mercenary",
-                "4": "TownOfUsMira.Role.Jester"
+                "1": "Amnesiac",
+                "2": "Survivor",
+                "3": "Mercenary",
+                "4": "Jester"
             },
             "names": [
                 "Crew",
@@ -941,39 +941,39 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
     "HnsCamouflager": [
         {
             "cfgKey": "MaxCamoUses",
-            "label": "TownOfUsMira.HideAndSeek.Role.Option.CamouflagerCamoUses",
+            "label": "Camo Uses In Total",
             "type": "Number"
         },
         {
             "cfgKey": "CamoCooldown",
-            "label": "TownOfUsMira.HideAndSeek.Role.Option.CamouflagerCamoCooldown",
+            "label": "Camo Cooldown",
             "type": "Time"
         },
         {
             "cfgKey": "CamoDuration",
-            "label": "TownOfUsMira.HideAndSeek.Role.Option.CamouflagerCamoDuration",
+            "label": "Camo Duration",
             "type": "Time"
         },
         {
             "cfgKey": "CamoDisablesProxBar",
-            "label": "TownOfUsMira.HideAndSeek.Role.Option.CamouflagerCamoDisablesProxBar",
+            "label": "Camo Disables Proximity Bar",
             "type": "Boolean"
         }
     ],
     "HnsChameleon": [
         {
             "cfgKey": "MaxSwoops",
-            "label": "TownOfUsMira.HideAndSeek.Role.Option.ChameleonSwoopUsesPerRound",
+            "label": "Swoop Uses In Total",
             "type": "Number"
         },
         {
             "cfgKey": "SwoopCooldown",
-            "label": "TownOfUsMira.HideAndSeek.Role.Option.ChameleonSwoopCooldown",
+            "label": "Swoop Cooldown",
             "type": "Time"
         },
         {
             "cfgKey": "SwoopDuration",
-            "label": "TownOfUsMira.HideAndSeek.Role.Option.ChameleonSwoopDuration",
+            "label": "Swoop Duration",
             "type": "Time"
         },
         {
@@ -985,29 +985,29 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
     "HnsMystic": [
         {
             "cfgKey": "MysticArrowDuration",
-            "label": "TownOfUsMira.HideAndSeek.Modifier.Option.MysticDeadBodyArrowDuration",
+            "label": "Dead Body Arrow Duration",
             "type": "Time"
         }
     ],
     "HnsSnitch": [
         {
             "cfgKey": "CommonTaskMultiplier",
-            "label": "TownOfUsMira.HideAndSeek.Role.Option.SnitchCommonTaskMultiplier",
+            "label": "Common Task Multiplier",
             "type": "Multiplier"
         },
         {
             "cfgKey": "ShortTaskMultiplier",
-            "label": "TownOfUsMira.HideAndSeek.Role.Option.SnitchShortTaskMultiplier",
+            "label": "Short Task Multiplier",
             "type": "Multiplier"
         },
         {
             "cfgKey": "LongTaskMultiplier",
-            "label": "TownOfUsMira.HideAndSeek.Role.Option.SnitchLongTaskMultiplier",
+            "label": "Long Task Multiplier",
             "type": "Multiplier"
         },
         {
             "cfgKey": "SnitchNotifyDuration",
-            "label": "TownOfUsMira.HideAndSeek.Role.Option.SnitchNotifyDuration",
+            "label": "Seeker Notify Duration",
             "type": "Time"
         }
     ],

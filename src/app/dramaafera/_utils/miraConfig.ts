@@ -5,7 +5,8 @@
 // the four role→icon maps already had. See #317.
 
 import { enumNameToOrdinal, updateSettingValue } from './settingsParser';
-import { MIRA_ROLE_SETTINGS } from '@/roles/_generated/miraSettings';
+import { MIRA_ROLE_SETTINGS, type MiraRoleSetting } from '@/roles/_generated/miraSettings';
+import { MIRA_GLOBAL_SETTINGS } from '@/roles/_generated/miraGlobalSettings';
 import { SettingTypes, type Setting } from '@/constants/settings';
 import type { Modifier } from '@/constants/rolesAndModifiers';
 import { MiraRoles } from '@/mira';
@@ -172,16 +173,29 @@ export function canonicalEnumValue(sectionName: string, key: string, value: stri
     return enumNameToOrdinal(value, findEnumNames(sectionName, key));
 }
 
-/** The member names of a role's enum option, by cfg section and key. `undefined` for anything else. */
-function findEnumNames(sectionName: string, key: string): readonly string[] | undefined {
-    if (!sectionName.includes('.Roles.')) return undefined;
+/**
+ * The generated settings of one cfg section, from the TOU-Mira source. Role sections come from
+ * MIRA_ROLE_SETTINGS (matched by role name). All other sections (maps, game mechanics, role list,
+ * modifiers) come from MIRA_GLOBAL_SETTINGS (matched by the exact section name).
+ */
+export function findGeneratedSettings(sectionName: string): readonly MiraRoleSetting[] | undefined {
+    if (!sectionName.includes('.Roles.')) return MIRA_GLOBAL_SETTINGS[sectionName];
     const roleToken = normalizeLookupKey(stripConfigAffixes(sectionName.split('.').at(-1) ?? ''));
-    const keyToken = normalizeLookupKey(key);
     for (const [role, defs] of Object.entries(MIRA_ROLE_SETTINGS)) {
-        if (normalizeLookupKey(role) !== roleToken) continue;
-        return defs.find((d) => normalizeLookupKey(d.cfgKey) === keyToken)?.names;
+        if (normalizeLookupKey(role) === roleToken) return defs;
     }
     return undefined;
+}
+
+/** One generated setting, by cfg section and key. `undefined` when the source does not declare it. */
+export function findGeneratedSetting(sectionName: string, key: string): MiraRoleSetting | undefined {
+    const keyToken = normalizeLookupKey(key);
+    return findGeneratedSettings(sectionName)?.find((d) => normalizeLookupKey(d.cfgKey) === keyToken);
+}
+
+/** The member names of an enum option, by cfg section and key. `undefined` for anything else. */
+function findEnumNames(sectionName: string, key: string): readonly string[] | undefined {
+    return findGeneratedSetting(sectionName, key)?.names;
 }
 
 /** Labels made of the member names, for an enum option that has no label in the locale. */
