@@ -9,6 +9,7 @@ import { SettingTypes, type Setting } from "@/constants/settings";
 import { Teams } from "@/constants/teams";
 import { REVIEW_CATEGORIES, type ChangelogCategories, type ReviewCategory } from "../_categories";
 import { parseSections, settingId } from "../_miraConfigSections";
+import { canonicalEnumValue, enumNameDescription, findGeneratedSetting, findGeneratedSettings } from "../../_utils/miraConfig";
 
 type GroupKind = "role" | "modifier" | "section";
 const PROBABILITY_LABEL = "Szansa wystąpienia";
@@ -162,12 +163,14 @@ function createEntityEntry(params: {
     settingType: SettingTypes;
     description?: Record<number, string>;
     value: string;
+    /** When set, old and new are matched by this .cfg key instead of by the label. */
+    cfgKey?: string;
 }): ParsedEntry {
     return {
         fieldId: params.fieldId,
         groupName: params.entity.name,
         settingName: params.settingName,
-        comparisonKey: `${params.entity.id}::${normalizeLookupKey(params.settingName)}`,
+        comparisonKey: `${params.entity.id}::${normalizeLookupKey(params.cfgKey ?? params.settingName)}`,
         value: params.value,
         groupKind: params.entity.type === RoleOrModifierTypes.Role ? "role" : "modifier",
         groupTeam: params.entity.team,
@@ -187,11 +190,13 @@ function createSectionEntry(params: {
     settingType: SettingTypes;
     description?: Record<number, string>;
     value: string;
+    /** When set, old and new are matched by this .cfg key instead of by the label. */
+    cfgKey?: string;
 }): ParsedEntry {
     return {
         groupName: params.groupName,
         settingName: params.settingName,
-        comparisonKey: `${params.groupId}::${normalizeLookupKey(params.settingName)}`,
+        comparisonKey: `${params.groupId}::${normalizeLookupKey(params.cfgKey ?? params.settingName)}`,
         value: params.value,
         groupKind: "section",
         groupTeam: null,
@@ -277,6 +282,35 @@ function parseConfigFile(content: string): Map<string, ParsedEntry> {
             return;
         }
 
+        // Options outside role and modifier sections that the generator knows: match by .cfg key,
+        // with the label and type from the TOU-Mira source. The hand-written lists in
+        // src/mira/settings were matched by position, and TOU-Mira 1.7.9-beta2 moved the positions.
+        const globalDefs = isRoleOrModifierSection(section.name) ? undefined : findGeneratedSettings(section.name);
+        if (globalDefs) {
+            const settingGroup = getSettingGroupFromSection(section.name);
+            const groupName = settingGroup?.name ?? getSectionLabel(section.name);
+            const groupId = settingGroup?.id ?? section.name;
+
+            for (const entry of section.entries) {
+                const def = findGeneratedSetting(section.name, entry.key);
+                entries.set(
+                    `${groupId}::${normalizeLookupKey(entry.key)}`,
+                    createSectionEntry({
+                        groupName,
+                        groupId,
+                        sectionOrder,
+                        settingName: def?.label ?? humanizeIdentifier(entry.key),
+                        settingType: def ? SettingTypes[def.type] : inferTypeFromValue(entry.value),
+                        description: def?.description ?? enumNameDescription(section.name, entry.key),
+                        value: canonicalEnumValue(section.name, entry.key, entry.value),
+                        cfgKey: entry.key,
+                    })
+                );
+            }
+
+            return;
+        }
+
         if (!isRoleOrModifierSection(section.name)) {
             const settingGroup = getSettingGroupFromSection(section.name);
 
@@ -309,11 +343,17 @@ function parseConfigFile(content: string): Map<string, ParsedEntry> {
         const sectionEntity = getEntityFromSection(section.name);
 
         if (sectionEntity && !section.name.endsWith("ModifierOptions")) {
+            // Match by .cfg key with the generated label when the source declares the section. The
+            // hand-written settings in src/mira are matched by position only as a fallback: TOU-Mira
+            // 1.7.9-beta2 added keys (Sentry PortableCamsRechargePerTask, Fairy TaskUses), and a
+            // match by position put every later label on the wrong value.
+            const generated = findGeneratedSettings(section.name);
             const orderedSettings = getOrderedSettingDefinitions(sectionEntity);
 
             section.entries.forEach((entry, entryIndex) => {
-                const setting = orderedSettings[entryIndex];
-                const settingName = setting?.[0] ?? humanizeIdentifier(entry.key);
+                const def = findGeneratedSetting(section.name, entry.key);
+                const setting = generated ? undefined : orderedSettings[entryIndex];
+                const settingName = def?.label ?? setting?.[0] ?? humanizeIdentifier(entry.key);
                 const settingDefinition = setting?.[1];
 
                 entries.set(
@@ -323,9 +363,10 @@ function parseConfigFile(content: string): Map<string, ParsedEntry> {
                         entity: sectionEntity,
                         sectionOrder,
                         settingName,
-                        settingType: settingDefinition?.type ?? inferTypeFromValue(entry.value),
-                        description: settingDefinition?.description,
-                        value: entry.value,
+                        settingType: def ? SettingTypes[def.type] : settingDefinition?.type ?? inferTypeFromValue(entry.value),
+                        description: def?.description ?? settingDefinition?.description ?? enumNameDescription(section.name, entry.key),
+                        value: canonicalEnumValue(section.name, entry.key, entry.value),
+                        cfgKey: generated ? entry.key : undefined,
                     })
                 );
             });

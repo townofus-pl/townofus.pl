@@ -4,8 +4,9 @@
 // component. The role pages need the same thing, and a second copy would drift exactly the way
 // the four role→icon maps already had. See #317.
 
-import { updateSettingValue } from './settingsParser';
-import { MIRA_ROLE_SETTINGS } from '@/roles/_generated/miraSettings';
+import { enumNameToOrdinal, updateSettingValue } from './settingsParser';
+import { MIRA_ROLE_SETTINGS, type MiraRoleSetting } from '@/roles/_generated/miraSettings';
+import { MIRA_GLOBAL_SETTINGS } from '@/roles/_generated/miraGlobalSettings';
 import { SettingTypes, type Setting } from '@/constants/settings';
 import type { Modifier } from '@/constants/rolesAndModifiers';
 import { MiraRoles } from '@/mira';
@@ -151,15 +152,60 @@ export function buildMiraRoleSettings(cfgContent: string, roleName: string): Rec
         const type = SettingTypes[def.type];
         // Some numeric options (room ids, or a count with 0 = Off) have no enum
         // labels in the generated source. Reuse only exact-label descriptions.
-        const description = def.description ?? registrySettings?.[def.label]?.description;
+        // Last resort: the member name, so a value reads as `Distance` and not as a bare `0`.
+        const description = def.description ?? registrySettings?.[def.label]?.description ?? namesAsDescription(def.names);
         out[def.label] = {
-            value: updateSettingValue(type, raw),
+            value: updateSettingValue(type, raw, def.names),
             type,
             ...(description ? { description } : {}),
         } as Setting;
     }
 
     return out;
+}
+
+/**
+ * Gives an enum value the same form in an old (`2`) and a new (`GroupRevive`) config, so a
+ * comparison sees no change between them. `sectionName` is the cfg section of a role, `key` the
+ * option. Anything that is not a known enum name comes back unchanged.
+ */
+export function canonicalEnumValue(sectionName: string, key: string, value: string): string {
+    return enumNameToOrdinal(value, findEnumNames(sectionName, key));
+}
+
+/**
+ * The generated settings of one cfg section, from the TOU-Mira source. Role sections come from
+ * MIRA_ROLE_SETTINGS (matched by role name). All other sections (maps, game mechanics, role list,
+ * modifiers) come from MIRA_GLOBAL_SETTINGS (matched by the exact section name).
+ */
+export function findGeneratedSettings(sectionName: string): readonly MiraRoleSetting[] | undefined {
+    if (!sectionName.includes('.Roles.')) return MIRA_GLOBAL_SETTINGS[sectionName];
+    const roleToken = normalizeLookupKey(stripConfigAffixes(sectionName.split('.').at(-1) ?? ''));
+    for (const [role, defs] of Object.entries(MIRA_ROLE_SETTINGS)) {
+        if (normalizeLookupKey(role) === roleToken) return defs;
+    }
+    return undefined;
+}
+
+/** One generated setting, by cfg section and key. `undefined` when the source does not declare it. */
+export function findGeneratedSetting(sectionName: string, key: string): MiraRoleSetting | undefined {
+    const keyToken = normalizeLookupKey(key);
+    return findGeneratedSettings(sectionName)?.find((d) => normalizeLookupKey(d.cfgKey) === keyToken);
+}
+
+/** The member names of an enum option, by cfg section and key. `undefined` for anything else. */
+function findEnumNames(sectionName: string, key: string): readonly string[] | undefined {
+    return findGeneratedSetting(sectionName, key)?.names;
+}
+
+/** Labels made of the member names, for an enum option that has no label in the locale. */
+function namesAsDescription(names: readonly string[] | undefined): Record<number, string> | undefined {
+    return names ? Object.fromEntries(names.map((name, index) => [index, name])) : undefined;
+}
+
+/** Same as `namesAsDescription`, found by cfg section and key (the changelog has no role definition at hand). */
+export function enumNameDescription(sectionName: string, key: string): Record<number, string> | undefined {
+    return namesAsDescription(findEnumNames(sectionName, key));
 }
 
 /** A BepInEx config always opens its role block with a `[Roles]` section. */

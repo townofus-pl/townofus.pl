@@ -14,6 +14,12 @@ export interface MiraRoleSetting {
     type: 'Percentage' | 'Time' | 'Number' | 'Multiplier' | 'Boolean' | 'Text';
     /** Enum values, indexed as they appear in the config. */
     description?: Record<number, string>;
+    /**
+     * Enum member names in ordinal order. Since 1.7.9-beta2 the .cfg writes an enum option as its
+     * member name (ReviveMode = GroupRevive), older builds as its number. Absent when the enum is not
+     * declared in the TOU-Mira source.
+     */
+    names?: readonly string[];
 }
 
 export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSetting[]>> = {
@@ -26,7 +32,12 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
                 "0": "Sacrifice",
                 "1": "Group Sacrifice",
                 "2": "Group Revive"
-            }
+            },
+            "names": [
+                "Sacrifice",
+                "GroupSacrifice",
+                "GroupRevive"
+            ]
         },
         {
             "cfgKey": "ReviveRange",
@@ -67,7 +78,13 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
                 "1": "Neutrals",
                 "2": "Impostors",
                 "3": "Neutrals and Impostors"
-            }
+            },
+            "names": [
+                "Nobody",
+                "Neutrals",
+                "Impostors",
+                "NeutralsAndImpostors"
+            ]
         },
         {
             "cfgKey": "KillersAlertedAtEnd",
@@ -78,7 +95,13 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
                 "1": "Neutrals",
                 "2": "Impostors",
                 "3": "Neutrals and Impostors"
-            }
+            },
+            "names": [
+                "Nobody",
+                "Neutrals",
+                "Impostors",
+                "NeutralsAndImpostors"
+            ]
         }
     ],
     "Ambassador": [
@@ -150,6 +173,36 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
             "cfgKey": "RememberArrowDelay",
             "label": "Time After Death Arrow Appears",
             "type": "Time"
+        },
+        {
+            "cfgKey": "AmneTurnImpAssassin",
+            "label": "Can be Impostor Assassin",
+            "type": "Number",
+            "description": {
+                "0": "Never",
+                "1": "If Imp is Assassin",
+                "2": "Always"
+            },
+            "names": [
+                "Never",
+                "IfAssassin",
+                "Always"
+            ]
+        },
+        {
+            "cfgKey": "AmneTurnNeutAssassin",
+            "label": "Can be Neutral Killing Assassin",
+            "type": "Number",
+            "description": {
+                "0": "Never",
+                "1": "If NK is Assassin",
+                "2": "Always"
+            },
+            "names": [
+                "Never",
+                "IfAssassin",
+                "Always"
+            ]
         }
     ],
     "Arsonist": [
@@ -186,19 +239,19 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
         {
             "cfgKey": "IgniteRadius",
             "label": "Ignite Radius",
-            "type": "Multiplier"
+            "type": "Number"
         }
     ],
     "Aurial": [
         {
             "cfgKey": "AuraInnerRadius",
             "label": "Radiate Color Range",
-            "type": "Multiplier"
+            "type": "Number"
         },
         {
             "cfgKey": "AuraOuterRadius",
             "label": "Radiate Max Range",
-            "type": "Multiplier"
+            "type": "Number"
         },
         {
             "cfgKey": "SenseDuration",
@@ -299,7 +352,7 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
         {
             "cfgKey": "DetonateRadius",
             "label": "Detonate Radius",
-            "type": "Multiplier"
+            "type": "Number"
         },
         {
             "cfgKey": "MaxKillsInDetonation",
@@ -346,7 +399,12 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
                 "0": "Delay End",
                 "1": "Meeting Start",
                 "2": "Meeting End"
-            }
+            },
+            "names": [
+                "OnDurationEnd",
+                "OnMeetingStart",
+                "OnMeetingEnd"
+            ]
         },
         {
             "cfgKey": "ForcedPoisonDelay",
@@ -367,7 +425,7 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
         },
         {
             "cfgKey": "ResetCooldowns",
-            "label": "Reset Cook [and] Serve Cooldowns Together",
+            "label": "Reset Cook & Serve Cooldowns Together",
             "type": "Boolean"
         },
         {
@@ -442,7 +500,12 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
                 "0": "Disabled",
                 "1": "Announce Role",
                 "2": "Reveal Deputy"
-            }
+            },
+            "names": [
+                "NoReveal",
+                "AnnounceRole",
+                "RevealPlayer"
+            ]
         }
     ],
     "Doomsayer": [
@@ -479,7 +542,12 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
                 "0": "Ends Game",
                 "1": "Leaves In Victory",
                 "2": "Nothing"
-            }
+            },
+            "names": [
+                "EndsGame",
+                "Leaves",
+                "Nothing"
+            ]
         },
         {
             "cfgKey": "DoomsayerKillOnlyLast",
@@ -511,7 +579,7 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
         {
             "cfgKey": "BlindRadius",
             "label": "Blind Radius",
-            "type": "Multiplier"
+            "type": "Number"
         }
     ],
     "EngineerTou": [
@@ -575,11 +643,18 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
             "type": "Number",
             "description": {
                 "0": "MiraApi.RoleTeam.Crewmate",
-                "1": "TownOfUsMira.Role.Amnesiac",
-                "2": "TownOfUsMira.Role.Survivor",
-                "3": "TownOfUsMira.Role.Mercenary",
-                "4": "TownOfUsMira.Role.Jester"
-            }
+                "1": "Amnesiac",
+                "2": "Survivor",
+                "3": "Mercenary",
+                "4": "Jester"
+            },
+            "names": [
+                "Crew",
+                "Amnesiac",
+                "Survivor",
+                "Mercenary",
+                "Jester"
+            ]
         },
         {
             "cfgKey": "CanButton",
@@ -594,7 +669,12 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
                 "0": "Ends Game",
                 "1": "Leaves & Torments",
                 "2": "Nothing"
-            }
+            },
+            "names": [
+                "EndsGame",
+                "Torments",
+                "Nothing"
+            ]
         },
         {
             "cfgKey": "ExeAnonymizeWin",
@@ -619,6 +699,11 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
             "type": "Number"
         },
         {
+            "cfgKey": "TaskUses",
+            "label": "Get More Uses From Completing Tasks",
+            "type": "Boolean"
+        },
+        {
             "cfgKey": "ShowProtect",
             "label": "Show Protected Player",
             "type": "Number",
@@ -626,7 +711,12 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
                 "0": "Fairy",
                 "1": "Fairy + Target",
                 "2": "Everyone"
-            }
+            },
+            "names": [
+                "Fairy",
+                "SelfAndFairy",
+                "Everyone"
+            ]
         },
         {
             "cfgKey": "OnTargetDeath",
@@ -634,11 +724,18 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
             "type": "Number",
             "description": {
                 "0": "MiraApi.RoleTeam.Crewmate",
-                "1": "TownOfUsMira.Role.Amnesiac",
-                "2": "TownOfUsMira.Role.Survivor",
-                "3": "TownOfUsMira.Role.Mercenary",
-                "4": "TownOfUsMira.Role.Jester"
-            }
+                "1": "Amnesiac",
+                "2": "Survivor",
+                "3": "Mercenary",
+                "4": "Jester"
+            },
+            "names": [
+                "Crew",
+                "Amnesiac",
+                "Survivor",
+                "Mercenary",
+                "Jester"
+            ]
         },
         {
             "cfgKey": "FairyTargetKnows",
@@ -717,7 +814,12 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
                 "0": "Never",
                 "1": "Unless Mimicking",
                 "2": "Always"
-            }
+            },
+            "names": [
+                "Never",
+                "Unmimic",
+                "Always"
+            ]
         }
     ],
     "Grenadier": [
@@ -739,7 +841,7 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
         {
             "cfgKey": "FlashRadius",
             "label": "Flash Radius",
-            "type": "Multiplier"
+            "type": "Number"
         },
         {
             "cfgKey": "SabotageFlashing",
@@ -776,7 +878,12 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
                 "0": "Everyone",
                 "1": "Non-Crew",
                 "2": "Impostors Only"
-            }
+            },
+            "names": [
+                "Everyone",
+                "NonCrew",
+                "ImpsOnly"
+            ]
         }
     ],
     "Herbalist": [
@@ -834,39 +941,39 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
     "HnsCamouflager": [
         {
             "cfgKey": "MaxCamoUses",
-            "label": "TownOfUsMira.HideAndSeek.Role.Option.CamouflagerCamoUses",
+            "label": "Camo Uses In Total",
             "type": "Number"
         },
         {
             "cfgKey": "CamoCooldown",
-            "label": "TownOfUsMira.HideAndSeek.Role.Option.CamouflagerCamoCooldown",
+            "label": "Camo Cooldown",
             "type": "Time"
         },
         {
             "cfgKey": "CamoDuration",
-            "label": "TownOfUsMira.HideAndSeek.Role.Option.CamouflagerCamoDuration",
+            "label": "Camo Duration",
             "type": "Time"
         },
         {
             "cfgKey": "CamoDisablesProxBar",
-            "label": "TownOfUsMira.HideAndSeek.Role.Option.CamouflagerCamoDisablesProxBar",
+            "label": "Camo Disables Proximity Bar",
             "type": "Boolean"
         }
     ],
     "HnsChameleon": [
         {
             "cfgKey": "MaxSwoops",
-            "label": "TownOfUsMira.HideAndSeek.Role.Option.ChameleonSwoopUsesPerRound",
+            "label": "Swoop Uses In Total",
             "type": "Number"
         },
         {
             "cfgKey": "SwoopCooldown",
-            "label": "TownOfUsMira.HideAndSeek.Role.Option.ChameleonSwoopCooldown",
+            "label": "Swoop Cooldown",
             "type": "Time"
         },
         {
             "cfgKey": "SwoopDuration",
-            "label": "TownOfUsMira.HideAndSeek.Role.Option.ChameleonSwoopDuration",
+            "label": "Swoop Duration",
             "type": "Time"
         },
         {
@@ -878,29 +985,29 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
     "HnsMystic": [
         {
             "cfgKey": "MysticArrowDuration",
-            "label": "TownOfUsMira.HideAndSeek.Modifier.Option.MysticDeadBodyArrowDuration",
+            "label": "Dead Body Arrow Duration",
             "type": "Time"
         }
     ],
     "HnsSnitch": [
         {
             "cfgKey": "CommonTaskMultiplier",
-            "label": "TownOfUsMira.HideAndSeek.Role.Option.SnitchCommonTaskMultiplier",
+            "label": "Common Task Multiplier",
             "type": "Multiplier"
         },
         {
             "cfgKey": "ShortTaskMultiplier",
-            "label": "TownOfUsMira.HideAndSeek.Role.Option.SnitchShortTaskMultiplier",
+            "label": "Short Task Multiplier",
             "type": "Multiplier"
         },
         {
             "cfgKey": "LongTaskMultiplier",
-            "label": "TownOfUsMira.HideAndSeek.Role.Option.SnitchLongTaskMultiplier",
+            "label": "Long Task Multiplier",
             "type": "Multiplier"
         },
         {
             "cfgKey": "SnitchNotifyDuration",
-            "label": "TownOfUsMira.HideAndSeek.Role.Option.SnitchNotifyDuration",
+            "label": "Seeker Notify Duration",
             "type": "Time"
         }
     ],
@@ -926,6 +1033,11 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
             "type": "Boolean"
         },
         {
+            "cfgKey": "SameRoundKillPunishment",
+            "label": "Hunter Leaves If Killing Caught Crew Same Round",
+            "type": "Boolean"
+        },
+        {
             "cfgKey": "HunterBodyReport",
             "label": "Hunter Can Report Who They've Killed",
             "type": "Boolean"
@@ -947,7 +1059,11 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
             "description": {
                 "0": "All Abilities",
                 "1": "Interactions"
-            }
+            },
+            "names": [
+                "Always",
+                "Interactions"
+            ]
         },
         {
             "cfgKey": "SeesTypeOfInteraction",
@@ -991,7 +1107,12 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
                 "0": "Imitator",
                 "1": "Imitated Role",
                 "2": "Imitator or Imitated Role"
-            }
+            },
+            "names": [
+                "CachedRole",
+                "ActiveRole",
+                "ActiveOrCachedRole"
+            ]
         }
     ],
     "Inquisitor": [
@@ -1060,7 +1181,11 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
         {
             "cfgKey": "FootprintMode",
             "label": "Footprints Added Based On",
-            "type": "Number"
+            "type": "Number",
+            "names": [
+                "Distance",
+                "Time"
+            ]
         },
         {
             "cfgKey": "FootprintIntervalDistance",
@@ -1119,7 +1244,12 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
                 "0": "Unlinked",
                 "1": "With Teammates",
                 "2": "Always"
-            }
+            },
+            "names": [
+                "Unlinked",
+                "WithTeammates",
+                "Always"
+            ]
         },
         {
             "cfgKey": "JanitorKill",
@@ -1146,7 +1276,12 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
                 "0": "Ends Game",
                 "1": "Haunts",
                 "2": "Nothing"
-            }
+            },
+            "names": [
+                "EndsGame",
+                "Haunts",
+                "Nothing"
+            ]
         },
         {
             "cfgKey": "CanVent",
@@ -1225,7 +1360,11 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
         {
             "cfgKey": "WatchType",
             "label": "Watched Player Feedback Reveals",
-            "type": "Number"
+            "type": "Number",
+            "names": [
+                "Roles",
+                "Players"
+            ]
         },
         {
             "cfgKey": "LookoutSeesIndirectAttacks",
@@ -1249,7 +1388,14 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
                 "2": "Shielded + Medic",
                 "3": "Everyone",
                 "4": "Nobody"
-            }
+            },
+            "names": [
+                "Medic",
+                "Shielded",
+                "ShieldedAndMedic",
+                "Everyone",
+                "Nobody"
+            ]
         },
         {
             "cfgKey": "WhoGetsNotification",
@@ -1261,7 +1407,14 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
                 "2": "Shielded + Medic",
                 "3": "Everyone",
                 "4": "Nobody"
-            }
+            },
+            "names": [
+                "Medic",
+                "Shielded",
+                "ShieldedAndMedic",
+                "Everyone",
+                "Nobody"
+            ]
         },
         {
             "cfgKey": "ChangeTarget",
@@ -1324,7 +1477,13 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
                 "1": "Ghosts",
                 "2": "Living + Ghosts",
                 "3": "Nobody"
-            }
+            },
+            "names": [
+                "Living",
+                "Ghosts",
+                "Both",
+                "None"
+            ]
         },
         {
             "cfgKey": "ArrowVisibility",
@@ -1335,7 +1494,13 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
                 "1": "Mediated",
                 "2": "Medium + Mediated",
                 "3": "Disabled"
-            }
+            },
+            "names": [
+                "ShowMedium",
+                "ShowMediate",
+                "Both",
+                "None"
+            ]
         },
         {
             "cfgKey": "WhoIsRevealed",
@@ -1346,7 +1511,13 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
                 "1": "Newest Dead",
                 "2": "Random Dead",
                 "3": "All Dead"
-            }
+            },
+            "names": [
+                "OldestDead",
+                "NewestDead",
+                "RandomDead",
+                "AllDead"
+            ]
         }
     ],
     "Medusa": [
@@ -1403,6 +1574,11 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
             "type": "Number"
         },
         {
+            "cfgKey": "TaskUses",
+            "label": "Get More Uses From Completing Tasks",
+            "type": "Boolean"
+        },
+        {
             "cfgKey": "BribeCost",
             "label": "Bribe Cost",
             "type": "Number"
@@ -1416,6 +1592,26 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
             "cfgKey": "GoldGivenFromAttack",
             "label": "Gold Given From An Attack",
             "type": "Number"
+        },
+        {
+            "cfgKey": "WinsWithNeutralBenign",
+            "label": "Wins with Neutral Benign",
+            "type": "Boolean"
+        },
+        {
+            "cfgKey": "WinsWithNeutralEvil",
+            "label": "Wins with Neutral Evil",
+            "type": "Boolean"
+        },
+        {
+            "cfgKey": "WinsWithNeutralKilling",
+            "label": "Wins with Neutral Killing",
+            "type": "Boolean"
+        },
+        {
+            "cfgKey": "WinsWithNeutralOutlier",
+            "label": "Wins with Neutral Outlier",
+            "type": "Boolean"
         }
     ],
     "Miner": [
@@ -1431,12 +1627,16 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
         },
         {
             "cfgKey": "MineVisibility",
-            "label": "Mine Visiblity",
+            "label": "Mine Visibility",
             "type": "Number",
             "description": {
                 "0": "Immediate",
-                "1": "After Use"
-            }
+                "1": "AfterUse"
+            },
+            "names": [
+                "Immediate",
+                "AfterUse"
+            ]
         },
         {
             "cfgKey": "MinerKill",
@@ -1457,7 +1657,11 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
             "description": {
                 "0": "Mirrorcaster",
                 "1": "Mirrorcaster + Killer"
-            }
+            },
+            "names": [
+                "Mirrorcaster",
+                "MirrorcasterAndKiller"
+            ]
         },
         {
             "cfgKey": "MultiUnleash",
@@ -1470,6 +1674,21 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
             "type": "Number"
         },
         {
+            "cfgKey": "MirrorCooldown",
+            "label": "Magic Mirror Cooldown",
+            "type": "Time"
+        },
+        {
+            "cfgKey": "MirrorDuration",
+            "label": "Magic Mirror Duration",
+            "type": "Time"
+        },
+        {
+            "cfgKey": "UnleashCooldown",
+            "label": "Unleash Cooldown",
+            "type": "Time"
+        },
+        {
             "cfgKey": "AttackInformationGiven",
             "label": "Information Received Upon Attack",
             "type": "Number",
@@ -1478,7 +1697,13 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
                 "1": "Subalignment",
                 "2": "Faction",
                 "3": "Nothing"
-            }
+            },
+            "names": [
+                "Role",
+                "Subalignment",
+                "Faction",
+                "Nothing"
+            ]
         }
     ],
     "Monarch": [
@@ -1499,7 +1724,7 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
         },
         {
             "cfgKey": "KnightDelay",
-            "label": "Knight Delay (Cancellable)",
+            "label": "Knight Delay (Cancelable)",
             "type": "Time"
         },
         {
@@ -1519,7 +1744,7 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
         },
         {
             "cfgKey": "InformWhenKnightDies",
-            "label": "Inform Monarch If a Knight Dies",
+            "label": "Inform Monarch If Knight Dies",
             "type": "Boolean"
         },
         {
@@ -1557,7 +1782,12 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
                 "0": "Never",
                 "1": "Unless Morphed",
                 "2": "Always"
-            }
+            },
+            "names": [
+                "Never",
+                "Unmimic",
+                "Always"
+            ]
         }
     ],
     "Mystic": [
@@ -1817,14 +2047,44 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
                 "0": "Eject Prosecutor",
                 "1": "Eject Victim, Lose Uses",
                 "2": "Eject Both"
-            }
+            },
+            "names": [
+                "EjectPros",
+                "LoseUsesAndEjectTarget",
+                "EjectProsAndEjectTarget"
+            ]
         }
     ],
     "Puppeteer": [
         {
+            "cfgKey": "ControlUses",
+            "label": "Initial Control Uses",
+            "type": "Number"
+        },
+        {
             "cfgKey": "ControlPerKills",
             "label": "Kills Required For Additional Control Use",
             "type": "Number"
+        },
+        {
+            "cfgKey": "VictimSeesControlDirection",
+            "label": "Puppeteer Location Hint Duration (For Victim)",
+            "type": "Time"
+        },
+        {
+            "cfgKey": "ControlCooldown",
+            "label": "Control Cooldown",
+            "type": "Time"
+        },
+        {
+            "cfgKey": "ControlDuration",
+            "label": "Control Duration",
+            "type": "Time"
+        },
+        {
+            "cfgKey": "CanVent",
+            "label": "Puppeteer Can Vent",
+            "type": "Boolean"
         }
     ],
     "Scavenger": [
@@ -1934,7 +2194,11 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
             "description": {
                 "0": "Immediately",
                 "1": "After Meeting"
-            }
+            },
+            "names": [
+                "Immediately",
+                "AfterMeeting"
+            ]
         },
         {
             "cfgKey": "PortableCamerasMode",
@@ -1944,7 +2208,17 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
                 "0": "Always",
                 "1": "After Tasks",
                 "2": "Only On Cam-less Maps"
-            }
+            },
+            "names": [
+                "Immediately",
+                "AfterTasks",
+                "OnMapsWithoutCameras"
+            ]
+        },
+        {
+            "cfgKey": "PortableCamsBattery",
+            "label": "Portable Cameras Battery",
+            "type": "Time"
         },
         {
             "cfgKey": "CameraRoundsLast",
@@ -1957,11 +2231,6 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
             "type": "Number"
         },
         {
-            "cfgKey": "PortableCamsBattery",
-            "label": "Portable Cameras Battery",
-            "type": "Time"
-        },
-        {
             "cfgKey": "CamerasVisibleAfter",
             "label": "Cameras Visible After",
             "type": "Time"
@@ -1970,6 +2239,11 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
             "cfgKey": "CanMoveWhilePlacingCameras",
             "label": "Can Move While Placing Cameras",
             "type": "Boolean"
+        },
+        {
+            "cfgKey": "PortableCamsRechargePerTask",
+            "label": "Portable Cams Recharge per Task",
+            "type": "Time"
         },
         {
             "cfgKey": "InitialCameras",
@@ -1989,52 +2263,662 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
         {
             "cfgKey": "Blindspot1Room",
             "label": "Blindspot 1 Room",
-            "type": "Number"
+            "type": "Number",
+            "names": [
+                "Hallway",
+                "Storage",
+                "Cafeteria",
+                "Reactor",
+                "UpperEngine",
+                "Nav",
+                "Admin",
+                "Electrical",
+                "LifeSupp",
+                "Shields",
+                "MedBay",
+                "Security",
+                "Weapons",
+                "LowerEngine",
+                "Comms",
+                "ShipTasks",
+                "Doors",
+                "Sabotage",
+                "Decontamination",
+                "Launchpad",
+                "LockerRoom",
+                "Laboratory",
+                "Balcony",
+                "Office",
+                "Greenhouse",
+                "Dropship",
+                "Decontamination2",
+                "Outside",
+                "Specimens",
+                "BoilerRoom",
+                "VaultRoom",
+                "Cockpit",
+                "Armory",
+                "Kitchen",
+                "ViewingDeck",
+                "HallOfPortraits",
+                "CargoBay",
+                "Ventilation",
+                "Showers",
+                "Engine",
+                "Brig",
+                "MeetingRoom",
+                "Records",
+                "Lounge",
+                "GapRoom",
+                "MainHall",
+                "Medical",
+                "Decontamination3",
+                "Zipline",
+                "MiningPit",
+                "FishingDock",
+                "RecRoom",
+                "Lookout",
+                "Beach",
+                "Highlands",
+                "Jungle",
+                "SleepingQuarters",
+                "MushroomMixupSabotage",
+                "HeliSabotage"
+            ]
         },
         {
             "cfgKey": "Blindspot2Room",
             "label": "Blindspot 2 Room",
-            "type": "Number"
+            "type": "Number",
+            "names": [
+                "Hallway",
+                "Storage",
+                "Cafeteria",
+                "Reactor",
+                "UpperEngine",
+                "Nav",
+                "Admin",
+                "Electrical",
+                "LifeSupp",
+                "Shields",
+                "MedBay",
+                "Security",
+                "Weapons",
+                "LowerEngine",
+                "Comms",
+                "ShipTasks",
+                "Doors",
+                "Sabotage",
+                "Decontamination",
+                "Launchpad",
+                "LockerRoom",
+                "Laboratory",
+                "Balcony",
+                "Office",
+                "Greenhouse",
+                "Dropship",
+                "Decontamination2",
+                "Outside",
+                "Specimens",
+                "BoilerRoom",
+                "VaultRoom",
+                "Cockpit",
+                "Armory",
+                "Kitchen",
+                "ViewingDeck",
+                "HallOfPortraits",
+                "CargoBay",
+                "Ventilation",
+                "Showers",
+                "Engine",
+                "Brig",
+                "MeetingRoom",
+                "Records",
+                "Lounge",
+                "GapRoom",
+                "MainHall",
+                "Medical",
+                "Decontamination3",
+                "Zipline",
+                "MiningPit",
+                "FishingDock",
+                "RecRoom",
+                "Lookout",
+                "Beach",
+                "Highlands",
+                "Jungle",
+                "SleepingQuarters",
+                "MushroomMixupSabotage",
+                "HeliSabotage"
+            ]
         },
         {
             "cfgKey": "Blindspot3Room",
             "label": "Blindspot 3 Room",
-            "type": "Number"
+            "type": "Number",
+            "names": [
+                "Hallway",
+                "Storage",
+                "Cafeteria",
+                "Reactor",
+                "UpperEngine",
+                "Nav",
+                "Admin",
+                "Electrical",
+                "LifeSupp",
+                "Shields",
+                "MedBay",
+                "Security",
+                "Weapons",
+                "LowerEngine",
+                "Comms",
+                "ShipTasks",
+                "Doors",
+                "Sabotage",
+                "Decontamination",
+                "Launchpad",
+                "LockerRoom",
+                "Laboratory",
+                "Balcony",
+                "Office",
+                "Greenhouse",
+                "Dropship",
+                "Decontamination2",
+                "Outside",
+                "Specimens",
+                "BoilerRoom",
+                "VaultRoom",
+                "Cockpit",
+                "Armory",
+                "Kitchen",
+                "ViewingDeck",
+                "HallOfPortraits",
+                "CargoBay",
+                "Ventilation",
+                "Showers",
+                "Engine",
+                "Brig",
+                "MeetingRoom",
+                "Records",
+                "Lounge",
+                "GapRoom",
+                "MainHall",
+                "Medical",
+                "Decontamination3",
+                "Zipline",
+                "MiningPit",
+                "FishingDock",
+                "RecRoom",
+                "Lookout",
+                "Beach",
+                "Highlands",
+                "Jungle",
+                "SleepingQuarters",
+                "MushroomMixupSabotage",
+                "HeliSabotage"
+            ]
         },
         {
             "cfgKey": "Blindspot4Room",
             "label": "Blindspot 4 Room",
-            "type": "Number"
+            "type": "Number",
+            "names": [
+                "Hallway",
+                "Storage",
+                "Cafeteria",
+                "Reactor",
+                "UpperEngine",
+                "Nav",
+                "Admin",
+                "Electrical",
+                "LifeSupp",
+                "Shields",
+                "MedBay",
+                "Security",
+                "Weapons",
+                "LowerEngine",
+                "Comms",
+                "ShipTasks",
+                "Doors",
+                "Sabotage",
+                "Decontamination",
+                "Launchpad",
+                "LockerRoom",
+                "Laboratory",
+                "Balcony",
+                "Office",
+                "Greenhouse",
+                "Dropship",
+                "Decontamination2",
+                "Outside",
+                "Specimens",
+                "BoilerRoom",
+                "VaultRoom",
+                "Cockpit",
+                "Armory",
+                "Kitchen",
+                "ViewingDeck",
+                "HallOfPortraits",
+                "CargoBay",
+                "Ventilation",
+                "Showers",
+                "Engine",
+                "Brig",
+                "MeetingRoom",
+                "Records",
+                "Lounge",
+                "GapRoom",
+                "MainHall",
+                "Medical",
+                "Decontamination3",
+                "Zipline",
+                "MiningPit",
+                "FishingDock",
+                "RecRoom",
+                "Lookout",
+                "Beach",
+                "Highlands",
+                "Jungle",
+                "SleepingQuarters",
+                "MushroomMixupSabotage",
+                "HeliSabotage"
+            ]
         },
         {
             "cfgKey": "Blindspot5Room",
             "label": "Blindspot 5 Room",
-            "type": "Number"
+            "type": "Number",
+            "names": [
+                "Hallway",
+                "Storage",
+                "Cafeteria",
+                "Reactor",
+                "UpperEngine",
+                "Nav",
+                "Admin",
+                "Electrical",
+                "LifeSupp",
+                "Shields",
+                "MedBay",
+                "Security",
+                "Weapons",
+                "LowerEngine",
+                "Comms",
+                "ShipTasks",
+                "Doors",
+                "Sabotage",
+                "Decontamination",
+                "Launchpad",
+                "LockerRoom",
+                "Laboratory",
+                "Balcony",
+                "Office",
+                "Greenhouse",
+                "Dropship",
+                "Decontamination2",
+                "Outside",
+                "Specimens",
+                "BoilerRoom",
+                "VaultRoom",
+                "Cockpit",
+                "Armory",
+                "Kitchen",
+                "ViewingDeck",
+                "HallOfPortraits",
+                "CargoBay",
+                "Ventilation",
+                "Showers",
+                "Engine",
+                "Brig",
+                "MeetingRoom",
+                "Records",
+                "Lounge",
+                "GapRoom",
+                "MainHall",
+                "Medical",
+                "Decontamination3",
+                "Zipline",
+                "MiningPit",
+                "FishingDock",
+                "RecRoom",
+                "Lookout",
+                "Beach",
+                "Highlands",
+                "Jungle",
+                "SleepingQuarters",
+                "MushroomMixupSabotage",
+                "HeliSabotage"
+            ]
         },
         {
             "cfgKey": "Blindspot6Room",
             "label": "Blindspot 6 Room",
-            "type": "Number"
+            "type": "Number",
+            "names": [
+                "Hallway",
+                "Storage",
+                "Cafeteria",
+                "Reactor",
+                "UpperEngine",
+                "Nav",
+                "Admin",
+                "Electrical",
+                "LifeSupp",
+                "Shields",
+                "MedBay",
+                "Security",
+                "Weapons",
+                "LowerEngine",
+                "Comms",
+                "ShipTasks",
+                "Doors",
+                "Sabotage",
+                "Decontamination",
+                "Launchpad",
+                "LockerRoom",
+                "Laboratory",
+                "Balcony",
+                "Office",
+                "Greenhouse",
+                "Dropship",
+                "Decontamination2",
+                "Outside",
+                "Specimens",
+                "BoilerRoom",
+                "VaultRoom",
+                "Cockpit",
+                "Armory",
+                "Kitchen",
+                "ViewingDeck",
+                "HallOfPortraits",
+                "CargoBay",
+                "Ventilation",
+                "Showers",
+                "Engine",
+                "Brig",
+                "MeetingRoom",
+                "Records",
+                "Lounge",
+                "GapRoom",
+                "MainHall",
+                "Medical",
+                "Decontamination3",
+                "Zipline",
+                "MiningPit",
+                "FishingDock",
+                "RecRoom",
+                "Lookout",
+                "Beach",
+                "Highlands",
+                "Jungle",
+                "SleepingQuarters",
+                "MushroomMixupSabotage",
+                "HeliSabotage"
+            ]
         },
         {
             "cfgKey": "Blindspot7Room",
             "label": "Blindspot 7 Room",
-            "type": "Number"
+            "type": "Number",
+            "names": [
+                "Hallway",
+                "Storage",
+                "Cafeteria",
+                "Reactor",
+                "UpperEngine",
+                "Nav",
+                "Admin",
+                "Electrical",
+                "LifeSupp",
+                "Shields",
+                "MedBay",
+                "Security",
+                "Weapons",
+                "LowerEngine",
+                "Comms",
+                "ShipTasks",
+                "Doors",
+                "Sabotage",
+                "Decontamination",
+                "Launchpad",
+                "LockerRoom",
+                "Laboratory",
+                "Balcony",
+                "Office",
+                "Greenhouse",
+                "Dropship",
+                "Decontamination2",
+                "Outside",
+                "Specimens",
+                "BoilerRoom",
+                "VaultRoom",
+                "Cockpit",
+                "Armory",
+                "Kitchen",
+                "ViewingDeck",
+                "HallOfPortraits",
+                "CargoBay",
+                "Ventilation",
+                "Showers",
+                "Engine",
+                "Brig",
+                "MeetingRoom",
+                "Records",
+                "Lounge",
+                "GapRoom",
+                "MainHall",
+                "Medical",
+                "Decontamination3",
+                "Zipline",
+                "MiningPit",
+                "FishingDock",
+                "RecRoom",
+                "Lookout",
+                "Beach",
+                "Highlands",
+                "Jungle",
+                "SleepingQuarters",
+                "MushroomMixupSabotage",
+                "HeliSabotage"
+            ]
         },
         {
             "cfgKey": "Blindspot8Room",
             "label": "Blindspot 8 Room",
-            "type": "Number"
+            "type": "Number",
+            "names": [
+                "Hallway",
+                "Storage",
+                "Cafeteria",
+                "Reactor",
+                "UpperEngine",
+                "Nav",
+                "Admin",
+                "Electrical",
+                "LifeSupp",
+                "Shields",
+                "MedBay",
+                "Security",
+                "Weapons",
+                "LowerEngine",
+                "Comms",
+                "ShipTasks",
+                "Doors",
+                "Sabotage",
+                "Decontamination",
+                "Launchpad",
+                "LockerRoom",
+                "Laboratory",
+                "Balcony",
+                "Office",
+                "Greenhouse",
+                "Dropship",
+                "Decontamination2",
+                "Outside",
+                "Specimens",
+                "BoilerRoom",
+                "VaultRoom",
+                "Cockpit",
+                "Armory",
+                "Kitchen",
+                "ViewingDeck",
+                "HallOfPortraits",
+                "CargoBay",
+                "Ventilation",
+                "Showers",
+                "Engine",
+                "Brig",
+                "MeetingRoom",
+                "Records",
+                "Lounge",
+                "GapRoom",
+                "MainHall",
+                "Medical",
+                "Decontamination3",
+                "Zipline",
+                "MiningPit",
+                "FishingDock",
+                "RecRoom",
+                "Lookout",
+                "Beach",
+                "Highlands",
+                "Jungle",
+                "SleepingQuarters",
+                "MushroomMixupSabotage",
+                "HeliSabotage"
+            ]
         },
         {
             "cfgKey": "Blindspot9Room",
             "label": "Blindspot 9 Room",
-            "type": "Number"
+            "type": "Number",
+            "names": [
+                "Hallway",
+                "Storage",
+                "Cafeteria",
+                "Reactor",
+                "UpperEngine",
+                "Nav",
+                "Admin",
+                "Electrical",
+                "LifeSupp",
+                "Shields",
+                "MedBay",
+                "Security",
+                "Weapons",
+                "LowerEngine",
+                "Comms",
+                "ShipTasks",
+                "Doors",
+                "Sabotage",
+                "Decontamination",
+                "Launchpad",
+                "LockerRoom",
+                "Laboratory",
+                "Balcony",
+                "Office",
+                "Greenhouse",
+                "Dropship",
+                "Decontamination2",
+                "Outside",
+                "Specimens",
+                "BoilerRoom",
+                "VaultRoom",
+                "Cockpit",
+                "Armory",
+                "Kitchen",
+                "ViewingDeck",
+                "HallOfPortraits",
+                "CargoBay",
+                "Ventilation",
+                "Showers",
+                "Engine",
+                "Brig",
+                "MeetingRoom",
+                "Records",
+                "Lounge",
+                "GapRoom",
+                "MainHall",
+                "Medical",
+                "Decontamination3",
+                "Zipline",
+                "MiningPit",
+                "FishingDock",
+                "RecRoom",
+                "Lookout",
+                "Beach",
+                "Highlands",
+                "Jungle",
+                "SleepingQuarters",
+                "MushroomMixupSabotage",
+                "HeliSabotage"
+            ]
         },
         {
             "cfgKey": "Blindspot10Room",
             "label": "Blindspot 10 Room",
-            "type": "Number"
+            "type": "Number",
+            "names": [
+                "Hallway",
+                "Storage",
+                "Cafeteria",
+                "Reactor",
+                "UpperEngine",
+                "Nav",
+                "Admin",
+                "Electrical",
+                "LifeSupp",
+                "Shields",
+                "MedBay",
+                "Security",
+                "Weapons",
+                "LowerEngine",
+                "Comms",
+                "ShipTasks",
+                "Doors",
+                "Sabotage",
+                "Decontamination",
+                "Launchpad",
+                "LockerRoom",
+                "Laboratory",
+                "Balcony",
+                "Office",
+                "Greenhouse",
+                "Dropship",
+                "Decontamination2",
+                "Outside",
+                "Specimens",
+                "BoilerRoom",
+                "VaultRoom",
+                "Cockpit",
+                "Armory",
+                "Kitchen",
+                "ViewingDeck",
+                "HallOfPortraits",
+                "CargoBay",
+                "Ventilation",
+                "Showers",
+                "Engine",
+                "Brig",
+                "MeetingRoom",
+                "Records",
+                "Lounge",
+                "GapRoom",
+                "MainHall",
+                "Medical",
+                "Decontamination3",
+                "Zipline",
+                "MiningPit",
+                "FishingDock",
+                "RecRoom",
+                "Lookout",
+                "Beach",
+                "Highlands",
+                "Jungle",
+                "SleepingQuarters",
+                "MushroomMixupSabotage",
+                "HeliSabotage"
+            ]
         }
     ],
     "Sheriff": [
@@ -2062,7 +2946,13 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
                 "1": "Target",
                 "2": "Self + Target",
                 "3": "Nobody"
-            }
+            },
+            "names": [
+                "Sheriff",
+                "Target",
+                "Both",
+                "Nobody"
+            ]
         },
         {
             "cfgKey": "ShootNeutralBenign",
@@ -2153,7 +3043,12 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
                 "0": "Ends Game",
                 "1": "Spooks",
                 "2": "Nothing"
-            }
+            },
+            "names": [
+                "EndsGame",
+                "Spooks",
+                "Nothing"
+            ]
         }
     ],
     "Spellslinger": [
@@ -2171,6 +3066,11 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
             "cfgKey": "HexBombDuration",
             "label": "Hex Bomb Countdown Duration",
             "type": "Time"
+        },
+        {
+            "cfgKey": "HexBombDecreasePerMeeting",
+            "label": "Hex Bomb Timer Decrease From Meetings",
+            "type": "Time"
         }
     ],
     "Spy": [
@@ -2183,7 +3083,13 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
                 "1": "Spy",
                 "2": "Everyone But Spy",
                 "3": "Everyone"
-            }
+            },
+            "names": [
+                "Nobody",
+                "Spy",
+                "EveryoneButSpy",
+                "Everyone"
+            ]
         },
         {
             "cfgKey": "HasPortableAdmin",
@@ -2194,7 +3100,13 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
                 "1": "Modifier",
                 "2": "Role + Modifier",
                 "3": "Disabled"
-            }
+            },
+            "names": [
+                "Role",
+                "Modifier",
+                "Both",
+                "None"
+            ]
         },
         {
             "cfgKey": "MoveWithMenu",
@@ -2244,6 +3156,11 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
             "type": "Number"
         },
         {
+            "cfgKey": "TaskUses",
+            "label": "Get More Uses From Completing Tasks",
+            "type": "Boolean"
+        },
+        {
             "cfgKey": "ScatterOn",
             "label": "Survivor Scatter Mechanic Enabled",
             "type": "Boolean"
@@ -2285,7 +3202,12 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
                 "0": "Never",
                 "1": "Not by Radar",
                 "2": "Always"
-            }
+            },
+            "names": [
+                "Never",
+                "NonRadar",
+                "Always"
+            ]
         },
         {
             "cfgKey": "CanVent",
@@ -2295,7 +3217,12 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
                 "0": "Never",
                 "1": "While Visible",
                 "2": "Always"
-            }
+            },
+            "names": [
+                "Never",
+                "Visible",
+                "Always"
+            ]
         }
     ],
     "TimeLord": [
@@ -2352,7 +3279,12 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
                 "0": "Disabled",
                 "1": "Until Next Round",
                 "2": "Fully"
-            }
+            },
+            "names": [
+                "Disabled",
+                "UntilNextRound",
+                "Permanent"
+            ]
         }
     ],
     "Traitor": [
@@ -2379,7 +3311,12 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
                 "0": "Traitor",
                 "1": "New Role",
                 "2": "Traitor or New Role"
-            }
+            },
+            "names": [
+                "CachedRole",
+                "ActiveRole",
+                "ActiveOrCachedRole"
+            ]
         },
         {
             "cfgKey": "TraitorCanAssassin",
@@ -2559,7 +3496,7 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
         {
             "cfgKey": "FreezeRadius",
             "label": "Freeze Radius",
-            "type": "Multiplier"
+            "type": "Number"
         }
     ],
     "Veteran": [
@@ -2651,7 +3588,13 @@ export const MIRA_ROLE_SETTINGS: Readonly<Record<string, readonly MiraRoleSettin
                 "1": "Warden",
                 "2": "Fortified + Warden",
                 "3": "Everyone"
-            }
+            },
+            "names": [
+                "Self",
+                "Warden",
+                "SelfAndWarden",
+                "Everyone"
+            ]
         }
     ],
     "Warlock": [

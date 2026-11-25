@@ -1,5 +1,10 @@
 import React from 'react';
-import { MIRA_VERSION, MIRA_RELEASE_URL, miraDownloadUrl } from '@/roles/_generated/miraVersion';
+import {
+    LEAGUE_MIRA_VERSION,
+    LEAGUE_MIRA_RELEASE_URL,
+    LEAGUE_MIRA_BUILDS,
+    leagueMiraDownloadUrl,
+} from '@/constants/miraRelease';
 import clientManifest from '../../../../public/mod/client/latest.json';
 
 /**
@@ -11,17 +16,16 @@ import clientManifest from '../../../../public/mod/client/latest.json';
  * kicked rather than merely confused. See #316.
  *
  * The plugin's version and hash are read from the manifest the auto-updater uses, so the page
- * cannot advertise a file other than the one being served. The TOU:Mira version comes from the
- * submodule tag the league's mod is built against, so the link can never point at a release the
- * plugin was not compiled for.
+ * cannot advertise a file other than the one being served. The TOU:Mira version is pinned in
+ * `src/constants/miraRelease.ts` to the version the league plays on. It reads neither
+ * `releases/latest` nor the submodule tag, because upstream releases before the league moves.
  */
 
-/** Upstream ships one archive per store, because the game's architecture differs between them. */
-const MIRA_BUILDS = [
-    { label: 'Steam / itch.io', asset: `TouMira.v${MIRA_VERSION}-x86-steam-itch.zip` },
-    { label: 'Epic / Microsoft Store', asset: `TouMira.v${MIRA_VERSION}-x64-epic-msstore.zip` },
-    { label: 'macOS (x86) / Linux', asset: `TouMira.v${MIRA_VERSION}-x86-macOS-linux.zip` },
-];
+// Platforms that share one zip become one row, in the order of the first platform (for 1.7.3: "Steam / itch.io").
+const MIRA_ROWS = [...Map.groupBy(LEAGUE_MIRA_BUILDS, (build) => build.zip)].map(([zip, builds]) => ({
+    zip,
+    label: builds.map((build) => build.label).join(' / '),
+}));
 
 const PLUGIN_NAME = 'DramaAferaStats.Client.dll';
 
@@ -59,29 +63,29 @@ export default function DoPobraniaPage() {
                     </h1>
                 </div>
 
-                <h2 className="text-xl font-semibold mb-3">1. TOU:Mira {MIRA_VERSION}</h2>
+                <h2 className="text-xl font-semibold mb-3">1. TOU:Mira {LEAGUE_MIRA_VERSION}</h2>
                 <p className="text-[#b0aeb8] mb-4">
                     Wybierz paczkę dla swojego sklepu i rozpakuj ją do <strong>osobnej kopii</strong>{' '}
-                    folderu Among Us. Nasz mod ligowy jest zbudowany dokładnie pod {MIRA_VERSION}.
+                    folderu Among Us. Nasz mod ligowy jest zbudowany dokładnie pod {LEAGUE_MIRA_VERSION}.
                 </p>
 
                 <div className="space-y-2 mb-3">
-                    {MIRA_BUILDS.map((build) => (
+                    {MIRA_ROWS.map((build) => (
                         <a
-                            key={build.asset}
-                            href={miraDownloadUrl(build.asset)}
+                            key={build.zip}
+                            href={leagueMiraDownloadUrl(build.zip)}
                             className="flex items-center justify-between bg-[#23202a] hover:bg-[#2d2936] transition rounded-lg px-4 py-3 shadow border border-[#23202a] gap-4"
                         >
                             <span className="font-medium">{build.label}</span>
-                            <span className="text-xs text-[#6b6874] font-mono truncate">{build.asset}</span>
+                            <span className="text-xs text-[#6b6874] font-mono truncate">{build.zip}</span>
                         </a>
                     ))}
                 </div>
 
                 <p className="text-xs text-[#b0aeb8] mb-6">
-                    Source: {' '}
-                    <a href={MIRA_RELEASE_URL} className="underline hover:text-white">
-                        TOU:Mira {MIRA_VERSION}
+                    Źródło: {' '}
+                    <a href={LEAGUE_MIRA_RELEASE_URL} className="underline hover:text-white">
+                        TOU:Mira {LEAGUE_MIRA_VERSION}
                     </a>
                 </p>
 

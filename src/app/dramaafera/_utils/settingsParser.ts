@@ -51,8 +51,30 @@ export function getMatchingFileName(roleName: string, cleanedFileContentMap: Map
     return null;
 }
 
-// Funkcja do aktualizacji wartości ustawienia na podstawie typu
-export function updateSettingValue(settingType: SettingTypes, value: string): string | number | boolean {
+/** Same collapse as `normalizeLookupKey` in miraConfig.ts (not imported: miraConfig imports this file). */
+function collapseName(value: string): string {
+    return value.toLowerCase().replace(/[^a-z0-9]+/g, '');
+}
+
+/**
+ * TOU-Mira 1.7.9-beta2 writes an enum option as its member name (`GroupRevive`), older builds as
+ * its number (`2`). Turns a name into the ordinal so the label map keeps working.
+ * A number passes through. A name that is not in the list stays a string.
+ */
+export function enumNameToOrdinal(value: string, names: readonly string[] | undefined): string {
+    if (!names || /^-?\d+(?:[.,]\d+)?$/.test(value.trim())) return value;
+    const index = names.findIndex((name) => collapseName(name) === collapseName(value));
+    return index === -1 ? value : String(index);
+}
+
+// Funkcja do aktualizacji wartości ustawienia na podstawie typu.
+// `enumNames`: member names of an enum option, in ordinal order (see `enumNameToOrdinal`).
+export function updateSettingValue(
+    settingType: SettingTypes,
+    rawValue: string,
+    enumNames?: readonly string[],
+): string | number | boolean {
+    const value = enumNameToOrdinal(rawValue, enumNames);
     switch (settingType) {
         case SettingTypes.Boolean:
             return value.toLowerCase() === 'true';
@@ -61,7 +83,9 @@ export function updateSettingValue(settingType: SettingTypes, value: string): st
         case SettingTypes.Time:
         case SettingTypes.Multiplier: {
             const num = Number(value.replace(/,/g, '.'));
-            return !isNaN(num) ? (Number.isInteger(num) ? num : Number(num.toFixed(2))) : num;
+            // A text that is not a number (an enum name with no known list) stays text, never NaN.
+            if (isNaN(num)) return value;
+            return Number.isInteger(num) ? num : Number(num.toFixed(2));
         }
         case SettingTypes.Text:
             return value;
