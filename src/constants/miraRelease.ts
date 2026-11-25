@@ -11,9 +11,11 @@
  * `MIRA_VERSION` in `src/roles/_generated/miraVersion.ts` is also different: it is the submodule
  * tag the role settings were generated from, and it can be ahead of the league version.
  *
- * To move the league to 1.7.9-beta2: change `LEAGUE_MIRA_VERSION` to '1.7.9-beta2'. Nothing else.
+ * The pin is now 1.7.9-beta2. 1.7.3 stays in `RELEASES` for a rollback: to go back, change
+ * `LEAGUE_MIRA_VERSION` to '1.7.3'. To move to a newer version, add its entry to `RELEASES` and
+ * change `LEAGUE_MIRA_VERSION`. Nothing else.
  */
-export const LEAGUE_MIRA_VERSION = '1.7.3';
+export const LEAGUE_MIRA_VERSION = '1.7.9-beta2';
 
 /** One row on the download page: a platform, its label and the archive to download. */
 export interface MiraBuild {
