@@ -69,6 +69,15 @@ interface RoleSetting {
 /** Enum name -> member names in declaration order. `null` when two enums share a name but differ. */
 type EnumIndex = Map<string, string[] | null>;
 
+/**
+ * Enums the options use but TOU-Mira does not declare, because they belong to the game.
+ * Read from `Assembly-CSharp.dll` of AmongUs.GameLibs.Steam 2026.9.29 (members 0 to 58, no gaps,
+ * so the index is the value). Check it again when the game library is bumped.
+ */
+const GAME_ENUMS: Record<string, string[]> = {
+    SystemTypes: ["Hallway", "Storage", "Cafeteria", "Reactor", "UpperEngine", "Nav", "Admin", "Electrical", "LifeSupp", "Shields", "MedBay", "Security", "Weapons", "LowerEngine", "Comms", "ShipTasks", "Doors", "Sabotage", "Decontamination", "Launchpad", "LockerRoom", "Laboratory", "Balcony", "Office", "Greenhouse", "Dropship", "Decontamination2", "Outside", "Specimens", "BoilerRoom", "VaultRoom", "Cockpit", "Armory", "Kitchen", "ViewingDeck", "HallOfPortraits", "CargoBay", "Ventilation", "Showers", "Engine", "Brig", "MeetingRoom", "Records", "Lounge", "GapRoom", "MainHall", "Medical", "Decontamination3", "Zipline", "MiningPit", "FishingDock", "RecRoom", "Lookout", "Beach", "Highlands", "Jungle", "SleepingQuarters", "MushroomMixupSabotage", "HeliSabotage"],
+};
+
 /** Reads every `enum X { A, B = 3, C }` under `dir`. Enums with explicit values are skipped. */
 function readEnums(dir: string, skipped: string[]): EnumIndex {
     const index: EnumIndex = new Map();
@@ -123,7 +132,7 @@ function describe(
                 if (label) description[index] = label;
             });
         }
-        const names = enumType ? enums.get(enumType) : undefined;
+        const names = enumType ? (enums.get(enumType) ?? GAME_ENUMS[enumType]) : undefined;
         if (!names) noNames.push(`${enumType ?? '?'}`);
         return {
             type: 'Number',
@@ -242,7 +251,7 @@ function main(): void {
         // public ModdedEnumOption ReviveMode { get; } =
         //     new("TouOptionAltruistReviveType", …);
         for (const m of src.matchAll(
-            /public\s+Modded(\w+)Option(?:<([\w.]+)>)?\s+(\w+)\s*\{\s*get;(?:\s*set;)?\s*\}\s*=\s*new\(\s*"([^"]+)"([^;]*)/g,
+            /public\s+Modded(\w+)Option(?:<([\w.]+)>)?\s+(\w+)\s*\{\s*get;(?:\s*set;)?\s*\}\s*=\s*new\(\s*\$?"([^"]+)"([^;]*)/g,
         )) {
             const label = resolve(m[4]);
             if (!label) continue;

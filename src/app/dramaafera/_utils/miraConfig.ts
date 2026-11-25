@@ -151,7 +151,8 @@ export function buildMiraRoleSettings(cfgContent: string, roleName: string): Rec
         const type = SettingTypes[def.type];
         // Some numeric options (room ids, or a count with 0 = Off) have no enum
         // labels in the generated source. Reuse only exact-label descriptions.
-        const description = def.description ?? registrySettings?.[def.label]?.description;
+        // Last resort: the member name, so a value reads as `Distance` and not as a bare `0`.
+        const description = def.description ?? registrySettings?.[def.label]?.description ?? namesAsDescription(def.names);
         out[def.label] = {
             value: updateSettingValue(type, raw, def.names),
             type,
@@ -168,15 +169,29 @@ export function buildMiraRoleSettings(cfgContent: string, roleName: string): Rec
  * option. Anything that is not a known enum name comes back unchanged.
  */
 export function canonicalEnumValue(sectionName: string, key: string, value: string): string {
-    if (!sectionName.includes('.Roles.')) return value;
+    return enumNameToOrdinal(value, findEnumNames(sectionName, key));
+}
+
+/** The member names of a role's enum option, by cfg section and key. `undefined` for anything else. */
+function findEnumNames(sectionName: string, key: string): readonly string[] | undefined {
+    if (!sectionName.includes('.Roles.')) return undefined;
     const roleToken = normalizeLookupKey(stripConfigAffixes(sectionName.split('.').at(-1) ?? ''));
     const keyToken = normalizeLookupKey(key);
     for (const [role, defs] of Object.entries(MIRA_ROLE_SETTINGS)) {
         if (normalizeLookupKey(role) !== roleToken) continue;
-        const def = defs.find((d) => normalizeLookupKey(d.cfgKey) === keyToken);
-        return enumNameToOrdinal(value, def?.names);
+        return defs.find((d) => normalizeLookupKey(d.cfgKey) === keyToken)?.names;
     }
-    return value;
+    return undefined;
+}
+
+/** Labels made of the member names, for an enum option that has no label in the locale. */
+function namesAsDescription(names: readonly string[] | undefined): Record<number, string> | undefined {
+    return names ? Object.fromEntries(names.map((name, index) => [index, name])) : undefined;
+}
+
+/** Same as `namesAsDescription`, found by cfg section and key (the changelog has no role definition at hand). */
+export function enumNameDescription(sectionName: string, key: string): Record<number, string> | undefined {
+    return namesAsDescription(findEnumNames(sectionName, key));
 }
 
 /** A BepInEx config always opens its role block with a `[Roles]` section. */

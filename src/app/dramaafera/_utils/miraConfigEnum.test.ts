@@ -29,11 +29,42 @@ describe('text options in a TOU-Mira 1.7.9-beta2 config', () => {
         expect(s['Revive Type'].value).toBe('SomethingNew');
     });
 
-    it('shows the raw name of an option with no name list (Blindspot room)', () => {
-        const s = buildMiraRoleSettings(section('Sentry', ['Blindspot1Room = Specimens']), 'Sentry');
-        const room = Object.values(s)[0];
-        expect(room.value).toBe('Specimens');
-        expect(Number.isNaN(room.value)).toBe(false);
+    it('reads a Sentry room name or number as the same SystemTypes value, shown as the name', () => {
+        const byName = buildMiraRoleSettings(section('Sentry', ['Blindspot1Room = Specimens']), 'Sentry');
+        const byNumber = buildMiraRoleSettings(section('Sentry', ['Blindspot1Room = 28']), 'Sentry');
+        const [name] = Object.values(byName);
+        const [number] = Object.values(byNumber);
+        expect(name.value).toBe(28);
+        expect(number.value).toBe(28);
+        expect(name.description?.[28]).toBe('Specimen Room'); // the registry label wins over the bare name
+    });
+
+    it('keeps the raw name of an unknown room, never NaN', () => {
+        const [room] = Object.values(buildMiraRoleSettings(section('Sentry', ['Blindspot1Room = NewRoom']), 'Sentry'));
+        expect(room.value).toBe('NewRoom');
+    });
+
+    it('reads the Amnesiac assassin options written with an interpolated locale key', () => {
+        const s = buildMiraRoleSettings(
+            section('Amnesiac', ['AmneTurnImpAssassin = IfAssassin', 'AmneTurnNeutAssassin = 2']),
+            'Amnesiac',
+        );
+        const values = Object.values(s).map((x) => x.value);
+        expect(values).toEqual([1, 2]);
+        expect(canonicalEnumValue('TownOfUs.Options.Roles.Neutral.AmnesiacOptions', 'AmneTurnNeutAssassin', 'Always')).toBe('2');
+    });
+
+    it('shows the member name for an enum option that has no label', () => {
+        const inv = Object.values(buildMiraRoleSettings(section('Investigator', ['FootprintMode = Distance']), 'Investigator'));
+        const look = Object.values(buildMiraRoleSettings(section('Lookout', ['WatchType = Roles']), 'Lookout'));
+        expect(inv).toHaveLength(1);
+        expect(look).toHaveLength(1);
+        for (const setting of [...inv, ...look]) {
+            expect(typeof setting.value).toBe('number');
+            expect(Object.values(setting.description ?? {})).toContain(
+                setting === inv[0] ? 'Distance' : 'Roles',
+            );
+        }
     });
 
     it('does not turn a plain number into a name or change numbers', () => {
